@@ -2,6 +2,15 @@
 
 from app.models.dataset import Dataset
 from app.models.entity import Company, Country, EconomicVariable, Entity, Industry
+from app.models.graph import (
+    GraphBuild,
+    GraphEdge,
+    GraphEdgeEvidence,
+    GraphIssue,
+    GraphNode,
+    GraphNodeIdentifier,
+    GraphResolutionDecision,
+)
 from app.models.ingestion import DataQualityIssue, IngestionJob, IngestionJobItem, SourceCapture
 from app.models.market import Instrument, PriceBar
 from app.models.provider import DataProvider
@@ -19,6 +28,13 @@ __all__ = [
     "EconomicSeries",
     "EconomicVariable",
     "Entity",
+    "GraphBuild",
+    "GraphEdge",
+    "GraphEdgeEvidence",
+    "GraphIssue",
+    "GraphNode",
+    "GraphNodeIdentifier",
+    "GraphResolutionDecision",
     "Industry",
     "IngestionJob",
     "IngestionJobItem",

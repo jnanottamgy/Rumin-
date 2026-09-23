@@ -273,3 +273,141 @@ class PriceAdjustment(StrEnum):
 
     UNADJUSTED = "unadjusted"
     ADJUSTED = "adjusted"
+
+
+# --- Phase 3: financial knowledge graph ------------------------------------------------------
+
+
+class GraphNodeType(StrEnum):
+    """Kinds of node in the knowledge graph. Only kinds the stored data supports exist."""
+
+    COUNTRY = "country"
+    CURRENCY = "currency"
+    SECTOR = "sector"
+    INDUSTRY = "industry"
+    COMPANY = "company"
+    ECONOMIC_VARIABLE = "economic_variable"
+    DATA_SERIES = "data_series"
+    INSTRUMENT = "instrument"
+    MARKET = "market"
+
+
+class GraphEdgeType(StrEnum):
+    """Kinds of edge. The first seven are Phase 1's curated economic relationships; the
+    rest are structural links stated by a field of a source record."""
+
+    SUPPLIES_TO = "supplies_to"
+    LENDS_TO = "lends_to"
+    COMPETES_WITH = "competes_with"
+    AFFECTS_COSTS = "affects_costs"
+    AFFECTS_REVENUE = "affects_revenue"
+    AFFECTS_FINANCING = "affects_financing"
+    INFLUENCES = "influences"
+    IN_INDUSTRY = "in_industry"
+    DOMICILED_IN = "domiciled_in"
+    MEASURED_FOR = "measured_for"
+    IN_SECTOR = "in_sector"
+    HAS_CURRENCY = "has_currency"
+    COVERS = "covers"
+    RELATED_MEASURE_OF = "related_measure_of"
+    EXPRESSED_IN = "expressed_in"
+    LISTED_ON = "listed_on"
+    QUOTED_IN = "quoted_in"
+    ASSOCIATED_WITH = "associated_with"
+
+
+class EvidenceStatus(StrEnum):
+    """What supports an edge's existence (definitions in ``app.domain.graph_types``)."""
+
+    EVIDENCE_BACKED = "evidence_backed"
+    ANALYST_CREATED = "analyst_created"
+    MODEL_ASSUMPTION = "model_assumption"
+    UNVERIFIED = "unverified"
+
+
+class NodeNature(StrEnum):
+    """Whether a node describes the real world.
+
+    * ``real`` — a real-world entity, classification or published series.
+    * ``fictional`` — invented for the illustrative sample network (its companies).
+    * ``sample`` — from a file marked as sample data (e.g. a synthetic price file).
+    """
+
+    REAL = "real"
+    FICTIONAL = "fictional"
+    SAMPLE = "sample"
+
+
+class GraphBuildStatus(StrEnum):
+    """Lifecycle of a graph build. ``completed_with_warnings`` means the graph was built
+    but some records were rejected or flagged; ``failed`` means nothing was changed."""
+
+    RUNNING = "running"
+    COMPLETED = "completed"
+    COMPLETED_WITH_WARNINGS = "completed_with_warnings"
+    FAILED = "failed"
+
+
+class EvidenceSourceKind(StrEnum):
+    """Where the statement behind an edge comes from."""
+
+    REFERENCE_DATASET = "reference_dataset"
+    SERIES_CATALOGUE = "series_catalogue"
+    PRICE_FILE_MANIFEST = "price_file_manifest"
+    CLASSIFICATION_STANDARD = "classification_standard"
+
+
+class Derivation(StrEnum):
+    """``direct``: one field of the source record states the relationship.
+    ``derived``: the relationship follows from a record plus a documented standard."""
+
+    DIRECT = "direct"
+    DERIVED = "derived"
+
+
+class ResolutionMethod(StrEnum):
+    """How entity resolution related a source record to a node."""
+
+    IDENTIFIER = "identifier"
+    EXPLICIT_LINK = "explicit_link"
+    NAME_COMPARISON = "name_comparison"
+
+
+class ResolutionOutcome(StrEnum):
+    """What entity resolution decided.
+
+    * ``linked`` — the record was linked to the node by an identifier or explicit link.
+    * ``identifier_attached`` — an identifier stated by another record was added.
+    * ``candidate_flagged`` — the names suggest the same entity; nothing was merged,
+      the pair awaits review.
+    * ``conflict`` — an identifier was claimed for more than one node; it was attached
+      to none.
+    * ``rejected`` — a possible match was ruled out by a rule (e.g. fictional vs real).
+    """
+
+    LINKED = "linked"
+    IDENTIFIER_ATTACHED = "identifier_attached"
+    CANDIDATE_FLAGGED = "candidate_flagged"
+    CONFLICT = "conflict"
+    REJECTED = "rejected"
+
+
+class GraphIssueSubject(StrEnum):
+    NODE = "node"
+    EDGE = "edge"
+    IDENTIFIER = "identifier"
+    RESOLUTION = "resolution"
+
+
+class IdentifierScheme(StrEnum):
+    """External identifier schemes a node can carry (unique within a scheme)."""
+
+    ISO3166_ALPHA2 = "iso3166_alpha2"
+    ISO3166_ALPHA3 = "iso3166_alpha3"
+    ISO4217 = "iso4217"
+    ISIC_REV4_SECTION = "isic_rev4_section"
+    ISIC_REV4_DIVISION = "isic_rev4_division"
+    PROVIDER_SERIES = "provider_series"
+    ISIN = "isin"
+    MIC = "mic"
+    LISTING = "listing"
