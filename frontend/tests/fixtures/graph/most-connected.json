@@ -1,0 +1,100 @@
+{
+  "items": [
+    {
+      "id": "country:cty_in",
+      "type": "country",
+      "name": "India",
+      "subtitle": "Country \u00b7 IN \u00b7 INR",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 19,
+      "primary_identifier": {
+        "scheme": "iso3166_alpha2",
+        "label": "ISO 3166-1 alpha-2",
+        "value": "IN",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "country:cty_us",
+      "type": "country",
+      "name": "United States",
+      "subtitle": "Country \u00b7 US \u00b7 USD",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 10,
+      "primary_identifier": {
+        "scheme": "iso3166_alpha2",
+        "label": "ISO 3166-1 alpha-2",
+        "value": "US",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "industry:ind_petroleum_refining",
+      "type": "industry",
+      "name": "Refined petroleum products",
+      "subtitle": "ISIC Rev. 4 division 19 \u00b7 Manufacturing",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 9,
+      "primary_identifier": {
+        "scheme": "isic_rev4_division",
+        "label": "ISIC Rev. 4 division",
+        "value": "19",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "company:co_anvaya_bank",
+      "type": "company",
+      "name": "Anvaya Bank",
+      "subtitle": "Fictional company \u00b7 Banking \u00b7 India",
+      "nature": "fictional",
+      "quality_status": "validated",
+      "degree": 8,
+      "primary_identifier": null,
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "company:co_deltrin_refining",
+      "type": "company",
+      "name": "Deltrin Refining",
+      "subtitle": "Fictional company \u00b7 Refined petroleum products \u00b7 India",
+      "nature": "fictional",
+      "quality_status": "validated",
+      "degree": 8,
+      "primary_identifier": null,
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "variable:var_usd_inr",
+      "type": "economic_variable",
+      "name": "USD/INR exchange rate",
+      "subtitle": "Economic variable \u00b7 India \u00b7 INR per USD, daily",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 8,
+      "primary_identifier": null,
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    }
+  ],
+  "total": 50,
+  "limit": 6,
+  "offset": 0
+}

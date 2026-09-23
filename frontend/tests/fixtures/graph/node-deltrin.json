@@ -1,0 +1,220 @@
+{
+  "id": "company:co_deltrin_refining",
+  "type": "company",
+  "name": "Deltrin Refining",
+  "subtitle": "Fictional company \u00b7 Refined petroleum products \u00b7 India",
+  "nature": "fictional",
+  "quality_status": "validated",
+  "degree": 8,
+  "primary_identifier": null,
+  "data_status": "not_applicable",
+  "description": "Fictional Indian refiner that processes imported crude oil into transport fuels.",
+  "attributes": {
+    "reference": null
+  },
+  "identifiers": [],
+  "sources": [
+    {
+      "table": "companies",
+      "record_id": "co_deltrin_refining",
+      "dataset_id": "rumin-sample",
+      "dataset_version": "1.0.0",
+      "fields": ["name", "is_fictional"]
+    }
+  ],
+  "in_degree": 3,
+  "out_degree": 5,
+  "component": 1,
+  "relationships": [
+    {
+      "type": "supplies_to",
+      "label": "supplies",
+      "direction": "outgoing",
+      "count": 3
+    },
+    {
+      "type": "affects_costs",
+      "label": "affects costs of",
+      "direction": "incoming",
+      "count": 1
+    },
+    {
+      "type": "domiciled_in",
+      "label": "is domiciled in",
+      "direction": "outgoing",
+      "count": 1
+    },
+    {
+      "type": "in_industry",
+      "label": "operates in",
+      "direction": "outgoing",
+      "count": 1
+    },
+    {
+      "type": "lends_to",
+      "label": "lends to",
+      "direction": "incoming",
+      "count": 1
+    },
+    {
+      "type": "supplies_to",
+      "label": "supplies",
+      "direction": "incoming",
+      "count": 1
+    }
+  ],
+  "resolution": [],
+  "issues": [],
+  "exposures": [
+    {
+      "kind": "direct",
+      "variable": {
+        "id": "variable:var_usd_inr",
+        "type": "economic_variable",
+        "name": "USD/INR exchange rate",
+        "subtitle": "Economic variable \u00b7 India \u00b7 INR per USD, daily",
+        "nature": "real",
+        "quality_status": "validated",
+        "degree": 8,
+        "primary_identifier": null,
+        "data_status": "not_applicable"
+      },
+      "edge": {
+        "id": "e-dff724fccf21ee64",
+        "type": "affects_costs",
+        "category": "economic",
+        "source": "variable:var_usd_inr",
+        "target": "company:co_deltrin_refining",
+        "directed": true,
+        "label": "affects costs of",
+        "description": "The USD/INR exchange rate affects the costs of Deltrin Refining.",
+        "evidence_status": "model_assumption",
+        "is_illustrative": true,
+        "quality_status": "validated",
+        "valid_from": null,
+        "valid_to": null,
+        "historical": false,
+        "qualifiers": {
+          "polarity": "positive",
+          "strength": "strong",
+          "evidence_level": "illustrative",
+          "rationale": "Deltrin (fictional) imports crude oil priced in U.S. dollars, so a weaker rupee raises its input costs in rupees.",
+          "stated_difference": null
+        }
+      },
+      "via": null,
+      "explanation": "Stated for Deltrin Refining itself: a model assumption (illustrative)."
+    },
+    {
+      "kind": "via_industry",
+      "variable": {
+        "id": "variable:var_brent_crude",
+        "type": "economic_variable",
+        "name": "Brent crude oil price",
+        "subtitle": "Economic variable \u00b7 Global \u00b7 USD per barrel, daily",
+        "nature": "real",
+        "quality_status": "validated",
+        "degree": 5,
+        "primary_identifier": null,
+        "data_status": "not_applicable"
+      },
+      "edge": {
+        "id": "e-235c56ef17fc35ed",
+        "type": "affects_costs",
+        "category": "economic",
+        "source": "variable:var_brent_crude",
+        "target": "industry:ind_petroleum_refining",
+        "directed": true,
+        "label": "affects costs of",
+        "description": "The Brent crude oil price affects the costs of refined petroleum products.",
+        "evidence_status": "model_assumption",
+        "is_illustrative": true,
+        "quality_status": "validated",
+        "valid_from": null,
+        "valid_to": null,
+        "historical": false,
+        "qualifiers": {
+          "polarity": "positive",
+          "strength": "strong",
+          "evidence_level": "illustrative",
+          "rationale": "Crude oil is the principal feedstock for refiners, so crude prices drive their input costs.",
+          "stated_difference": null
+        }
+      },
+      "via": {
+        "id": "industry:ind_petroleum_refining",
+        "type": "industry",
+        "name": "Refined petroleum products",
+        "subtitle": "ISIC Rev. 4 division 19 \u00b7 Manufacturing",
+        "nature": "real",
+        "quality_status": "validated",
+        "degree": 9,
+        "primary_identifier": {
+          "scheme": "isic_rev4_division",
+          "label": "ISIC Rev. 4 division",
+          "value": "19",
+          "source": null
+        },
+        "data_status": "not_applicable"
+      },
+      "explanation": "Stated for the industry Refined petroleum products as a whole, not for Deltrin Refining: a model assumption (illustrative). Companies in one industry can be affected very differently."
+    },
+    {
+      "kind": "via_industry",
+      "variable": {
+        "id": "variable:var_jet_fuel",
+        "type": "economic_variable",
+        "name": "Jet fuel price (U.S. Gulf Coast)",
+        "subtitle": "Economic variable \u00b7 United States \u00b7 USD per gallon, daily",
+        "nature": "real",
+        "quality_status": "validated",
+        "degree": 4,
+        "primary_identifier": null,
+        "data_status": "not_applicable"
+      },
+      "edge": {
+        "id": "e-2202a51d4a09a79b",
+        "type": "affects_revenue",
+        "category": "economic",
+        "source": "variable:var_jet_fuel",
+        "target": "industry:ind_petroleum_refining",
+        "directed": true,
+        "label": "affects revenue of",
+        "description": "The jet fuel price affects the revenue of refined petroleum products.",
+        "evidence_status": "model_assumption",
+        "is_illustrative": true,
+        "quality_status": "validated",
+        "valid_from": null,
+        "valid_to": null,
+        "historical": false,
+        "qualifiers": {
+          "polarity": "positive",
+          "strength": "moderate",
+          "evidence_level": "illustrative",
+          "rationale": "Jet fuel is one of the products refiners sell. Higher product prices raise refiners' revenue, although their margins also depend on crude costs.",
+          "stated_difference": null
+        }
+      },
+      "via": {
+        "id": "industry:ind_petroleum_refining",
+        "type": "industry",
+        "name": "Refined petroleum products",
+        "subtitle": "ISIC Rev. 4 division 19 \u00b7 Manufacturing",
+        "nature": "real",
+        "quality_status": "validated",
+        "degree": 9,
+        "primary_identifier": {
+          "scheme": "isic_rev4_division",
+          "label": "ISIC Rev. 4 division",
+          "value": "19",
+          "source": null
+        },
+        "data_status": "not_applicable"
+      },
+      "explanation": "Stated for the industry Refined petroleum products as a whole, not for Deltrin Refining: a model assumption (illustrative). Companies in one industry can be affected very differently."
+    }
+  ],
+  "data": null,
+  "first_build_id": 1,
+  "changed_build_id": 1
+}

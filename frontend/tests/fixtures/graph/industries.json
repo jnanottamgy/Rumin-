@@ -1,0 +1,151 @@
+{
+  "items": [
+    {
+      "id": "industry:ind_petroleum_refining",
+      "type": "industry",
+      "name": "Refined petroleum products",
+      "subtitle": "ISIC Rev. 4 division 19 \u00b7 Manufacturing",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 9,
+      "primary_identifier": {
+        "scheme": "isic_rev4_division",
+        "label": "ISIC Rev. 4 division",
+        "value": "19",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "industry:ind_air_transport",
+      "type": "industry",
+      "name": "Air transport",
+      "subtitle": "ISIC Rev. 4 division 51 \u00b7 Transportation and storage",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 5,
+      "primary_identifier": {
+        "scheme": "isic_rev4_division",
+        "label": "ISIC Rev. 4 division",
+        "value": "51",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "industry:ind_oil_gas_extraction",
+      "type": "industry",
+      "name": "Crude petroleum & natural gas extraction",
+      "subtitle": "ISIC Rev. 4 division 06 \u00b7 Mining and quarrying",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 5,
+      "primary_identifier": {
+        "scheme": "isic_rev4_division",
+        "label": "ISIC Rev. 4 division",
+        "value": "06",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "industry:ind_land_transport",
+      "type": "industry",
+      "name": "Land transport",
+      "subtitle": "ISIC Rev. 4 division 49 \u00b7 Transportation and storage",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 4,
+      "primary_identifier": {
+        "scheme": "isic_rev4_division",
+        "label": "ISIC Rev. 4 division",
+        "value": "49",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "industry:ind_banking",
+      "type": "industry",
+      "name": "Banking",
+      "subtitle": "ISIC Rev. 4 division 64 \u00b7 Financial and insurance activities",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 3,
+      "primary_identifier": {
+        "scheme": "isic_rev4_division",
+        "label": "ISIC Rev. 4 division",
+        "value": "64",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "industry:ind_chemicals",
+      "type": "industry",
+      "name": "Chemicals & chemical products",
+      "subtitle": "ISIC Rev. 4 division 20 \u00b7 Manufacturing",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 3,
+      "primary_identifier": {
+        "scheme": "isic_rev4_division",
+        "label": "ISIC Rev. 4 division",
+        "value": "20",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "industry:ind_power",
+      "type": "industry",
+      "name": "Electricity & gas supply",
+      "subtitle": "ISIC Rev. 4 division 35 \u00b7 Electricity, gas, steam and air conditioning supply",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 2,
+      "primary_identifier": {
+        "scheme": "isic_rev4_division",
+        "label": "ISIC Rev. 4 division",
+        "value": "35",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "industry:ind_it_services",
+      "type": "industry",
+      "name": "IT services",
+      "subtitle": "ISIC Rev. 4 division 62 \u00b7 Information and communication",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 2,
+      "primary_identifier": {
+        "scheme": "isic_rev4_division",
+        "label": "ISIC Rev. 4 division",
+        "value": "62",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    }
+  ],
+  "total": 8,
+  "limit": 50,
+  "offset": 0
+}

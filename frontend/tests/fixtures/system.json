@@ -98,11 +98,18 @@
       "note": "Retrievals and imports run from the command line; the API is read-only until authentication exists."
     },
     {
-      "id": "graph_analytics",
-      "label": "Knowledge-graph analytics",
-      "available": false,
+      "id": "knowledge_graph",
+      "label": "Knowledge graph",
+      "available": true,
       "planned_phase": 3,
-      "note": "Traversal, centrality and path analysis are planned."
+      "note": "Entities, relationships and evidence built from the stored data, with entity resolution, validation and provenance on every edge. Built from the command line."
+    },
+    {
+      "id": "graph_analytics",
+      "label": "Graph analytics",
+      "available": true,
+      "planned_phase": 3,
+      "note": "Bounded neighbourhoods, shortest paths (in hops), connected components and degree. Paths show how records connect; they are not influence or causal chains."
     },
     {
       "id": "simulation_engine",

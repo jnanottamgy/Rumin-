@@ -1,0 +1,71 @@
+{
+  "id": "e-dff724fccf21ee64",
+  "type": "affects_costs",
+  "category": "economic",
+  "source": "variable:var_usd_inr",
+  "target": "company:co_deltrin_refining",
+  "directed": true,
+  "label": "affects costs of",
+  "description": "The USD/INR exchange rate affects the costs of Deltrin Refining.",
+  "evidence_status": "model_assumption",
+  "is_illustrative": true,
+  "quality_status": "validated",
+  "valid_from": null,
+  "valid_to": null,
+  "historical": false,
+  "qualifiers": {
+    "polarity": "positive",
+    "strength": "strong",
+    "evidence_level": "illustrative",
+    "rationale": "Deltrin (fictional) imports crude oil priced in U.S. dollars, so a weaker rupee raises its input costs in rupees.",
+    "stated_difference": null
+  },
+  "source_node": {
+    "id": "variable:var_usd_inr",
+    "type": "economic_variable",
+    "name": "USD/INR exchange rate",
+    "subtitle": "Economic variable \u00b7 India \u00b7 INR per USD, daily",
+    "nature": "real",
+    "quality_status": "validated",
+    "degree": 8,
+    "primary_identifier": null,
+    "data_status": "not_applicable"
+  },
+  "target_node": {
+    "id": "company:co_deltrin_refining",
+    "type": "company",
+    "name": "Deltrin Refining",
+    "subtitle": "Fictional company \u00b7 Refined petroleum products \u00b7 India",
+    "nature": "fictional",
+    "quality_status": "validated",
+    "degree": 8,
+    "primary_identifier": null,
+    "data_status": "not_applicable"
+  },
+  "explanation": "USD/INR exchange rate \u2014 affects costs of \u2192 Deltrin Refining. Rule R01 curated_relationship built it from relationships/rel_usd_inr_costs_deltrin (dataset rumin-sample, 1.0.0): Curated relationship rel_usd_inr_costs_deltrin: var_usd_inr affects_costs co_deltrin_refining, evidence level 'illustrative'. Rationale: Deltrin (fictional) imports crude oil priced in U.S. dollars, so a weaker rupee raises its input costs in rupees. Evidence status: Model assumption. An assumed economic relationship with a written rationale. It is not an empirical finding and has not been validated. Illustrative: it involves the fictional sample network or sample data, so it says nothing about the real world.",
+  "evidence": [
+    {
+      "rule": "R01 curated_relationship",
+      "rule_description": "Each curated relationship becomes an edge of the same type, keeping its description, rationale, assumed polarity and illustrative strength.",
+      "source_kind": "reference_dataset",
+      "source_table": "relationships",
+      "source_record_id": "rel_usd_inr_costs_deltrin",
+      "dataset_id": "rumin-sample",
+      "dataset_version": "1.0.0",
+      "statement": "Curated relationship rel_usd_inr_costs_deltrin: var_usd_inr affects_costs co_deltrin_refining, evidence level 'illustrative'. Rationale: Deltrin (fictional) imports crude oil priced in U.S. dollars, so a weaker rupee raises its input costs in rupees.",
+      "transformation": "Copied as an edge of the same type; the description, rationale, assumed polarity and illustrative strength are kept unchanged.",
+      "derivation": "direct",
+      "derived_from": [],
+      "citation": null,
+      "citation_url": null,
+      "retrieved_at": null,
+      "recorded_at": "2026-09-23T14:38:11.984881Z"
+    }
+  ],
+  "evidence_status_label": "Model assumption",
+  "evidence_status_definition": "An assumed economic relationship with a written rationale. It is not an empirical finding and has not been validated.",
+  "type_description": "Changes in the source variable are assumed to change the target's operating or input costs.",
+  "caveat": "An assumed effect, not a measured one: it says nothing about size or timing, and entities of the same kind can be affected very differently. A connection is not evidence of causation.",
+  "first_build_id": 1,
+  "changed_build_id": 1
+}

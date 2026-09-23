@@ -1,0 +1,65 @@
+{
+  "build": null,
+  "freshness": {
+    "status": "not_built",
+    "message": "No knowledge graph has been built yet. Run `make graph` (python -m app.graph build)."
+  },
+  "metrics": {},
+  "type_map": [],
+  "type_links": [],
+  "metric_definitions": [
+    {
+      "id": "node_count",
+      "label": "Nodes",
+      "definition": "Entities in the graph (countries, industries, companies, series, \u2026).",
+      "calculation": "Count of current nodes, in total and per type.",
+      "interpretation": "How much the graph describes.",
+      "limitations": "Counts what RUMIN holds, not the economy: the graph is a small, partly fictional sample and is far from complete."
+    },
+    {
+      "id": "edge_count",
+      "label": "Edges",
+      "definition": "Relationships between nodes.",
+      "calculation": "Count of current edges, in total, per type and per evidence status.",
+      "interpretation": "How many recorded relationships connect the entities.",
+      "limitations": "An edge records that a source states a relationship; it says nothing about its size or strength, and it is not evidence of causation."
+    },
+    {
+      "id": "components",
+      "label": "Connected components",
+      "definition": "Groups of nodes that can reach each other through edges, direction ignored.",
+      "calculation": "Depth-first search from each unvisited node (weakly connected components).",
+      "interpretation": "One component means every record is linked to every other by some chain of recorded relationships.",
+      "limitations": "Being in one component does not make entities economically integrated; long chains through classifications or currencies are common and uninformative."
+    },
+    {
+      "id": "average_degree",
+      "label": "Average degree",
+      "definition": "The mean number of edges touching a node.",
+      "calculation": "2 x edges / nodes (each edge touches two nodes). Median and maximum are also given.",
+      "interpretation": "How densely records are linked on average.",
+      "limitations": "Degree reflects how much RUMIN's data says about a node, not its importance. Hubs such as a country or a currency are highly connected by construction."
+    },
+    {
+      "id": "density",
+      "label": "Density",
+      "definition": "The share of possible node pairs that are directly connected.",
+      "calculation": "Pairs of nodes joined by at least one edge / (n(n - 1) / 2); edge direction and multiple edges between the same pair are ignored.",
+      "interpretation": "Close to 0: sparse. Close to 1: nearly every node is linked to every other.",
+      "limitations": "Sparse is normal for real-world graphs; the value says nothing about the economy."
+    },
+    {
+      "id": "provenance_coverage",
+      "label": "Provenance coverage",
+      "definition": "The share of edges with at least one evidence record, and with a citation.",
+      "calculation": "Edges with at least one evidence record / all edges; edges whose evidence cites a source / all edges.",
+      "interpretation": "Should be 100 % for evidence records: an edge without one is rejected. The citation share shows how many edges point to an external source.",
+      "limitations": "A citation shows where a statement came from; it does not mean the statement was verified."
+    }
+  ],
+  "notes": [
+    "The graph connects the records RUMIN holds. It is not a map of the complete economy.",
+    "Every company in the sample network is fictional, and the relationships among the sample entities are illustrative model assumptions.",
+    "An edge records that a source states a relationship. It is not evidence of causation, and it says nothing about size or strength."
+  ]
+}

@@ -3,7 +3,8 @@
 #
 #   1. creates a throwaway SQLite database,
 #   2. applies the Alembic migrations, loads the illustrative sample dataset and the series
-#      catalogue, and imports a tiny SYNTHETIC price file through the ingestion CLI,
+#      catalogue, imports a tiny SYNTHETIC price file through the ingestion CLI, and builds
+#      the knowledge graph from all of it,
 #   3. starts the API on a spare port,
 #   4. runs the frontend's integration suite (its real service layer) against it,
 #   5. stops the API and deletes the database, whatever the outcome.
@@ -94,6 +95,15 @@ cat > "${WORKDIR}/smoke-manifest.json" <<'JSON'
 JSON
 backend_python -m app.ingestion import-prices \
   --manifest "${WORKDIR}/smoke-manifest.json" --file "${WORKDIR}/smoke-prices.csv"
+
+echo "==> Building the knowledge graph (and checking a rebuild changes nothing)"
+backend_python -m app.graph build
+backend_python -m app.graph build | tee "${WORKDIR}/rebuild.txt"
+grep -Eq "^Changes: nodes \+0 added, 0 changed, 0 retired, [0-9]+ unchanged · edges \+0 added, 0 changed, 0 retired" \
+  "${WORKDIR}/rebuild.txt" || {
+  echo "error: rebuilding an unchanged graph changed it" >&2
+  exit 1
+}
 
 echo "==> Starting the API on port ${PORT}"
 # Not through backend_python: `exec` in a directly backgrounded subshell makes $! the

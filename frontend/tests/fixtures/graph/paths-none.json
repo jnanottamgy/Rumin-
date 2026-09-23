@@ -1,0 +1,57 @@
+{
+  "source": {
+    "id": "company:co_aerisca_airways",
+    "type": "company",
+    "name": "Aerisca Airways",
+    "subtitle": "Fictional company \u00b7 Air transport \u00b7 India",
+    "nature": "fictional",
+    "quality_status": "validated",
+    "degree": 6,
+    "primary_identifier": null,
+    "data_status": "not_applicable"
+  },
+  "target": {
+    "id": "variable:var_brent_crude",
+    "type": "economic_variable",
+    "name": "Brent crude oil price",
+    "subtitle": "Economic variable \u00b7 Global \u00b7 USD per barrel, daily",
+    "nature": "real",
+    "quality_status": "validated",
+    "degree": 5,
+    "primary_identifier": null,
+    "data_status": "not_applicable"
+  },
+  "found": false,
+  "length": null,
+  "paths": [],
+  "nodes": [
+    {
+      "id": "company:co_aerisca_airways",
+      "type": "company",
+      "name": "Aerisca Airways",
+      "subtitle": "Fictional company \u00b7 Air transport \u00b7 India",
+      "nature": "fictional",
+      "quality_status": "validated",
+      "degree": 6,
+      "primary_identifier": null,
+      "data_status": "not_applicable"
+    },
+    {
+      "id": "variable:var_brent_crude",
+      "type": "economic_variable",
+      "name": "Brent crude oil price",
+      "subtitle": "Economic variable \u00b7 Global \u00b7 USD per barrel, daily",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 5,
+      "primary_identifier": null,
+      "data_status": "not_applicable"
+    }
+  ],
+  "edges": [],
+  "direction": "any",
+  "max_depth": 1,
+  "budget_exhausted": false,
+  "nodes_explored": 8,
+  "note": "A path shows how records are connected in RUMIN's data. It is not an influence, transmission or causal chain, and a shorter path is not a stronger relationship."
+}

@@ -1,0 +1,329 @@
+{
+  "build": {
+    "id": 1,
+    "status": "completed",
+    "started_at": "2026-09-23T15:34:35.758721Z",
+    "finished_at": "2026-09-23T15:34:35.848036Z",
+    "duration_ms": 55,
+    "rules_version": "1",
+    "node_count": 39,
+    "edge_count": 82,
+    "nodes": {
+      "processed": 39,
+      "valid": 39,
+      "flagged": 0,
+      "rejected": 0
+    },
+    "edges": {
+      "processed": 82,
+      "valid": 82,
+      "flagged": 0,
+      "rejected": 0
+    },
+    "node_changes": {
+      "added": 39,
+      "changed": 0,
+      "retired": 0,
+      "unchanged": 0
+    },
+    "edge_changes": {
+      "added": 82,
+      "changed": 0,
+      "retired": 0,
+      "unchanged": 0
+    },
+    "error_count": 0,
+    "warning_count": 0,
+    "info_count": 0,
+    "error_summary": null
+  },
+  "freshness": {
+    "status": "stale",
+    "message": "The sources changed after build #1. The graph shows the data as it was then; run `make graph` to rebuild it."
+  },
+  "metrics": {
+    "node_count": 39,
+    "edge_count": 82,
+    "nodes_by_type": {
+      "company": 12,
+      "country": 3,
+      "currency": 3,
+      "economic_variable": 7,
+      "industry": 8,
+      "sector": 6
+    },
+    "nodes_by_nature": {
+      "fictional": 12,
+      "real": 27
+    },
+    "edges_by_type": {
+      "affects_costs": 7,
+      "affects_financing": 3,
+      "affects_revenue": 6,
+      "competes_with": 1,
+      "domiciled_in": 12,
+      "has_currency": 3,
+      "in_industry": 12,
+      "in_sector": 8,
+      "influences": 5,
+      "lends_to": 6,
+      "measured_for": 6,
+      "supplies_to": 13
+    },
+    "edges_by_evidence_status": {
+      "analyst_created": 30,
+      "evidence_backed": 11,
+      "model_assumption": 41
+    },
+    "edges_by_category": {
+      "economic": 41,
+      "structural": 41
+    },
+    "illustrative_edges": 65,
+    "components": {
+      "count": 1,
+      "largest": 39,
+      "sizes": [39],
+      "isolated_nodes": 0
+    },
+    "degree": {
+      "average": 4.205,
+      "median": 4,
+      "maximum": 11,
+      "most_connected": [
+        {
+          "node": "country:cty_in",
+          "degree": 11
+        },
+        {
+          "node": "industry:ind_petroleum_refining",
+          "degree": 9
+        },
+        {
+          "node": "company:co_anvaya_bank",
+          "degree": 8
+        },
+        {
+          "node": "company:co_deltrin_refining",
+          "degree": 8
+        },
+        {
+          "node": "country:cty_us",
+          "degree": 8
+        }
+      ]
+    },
+    "density": 0.1107,
+    "provenance": {
+      "edges_with_evidence": 82,
+      "edges_with_citation": 17,
+      "evidence_records": 82,
+      "derived_edges": 8
+    },
+    "quality": {
+      "nodes_flagged": 0,
+      "edges_flagged": 0
+    },
+    "duplicates_merged": 0
+  },
+  "type_map": [
+    {
+      "type": "country",
+      "label": "Country",
+      "plural": "Countries",
+      "count": 3
+    },
+    {
+      "type": "currency",
+      "label": "Currency",
+      "plural": "Currencies",
+      "count": 3
+    },
+    {
+      "type": "sector",
+      "label": "Sector",
+      "plural": "Sectors",
+      "count": 6
+    },
+    {
+      "type": "industry",
+      "label": "Industry",
+      "plural": "Industries",
+      "count": 8
+    },
+    {
+      "type": "company",
+      "label": "Company",
+      "plural": "Companies",
+      "count": 12
+    },
+    {
+      "type": "economic_variable",
+      "label": "Economic variable",
+      "plural": "Economic variables",
+      "count": 7
+    }
+  ],
+  "type_links": [
+    {
+      "source_type": "company",
+      "target_type": "country",
+      "edge_type": "domiciled_in",
+      "label": "is domiciled in",
+      "count": 12
+    },
+    {
+      "source_type": "company",
+      "target_type": "industry",
+      "edge_type": "in_industry",
+      "label": "operates in",
+      "count": 12
+    },
+    {
+      "source_type": "company",
+      "target_type": "company",
+      "edge_type": "supplies_to",
+      "label": "supplies",
+      "count": 9
+    },
+    {
+      "source_type": "industry",
+      "target_type": "sector",
+      "edge_type": "in_sector",
+      "label": "belongs to",
+      "count": 8
+    },
+    {
+      "source_type": "company",
+      "target_type": "company",
+      "edge_type": "lends_to",
+      "label": "lends to",
+      "count": 6
+    },
+    {
+      "source_type": "economic_variable",
+      "target_type": "country",
+      "edge_type": "measured_for",
+      "label": "is measured for",
+      "count": 6
+    },
+    {
+      "source_type": "economic_variable",
+      "target_type": "economic_variable",
+      "edge_type": "influences",
+      "label": "influences",
+      "count": 5
+    },
+    {
+      "source_type": "economic_variable",
+      "target_type": "company",
+      "edge_type": "affects_costs",
+      "label": "affects costs of",
+      "count": 4
+    },
+    {
+      "source_type": "economic_variable",
+      "target_type": "company",
+      "edge_type": "affects_revenue",
+      "label": "affects revenue of",
+      "count": 4
+    },
+    {
+      "source_type": "industry",
+      "target_type": "industry",
+      "edge_type": "supplies_to",
+      "label": "supplies",
+      "count": 4
+    },
+    {
+      "source_type": "economic_variable",
+      "target_type": "industry",
+      "edge_type": "affects_costs",
+      "label": "affects costs of",
+      "count": 3
+    },
+    {
+      "source_type": "economic_variable",
+      "target_type": "company",
+      "edge_type": "affects_financing",
+      "label": "affects financing costs of",
+      "count": 3
+    },
+    {
+      "source_type": "country",
+      "target_type": "currency",
+      "edge_type": "has_currency",
+      "label": "has currency",
+      "count": 3
+    },
+    {
+      "source_type": "economic_variable",
+      "target_type": "industry",
+      "edge_type": "affects_revenue",
+      "label": "affects revenue of",
+      "count": 2
+    },
+    {
+      "source_type": "company",
+      "target_type": "company",
+      "edge_type": "competes_with",
+      "label": "competes with",
+      "count": 1
+    }
+  ],
+  "metric_definitions": [
+    {
+      "id": "node_count",
+      "label": "Nodes",
+      "definition": "Entities in the graph (countries, industries, companies, series, \u2026).",
+      "calculation": "Count of current nodes, in total and per type.",
+      "interpretation": "How much the graph describes.",
+      "limitations": "Counts what RUMIN holds, not the economy: the graph is a small, partly fictional sample and is far from complete."
+    },
+    {
+      "id": "edge_count",
+      "label": "Edges",
+      "definition": "Relationships between nodes.",
+      "calculation": "Count of current edges, in total, per type and per evidence status.",
+      "interpretation": "How many recorded relationships connect the entities.",
+      "limitations": "An edge records that a source states a relationship; it says nothing about its size or strength, and it is not evidence of causation."
+    },
+    {
+      "id": "components",
+      "label": "Connected components",
+      "definition": "Groups of nodes that can reach each other through edges, direction ignored.",
+      "calculation": "Depth-first search from each unvisited node (weakly connected components).",
+      "interpretation": "One component means every record is linked to every other by some chain of recorded relationships.",
+      "limitations": "Being in one component does not make entities economically integrated; long chains through classifications or currencies are common and uninformative."
+    },
+    {
+      "id": "average_degree",
+      "label": "Average degree",
+      "definition": "The mean number of edges touching a node.",
+      "calculation": "2 x edges / nodes (each edge touches two nodes). Median and maximum are also given.",
+      "interpretation": "How densely records are linked on average.",
+      "limitations": "Degree reflects how much RUMIN's data says about a node, not its importance. Hubs such as a country or a currency are highly connected by construction."
+    },
+    {
+      "id": "density",
+      "label": "Density",
+      "definition": "The share of possible node pairs that are directly connected.",
+      "calculation": "Pairs of nodes joined by at least one edge / (n(n - 1) / 2); edge direction and multiple edges between the same pair are ignored.",
+      "interpretation": "Close to 0: sparse. Close to 1: nearly every node is linked to every other.",
+      "limitations": "Sparse is normal for real-world graphs; the value says nothing about the economy."
+    },
+    {
+      "id": "provenance_coverage",
+      "label": "Provenance coverage",
+      "definition": "The share of edges with at least one evidence record, and with a citation.",
+      "calculation": "Edges with at least one evidence record / all edges; edges whose evidence cites a source / all edges.",
+      "interpretation": "Should be 100 % for evidence records: an edge without one is rejected. The citation share shows how many edges point to an external source.",
+      "limitations": "A citation shows where a statement came from; it does not mean the statement was verified."
+    }
+  ],
+  "notes": [
+    "The graph connects the records RUMIN holds. It is not a map of the complete economy.",
+    "Every company in the sample network is fictional, and the relationships among the sample entities are illustrative model assumptions.",
+    "An edge records that a source states a relationship. It is not evidence of causation, and it says nothing about size or strength."
+  ]
+}

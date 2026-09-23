@@ -216,6 +216,8 @@ export function useGraphExplorer(initial: ExplorerSnapshot) {
   const [nodeLimit, setNodeLimit] = useState<NodeLimit>(DEFAULT_NODE_LIMIT);
   const answers = useAnswers();
   const { ensure, read } = answers;
+  // Bumped by `retry`, so the effect below asks again for answers that failed.
+  const [attempt, setAttempt] = useState(0);
 
   const push = useCallback(
     (update: (current: ExplorerSnapshot) => ExplorerSnapshot) =>
@@ -244,6 +246,7 @@ export function useGraphExplorer(initial: ExplorerSnapshot) {
   const currentPathKey =
     snapshot.mode === "paths" && snapshot.path ? pathKey(snapshot.path, filters) : null;
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `attempt` re-runs the requests after a retry.
   useEffect(() => {
     if (focusKey && snapshot.focus) {
       const focus = snapshot.focus;
@@ -270,6 +273,7 @@ export function useGraphExplorer(initial: ExplorerSnapshot) {
     snapshot.path,
     nodeLimit,
     filters,
+    attempt,
   ]);
 
   // --- The derived view -------------------------------------------------------------------
@@ -422,13 +426,15 @@ export function useGraphExplorer(initial: ExplorerSnapshot) {
     [],
   );
 
+  const forget = answers.retry;
   const retry = useCallback(() => {
-    answers.retry([
+    forget([
       ...(focusKey ? [focusKey] : []),
       ...expansionKeys.map((item) => item.key),
       ...(currentPathKey ? [currentPathKey] : []),
     ]);
-  }, [answers, focusKey, expansionKeys, currentPathKey]);
+    setAttempt((value) => value + 1);
+  }, [forget, focusKey, expansionKeys, currentPathKey]);
 
   return {
     snapshot,

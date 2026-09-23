@@ -1,0 +1,20 @@
+{
+  "items": [
+    {
+      "id": "company:co_aerisca_airways",
+      "type": "company",
+      "name": "Aerisca Airways",
+      "subtitle": "Fictional company \u00b7 Air transport \u00b7 India",
+      "nature": "fictional",
+      "quality_status": "validated",
+      "degree": 6,
+      "primary_identifier": null,
+      "data_status": "not_applicable",
+      "match": "name",
+      "ambiguous": false
+    }
+  ],
+  "total": 1,
+  "limit": 12,
+  "offset": 0
+}

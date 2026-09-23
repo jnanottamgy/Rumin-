@@ -1,0 +1,118 @@
+{
+  "center": {
+    "id": "company:co_deltrin_refining",
+    "type": "company",
+    "name": "Deltrin Refining",
+    "subtitle": "Fictional company \u00b7 Refined petroleum products \u00b7 India",
+    "nature": "fictional",
+    "quality_status": "validated",
+    "degree": 8,
+    "primary_identifier": null,
+    "data_status": "not_applicable"
+  },
+  "depth": 1,
+  "nodes": [
+    {
+      "id": "company:co_deltrin_refining",
+      "type": "company",
+      "name": "Deltrin Refining",
+      "subtitle": "Fictional company \u00b7 Refined petroleum products \u00b7 India",
+      "nature": "fictional",
+      "quality_status": "validated",
+      "degree": 8,
+      "primary_identifier": null,
+      "data_status": "not_applicable",
+      "depth": 0
+    },
+    {
+      "id": "country:cty_in",
+      "type": "country",
+      "name": "India",
+      "subtitle": "Country \u00b7 IN \u00b7 INR",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 19,
+      "primary_identifier": {
+        "scheme": "iso3166_alpha2",
+        "label": "ISO 3166-1 alpha-2",
+        "value": "IN",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "depth": 1
+    },
+    {
+      "id": "industry:ind_petroleum_refining",
+      "type": "industry",
+      "name": "Refined petroleum products",
+      "subtitle": "ISIC Rev. 4 division 19 \u00b7 Manufacturing",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 9,
+      "primary_identifier": {
+        "scheme": "isic_rev4_division",
+        "label": "ISIC Rev. 4 division",
+        "value": "19",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "depth": 1
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-389b09121926db57",
+      "type": "domiciled_in",
+      "category": "structural",
+      "source": "company:co_deltrin_refining",
+      "target": "country:cty_in",
+      "directed": true,
+      "label": "is domiciled in",
+      "description": "Deltrin Refining is domiciled in India.",
+      "evidence_status": "analyst_created",
+      "is_illustrative": true,
+      "quality_status": "validated",
+      "valid_from": null,
+      "valid_to": null,
+      "historical": false,
+      "qualifiers": {
+        "polarity": null,
+        "strength": null,
+        "evidence_level": null,
+        "rationale": null,
+        "stated_difference": null
+      }
+    },
+    {
+      "id": "e-abbed46434b7e33a",
+      "type": "in_industry",
+      "category": "structural",
+      "source": "company:co_deltrin_refining",
+      "target": "industry:ind_petroleum_refining",
+      "directed": true,
+      "label": "operates in",
+      "description": "Deltrin Refining operates in Refined petroleum products.",
+      "evidence_status": "analyst_created",
+      "is_illustrative": true,
+      "quality_status": "validated",
+      "valid_from": null,
+      "valid_to": null,
+      "historical": false,
+      "qualifiers": {
+        "polarity": null,
+        "strength": null,
+        "evidence_level": null,
+        "rationale": null,
+        "stated_difference": null
+      }
+    }
+  ],
+  "truncated": false,
+  "unexplored_count": 0,
+  "unexplored_by_type": {},
+  "limits": {
+    "max_depth": 3,
+    "max_nodes": 100
+  },
+  "queries": 2
+}
