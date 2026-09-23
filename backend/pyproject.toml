@@ -1,0 +1,81 @@
+[project]
+name = "rumin-backend"
+version = "0.1.0"
+description = "RUMIN API — financial intelligence and economic simulation platform (Phase 1 foundation)."
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi~=0.141.1",
+  "uvicorn~=0.53.0",
+  "pydantic~=2.13",
+  "pydantic-settings~=2.15",
+  "sqlalchemy~=2.0.54",
+  "alembic~=1.20",
+]
+
+[project.optional-dependencies]
+# PostgreSQL driver — only needed when RUMIN_DATABASE_URL points at PostgreSQL.
+postgres = ["psycopg[binary]~=3.3"]
+# Development and test tooling.
+dev = [
+  "pytest~=9.1",
+  "httpx2~=2.13",   # required by starlette.testclient (FastAPI TestClient)
+  "ruff~=0.16",
+  "mypy~=2.3",
+]
+
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.setuptools.package-data]
+app = ["data/*.json"]
+
+# --- pytest -------------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra --strict-markers"
+markers = [
+  "postgres: requires a PostgreSQL server (set RUMIN_TEST_POSTGRES_URL)",
+]
+filterwarnings = ["error::DeprecationWarning:app.*"]
+
+# --- ruff (lint + format) -----------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+  "E", "W",   # pycodestyle
+  "F",        # pyflakes
+  "I",        # isort
+  "B",        # bugbear
+  "UP",       # pyupgrade
+  "S",        # bandit (security)
+  "SIM",      # simplify
+  "RUF",
+]
+ignore = [
+  "B008",     # FastAPI's Depends()/Query() in argument defaults is idiomatic
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106"]   # asserts and dummy credentials are fine in tests
+"migrations/**" = ["E501"]
+"app/models/**" = ["RUF012"]            # SQLAlchemy's __mapper_args__ is a plain class dict
+
+# --- mypy ---------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.11"
+strict = true
+plugins = ["pydantic.mypy"]
+exclude = ["migrations/"]
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
