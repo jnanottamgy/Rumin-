@@ -6,8 +6,9 @@ FRONTEND := frontend
 UV_RUN   := cd $(BACKEND) && uv run --frozen
 
 .DEFAULT_GOAL := help
-.PHONY: help install migrate seed catalog ingest ingest-jobs backend frontend test test-backend \
-        test-frontend smoke lint typecheck check openapi api-types db-up db-down
+.PHONY: help install migrate seed catalog ingest ingest-jobs graph graph-status backend \
+        frontend test test-backend test-frontend smoke lint typecheck check openapi \
+        api-types db-up db-down
 
 help: ## List the available targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -30,6 +31,12 @@ ingest: ## Retrieve the World Bank series (needs internet access to api.worldban
 
 ingest-jobs: ## List recent ingestion runs
 	$(UV_RUN) python -m app.ingestion jobs
+
+graph: ## Build the knowledge graph from the stored data (no network needed)
+	$(UV_RUN) python -m app.graph build
+
+graph-status: ## Show the latest graph build and whether its sources changed since
+	$(UV_RUN) python -m app.graph status
 
 backend: ## Run the API with auto-reload on http://127.0.0.1:8000
 	$(UV_RUN) uvicorn app.main:app --reload --host 127.0.0.1 --port 8000

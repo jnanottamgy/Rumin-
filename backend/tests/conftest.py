@@ -34,6 +34,13 @@ from app.models import (
     Dataset,
     EconomicObservation,
     EconomicSeries,
+    GraphBuild,
+    GraphEdge,
+    GraphEdgeEvidence,
+    GraphIssue,
+    GraphNode,
+    GraphNodeIdentifier,
+    GraphResolutionDecision,
     IngestionJob,
     IngestionJobItem,
     Instrument,
@@ -141,4 +148,31 @@ def ingestion_session(session_factory: sessionmaker[Session]) -> Iterator[Sessio
         wipe_ingested_data(session)
         yield session
         session.rollback()
+        wipe_ingested_data(session)
+
+
+def wipe_graph(session: Session) -> None:
+    """Remove every graph build and everything it stored (in foreign-key order)."""
+    for model in (
+        GraphEdgeEvidence,
+        GraphNodeIdentifier,
+        GraphIssue,
+        GraphResolutionDecision,
+        GraphEdge,
+        GraphNode,
+        GraphBuild,
+    ):
+        session.execute(delete(model))
+    session.commit()
+
+
+@pytest.fixture
+def graph_session(session_factory: sessionmaker[Session]) -> Iterator[Session]:
+    """A session with no graph and no ingested data; both are removed afterwards."""
+    with session_factory() as session:
+        wipe_graph(session)
+        wipe_ingested_data(session)
+        yield session
+        session.rollback()
+        wipe_graph(session)
         wipe_ingested_data(session)

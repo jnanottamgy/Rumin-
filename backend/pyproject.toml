@@ -64,7 +64,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S101", "S105", "S106"]   # asserts and dummy credentials are fine in tests
+"tests/**" = ["S101", "S105", "S106", "S311"]   # asserts, dummy credentials and seeded random test data are fine in tests
 "migrations/**" = ["E501"]
 "app/models/**" = ["RUF012"]            # SQLAlchemy's __mapper_args__ is a plain class dict
 
