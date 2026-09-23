@@ -17,7 +17,7 @@
 /* Aggregate bands: wide and pale, so they never read as individual relationships. */
 .bandPath {
   fill: none;
-  stroke: var(--viz-grid);
+  stroke: var(--color-line);
   stroke-linecap: round;
   transition: stroke var(--duration-fast) var(--ease-out);
 }

@@ -1,0 +1,81 @@
+{
+  "id": "e-894fa457afeef528",
+  "type": "covers",
+  "category": "structural",
+  "source": "series:wb-ind-fp-cpi-totl-zg",
+  "target": "country:cty_in",
+  "directed": true,
+  "label": "covers",
+  "description": "Inflation, consumer prices (annual %) — India covers India.",
+  "evidence_status": "evidence_backed",
+  "is_illustrative": false,
+  "quality_status": "validated",
+  "valid_from": null,
+  "valid_to": null,
+  "historical": false,
+  "qualifiers": {
+    "polarity": null,
+    "strength": null,
+    "evidence_level": null,
+    "rationale": null,
+    "stated_difference": null
+  },
+  "source_node": {
+    "id": "series:wb-ind-fp-cpi-totl-zg",
+    "type": "data_series",
+    "name": "Inflation, consumer prices (annual %) — India",
+    "subtitle": "World Development Indicators · India · annual",
+    "nature": "real",
+    "quality_status": "validated",
+    "degree": 2,
+    "primary_identifier": {
+      "scheme": "provider_series",
+      "label": "Provider series key",
+      "value": "worldbank-wdi:FP.CPI.TOTL.ZG|IND",
+      "source": null
+    },
+    "data_status": "definition_only"
+  },
+  "target_node": {
+    "id": "country:cty_in",
+    "type": "country",
+    "name": "India",
+    "subtitle": "Country · IN · INR",
+    "nature": "real",
+    "quality_status": "validated",
+    "degree": 19,
+    "primary_identifier": {
+      "scheme": "iso3166_alpha2",
+      "label": "ISO 3166-1 alpha-2",
+      "value": "IN",
+      "source": null
+    },
+    "data_status": "not_applicable"
+  },
+  "explanation": "Inflation, consumer prices (annual %) — India — covers → India. Rule R07 series_country built it from economic_series/wb-ind-fp-cpi-totl-zg (dataset worldbank-wdi, catalogue 1.0.0): economic_series.country_iso3 = IND; economic_series.country_id = cty_in. Evidence status: Evidence-backed. Stated by a cited external source or standard (a classification, an ISO code, a provider's metadata). RUMIN transcribed it; it did not measure or validate it.",
+  "evidence": [
+    {
+      "rule": "R07 series_country",
+      "rule_description": "The country a series describes: its catalogue link, or else its ISO alpha-3 code when that code already identifies exactly one country node.",
+      "source_kind": "series_catalogue",
+      "source_table": "economic_series",
+      "source_record_id": "wb-ind-fp-cpi-totl-zg",
+      "dataset_id": "worldbank-wdi",
+      "dataset_version": "catalogue 1.0.0",
+      "statement": "economic_series.country_iso3 = IND; economic_series.country_id = cty_in.",
+      "transformation": "The series' catalogue entry links it to cty_in (provider code IND). The series becomes a 'covers' edge to it.",
+      "derivation": "direct",
+      "derived_from": [],
+      "citation": "The World Bank: World Development Indicators. The original source of each series is named on the series.",
+      "citation_url": null,
+      "retrieved_at": null,
+      "recorded_at": "2026-09-23T14:38:12.867601Z"
+    }
+  ],
+  "evidence_status_label": "Evidence-backed",
+  "evidence_status_definition": "Stated by a cited external source or standard (a classification, an ISO code, a provider's metadata). RUMIN transcribed it; it did not measure or validate it.",
+  "type_description": "The series describes this country's economy, as the provider defines it.",
+  "caveat": "The provider's geography, not a statement about influence between the series and the country.",
+  "first_build_id": 1,
+  "changed_build_id": 1
+}

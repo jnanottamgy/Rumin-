@@ -100,6 +100,8 @@ function EvidenceRecord({ item, index }: { item: GraphEvidence; index: number })
         <dd>
           {item.retrieved_at ? (
             formatDateTime(item.retrieved_at)
+          ) : item.source_kind === "series_catalogue" ? (
+            <span className={styles.muted}>Not yet — no values have been retrieved</span>
           ) : (
             <span className={styles.muted}>Not applicable (not provider data)</span>
           )}

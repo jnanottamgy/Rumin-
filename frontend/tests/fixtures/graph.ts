@@ -18,6 +18,7 @@ import type {
   GraphPaths,
   GraphTypes,
 } from "@/types/api";
+import edgeSeriesCpiIndia from "./graph/edge-series-cpi-india.json";
 import edgeUsdInrDeltrin from "./graph/edge-usdinr-deltrin.json";
 import industries from "./graph/industries.json";
 import mostConnected from "./graph/most-connected.json";
@@ -54,6 +55,8 @@ export const graphFixtures = {
   nodeAerisca: () => copy<GraphNodeDetail>(nodeAerisca),
   /** USD/INR exchange rate — affects costs of → Deltrin Refining (a model assumption). */
   edgeUsdInrDeltrin: () => copy<GraphEdgeDetail>(edgeUsdInrDeltrin),
+  /** A World Bank series — covers → India (evidence-backed; no values retrieved). */
+  edgeSeriesCpiIndia: () => copy<GraphEdgeDetail>(edgeSeriesCpiIndia),
   pathsAeriscaBrent: () => copy<GraphPaths>(pathsAeriscaBrent),
   /** The same pair with at most 1 hop: no path. */
   pathsNone: () => copy<GraphPaths>(pathsNone),
@@ -64,6 +67,7 @@ export const AERISCA = "company:co_aerisca_airways";
 export const AIR_TRANSPORT = "industry:ind_air_transport";
 export const BRENT = "variable:var_brent_crude";
 export const USD_INR_EDGE = "e-dff724fccf21ee64";
+export const SERIES_CPI_INDIA_EDGE = "e-894fa457afeef528";
 
 /** API paths as the client requests them (node keys are URL-encoded). */
 export const graphPath = {
