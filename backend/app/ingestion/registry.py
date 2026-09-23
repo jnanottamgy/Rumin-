@@ -5,7 +5,7 @@ from __future__ import annotations
 from app.core.config import Settings
 from app.ingestion.http import HttpClient, RateLimiter, RetryPolicy, UrllibTransport
 from app.ingestion.providers import price_file, worldbank
-from app.ingestion.providers.base import ProviderProfile
+from app.ingestion.providers.base import EconomicSeriesSource, ProviderProfile
 from app.ingestion.providers.price_file import PriceFileProvider
 from app.ingestion.providers.worldbank import WorldBankProvider
 
@@ -27,3 +27,10 @@ def build_worldbank(settings: Settings) -> WorldBankProvider:
 
 def build_price_file(settings: Settings) -> PriceFileProvider:
     return PriceFileProvider(max_bytes=settings.max_import_file_bytes)
+
+
+def build_economic_source(provider_id: str, settings: Settings) -> EconomicSeriesSource | None:
+    """The provider that can fetch economic series for ``provider_id``, if there is one."""
+    if provider_id == worldbank.PROFILE.id:
+        return build_worldbank(settings)
+    return None

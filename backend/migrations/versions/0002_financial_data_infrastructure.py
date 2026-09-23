@@ -114,7 +114,7 @@ def upgrade() -> None:
         sa.Column("warning_count", sa.Integer(), nullable=False),
         sa.Column("error_count", sa.Integer(), nullable=False),
         sa.Column("request_count", sa.Integer(), nullable=False),
-        sa.Column("bytes_received", sa.Integer(), nullable=False),
+        sa.Column("bytes_received", sa.BigInteger(), nullable=False),
         sa.Column("error_summary", sa.Text(), nullable=True),
         sa.ForeignKeyConstraint(
             ["dataset_id"],

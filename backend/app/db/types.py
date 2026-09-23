@@ -46,11 +46,22 @@ _MAX_INTEGER_DIGITS = DECIMAL_PRECISION - DECIMAL_SCALE
 
 
 def decimal_fits(value: Decimal) -> bool:
-    """Whether ``value`` can be stored in ``NUMERIC(38, 18)`` without rounding."""
+    """Whether ``value`` can be stored in ``NUMERIC(38, 18)`` without rounding.
+
+    Trailing zeros after the decimal point are not significant (``5.10…0`` is 5.1), so
+    they do not count. Works on the digit tuple only: formatting a value such as
+    ``1E+999999999`` to check it would allocate a billion characters.
+    """
     if not value.is_finite():
         return False
-    _, digits, raw_exponent = value.as_tuple()
+    _, digit_tuple, raw_exponent = value.as_tuple()
     exponent = cast(int, raw_exponent)  # finite values always have an integer exponent
+    digits = list(digit_tuple)
+    if not any(digits):
+        return True  # zero, whatever its exponent
+    while exponent < 0 and digits[-1] == 0:
+        digits.pop()
+        exponent += 1
     decimals = max(0, -exponent)
     integer_digits = max(0, len(digits) + exponent)
     return decimals <= DECIMAL_SCALE and integer_digits <= _MAX_INTEGER_DIGITS

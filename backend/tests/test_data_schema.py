@@ -161,6 +161,11 @@ def test_values_that_do_not_fit_are_refused_not_rounded(base: tuple[Session, Ing
 def test_trailing_zeros_are_not_significant() -> None:
     assert canonical_decimal(Decimal("5.649000")) == Decimal("5.649")
     assert str(canonical_decimal(Decimal("1E+2"))) == "100"
+    # 22 decimal places written, but only one is significant: the value fits exactly.
+    assert decimal_fits(Decimal("5.1000000000000000000000"))
+    assert decimal_fits(Decimal("0E-40"))
+    assert not decimal_fits(Decimal("1E+999999999"))  # refused without being expanded
+    assert not decimal_fits(Decimal("123456789012345678901"))  # 21 integer digits
 
 
 def test_only_one_current_observation_per_period(base: tuple[Session, IngestionJob]) -> None:

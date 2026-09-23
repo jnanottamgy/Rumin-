@@ -20,14 +20,27 @@ from alembic import command
 from alembic.config import Config as AlembicConfig
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from sqlalchemy import Engine, delete
+from sqlalchemy import Engine, delete, update
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config import BACKEND_DIR, Settings
 from app.db.seed import load_dataset
 from app.db.session import create_db_engine, create_session_factory
+from app.domain.enums import DatasetKind
 from app.main import create_app
-from app.models import Scenario
+from app.models import (
+    DataProvider,
+    DataQualityIssue,
+    Dataset,
+    EconomicObservation,
+    EconomicSeries,
+    IngestionJob,
+    IngestionJobItem,
+    Instrument,
+    PriceBar,
+    Scenario,
+    SourceCapture,
+)
 
 ALLOWED_ORIGIN = "http://localhost:5173"
 
@@ -102,3 +115,30 @@ def client(app: FastAPI, session_factory: sessionmaker[Session]) -> Iterator[Tes
 def fresh_sqlite_url(tmp_path: Path) -> str:
     """URL of a brand-new, empty SQLite database (no schema)."""
     return f"sqlite:///{tmp_path / 'fresh.db'}"
+
+
+def wipe_ingested_data(session: Session) -> None:
+    """Remove everything ingestion creates (in foreign-key order), keeping the curated
+    reference data that the rest of the suite relies on."""
+    session.execute(delete(DataQualityIssue))
+    session.execute(delete(EconomicObservation))
+    session.execute(delete(PriceBar))
+    session.execute(delete(SourceCapture))
+    session.execute(delete(IngestionJobItem))
+    session.execute(update(EconomicSeries).values(last_ingestion_job_id=None))
+    session.execute(delete(IngestionJob))
+    session.execute(delete(EconomicSeries))
+    session.execute(delete(Instrument))
+    session.execute(delete(Dataset).where(Dataset.kind == DatasetKind.PROVIDER))
+    session.execute(delete(DataProvider))
+    session.commit()
+
+
+@pytest.fixture
+def ingestion_session(session_factory: sessionmaker[Session]) -> Iterator[Session]:
+    """A session on the shared test database; ingested data is removed afterwards."""
+    with session_factory() as session:
+        wipe_ingested_data(session)
+        yield session
+        session.rollback()
+        wipe_ingested_data(session)

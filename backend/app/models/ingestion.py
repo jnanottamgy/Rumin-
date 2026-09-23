@@ -10,7 +10,7 @@ import uuid
 from datetime import date, datetime
 from typing import Any
 
-from sqlalchemy import JSON, ForeignKey, Integer, LargeBinary, String, Text, Uuid
+from sqlalchemy import JSON, BigInteger, ForeignKey, Integer, LargeBinary, String, Text, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base, enum_column, utcnow
@@ -66,7 +66,7 @@ class IngestionJob(Base):
     warning_count: Mapped[int] = mapped_column(Integer, default=0)
     error_count: Mapped[int] = mapped_column(Integer, default=0)
     request_count: Mapped[int] = mapped_column(Integer, default=0)
-    bytes_received: Mapped[int] = mapped_column(Integer, default=0)
+    bytes_received: Mapped[int] = mapped_column(BigInteger, default=0)
     # A short, safe explanation of failures (no secrets, no stack traces).
     error_summary: Mapped[str | None] = mapped_column(Text)
 
