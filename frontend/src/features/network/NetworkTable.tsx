@@ -81,7 +81,12 @@ export function NetworkTable({
       <section className={styles.block}>
         <h3 className={styles.caption}>
           Relationships ({edges.length})
-          {selectedId && <span className={styles.scope}> touching {name(selectedId)}</span>}
+          {selectedId && (
+            <>
+              {" "}
+              <span className={styles.scope}>touching {name(selectedId)}</span>
+            </>
+          )}
         </h3>
         <div className={styles.scroll}>
           <table className={styles.table}>

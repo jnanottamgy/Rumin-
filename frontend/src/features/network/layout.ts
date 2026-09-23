@@ -83,6 +83,22 @@ const COLUMN: Record<EntityKind, number> = {
 
 const COLUMN_ORDER: readonly EntityKind[] = ["economic_variable", "industry", "company", "country"];
 
+const compareIds = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
+
+/**
+ * Edges in a canonical order. The simulation applies link forces in input order, so
+ * without this the same graph delivered in a different order (e.g. by a different
+ * database) would settle into a slightly different picture.
+ */
+function canonicalEdges(edges: readonly LayoutEdgeInput[]): LayoutEdgeInput[] {
+  return [...edges].sort(
+    (a, b) =>
+      compareIds(a.source, b.source) ||
+      compareIds(a.target, b.target) ||
+      compareIds(a.category, b.category),
+  );
+}
+
 /**
  * Initial vertical order per column using the barycentre heuristic from layered graph
  * drawing (Sugiyama et al.): each node moves towards the average position of its
@@ -101,7 +117,7 @@ export function barycentricOrder(
       .sort(),
   );
   const neighbours = new Map<string, string[]>(nodes.map((node) => [node.id, []]));
-  for (const edge of edges) {
+  for (const edge of canonicalEdges(edges)) {
     neighbours.get(edge.source)?.push(edge.target);
     neighbours.get(edge.target)?.push(edge.source);
   }
@@ -167,10 +183,10 @@ export function computeLayout(
   };
 
   const simNodes: SimNode[] = [...nodes]
-    .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
+    .sort((a, b) => compareIds(a.id, b.id))
     .map((node) => ({ ...node, x: COLUMN[node.kind] * spread, y: targetY(node) }));
   const ids = new Set(simNodes.map((node) => node.id));
-  const simLinks: SimLink[] = edges
+  const simLinks: SimLink[] = canonicalEdges(edges)
     .filter((edge) => ids.has(edge.source) && ids.has(edge.target))
     .map((edge) => ({ source: edge.source, target: edge.target, category: edge.category }));
   const targets = new Map(simNodes.map((node) => [node.id, targetY(node)]));
