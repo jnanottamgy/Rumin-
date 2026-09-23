@@ -1,0 +1,134 @@
+.chart {
+  position: relative;
+  min-width: 0;
+}
+
+/* The frame's height includes the x-axis band, so the card never scrolls. */
+.frame {
+  position: relative;
+  width: 100%;
+  border-radius: var(--radius-sm);
+  touch-action: pan-y;
+}
+
+.frame:focus-visible {
+  outline-offset: 4px;
+}
+
+.svg {
+  display: block;
+  overflow: visible;
+}
+
+.unit {
+  fill: var(--color-ink-muted);
+  font-size: var(--text-2xs);
+}
+
+.grid {
+  stroke: var(--viz-grid);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.zero {
+  stroke: var(--color-line-strong);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.yTick,
+.xTick {
+  fill: var(--color-ink-muted);
+  font-size: var(--text-2xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.yTick {
+  text-anchor: end;
+  dominant-baseline: middle;
+}
+
+.xTick {
+  text-anchor: middle;
+}
+
+.line {
+  fill: none;
+  stroke: var(--viz-series);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* Markers carry a 2px ring in the surface colour so they stay legible on the line. */
+.marker {
+  fill: var(--viz-series);
+  stroke: var(--color-surface);
+  stroke-width: 2;
+}
+
+.flag {
+  fill: var(--viz-flag);
+  stroke: var(--color-surface);
+  stroke-width: 2;
+}
+
+.missing {
+  fill: var(--color-surface);
+  stroke: var(--color-ink-muted);
+  stroke-width: 1.5;
+}
+
+.crosshair {
+  stroke: var(--color-ink-muted);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.activeMarker {
+  fill: none;
+  stroke: var(--viz-series);
+  stroke-width: 2;
+}
+
+.endLabel {
+  fill: var(--color-ink);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  dominant-baseline: middle;
+}
+
+.tooltip {
+  position: absolute;
+  z-index: 2;
+  max-width: 16rem;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-popover);
+  pointer-events: none;
+}
+
+.tooltip[data-vertical="above"] {
+  transform: translateY(-100%);
+}
+
+.tooltipValue {
+  font-size: var(--text-sm);
+  font-weight: 650;
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+
+.tooltipTitle {
+  font-size: var(--text-xs);
+  color: var(--color-ink-secondary);
+}
+
+.tooltipNote {
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--color-ink-muted);
+}

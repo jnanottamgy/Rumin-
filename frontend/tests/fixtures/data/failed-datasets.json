@@ -1,0 +1,58 @@
+{
+  "items": [
+    {
+      "id": "rumin-sample",
+      "kind": "curated",
+      "version": "1.0.0",
+      "name": "RUMIN Illustrative Sample Network",
+      "description": "A small, curated network used to demonstrate RUMIN's data model and financial network visualisation. It connects fictional companies to real-world industry classifications, countries and economic-variable definitions through illustrative relationships.",
+      "is_illustrative": true,
+      "provenance_note": "Countries (ISO 3166-1 / ISO 4217 codes), industry classifications (ISIC Rev. 4) and the definitions of economic variables refer to real-world concepts; each carries a reference to its authoritative publisher. All companies are fictional. All relationships, polarities and strengths are illustrative modelling assumptions written for demonstration: they are not empirical findings and have not been validated. The dataset contains no observed financial values, prices or time series.",
+      "license": "Authored for the RUMIN project. Contains no third-party data values.",
+      "license_url": null,
+      "terms_url": null,
+      "homepage_url": null,
+      "attribution": null,
+      "update_frequency": null,
+      "provider_id": null,
+      "provider_dataset_code": null,
+      "provider_last_updated": null,
+      "checksum_sha256": "6c7d4cdf4c815397036412af34555c631c3a08b0b6cb92de09198afc531f79b4",
+      "loaded_at": "2026-09-23T13:00:55.028187Z",
+      "series_count": 0,
+      "instrument_count": 0,
+      "last_job": null
+    },
+    {
+      "id": "worldbank-wdi",
+      "kind": "provider",
+      "version": "catalogue 1.0.0",
+      "name": "World Development Indicators",
+      "description": "The World Bank's primary collection of development indicators, compiled from officially recognised international sources. RUMIN retrieves a small, curated selection of annual series for India, with the United States and the United Arab Emirates for context.",
+      "is_illustrative": false,
+      "provenance_note": "Retrieved by RUMIN from the World Bank Indicators API (v2) and stored exactly as published: values are not adjusted, converted, rounded or filled in. Each value records when it was retrieved and from which response, and every revision the World Bank makes is kept.",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "terms_url": "https://www.worldbank.org/en/about/legal/terms-of-use-for-datasets",
+      "homepage_url": "https://datatopics.worldbank.org/world-development-indicators/",
+      "attribution": "The World Bank: World Development Indicators. The original source of each series is named on the series.",
+      "update_frequency": "Refreshed by the World Bank several times a year; any value may be revised in an update.",
+      "provider_id": "worldbank",
+      "provider_dataset_code": "2",
+      "provider_last_updated": null,
+      "checksum_sha256": null,
+      "loaded_at": "2026-09-23T13:00:55.717051Z",
+      "series_count": 11,
+      "instrument_count": 0,
+      "last_job": {
+        "id": "3bd91841-a1fd-4997-b1be-acfa196d1874",
+        "status": "failed",
+        "created_at": "2026-09-23T13:20:02.660685Z",
+        "finished_at": "2026-09-23T13:20:19.592575Z"
+      }
+    }
+  ],
+  "total": 2,
+  "limit": 100,
+  "offset": 0
+}

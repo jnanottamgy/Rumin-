@@ -1,0 +1,113 @@
+.page {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.stack {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3) var(--space-4);
+}
+
+.field {
+  display: grid;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--color-ink-muted);
+}
+
+.field input,
+.field select {
+  min-width: 12rem;
+  min-height: 2.25rem;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-field-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: var(--text-sm);
+}
+
+.count {
+  margin-left: auto;
+  font-size: var(--text-xs);
+  color: var(--color-ink-muted);
+}
+
+/* Names stay readable when a narrow screen scrolls the table sideways. */
+.nameCell {
+  min-width: 13rem;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.datasets {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dataset {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+}
+
+.datasetName {
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+}
+
+.datasetFacts {
+  display: grid;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.datasetFacts dt {
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+}
+
+.datasetFacts dd {
+  overflow-wrap: anywhere;
+}
+
+.datasetFacts a {
+  color: inherit;
+  text-decoration: none;
+}
+
+@media (max-width: 64rem) {
+  .columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 40rem) {
+  .field,
+  .field input,
+  .field select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .count {
+    margin-left: 0;
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "items": [
+    {
+      "id": "demo-synthetic-co",
+      "name": "SYNTHETIC Co (not a real company)",
+      "instrument_type": "equity",
+      "isin": null,
+      "exchange_mic": "XNSE",
+      "symbol": "SYNTH",
+      "currency": "INR",
+      "country_id": null,
+      "dataset_id": "synthetic-prices",
+      "first_trade_date": "2026-03-02",
+      "last_trade_date": "2026-09-19",
+      "bar_count": 136
+    }
+  ],
+  "total": 1,
+  "limit": 100,
+  "offset": 0
+}

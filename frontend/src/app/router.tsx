@@ -30,6 +30,30 @@ export const routes: RouteObject[] = [
         lazy: async () => ({ Component: (await import("@/pages/UniversePage")).UniversePage }),
       },
       {
+        path: "data",
+        lazy: async () => ({
+          Component: (await import("@/pages/DataExplorerPage")).DataExplorerPage,
+        }),
+      },
+      {
+        path: "data/series/:seriesId",
+        lazy: async () => ({
+          Component: (await import("@/pages/EconomicSeriesPage")).EconomicSeriesPage,
+        }),
+      },
+      {
+        path: "data/instruments/:instrumentId",
+        lazy: async () => ({
+          Component: (await import("@/pages/InstrumentPage")).InstrumentPage,
+        }),
+      },
+      {
+        path: "data/jobs/:jobId",
+        lazy: async () => ({
+          Component: (await import("@/pages/IngestionJobPage")).IngestionJobPage,
+        }),
+      },
+      {
         path: "scenarios",
         lazy: async () => ({
           Component: (await import("@/pages/ScenarioLabPage")).ScenarioLabPage,

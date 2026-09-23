@@ -2,7 +2,8 @@
 # End-to-end smoke test for RUMIN.
 #
 #   1. creates a throwaway SQLite database,
-#   2. applies the Alembic migrations and loads the illustrative sample dataset,
+#   2. applies the Alembic migrations, loads the illustrative sample dataset and the series
+#      catalogue, and imports a tiny SYNTHETIC price file through the ingestion CLI,
 #   3. starts the API on a spare port,
 #   4. runs the frontend's integration suite (its real service layer) against it,
 #   5. stops the API and deletes the database, whatever the outcome.
@@ -56,6 +57,43 @@ backend_python -m alembic upgrade head
 
 echo "==> Loading the illustrative sample dataset"
 backend_python -m app.db.seed
+
+echo "==> Loading the series catalogue (definitions only: nothing is fetched)"
+backend_python -m app.ingestion catalog
+
+# Three made-up trading days, labelled as sample data everywhere they appear. No provider is
+# contacted: the smoke test never depends on the network.
+echo "==> Importing a SYNTHETIC price file through the ingestion CLI"
+cat > "${WORKDIR}/smoke-prices.csv" <<'CSV'
+date,open,high,low,close,volume
+2025-03-03,100.00,101.50,99.50,101.00,1200
+2025-03-04,101.00,102.25,100.75,102.00,1350
+2025-03-05,102.00,102.00,100.10,100.40,990
+CSV
+cat > "${WORKDIR}/smoke-manifest.json" <<'JSON'
+{
+  "dataset": {
+    "id": "smoke-synthetic-prices",
+    "name": "SYNTHETIC smoke-test prices (not market data)",
+    "description": "Three made-up trading days used by the smoke test.",
+    "license": "None (synthetic test data)",
+    "attribution": "Synthetic test data",
+    "provenance_note": "Written by scripts/smoke_test.sh. Not market data.",
+    "is_illustrative": true
+  },
+  "instrument": {
+    "id": "smoke-synthetic",
+    "name": "SYNTHETIC smoke-test instrument (not a real security)",
+    "instrument_type": "equity",
+    "exchange_mic": "XNSE",
+    "symbol": "SMOKETEST",
+    "currency": "INR"
+  },
+  "adjustment": "unadjusted"
+}
+JSON
+backend_python -m app.ingestion import-prices \
+  --manifest "${WORKDIR}/smoke-manifest.json" --file "${WORKDIR}/smoke-prices.csv"
 
 echo "==> Starting the API on port ${PORT}"
 # Not through backend_python: `exec` in a directly backgrounded subshell makes $! the

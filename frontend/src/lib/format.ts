@@ -58,3 +58,27 @@ export function formatChange(value: number, unitLabel: string): string {
   const number = changeNumber.format(value).replace("-", "−");
   return unitLabel === "%" ? `${number}%` : `${number} ${unitLabel}`;
 }
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/** A period label from the API ("2023", "2023-Q1", "2023-03") for reading: "Q1 2023". */
+export function formatPeriod(label: string): string {
+  const quarter = /^(\d{4})-Q([1-4])$/.exec(label);
+  if (quarter) return `Q${quarter[2]} ${quarter[1]}`;
+  const month = /^(\d{4})-(\d{2})$/.exec(label);
+  if (month) return `${MONTHS[Number(month[2]) - 1] ?? month[2]} ${month[1]}`;
+  return label;
+}
+
+/** A calendar date ("2026-09-21") without time-zone shifts: "21 Sep 2026". */
+export function formatCalendarDate(iso: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (!match) return iso;
+  return `${Number(match[3])} ${MONTHS[Number(match[2]) - 1] ?? match[2]} ${match[1]}`;
+}
+
+export function formatBytes(count: number): string {
+  if (count < 1024) return `${formatCount(count)} bytes`;
+  if (count < 1024 * 1024) return `${(count / 1024).toFixed(1)} KB`;
+  return `${(count / (1024 * 1024)).toFixed(1)} MB`;
+}

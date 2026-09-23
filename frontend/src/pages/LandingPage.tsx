@@ -17,7 +17,8 @@ import styles from "./LandingPage.module.css";
 
 /** What each kind of knowledge amounts to in this build — stated plainly. */
 const IN_THIS_BUILD: Record<EpistemicCategory, string> = {
-  observation: "None loaded yet. Historical data from cited sources arrives in Phase 2.",
+  observation:
+    "World Bank indicators and licensed price files, retrieved from the command line — historical, never live.",
   assumption: "Every relationship in the sample network, each with a written rationale.",
   scenario_input: "Draft scenarios can be defined and saved in the Scenario Lab.",
   simulated_output: "None. The simulation engine arrives in Phase 4.",
@@ -128,7 +129,7 @@ export function LandingPage() {
 
         <section className={styles.section} aria-labelledby="modules-title">
           <div className={styles.sectionIntro}>
-            <p className="eyebrow">Phase {CURRENT_PHASE} · Foundation</p>
+            <p className="eyebrow">Phase {CURRENT_PHASE} · Financial data infrastructure</p>
             <h2 id="modules-title" className={styles.sectionTitle}>
               What exists today
             </h2>
@@ -173,8 +174,8 @@ export function LandingPage() {
 
       <footer className={styles.footer}>
         <p>
-          RUMIN is a research and learning tool. The sample data is illustrative, no live market
-          data is connected, and nothing here is investment advice.
+          RUMIN is a research and learning tool. The sample network is illustrative, provider data
+          is historical, no live market data is connected, and nothing here is investment advice.
         </p>
       </footer>
     </div>

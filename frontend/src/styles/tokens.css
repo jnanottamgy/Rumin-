@@ -129,6 +129,10 @@
   --viz-label: var(--stone-700);
   --viz-label-halo: var(--bone-100);
   --viz-grid: #e6e1d6;
+  /* Time-series marks. Validated with the palette checks (lightness band, CVD
+     separation, ≥ 3:1 against the surface) as a pair, in each theme. */
+  --viz-series: #3a87cc;
+  --viz-flag: #b07a00;
 
   /* A subtle brushed-metal hairline, used only for key dividers. */
   --metal-hairline: linear-gradient(
@@ -179,6 +183,8 @@
   --viz-label: #b8b4aa;
   --viz-label-halo: var(--charcoal-900);
   --viz-grid: #202328;
+  --viz-series: #4a93d6;
+  --viz-flag: #c98500;
 
   --metal-hairline: linear-gradient(
     90deg,

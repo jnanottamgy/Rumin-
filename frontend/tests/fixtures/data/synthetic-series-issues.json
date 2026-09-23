@@ -1,0 +1,59 @@
+{
+  "items": [
+    {
+      "id": 6,
+      "job_id": "84405c52-b987-4545-9ac7-e817c0fc38e5",
+      "series_id": "demo-a",
+      "instrument_id": null,
+      "observation_id": 20,
+      "price_bar_id": null,
+      "rule": "outside_review_range",
+      "severity": "warning",
+      "outcome": "flagged",
+      "message": "14.250000 is outside RUMIN's review range [-50, 12] for this series. It is stored as reported and flagged for review.",
+      "record_key": "2009",
+      "raw_record": null,
+      "detected_at": "2026-09-23T13:16:13.979946Z",
+      "review_status": "unreviewed"
+    },
+    {
+      "id": 5,
+      "job_id": "84405c52-b987-4545-9ac7-e817c0fc38e5",
+      "series_id": "demo-a",
+      "instrument_id": null,
+      "observation_id": null,
+      "price_bar_id": null,
+      "rule": "recent_periods_without_values",
+      "severity": "info",
+      "outcome": "noted",
+      "message": "The latest value is for 2024; 2025 were listed without values.",
+      "record_key": null,
+      "raw_record": {
+        "periods": ["2025"]
+      },
+      "detected_at": "2026-09-23T13:16:13.979946Z",
+      "review_status": "unreviewed"
+    },
+    {
+      "id": 4,
+      "job_id": "84405c52-b987-4545-9ac7-e817c0fc38e5",
+      "series_id": "demo-a",
+      "instrument_id": null,
+      "observation_id": null,
+      "price_bar_id": null,
+      "rule": "missing_values",
+      "severity": "info",
+      "outcome": "noted",
+      "message": "1 period(s) listed without a value: 2003.",
+      "record_key": null,
+      "raw_record": {
+        "periods": ["2003"]
+      },
+      "detected_at": "2026-09-23T13:16:13.979946Z",
+      "review_status": "unreviewed"
+    }
+  ],
+  "total": 3,
+  "limit": 100,
+  "offset": 0
+}

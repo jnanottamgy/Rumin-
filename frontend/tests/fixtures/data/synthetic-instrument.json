@@ -1,0 +1,27 @@
+{
+  "id": "demo-synthetic-co",
+  "name": "SYNTHETIC Co (not a real company)",
+  "instrument_type": "equity",
+  "isin": null,
+  "exchange_mic": "XNSE",
+  "symbol": "SYNTH",
+  "currency": "INR",
+  "country_id": null,
+  "dataset_id": "synthetic-prices",
+  "first_trade_date": "2026-03-02",
+  "last_trade_date": "2026-09-19",
+  "bar_count": 136,
+  "price_datasets": [
+    {
+      "id": "synthetic-prices",
+      "kind": "provider",
+      "name": "SYNTHETIC price file (not market data)",
+      "is_illustrative": true,
+      "license": "None (synthetic)",
+      "license_url": null,
+      "attribution": "Synthetic",
+      "provider_id": "price-file",
+      "provider_last_updated": null
+    }
+  ]
+}

@@ -1,0 +1,167 @@
+{
+  "id": "84405c52-b987-4545-9ac7-e817c0fc38e5",
+  "provider_id": "worldbank",
+  "dataset_id": "synthetic-demo",
+  "trigger": "cli",
+  "parameters": {
+    "synthetic": true
+  },
+  "status": "completed_with_warnings",
+  "created_at": "2026-09-23T13:16:13.976113Z",
+  "started_at": "2026-09-23T13:16:13.977133Z",
+  "finished_at": "2026-09-23T13:16:13.997778Z",
+  "heartbeat_at": "2026-09-23T13:16:13.997778Z",
+  "items_total": 2,
+  "items_succeeded": 2,
+  "items_failed": 0,
+  "items_skipped": 0,
+  "records_received": 71,
+  "records_new": 0,
+  "records_revised": 1,
+  "records_unchanged": 70,
+  "records_missing": 2,
+  "records_rejected": 0,
+  "warning_count": 1,
+  "error_count": 0,
+  "request_count": 4,
+  "bytes_received": 17637,
+  "error_summary": null,
+  "items": [
+    {
+      "id": 3,
+      "target_kind": "economic_series",
+      "series_id": "demo-a",
+      "instrument_id": null,
+      "target_label": "demo-a (FP.CPI.TOTL.ZG|IND)",
+      "status": "succeeded",
+      "started_at": "2026-09-23T13:16:13.978324Z",
+      "finished_at": "2026-09-23T13:16:13.985609Z",
+      "records_received": 36,
+      "records_new": 0,
+      "records_revised": 1,
+      "records_unchanged": 35,
+      "records_missing": 2,
+      "records_rejected": 0,
+      "warning_count": 1,
+      "error_count": 0,
+      "error_code": null,
+      "error_message": null
+    },
+    {
+      "id": 4,
+      "target_kind": "economic_series",
+      "series_id": "demo-b",
+      "instrument_id": null,
+      "target_label": "demo-b (NY.GDP.MKTP.CD|IND)",
+      "status": "succeeded",
+      "started_at": "2026-09-23T13:16:13.989086Z",
+      "finished_at": "2026-09-23T13:16:13.995020Z",
+      "records_received": 35,
+      "records_new": 0,
+      "records_revised": 0,
+      "records_unchanged": 35,
+      "records_missing": 0,
+      "records_rejected": 0,
+      "warning_count": 0,
+      "error_count": 0,
+      "error_code": null,
+      "error_message": null
+    }
+  ],
+  "issue_counts": [
+    {
+      "rule": "missing_values",
+      "severity": "info",
+      "outcome": "noted",
+      "count": 1
+    },
+    {
+      "rule": "outside_review_range",
+      "severity": "warning",
+      "outcome": "flagged",
+      "count": 1
+    },
+    {
+      "rule": "recent_periods_without_values",
+      "severity": "info",
+      "outcome": "noted",
+      "count": 1
+    }
+  ],
+  "captures": [
+    {
+      "id": 5,
+      "job_id": "84405c52-b987-4545-9ac7-e817c0fc38e5",
+      "provider_id": "worldbank",
+      "kind": "http_response",
+      "locator": "https://api.worldbank.org/v2/country/IND/indicator/FP.CPI.TOTL.ZG?format=json&per_page=1000&page=1&date=1990:2025",
+      "request_params": {
+        "format": "json",
+        "per_page": "1000",
+        "page": "1",
+        "date": "1990:2025"
+      },
+      "http_status": 200,
+      "received_at": "2026-09-23T13:16:13.979664Z",
+      "content_type": "application/json",
+      "size_bytes": 8487,
+      "sha256": "b258a3706c437af1074c0e6b886d9385af9f1b23c2574724bab594df41e169db",
+      "body_stored": true,
+      "provider_last_updated": "2026-07-01"
+    },
+    {
+      "id": 6,
+      "job_id": "84405c52-b987-4545-9ac7-e817c0fc38e5",
+      "provider_id": "worldbank",
+      "kind": "http_response",
+      "locator": "https://api.worldbank.org/v2/indicator/FP.CPI.TOTL.ZG?format=json",
+      "request_params": {
+        "format": "json"
+      },
+      "http_status": 200,
+      "received_at": "2026-09-23T13:16:13.979925Z",
+      "content_type": "application/json",
+      "size_bytes": 308,
+      "sha256": "951a82adcf126cfe2e49efa75d766fd90bd23629f27ab286b2aed55a5e6292d7",
+      "body_stored": true,
+      "provider_last_updated": null
+    },
+    {
+      "id": 7,
+      "job_id": "84405c52-b987-4545-9ac7-e817c0fc38e5",
+      "provider_id": "worldbank",
+      "kind": "http_response",
+      "locator": "https://api.worldbank.org/v2/country/IND/indicator/NY.GDP.MKTP.CD?format=json&per_page=1000&page=1&date=1990:2025",
+      "request_params": {
+        "format": "json",
+        "per_page": "1000",
+        "page": "1",
+        "date": "1990:2025"
+      },
+      "http_status": 200,
+      "received_at": "2026-09-23T13:16:13.990671Z",
+      "content_type": "application/json",
+      "size_bytes": 8534,
+      "sha256": "f18685f90916eaff9fe0b73fb1549410939961b559cef9eb3ffbb5e0a55b2629",
+      "body_stored": true,
+      "provider_last_updated": "2026-07-01"
+    },
+    {
+      "id": 8,
+      "job_id": "84405c52-b987-4545-9ac7-e817c0fc38e5",
+      "provider_id": "worldbank",
+      "kind": "http_response",
+      "locator": "https://api.worldbank.org/v2/indicator/NY.GDP.MKTP.CD?format=json",
+      "request_params": {
+        "format": "json"
+      },
+      "http_status": 200,
+      "received_at": "2026-09-23T13:16:13.990937Z",
+      "content_type": "application/json",
+      "size_bytes": 308,
+      "sha256": "143259a0e27e55594876eec59cfcd42d4c3a0f11e83d1f3c5278dbc87ceabe37",
+      "body_stored": true,
+      "provider_last_updated": null
+    }
+  ]
+}

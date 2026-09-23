@@ -39,6 +39,16 @@ export const APP_MODULES: readonly AppModule[] = [
     phase: 1,
   },
   {
+    id: "data",
+    path: "/data",
+    navLabel: "Data",
+    title: "Data Explorer",
+    summary: "Historical series and licensed price files, with their source, licence and quality.",
+    status: "available",
+    statusNote: "World Bank series and price-file import · ingestion from the command line",
+    phase: 2,
+  },
+  {
     id: "scenarios",
     path: "/scenarios",
     navLabel: "Scenario Lab",
@@ -81,7 +91,7 @@ export interface RoadmapPhase {
   title: string;
 }
 
-export const CURRENT_PHASE = 1;
+export const CURRENT_PHASE = 2;
 
 export const ROADMAP: readonly RoadmapPhase[] = [
   { phase: 1, title: "Foundation & system architecture" },

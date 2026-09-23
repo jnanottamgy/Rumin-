@@ -9,6 +9,7 @@ import { Panel } from "@/components/Panel";
 import { EmptyState, ErrorState, LoadingState } from "@/components/States";
 import { StatGrid, StatTile } from "@/components/StatTile";
 import { StatusIndicator } from "@/components/StatusIndicator";
+import { JOB_STATUS } from "@/features/data/labels";
 import { KIND_ENCODING } from "@/features/network/encoding";
 import { KindGlyph } from "@/features/network/KindGlyph";
 import { defaultFilters, KIND_ORDER, visibleSubgraph } from "@/features/network/model";
@@ -133,7 +134,7 @@ function SystemSummary({ system }: { system: ReturnType<typeof useSystem> }) {
       </ul>
     );
   }
-  const { database, dataset, capabilities, environment } = system.data;
+  const { database, dataset, data, capabilities, environment } = system.data;
   const missing = capabilities.filter((capability) => !capability.available);
   return (
     <ul className={styles.statusList}>
@@ -158,6 +159,17 @@ function SystemSummary({ system }: { system: ReturnType<typeof useSystem> }) {
               ? `${dataset.summary.is_illustrative ? "Illustrative sample" : dataset.summary.name} loaded`
               : "Not loaded"
           }
+        />
+      </li>
+      <li>
+        <StatusIndicator
+          tone={data.series_with_data > 0 ? "good" : "warning"}
+          label="Provider data"
+          detail={`${data.series_with_data} of ${data.series_total} series with values${
+            data.last_job
+              ? ` · last run ${JOB_STATUS[data.last_job.status].label.toLowerCase()}`
+              : ""
+          }`}
         />
       </li>
       {missing.map((capability) => (

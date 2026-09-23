@@ -1,0 +1,55 @@
+{
+  "items": [
+    {
+      "id": 9,
+      "job_id": "0413cec6-8911-417f-bd49-25247c9ebf93",
+      "series_id": null,
+      "instrument_id": "demo-synthetic-co",
+      "observation_id": null,
+      "price_bar_id": 136,
+      "rule": "zero_volume",
+      "severity": "info",
+      "outcome": "noted",
+      "message": "No trades were reported.",
+      "record_key": "2026-09-19",
+      "raw_record": null,
+      "detected_at": "2026-09-23T13:16:14.012116Z",
+      "review_status": "unreviewed"
+    },
+    {
+      "id": 8,
+      "job_id": "0413cec6-8911-417f-bd49-25247c9ebf93",
+      "series_id": null,
+      "instrument_id": "demo-synthetic-co",
+      "observation_id": null,
+      "price_bar_id": 136,
+      "rule": "weekend_date",
+      "severity": "warning",
+      "outcome": "flagged",
+      "message": "2026-09-19 is a Saturday.",
+      "record_key": "2026-09-19",
+      "raw_record": null,
+      "detected_at": "2026-09-23T13:16:14.012116Z",
+      "review_status": "unreviewed"
+    },
+    {
+      "id": 7,
+      "job_id": "0413cec6-8911-417f-bd49-25247c9ebf93",
+      "series_id": null,
+      "instrument_id": "demo-synthetic-co",
+      "observation_id": null,
+      "price_bar_id": null,
+      "rule": "trading_gap",
+      "severity": "warning",
+      "outcome": "noted",
+      "message": "No prices between 2026-06-05 and 2026-06-22.",
+      "record_key": "2026-06-22",
+      "raw_record": null,
+      "detected_at": "2026-09-23T13:16:14.012116Z",
+      "review_status": "unreviewed"
+    }
+  ],
+  "total": 3,
+  "limit": 50,
+  "offset": 0
+}

@@ -204,24 +204,24 @@ def derive_status(
         item for item in items if item.status in (JobItemStatus.SKIPPED, JobItemStatus.PENDING)
     ]
     problems = "; ".join(
-        f"{item.target_label}: {item.error_code} — {item.error_message}" for item in failed
+        f"{item.target_label}: {item.error_code} ({(item.error_message or '').rstrip('.')})"
+        for item in failed
     )
+    failures = f" Failures: {problems}." if problems else ""
     if cancelled:
         return JobStatus.CANCELLED, _clip(
-            f"Cancelled by the user after {succeeded} of {total} target(s) succeeded."
-            + (f" Failures: {problems}" if problems else "")
+            f"Cancelled by the user after {succeeded} of {total} target(s) succeeded." + failures
         )
     if total == 0:
         return JobStatus.FAILED, "The job had no targets to process."
     if succeeded == 0:
         return JobStatus.FAILED, _clip(
-            f"No target succeeded ({len(failed)} failed, {len(not_done)} not attempted)."
-            + (f" {problems}" if problems else "")
+            f"No target succeeded ({len(failed)} failed, {len(not_done)} not attempted)." + failures
         )
     if failed or not_done:
         return JobStatus.PARTIALLY_FAILED, _clip(
             f"{succeeded} of {total} target(s) succeeded; {len(failed)} failed and "
-            f"{len(not_done)} were not attempted." + (f" {problems}" if problems else "")
+            f"{len(not_done)} were not attempted." + failures
         )
     if any(item.warning_count or item.error_count for item in items):
         return JobStatus.COMPLETED_WITH_WARNINGS, None

@@ -1,0 +1,136 @@
+{
+  "service": "rumin-api",
+  "version": "0.1.0",
+  "api_version": "v1",
+  "environment": "development",
+  "server_time": "2026-09-23T13:20:33.032476Z",
+  "database": {
+    "backend": "sqlite",
+    "reachable": true,
+    "migration_revision": "0002",
+    "migration_head": "0002",
+    "schema_up_to_date": true
+  },
+  "dataset": {
+    "loaded": true,
+    "summary": {
+      "id": "rumin-sample",
+      "version": "1.0.0",
+      "name": "RUMIN Illustrative Sample Network",
+      "description": "A small, curated network used to demonstrate RUMIN's data model and financial network visualisation. It connects fictional companies to real-world industry classifications, countries and economic-variable definitions through illustrative relationships.",
+      "is_illustrative": true,
+      "provenance_note": "Countries (ISO 3166-1 / ISO 4217 codes), industry classifications (ISIC Rev. 4) and the definitions of economic variables refer to real-world concepts; each carries a reference to its authoritative publisher. All companies are fictional. All relationships, polarities and strengths are illustrative modelling assumptions written for demonstration: they are not empirical findings and have not been validated. The dataset contains no observed financial values, prices or time series.",
+      "license": "Authored for the RUMIN project. Contains no third-party data values.",
+      "checksum_sha256": "6c7d4cdf4c815397036412af34555c631c3a08b0b6cb92de09198afc531f79b4",
+      "loaded_at": "2026-09-23T13:00:55.028187Z"
+    },
+    "entity_counts": {
+      "company": 12,
+      "country": 3,
+      "economic_variable": 7,
+      "industry": 8
+    },
+    "relationship_count": 41
+  },
+  "data": {
+    "provider_datasets": 1,
+    "series_total": 11,
+    "series_with_data": 0,
+    "observations": 0,
+    "instruments": 0,
+    "price_bars": 0,
+    "flagged_values": 0,
+    "last_job": {
+      "id": "3bd91841-a1fd-4997-b1be-acfa196d1874",
+      "status": "failed",
+      "created_at": "2026-09-23T13:20:02.660685Z",
+      "finished_at": "2026-09-23T13:20:19.592575Z"
+    }
+  },
+  "capabilities": [
+    {
+      "id": "reference_data",
+      "label": "Reference data",
+      "available": true,
+      "planned_phase": 1,
+      "note": "Illustrative sample dataset: fictional companies linked to real-world classifications and variable definitions."
+    },
+    {
+      "id": "network_projection",
+      "label": "Financial network",
+      "available": true,
+      "planned_phase": 1,
+      "note": "Graph projection of entities, curated relationships and structural links."
+    },
+    {
+      "id": "scenario_drafts",
+      "label": "Scenario drafts",
+      "available": true,
+      "planned_phase": 1,
+      "note": "Scenario inputs can be created and edited. Nothing is simulated."
+    },
+    {
+      "id": "historical_observations",
+      "label": "Historical observations",
+      "available": true,
+      "planned_phase": 2,
+      "note": "Annual World Bank (WDI) series, retrieved with the ingestion command line and stored exactly as published, with every revision kept. Historical only: nothing is real-time."
+    },
+    {
+      "id": "price_file_import",
+      "label": "Licensed price files",
+      "available": true,
+      "planned_phase": 2,
+      "note": "Daily prices from CSV files you are licensed to use, imported from the command line with a manifest stating the licence. RUMIN ships no price data."
+    },
+    {
+      "id": "data_quality",
+      "label": "Data-quality checks",
+      "available": true,
+      "planned_phase": 2,
+      "note": "Every record is validated: structural problems are rejected (and kept for review), unusual values are stored as reported and flagged. Nothing is corrected."
+    },
+    {
+      "id": "ingestion_from_web",
+      "label": "Ingestion from the web app",
+      "available": false,
+      "planned_phase": 10,
+      "note": "Retrievals and imports run from the command line; the API is read-only until authentication exists."
+    },
+    {
+      "id": "graph_analytics",
+      "label": "Knowledge-graph analytics",
+      "available": false,
+      "planned_phase": 3,
+      "note": "Traversal, centrality and path analysis are planned."
+    },
+    {
+      "id": "simulation_engine",
+      "label": "Simulation engine",
+      "available": false,
+      "planned_phase": 4,
+      "note": "No simulation engine exists; scenarios cannot be run and no results exist."
+    },
+    {
+      "id": "ai_analyst",
+      "label": "AI analyst",
+      "available": false,
+      "planned_phase": 7,
+      "note": "No AI model is connected."
+    },
+    {
+      "id": "authentication",
+      "label": "Authentication",
+      "available": false,
+      "planned_phase": 10,
+      "note": "Not implemented. Run this build locally only."
+    },
+    {
+      "id": "live_market_data",
+      "label": "Live market data",
+      "available": false,
+      "planned_phase": null,
+      "note": "Not connected. RUMIN makes no real-time data claims."
+    }
+  ]
+}

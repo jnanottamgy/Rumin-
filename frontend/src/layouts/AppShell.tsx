@@ -126,8 +126,8 @@ export function AppShell() {
       </main>
       <footer className={styles.footer}>
         <p>
-          RUMIN · Phase 1 foundation. Sample data is illustrative: companies are fictional and no
-          live market data is connected. Nothing here is investment advice.
+          RUMIN · Phase 2. The network's sample data is illustrative (its companies are fictional).
+          Provider data is historical and never live. Nothing here is investment advice.
         </p>
       </footer>
     </div>
