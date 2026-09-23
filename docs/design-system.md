@@ -64,6 +64,12 @@ case is shown.
 | `--viz-node` (network marks) | 11.8 : 1 | 10.7 : 1 | 3 : 1 |
 | `--viz-edge-economic` | 3.0 : 1 | 3.9 : 1 | 3 : 1 |
 | `--color-field-border` | 3.2 : 1 | 3.2 : 1 | 3 : 1 |
+| `--viz-series`, `--viz-flag` (time-series marks) | ≥ 3 : 1 | ≥ 3 : 1 | 3 : 1 |
+
+The time-series pair (`--viz-series` #3a87cc / #4a93d6 and `--viz-flag` #b07a00 / #c98500,
+light / dark) was checked with a palette validator as a pair, in each theme: inside the
+lightness band, above the chroma floor, colour-vision-deficiency separation ΔE ≈ 24 (target
+≥ 8), normal-vision separation ≈ 25, and ≥ 3 : 1 against the chart surface.
 
 `--color-line` and `--color-line-strong` are decorative dividers (and borders of controls
 that are identified by their text) and are deliberately below 3 : 1.
@@ -107,6 +113,28 @@ on narrow screens; on phones the layout turns a quarter to run top-to-bottom and
 selection is labelled. The **table view** lists exactly the same filtered data for readers
 who prefer — or need — text.
 
+## Time-series charts (Phase 2)
+
+One chart form serves both economic series and prices: a single series over time, so no
+legend box — the panel title and the unit label name what is plotted.
+
+- **Marks:** a 2 px line in `--viz-series`; value markers (radius 4, with a 2 px ring in
+  the surface colour) only when there are at least 12 px per period; the latest value is
+  labelled at the line's end, rounded for display.
+- **Honesty:** a missing value or a period absent from the data breaks the line — nothing
+  is interpolated — and missing periods are marked on the axis with a hollow circle.
+  Values flagged for review are **triangles** in `--viz-flag`: a shape of their own, never
+  colour alone. A key explains both whenever they appear.
+- **Axes:** round-number ticks from one scale (never two y-axes); hairline gridlines; the
+  zero line emphasised only when it lies inside the range; calendar-aligned time ticks.
+- **Reading values:** a crosshair snaps to the nearest period and a tooltip shows the
+  exact value (every published digit), the period and any flags. The chart is operable as
+  a slider — arrow keys, Home and End move through the periods and screen readers announce
+  each reading — and every chart has a table twin with the exact values.
+- **Labels, not colour, for the nature of data:** "Historical · not live", "Sample data —
+  not real", "No value published", "Flagged for review", and the three freshness facts
+  (period, retrieval time, provider's last update) kept apart.
+
 ## Knowledge labels
 
 The five epistemic categories use one glyph each, everywhere (badges, legend, landing):
@@ -129,7 +157,8 @@ its source), `PageHeader`, `Icon`, `Wordmark`, and the loading, error and empty 
 ## Accessibility checklist
 
 - Keyboard: every control is reachable; network nodes are focusable buttons (Enter
-  selects, Escape clears, `+`/`−`/`0` zoom); a skip link leads to the main content.
+  selects, Escape clears, `+`/`−`/`0` zoom); time-series charts are sliders (arrow keys,
+  Home, End); a skip link leads to the main content.
 - Screen readers: landmarks and headings on every page; live regions announce counts and
   save results; form errors are listed in a summary that links to each field.
 - Focus is always visible (sky-blue ring, ≥ 3 : 1).

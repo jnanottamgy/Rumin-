@@ -21,6 +21,22 @@ is optional**: the defaults run a local workspace on SQLite.
 | `RUMIN_DOCS_ENABLED` | `true` | Serve `/docs`, `/redoc` and `/openapi.json`. Set to `false` for a public deployment if the API surface should not be browsable. |
 | `RUMIN_MAX_REQUEST_BODY_BYTES` | `65536` | Larger request bodies are rejected with 413 (limits 1 KiB – 10 MiB). |
 
+### Data ingestion (Phase 2)
+
+Read by the ingestion command line (`python -m app.ingestion`); the API never contacts a
+provider. See [providers](data/providers.md).
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `RUMIN_WORLDBANK_BASE_URL` | `https://api.worldbank.org/v2` | The World Bank Indicators API. Must use `https://` (plain `http://` is accepted only for `localhost`, for a local test server). |
+| `RUMIN_WORLDBANK_MIN_INTERVAL_SECONDS` | `1.0` | Minimum seconds between two World Bank requests (0.1 – 60). |
+| `RUMIN_PROVIDER_TIMEOUT_SECONDS` | `20` | Seconds allowed for one response (1 – 120). |
+| `RUMIN_PROVIDER_MAX_ATTEMPTS` | `4` | Attempts per request including the first (1 – 6), so by default at most 3 retries of temporary failures. |
+| `RUMIN_MAX_IMPORT_FILE_BYTES` | `10485760` | Largest price file accepted (1 KiB – 100 MiB). |
+| `RUMIN_STORE_SOURCE_BODIES` | `true` | Keep the exact bytes of every response and imported file (gzip). With `false`, only their SHA-256 and metadata are kept. |
+
+Outbound requests honour the standard `HTTPS_PROXY` environment variable.
+
 ## Frontend
 
 | Variable | Default | Meaning |
@@ -46,9 +62,11 @@ is optional**: the defaults run a local workspace on SQLite.
 
 ## Secrets
 
-Phase 1 has no secrets: no API keys, no third-party services, no authentication. The only
-credential anywhere is the local PostgreSQL password above, which is a placeholder for a
-disposable development database (and a CI-only password inside the CI job's throwaway
-database container). When later phases add real credentials (data providers, an AI
-provider, authentication), they belong in the deployment's secret store and in the
-backend's environment — never in `VITE_` variables, never in the repository.
+RUMIN still has no secrets: the World Bank needs no API key, price files are local, and
+there is no authentication. The only credential anywhere is the local PostgreSQL password
+above, a placeholder for a disposable development database (and a CI-only password inside
+the CI job's throwaway database container). When providers that need keys arrive (MoSPI
+is next), their keys belong in the backend's environment (`RUMIN_<PROVIDER>_API_KEY`) or the
+deployment's secret store — never in `VITE_` variables, the catalogue, the database or the
+repository. The HTTP layer already strips credential-like query parameters from every URL
+it logs or stores.

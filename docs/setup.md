@@ -46,8 +46,24 @@ Interactive API documentation: <http://127.0.0.1:8000/docs> (Swagger UI) and `/r
 
 The seed loader validates the dataset file before writing anything and is idempotent:
 running it again with an unchanged file does nothing. `--reset` replaces the loaded data
-**and deletes all scenarios**; `--validate-only` checks the file without touching the
-database.
+**and deletes all scenarios** (it never touches provider data); `--validate-only` checks
+the file without touching the database.
+
+### Financial data (Phase 2)
+
+```bash
+uv run python -m app.ingestion catalog              # the series catalogue: no network needed
+uv run python -m app.ingestion run worldbank-wdi    # needs HTTPS access to api.worldbank.org
+uv run python -m app.ingestion jobs                 # what ran, and how it went
+```
+
+`catalog` loads the *definitions* of the eleven World Bank series (nothing is fetched).
+`run` retrieves them — two requests per series, one per second — and prints a summary with
+the dataset's attribution; the Data Explorer (<http://127.0.0.1:5173/data>) then shows the
+values with their source and freshness. Without internet access the run is recorded as
+failed and the Data Explorer explains it; nothing else is affected. To import prices from a
+file you are licensed to use, see [price files](data/price-files.md); for the pipeline and
+troubleshooting, see [ingestion](data/ingestion.md).
 
 ## 3. Frontend
 
@@ -77,6 +93,7 @@ uv sync --extra dev --extra postgres # adds the psycopg driver
 export RUMIN_DATABASE_URL=postgresql+psycopg://rumin:change-me-local-only@localhost:5432/rumin
 uv run alembic upgrade head
 uv run python -m app.db.seed
+uv run python -m app.ingestion catalog
 ```
 
 The credentials come from `POSTGRES_*` in `.env` (defaults shown). They are for a local,
@@ -84,9 +101,10 @@ disposable database only. Any PostgreSQL 16 server works equally well; the Docke
 convenience.
 
 > The compose file was validated with `docker compose config`, but the image could not be
-> pulled in the environment Phase 1 was built in (Docker Hub was not reachable). The
+> pulled in the environment Phases 1 and 2 were built in (Docker Hub was not reachable). The
 > PostgreSQL path itself was verified against a local PostgreSQL 16 server: migrations,
-> seeding and the full backend test suite pass. CI runs the backend tests on PostgreSQL 16.
+> seeding, ingestion and the full backend test suite pass. CI runs the backend tests on
+> PostgreSQL 16.
 
 ## 5. Verify everything
 
@@ -108,4 +126,7 @@ See [testing.md](testing.md).
 | **413 Payload Too Large** | Request bodies are limited to `RUMIN_MAX_REQUEST_BODY_BYTES` (64 KiB). |
 | `ModuleNotFoundError: psycopg` | Install the PostgreSQL extra: `uv sync --extra dev --extra postgres`. |
 | Port 8000 or 5173 already in use | Pass another port: `uvicorn … --port 8001` and set `RUMIN_API_PROXY_TARGET`; `npm run dev -- --port 5174` (then add that origin to `RUMIN_CORS_ORIGINS` if you call the API cross-origin). |
-| Start again from scratch | Stop the API, delete `backend/rumin.db`, then migrate and seed again. |
+| The Data Explorer says **"The series catalogue has not been loaded"** | Run `uv run python -m app.ingestion catalog` in `backend/`. |
+| **"The last retrieval failed"** / every series `provider_unavailable` | The machine cannot reach `api.worldbank.org` (firewall, proxy or sandbox). Allow outbound HTTPS to it (`HTTPS_PROXY` is honoured) and run `make ingest` again. More in [ingestion](data/ingestion.md#troubleshooting). |
+| `✗ Database error … run: make migrate` from an ingestion command | The schema is missing or older than the code: `uv run alembic upgrade head`. |
+| Start again from scratch | Stop the API, delete `backend/rumin.db`, then migrate, seed and load the catalogue again. |

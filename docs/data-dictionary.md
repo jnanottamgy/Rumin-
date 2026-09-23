@@ -13,9 +13,11 @@ the illustrative sample dataset. For tables, keys and constraints see
   is unintended. They are flagged `is_fictional: true` and labelled "Fictional" in the UI.
 - **Illustrative assumptions:** all 41 relationships. Each has a written rationale, but
   none has been estimated or validated: every one has `evidence_level: illustrative`.
-- **Absent:** prices, rates, exchange rates, financial statements, time series or any other
-  observed value. The variables are *defined*, not *measured*. Observations arrive with the
-  Phase 2 data infrastructure, each with its source and retrieval date.
+- **Absent from the sample:** prices, rates, exchange rates, financial statements, time
+  series or any other observed value. The variables are *defined*, not *measured*.
+  Observed values live separately, as **provider data** (Phase 2, [below](#provider-data)):
+  World Bank series retrieved from the command line and prices imported from licensed
+  files, each with its source, licence and retrieval time.
 
 ## Common entity fields
 
@@ -107,12 +109,123 @@ the illustrative sample dataset. For tables, keys and constraints see
 
 | Field | Type | Meaning |
 |---|---|---|
-| `id`, `version` | strings | E.g. `rumin-sample`, `1.0.0`. |
-| `is_illustrative` | boolean | `true` for the sample: its contents demonstrate the model and are not research findings. |
-| `provenance_note` | text | Where each part of the data comes from and how far it can be relied on. |
-| `license` | string | Terms of the dataset. |
-| `checksum_sha256` | hex string | SHA-256 of the file the data was loaded from, so a loaded dataset can be matched to its exact source file. |
-| `loaded_at` | UTC timestamp | When it was loaded. |
+| `id`, `version` | strings | E.g. `rumin-sample` / `1.0.0`; `worldbank-wdi` / `catalogue 1.0.0`; a price file's dataset / `user import`. |
+| `kind` | enum | `curated` (written for RUMIN, loaded from a file in the repository) or `provider` (retrieved from a provider or imported from a licensed file). |
+| `is_illustrative` | boolean | `true` for sample data that is not real: the Phase 1 network, or a price file whose manifest says so. |
+| `provenance_note` | text | Where the data comes from and how far it can be relied on. |
+| `license` | string | Terms of the dataset (for price files: the licence the user declared). |
+| `checksum_sha256` | hex string | Curated datasets: SHA-256 of the file the data was loaded from. |
+| `loaded_at` | UTC timestamp | When the dataset record was created. |
+| `provider_id` | string | Provider datasets: who publishes it (`worldbank`, `price-file`). |
+| `provider_dataset_code` | string | The provider's own id for the dataset (World Bank source `2` = WDI). |
+| `license_url`, `terms_url`, `homepage_url` | https URLs | Where the licence, terms and dataset are published. |
+| `attribution` | text | The attribution the licence requires; shown wherever the data is shown. |
+| `update_frequency` | string | How often the provider updates it, in words. |
+| `provider_last_updated` | date | When the provider last updated the dataset, **as the provider reports it** (World Bank `lastupdated`). Not the retrieval time. |
+
+## Provider data
+
+### Data provider
+
+| Field | Meaning |
+|---|---|
+| `id`, `name`, `kind` | `worldbank` (`api`), `price-file` (`file`). |
+| `authentication` | `none`, `api_key` or `not_applicable`. |
+| `data_categories`, `coverage`, `update_frequency`, `reliability`, `known_limitations` | From the provider's documentation, in words. |
+| `rate_limit_policy` | The provider's published limit (if any) and what RUMIN does to respect it. |
+| `licensing`, `commercial_use` | The terms as understood from the provider's documentation. Not legal advice. |
+| `homepage_url`, `documentation_url`, `terms_url` | Where to read more. |
+
+### Economic series
+
+| Field | Type | Meaning |
+|---|---|---|
+| `id` | slug | RUMIN's id, e.g. `wb-ind-fp-cpi-totl-zg`. |
+| `provider_code`, `provider_series_key` | strings | The provider's indicator (`FP.CPI.TOTL.ZG`) and the series key within the dataset (`FP.CPI.TOTL.ZG\|IND`). |
+| `name`, `description` | text | Name from the catalogue; the description is replaced by the provider's own definition at the first successful retrieval. |
+| `source_organization` | text | Who originally produced the statistic, as the provider reports it. |
+| `measure_type` | enum | `level`, `change` (a rate of change), `rate`, `ratio` or `exchange_rate`. |
+| `unit` | string | E.g. `% change on previous year`, `INR per USD`, `US$ (current prices)`. Every value is shown with it. |
+| `currency` | ISO 4217 | For monetary values; `null` otherwise. |
+| `frequency` | enum | `annual`, `quarterly` or `monthly` for provider series. |
+| `aggregation` | text | How the value is formed (annual average, end of period, total, …). |
+| `price_basis`, `seasonal_adjustment` | enums | `nominal`/`real`/`not_applicable`; `seasonally_adjusted`/`not_seasonally_adjusted`/`not_applicable`. |
+| `country_iso3`, `country_id` | code, entity ID | Geography as the provider identifies it, and the linked Phase 1 country. |
+| `variable_id`, `variable_relation` | entity ID, text | A related Phase 1 variable, and **how the two measures differ** (required with a link). |
+| `plausible_min`, `plausible_max` | decimals | RUMIN's review range — an assumption. Values outside it are stored and flagged. |
+| `first_period`, `last_period` | dates | First and latest period with a reported value. |
+| `observation_count`, `missing_count` | integers | Current periods with a value / listed without one. |
+| `last_ingestion_status`, `last_ingestion_at`, `last_successful_ingestion_at` | enum, timestamps | The latest retrieval attempt, its outcome, and the last successful one. |
+
+### Economic observation
+
+| Field | Type | Meaning |
+|---|---|---|
+| `period_start`, `period_label`, `period_end` | date, string, date | The period the value describes: `2023` = 1 Jan–31 Dec 2023; `2023-Q1`; `2023-03`. |
+| `value` | decimal or `null` | The value as published; `null` when the provider listed the period without a value. Never filled in. |
+| `raw_value` | string | The value exactly as the provider sent it (the JSON number's literal digits). |
+| `status` | enum | `reported` or `missing`. |
+| `quality_status` | enum | `validated` or `warning` (flagged for review). |
+| `provider_flags` | string | Flags the provider attached (World Bank `obs_status`). |
+| `revision`, `is_current`, `superseded_at` | integer, boolean, timestamp | Revision number; whether this is the current value; when a later retrieval replaced it. |
+| `retrieved_at` (`first_seen_at`), `last_confirmed_at` (`last_seen_at`) | timestamps | When RUMIN first received this value, and when a retrieval last returned it. |
+| `retrieved_by_job_id`, `capture_id` | UUID, integer | The job that first received it and the stored response it came from. |
+| `epistemic_category` | `observation` | Always, on the series. |
+
+### Instrument and price bar
+
+| Field | Meaning |
+|---|---|
+| `isin` | ISO 6166 identifier (check digit verified), optional. |
+| `exchange_mic`, `symbol` | ISO 10383 market code (`XNSE` = NSE, `XBOM` = BSE) and the ticker on that exchange. A ticker is only unique on its exchange. |
+| `currency` | The instrument's single currency; prices are never converted. |
+| `first_trade_date`, `last_trade_date`, `bar_count` | Coverage of current prices (distinct trading days). |
+| `trade_date` | The trading day (calendar date, no time zone). |
+| `open`, `high`, `low`, `close` | Decimals exactly as in the imported file. |
+| `adjusted_close` | Only when the file supplied one. RUMIN never computes adjustments. |
+| `volume` | Whole number of units traded, when supplied. |
+| `adjustment` | `unadjusted` (as traded) or `adjusted` (as supplied), declared in the manifest. |
+| `source_row` | Line of the file the prices came from (1 = header). |
+| `dataset_id`, revision fields | As for observations: one dataset per price, revisions kept. |
+
+### Ingestion job and job item
+
+| Field | Meaning |
+|---|---|
+| `status` | Derived from the items: `completed`, `completed_with_warnings`, `partially_failed`, `failed`, `cancelled` (or `pending`/`running`). See [ingestion](data/ingestion.md). |
+| `trigger`, `parameters` | `cli`; what was requested (series, period range, file name). Never secrets. |
+| `created_at`, `started_at`, `finished_at`, `heartbeat_at` | Timing; the heartbeat shows a running job is alive. |
+| `items_total`, `items_succeeded`, `items_failed`, `items_skipped` | Targets and their outcomes. |
+| `records_received`, `records_new`, `records_revised`, `records_unchanged`, `records_rejected` | received = new + revised + unchanged + rejected. |
+| `records_missing` | Accepted periods without a value (a subset of the above). |
+| `warning_count`, `error_count` | Warning-severity issues; error-severity issues (rejected records). |
+| `request_count`, `bytes_received` | HTTP requests sent (including retries) and bytes received. |
+| `error_summary` | A short, safe explanation of what failed. |
+| Item `error_code`, `error_message` | E.g. `provider_unavailable`, `rate_limited`, `authentication_failed`, `invalid_request`, `malformed_response`, `invalid_file`, `all_records_rejected`, `storage_error`, `internal_error`, `circuit_open`, `cancelled`, `interrupted`. |
+
+### Source capture
+
+| Field | Meaning |
+|---|---|
+| `kind` | `http_response` or `file`. |
+| `locator` | The request URL with credentials removed, or the imported file's name (never a local path). |
+| `request_params` | The query parameters, credentials removed. |
+| `http_status`, `content_type`, `received_at` | As received. |
+| `size_bytes`, `sha256` | Size and SHA-256 of the exact bytes. |
+| `body_gzip` | The bytes, gzip-compressed (`RUMIN_STORE_SOURCE_BODIES`). Not served by the API. |
+| `provider_last_updated` | The provider's last-update date reported in that response. |
+
+### Data-quality issue
+
+| Field | Meaning |
+|---|---|
+| `rule` | One of the [quality rules](data/quality.md). |
+| `severity`, `outcome` | `error`/`warning`/`info`; `rejected`/`flagged`/`noted`. |
+| `message` | What was found, in words. |
+| `record_key` | The period or trade date concerned. |
+| `raw_record` | For rejected records: what the source sent (the only copy RUMIN keeps). |
+| `observation_id`, `price_bar_id` | The stored value a flag or note is about. |
+| `review_status` | `unreviewed` (no review workflow yet). |
 
 ## Sample dataset catalogue
 

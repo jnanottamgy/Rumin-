@@ -1,10 +1,13 @@
 # Data model
 
-RUMIN stores four things in Phase 1: **datasets** (where reference data came from),
-**entities** (companies, industries, countries, economic variables), **relationships**
-between entities (modelling assumptions), and **scenarios** (user-defined changes to
-variables). The same schema runs on SQLite (development) and PostgreSQL (production), and
-is created only through Alembic migrations.
+Phase 1 stores **datasets** (where data came from), **entities** (companies, industries,
+countries, economic variables), **relationships** between entities (modelling
+assumptions) and **scenarios** (user-defined changes to variables). Phase 2 adds the
+**financial data layer**: providers, economic series and their observations, instruments
+and their daily prices, and the records of every ingestion run — the jobs, the exact bytes
+received, and the data-quality issues found ([below](#phase-2-financial-data)). The same
+schema runs on SQLite (development) and PostgreSQL (production), and is created only
+through Alembic migrations.
 
 Field-level definitions and the contents of the sample dataset are in the
 [data dictionary](data-dictionary.md).
@@ -145,6 +148,118 @@ records the dataset's version, whether it is illustrative, a provenance note, it
 the SHA-256 checksum of the file it was loaded from, and when it was loaded. The system
 page and `/api/v1/system` show this, so the origin of what is on screen is always visible.
 
+## Phase 2: financial data
+
+```mermaid
+erDiagram
+    data_providers ||--o{ datasets : "publishes"
+    datasets ||--o{ economic_series : "contains"
+    datasets ||--o{ instruments : "declares"
+    datasets ||--o{ price_bars : "provides"
+    economic_series ||--o{ economic_observations : "has (revisions)"
+    instruments ||--o{ price_bars : "has (revisions)"
+    countries |o--o{ economic_series : "describes"
+    economic_variables |o--o{ economic_series : "relates to"
+    ingestion_jobs ||--|{ ingestion_job_items : "targets"
+    ingestion_jobs ||--o{ source_captures : "received"
+    ingestion_jobs ||--o{ data_quality_issues : "found"
+    source_captures |o--o{ economic_observations : "is the source of"
+    source_captures |o--o{ price_bars : "is the source of"
+    economic_observations |o--o{ data_quality_issues : "flagged by"
+    price_bars |o--o{ data_quality_issues : "flagged by"
+
+    economic_series {
+        string id PK
+        string dataset_id FK
+        string provider_series_key
+        string unit
+        string frequency
+        string measure_type
+        numeric plausible_min
+        numeric plausible_max
+    }
+    economic_observations {
+        int id PK
+        string series_id FK
+        date period_start
+        numeric value
+        string raw_value
+        string status
+        string quality_status
+        int revision
+        datetime superseded_at
+        int capture_id FK
+    }
+    price_bars {
+        int id PK
+        string instrument_id FK
+        string dataset_id FK
+        date trade_date
+        numeric close
+        int revision
+        datetime superseded_at
+    }
+    ingestion_jobs {
+        uuid id PK
+        string status
+        int items_total
+        int records_rejected
+    }
+    source_captures {
+        int id PK
+        string locator
+        string sha256
+        bytes body_gzip
+    }
+```
+
+| Table | Purpose | Uniqueness and key constraints |
+|---|---|---|
+| `data_providers` | Who publishes data and on what terms (licensing, commercial use, rate policy, limitations) — mirrored from the provider profiles in code | `id` |
+| `datasets` (extended) | The provenance anchor for **all** data. `kind` is `curated` (the Phase 1 network, identified by its file checksum) or `provider` (with provider, licence, licence URL, terms URL, attribution, update frequency, provider's last update) | `CHECK`: curated rows have a checksum; provider rows have a provider |
+| `economic_series` | One provider series (for the World Bank: one indicator for one country) with unit, frequency, measure type, aggregation, price basis, seasonal adjustment, currency, optional links to a Phase 1 country and variable (with how they differ), review range, and a summary (coverage, counts, last retrieval) | `UNIQUE (dataset_id, provider_series_key)` |
+| `economic_observations` | One period's value as published, with the provider's literal, status (`reported`/`missing`), quality status, provider flags, revision number, first/last seen (job and time) and the capture it came from | **one current row per (`series_id`, `period_start`)**: a unique index on those columns `WHERE superseded_at IS NULL` |
+| `instruments` | A listed security: name, type, ISIN, exchange (ISO 10383 MIC), symbol, currency, optional country, coverage | `UNIQUE (isin)`; `UNIQUE (exchange_mic, symbol)` |
+| `price_bars` | One trading day's open/high/low/close (+ optional adjusted close and volume) for an instrument **from one dataset**, with currency, adjustment status, quality status, file line, revisions and provenance | one current row per (`instrument_id`, `dataset_id`, `trade_date`) `WHERE superseded_at IS NULL` |
+| `ingestion_jobs` | One run: provider, dataset, trigger, parameters, derived status, timestamps and heartbeat, counters (targets, records, warnings, errors, requests, bytes), error summary | `id` (UUID) |
+| `ingestion_job_items` | One target of a run (a series or an instrument) and its outcome, counters and error code/message | `job_id` (cascade) |
+| `source_captures` | The exact bytes received (gzip) with SHA-256, size, sanitised URL or file name, HTTP status, time and the provider's last-update date | `job_id` (cascade) |
+| `data_quality_issues` | A rejected record (with the raw record), a flagged value or a note: rule, severity, outcome, message, the period or date concerned, review status | links to job, series/instrument and observation/price bar |
+
+### Revisions, not overwrites
+
+Observations and price bars are never edited in place. Receiving the same content again
+only updates `last_seen_job_id`/`last_seen_at` (and re-assesses the quality status).
+Receiving different content sets `superseded_at` and `superseded_by_job_id` on the current
+row and inserts a new row with `revision + 1`. The partial unique indexes guarantee, in the
+database itself, that each period (or trading day) has exactly one current row; the
+superseded rows remain as the history of what each provider said and when.
+
+### Exact decimals
+
+`ExactDecimal` (`app/db/types.py`) stores values as `NUMERIC(38, 18)` on PostgreSQL and as a
+canonical decimal string on SQLite (whose `NUMERIC` would silently use binary floating
+point). Values that do not fit are refused with an error — never rounded — and the
+ingestion pipeline rejects them earlier with the `precision_exceeded` rule. Insignificant
+trailing zeros are not stored (`5.10` is `5.1`); the provider's literal is kept in
+`raw_value`.
+
+### Foreign-key behaviour
+
+- Observations and price bars reference their job and capture with `RESTRICT`: provenance
+  cannot be deleted from under a value.
+- A series' links to Phase 1 countries and variables use `SET NULL`, so reloading the
+  reference data (`seed --reset`) never deletes observation history; the catalogue
+  restores the links.
+- Items, captures and issues cascade with their job.
+
+### Indexes
+
+Besides the unique indexes above: observations by (`series_id`, `period_start`), price bars
+by (`instrument_id`, `trade_date`), foreign keys used in filters (dataset, provider,
+country, variable, job, series, instrument), job status and creation time, issue rule,
+and capture SHA-256.
+
 ## Enumerations
 
 Enumerations are stored as `VARCHAR` with a `CHECK` constraint, not native database enum
@@ -165,6 +280,21 @@ migration.
 | Change type | `percent_change`, `absolute_change` |
 | Scenario status | `draft` |
 | Epistemic category | `observation`, `assumption`, `scenario_input`, `simulated_output`, `uncertainty` |
+| Dataset kind | `curated`, `provider` |
+| Provider kind / authentication | `api`, `file` / `none`, `api_key`, `not_applicable` |
+| Measure type | `level`, `change`, `rate`, `ratio`, `exchange_rate` |
+| Price basis | `nominal`, `real`, `not_applicable` |
+| Seasonal adjustment | `seasonally_adjusted`, `not_seasonally_adjusted`, `not_applicable` |
+| Observation status | `reported`, `missing` |
+| Quality status | `validated`, `warning` |
+| Issue severity / outcome | `error`, `warning`, `info` / `rejected`, `flagged`, `noted` |
+| Review status | `unreviewed` |
+| Job status | `pending`, `running`, `completed`, `completed_with_warnings`, `partially_failed`, `failed`, `cancelled` |
+| Job item status | `pending`, `succeeded`, `failed`, `skipped` |
+| Job trigger / target kind | `cli` / `economic_series`, `instrument` |
+| Capture kind | `http_response`, `file` |
+| Instrument type | `equity`, `etf`, `index` |
+| Price adjustment | `unadjusted`, `adjusted` |
 
 ## Conventions
 
@@ -177,7 +307,9 @@ migration.
 
 ## Migrations
 
-Alembic, in `backend/migrations/`. `0001_initial_schema` creates all nine tables.
+Alembic, in `backend/migrations/`. `0001_initial_schema` creates the nine Phase 1 tables;
+`0002_financial_data_infrastructure` extends `datasets` and adds the nine Phase 2 tables
+(its downgrade removes provider datasets first, then the tables and columns).
 
 - Every schema change is a new revision: edit the models, run
   `uv run alembic revision --autogenerate -m "…"`, **review the generated file**, apply it

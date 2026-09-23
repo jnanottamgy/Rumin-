@@ -1,6 +1,7 @@
 # Technology decisions
 
-Short records of the choices made in Phase 1, why, and what would make us revisit them.
+Short records of the choices made in Phases 1 and 2, why, and what would make us revisit
+them. Phase 2 decisions start at [13](#13-world-bank-indicators-as-the-first-provider-fred-rejected).
 
 ## 1. Monorepo with a Python API and a TypeScript web client
 
@@ -95,3 +96,82 @@ local use only. Everything else a foundation should get right is in place: valid
 every input, a single error envelope without internals, security headers, a strict CSP on
 API responses, a body-size limit, explicit CORS origins (no wildcard, no credentials), no
 secrets anywhere in the code. See [security.md](security.md).
+
+# Phase 2
+
+## 13. World Bank Indicators as the first provider; FRED rejected
+
+**Decision.** The first provider is the World Bank Indicators API (v2): no key, CC BY 4.0
+(commercial use with attribution), good India coverage.
+**Why not FRED.** Its API terms (June 2024) prohibit storing FRED content in a database,
+and RUMIN stores data by design. Alpha Vantage's free tier is non-commercial; RBI has no
+official API; MoSPI needs a token (it is the next provider).
+**Revisit when** MoSPI access is arranged (monthly official Indian CPI, WPI, IIP).
+
+## 14. Market prices only from files the user is licensed to use
+
+**Decision.** No price data is bundled or fetched. Daily prices enter only through
+`import-prices`, with a manifest declaring the licence and attribution.
+**Why.** Exchange data is licensed; free APIs restrict commercial use. Importing the user's
+own licensed files keeps RUMIN honest about rights and still exercises the full pipeline.
+
+## 15. Exact decimals everywhere
+
+**Decision.** `Decimal` from JSON parsing (`parse_float=Decimal`) to storage
+(`NUMERIC(38, 18)`; a canonical string on SQLite, whose `NUMERIC` is floating point) to the
+wire (decimal strings) to the screen (BigInt-based formatting). Values that do not fit are
+rejected, never rounded.
+**Why.** Financial values must not drift through binary floating point, and "refuse,
+don't round" keeps every stored digit the provider's.
+
+## 16. Revisions instead of overwrites
+
+**Decision.** One current row per period (a partial unique index); a change supersedes it
+and inserts a new revision; identical data only updates "last seen".
+**Why.** Providers revise data. Overwriting would lose what RUMIN was told and when; the
+history is what makes a past analysis reproducible.
+
+## 17. Keep the exact bytes received
+
+**Decision.** Every response and imported file is stored gzip-compressed with its SHA-256;
+each value points to its capture.
+**Why.** Provenance you can verify, and re-processing without asking the provider again.
+**Cost.** Storage — small for annual series (tens of KB per run); `RUMIN_STORE_SOURCE_BODIES`
+can turn the bodies off (hashes and metadata remain).
+
+## 18. Structural problems reject, plausibility problems flag
+
+**Decision.** A record that cannot be what it claims (bad number, wrong period, high below
+low) is rejected and kept as an issue with its raw content; a well-formed but unusual value
+is stored exactly and flagged. Nothing is corrected.
+**Why.** Silent correction invents data; silent dropping loses it. Both are recorded.
+
+## 19. Job status derived from targets
+
+**Decision.** Items succeed, fail or are skipped; the job's status is computed from them,
+with a `partially_failed` status of its own.
+**Why.** A run where some series failed is neither "completed" nor "failed"; reporting it
+as either would misstate what is stored.
+
+## 20. Ingestion from the command line only (until authentication)
+
+**Why.** Without authentication, an HTTP trigger would let anyone make RUMIN call providers
+and write data. The job model is ready for a scheduler or an authenticated endpoint.
+
+## 21. No new dependencies
+
+**Decision.** HTTP via the standard library (`urllib`) behind a small transport interface;
+CSV, gzip, hashing from the standard library; the chart hand-written in SVG (scales, ticks
+and gap handling are ~200 lines, unit-tested).
+**Why.** Fewer supply-chain risks and nothing to keep up to date; the transport interface
+lets tests script responses without a network.
+**Revisit if** providers need HTTP/2, connection pooling at scale, or charts become
+numerous enough to justify a charting library.
+
+## 22. The series catalogue is curated like code
+
+**Decision.** Which series to retrieve, and how to describe them (unit, measure, basis,
+review range, links to Phase 1 variables with the difference stated), lives in a validated
+JSON file under version control — never values.
+**Why.** Describing a series honestly is editorial work that deserves review; the file is
+validated in full before anything is written.

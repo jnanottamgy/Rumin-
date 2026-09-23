@@ -4,6 +4,17 @@ Status: **complete for local use**, with the gaps listed under
 [Known limitations](#9-known-limitations). Nothing described here as working is
 untested; where something could not be verified, that is stated.
 
+> **Update (23 September 2026, during Phase 2).** This report is kept as written at the end
+> of Phase 1, with two corrections since:
+>
+> - The CI workflow has now run on GitHub. Run #1 on `ed637b6` passed.
+> - The Phase 2 licence review rejected FRED as a data source. Its API terms prohibit
+>   storing FRED content in a database, so the World Bank Indicators API was used instead
+>   ([decision 13](../decisions.md#13-world-bank-indicators-as-the-first-provider-fred-rejected)).
+>
+> The "Phase 2 next steps" below were superseded by the
+> [Phase 2 report](phase-2-report.md).
+
 ## 1. What was built
 
 - **API** (FastAPI): health and readiness probes; versioned read endpoints for entities,
@@ -129,4 +140,4 @@ Observation storage with vintages; source connectors for the variables already d
 checks and visible retrieval dates; a time-series API and charts; a policy for real
 company data; dataset governance. Early follow-ups: choose a licence, add dependency
 scanning and browser end-to-end tests to CI, decide the authentication model. Details:
-[roadmap.md](../roadmap.md#phase-2--next-steps).
+[roadmap.md](../roadmap.md).
