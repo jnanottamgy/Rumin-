@@ -20,7 +20,7 @@ from sqlalchemy import delete, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.domain.enums import JobStatus, SimulationModelStatus
+from app.domain.enums import GraphEdgeType, JobStatus, QualityStatus, SimulationModelStatus
 from app.graph.build import run_build
 from app.ingestion.catalog import DEFAULT_CATALOG_PATH, read_catalog, sync_catalog
 from app.ingestion.economic import run_economic_ingestion
@@ -30,6 +30,7 @@ from app.models import (
     Company,
     Dataset,
     EconomicSeries,
+    GraphEdge,
     SimulationModelVersion,
     SimulationRun,
     SimulationRunStep,
@@ -359,6 +360,33 @@ def test_a_stale_graph_is_reported_with_the_build_it_used(
         built.commit()
 
     assert "graph_stale" in [item["code"] for item in run["warnings"]]
+
+
+def test_a_relationship_flagged_by_the_graph_is_not_followed(
+    built: Session, client: TestClient
+) -> None:
+    rule = MODEL.definition.transmission_rules[0]
+    edge = built.scalars(
+        select(GraphEdge).where(
+            GraphEdge.retired_build_id.is_(None),
+            GraphEdge.edge_type == GraphEdgeType(rule.edge_type),
+            GraphEdge.source_node_id == rule.source,
+            GraphEdge.target_node_id == rule.target,
+        )
+    ).one()
+    try:
+        edge.quality_status = QualityStatus.WARNING
+        built.commit()
+        error = post(client, "/simulations", body(), 422)
+        run = create_run(client, crude_oil_change="0", usd_change="5")
+    finally:
+        edge.quality_status = QualityStatus.VALIDATED
+        built.commit()
+
+    message = error["error"]["details"][0]["message"]
+    assert details(error) == [("inputs.crude_oil_change", "channel_confirmed")]
+    assert "does not contain it as a validated relationship" in message
+    assert outputs(run)["fuel_cost_change"] == Decimal(3_000_000)
 
 
 # --- Explanation, provenance and verification ---------------------------------------------------
