@@ -8,8 +8,10 @@ and their daily prices, and the records of every ingestion run — the jobs, the
 received, and the data-quality issues found ([below](#phase-2-financial-data)). Phase 3
 adds the **knowledge graph**: builds, nodes and their identifiers, edges and their
 evidence, entity-resolution decisions and validation issues, all derived from the tables
-above ([below](#phase-3-knowledge-graph)). The same schema runs on SQLite (development)
-and PostgreSQL (production), and is created only through Alembic migrations.
+above ([below](#phase-3-knowledge-graph)). Phase 4 adds the **simulation engine's
+records**: model versions, runs, their calculation steps and sensitivity analyses, all
+append-only ([below](#phase-4-simulation-runs)). The same schema runs on SQLite
+(development) and PostgreSQL (production), and is created only through Alembic migrations.
 
 Field-level definitions and the contents of the sample dataset are in the
 [data dictionary](data-dictionary.md).
@@ -139,9 +141,10 @@ industry), `domiciled_in` (company → country) and `measured_for` (variable →
   exact decimals, never binary floating point;
 - `UNIQUE (scenario_id, variable_id)`: a variable is changed at most once per scenario.
 
-`status` can only be `draft` (enforced by a CHECK constraint). There is **no table for
-simulation runs or results**: none exist until the Phase 4 engine, and the API reports
-`latest_run: null`.
+`status` can only be `draft` (enforced by a CHECK constraint). Drafts are **not connected
+to the simulation engine** yet (that is the Phase 5 Scenario Lab): nothing links a draft
+to a run, and the API reports `latest_run: null`. Model runs are stored separately
+([below](#phase-4-simulation-runs)).
 
 ## Datasets and provenance
 
@@ -348,6 +351,71 @@ source sets `retired_build_id`; the graph's membership at build *n* is the rows 
 `first_build_id ≤ n` and `retired_build_id` empty or greater than *n*. Changed content
 overwrites the row and updates `changed_build_id`: earlier attribute values are not kept.
 
+## Phase 4: simulation runs
+
+Everything needed to explain and reproduce a run is stored with it, as it was when the run
+was calculated. Runs, steps and analyses are **append-only**: no code path updates or
+deletes them. See [`docs/simulation/provenance.md`](simulation/provenance.md).
+
+```mermaid
+erDiagram
+    simulation_model_versions ||--o{ simulation_runs : "is run as"
+    simulation_runs ||--|{ simulation_run_steps : "is calculated in"
+    simulation_runs ||--o{ simulation_sensitivity_analyses : "is analysed by"
+
+    simulation_model_versions {
+        int id PK
+        string model_id
+        string version
+        string status
+        json definition
+        string definition_hash
+    }
+    simulation_runs {
+        uuid id PK
+        int model_version_id FK
+        json inputs
+        string inputs_hash
+        json graph_snapshot
+        json data_snapshot
+        json outputs
+        json contributions
+        string result_hash
+        int random_seed "null: deterministic"
+    }
+    simulation_run_steps {
+        int id PK
+        uuid run_id FK
+        int sequence
+        string equation_id
+        int month
+        decimal output_value
+        json inputs
+    }
+    simulation_sensitivity_analyses {
+        uuid id PK
+        uuid run_id FK
+        string metric
+        json request
+        json results
+        string result_hash
+    }
+```
+
+| Table | Purpose | Keys and constraints |
+|---|---|---|
+| `simulation_model_versions` | One registered (model, version): name, status (`preview`, `active`, `deprecated`), the full definition as canonical JSON and its SHA-256 **definition hash**, stored the first time the version runs. A later run whose code has a different hash is refused | `UNIQUE (model_id, version)` |
+| `simulation_runs` | One completed run: model and version, label, the chosen graph entity, horizon; the **input snapshot** (every input with value, unit, category, kind of knowledge, source, default, rationale and any stored observation), assumptions and limitations; the **graph snapshot** and the **data snapshot**; outputs, monthly series, contributions, bridge, transmission paths, warnings; inputs hash, result hash, engine version, random seed (null), start, finish and duration | `id` (UUID); `model_version_id` → `simulation_model_versions` with `RESTRICT` |
+| `simulation_run_steps` | Every evaluated equation of a run, in order: equation ID, label, month (null for annual and horizon steps), output symbol, exact value (`NUMERIC(38, 18)`) and unit, and the inputs with their symbols, values and units | `UNIQUE (run_id, sequence)`; cascades with its run |
+| `simulation_sensitivity_analyses` | One analysis of a run: metric, the request, the results (every point with every output and difference, skipped points with reasons, ranges, ranking), evaluation count, duration, result hash | `run_id` → `simulation_runs` with `RESTRICT`: a run with analyses cannot be deleted |
+
+**Indexes.** Runs by (`model_id`, `created_at`) for the newest-first list, by `inputs_hash`
+(to find runs of identical inputs) and by `entity_id`; steps and analyses by run.
+
+**No foreign keys into the graph or the data tables.** A run names the graph build, edges
+and stored observations it used inside its snapshots, so rebuilding the graph or ingesting
+new data never changes or blocks a stored run.
+
 ## Enumerations
 
 Enumerations are stored as `VARCHAR` with a `CHECK` constraint, not native database enum
@@ -393,6 +461,8 @@ migration.
 | Identifier scheme | `iso3166_alpha2`, `iso3166_alpha3`, `iso4217`, `isic_rev4_section`, `isic_rev4_division`, `provider_series`, `isin`, `mic`, `listing` |
 | Resolution method / outcome | `identifier`, `explicit_link`, `name_comparison` / `linked`, `identifier_attached`, `candidate_flagged`, `conflict`, `rejected` |
 | Graph issue subject | `node`, `edge`, `identifier`, `resolution` |
+| Simulation model status | `preview`, `active`, `deprecated` |
+| Simulation run status | `completed` |
 
 ## Conventions
 
@@ -409,7 +479,9 @@ Alembic, in `backend/migrations/`. `0001_initial_schema` creates the nine Phase 
 `0002_financial_data_infrastructure` extends `datasets` and adds the nine Phase 2 tables
 (its downgrade removes provider datasets first, then the tables and columns);
 `0003_knowledge_graph` adds the seven graph tables and changes no existing table (its
-downgrade drops them, and the graph can be rebuilt from the sources at any time).
+downgrade drops them, and the graph can be rebuilt from the sources at any time);
+`0004_simulation_engine` adds the four simulation tables and changes no existing table (its
+downgrade drops them, and with them every stored run).
 
 - Every schema change is a new revision: edit the models, run
   `uv run alembic revision --autogenerate -m "…"`, **review the generated file**, apply it

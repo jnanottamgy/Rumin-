@@ -3,8 +3,8 @@
 ## Posture
 
 RUMIN is a **local, single-user application**. It has **no authentication or
-authorisation**: anyone who can reach the API can read all stored data and create, change
-or delete scenarios. Run it on your own machine (the dev servers bind to `127.0.0.1`) and
+authorisation**: anyone who can reach the API can read all stored data, create, change or
+delete scenarios, and add simulation runs and analyses. Run it on your own machine (the dev servers bind to `127.0.0.1`) and
 do not expose it to a network until Phase 10 adds access control. **This build has not had
 a security review and is not production-secure.**
 
@@ -122,6 +122,39 @@ those licences when sharing a database or its exports.
   validated as `https://` when the dataset is loaded. The `focus`, `from` and `to` address
   parameters are checked against the node-key pattern before use.
 
+### Simulation engine (Phase 4)
+
+- **No executable input.** Models are Python code registered in the repository. There is
+  no formula language, and nothing from a request is evaluated (no `eval`, `exec`,
+  templates or expression parser). An equation changes only through a reviewed code
+  change, and a change to a released model's definition fails CI (its pinned hash) and is
+  refused at run time (409).
+- **Validated input, never repaired.** Model IDs and versions match patterns; at most 40
+  inputs, each ID matching `^[a-z][a-z0-9_]{1,63}$`; values are exact decimal strings of at
+  most 128 characters or strict JSON numbers (a string is never coerced into a number);
+  exponents, separators and symbols are refused. Ranges, decimal places, units and
+  currency codes are checked against the model definition, and unknown inputs are
+  refused. Nothing is clipped, rounded, converted or filled in silently: each problem is
+  reported (422) with the field it concerns.
+- **Numerical safety.** One exact-decimal context traps overflow, invalid operations and
+  division by zero. Inputs are bounded by their definitions (amounts at most 10¹⁵), and
+  every step value and output must stay below 10²⁰. A trapped error becomes a 422 with the
+  reason, never a stack trace or a stored run.
+- **Bounded work per request.** Horizon ≤ 36 months; propagation depth ≤ 4 and ≤ 500
+  paths, simple paths only (a cycle cannot loop); contributions for ≤ 6 simultaneous
+  changes (64 evaluations); sensitivity ≤ 8 inputs, ≤ 7 points each, ≤ 60 evaluations and
+  10 seconds, refused whole when over a limit; lists paginated (≤ 500); the 64 KiB body
+  limit. Validating and running read the graph's freshness, which shares the 30-second
+  cache described above.
+- **Append-only writes.** The API adds runs and sensitivity analyses; `PUT`, `PATCH` and
+  `DELETE` on a run answer 405 (tested). Verification stores nothing. A run's model
+  version and a sensitivity analysis's run are protected by restricting foreign keys.
+- **No outbound requests.** Running a model never contacts a provider: a stored
+  observation is read from the database, with its provenance.
+- **Honest output.** Every input is labelled with what it is and where it came from, and
+  every run carries the note that it is a deterministic calculation from stated inputs,
+  not a forecast or investment advice.
+
 ### Secrets and supply chain
 
 - **No secrets exist yet**, and none are in the repository: `.env` files are git-ignored,
@@ -130,11 +163,12 @@ those licences when sharing a database or its exports.
   disposable databases. Future provider keys belong in the backend environment or a secret
   store (see [environment](environment.md#secrets)).
 - Dependencies are pinned by lock files (`backend/uv.lock`, `frontend/package-lock.json`)
-  and installed with `--frozen` / `npm ci`. **Phases 2 and 3 added no dependencies**
-  (HTTP, CSV, gzip and hashing come from the Python standard library; the chart, the graph
-  algorithms and the graph layouts are written in the project). When Phase 3 was built
-  (2026-09-23), `npm audit` reported no known vulnerabilities, and `pip-audit` (run once
-  through `uvx`, not a project dependency) found none in the locked Python dependencies.
+  and installed with `--frozen` / `npm ci`. **Phases 2, 3 and 4 added no dependencies**
+  (HTTP, CSV, gzip, hashing and exact decimals come from the Python standard library; the
+  charts, the graph algorithms, the layouts and the simulation engine are written in the
+  project). When Phase 4 was built (2026-09-23), `npm audit` reported no known
+  vulnerabilities, and `pip-audit` (run through `uvx`, not a project dependency) found
+  none in the locked Python dependencies.
 - CI runs with read-only repository permissions.
 
 ## Not yet in place
@@ -149,6 +183,7 @@ These are deliberate gaps, listed so nobody assumes otherwise:
 | A formal security review | Before any hosted or multi-user use |
 | TLS termination, deployment hardening, a Content-Security-Policy for the web client's HTML (it needs a hash for the small inline theme script in `index.html`) | Phase 10, with deployment |
 | Audit log of changes | With authentication |
+| Limits on how many simulation runs and analyses can be stored, and a retention policy for them | With authentication (Phase 10) |
 | Automated dependency and secret scanning in CI (e.g. `pip-audit`, `npm audit`, secret scanning) | Next: cheap to add once the repository's CI is running |
 | Backups and retention policy | With a production database |
 

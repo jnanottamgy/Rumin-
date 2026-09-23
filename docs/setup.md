@@ -77,6 +77,51 @@ imported instruments, and prints a validation report. Run it again after loading
 changing data; rebuilding unchanged sources changes nothing. The explorer is at
 <http://127.0.0.1:5173/graph>. See [the knowledge graph](graph/README.md).
 
+### Simulation (Phase 4)
+
+Nothing else to load: migration `0004` creates the tables and the first model is
+registered in code. **Build the knowledge graph first** (above): a crude-oil change reaches
+jet fuel only through the relationship the graph confirms, so without a build a crude
+shock is refused (changes to jet fuel or the exchange rate still run).
+
+In the browser, open <http://127.0.0.1:5173/simulation>, choose **Fill a hypothetical
+example** (round numbers, not any airline's figures), then **Check inputs** or **Run
+simulation**. Every run is stored and has its own address.
+
+Through the API, with the same hypothetical example saved as `example.json`:
+
+```json
+{
+  "model_id": "airline_fuel_cost",
+  "inputs": {
+    "crude_oil_change": { "value": "10" },
+    "jet_fuel_price": { "value": "750", "unit": "usd_per_kilolitre" },
+    "fx_rate": { "value": "80" },
+    "reporting_currency": { "value": "INR" },
+    "annual_revenue": { "value": "300000000" },
+    "annual_operating_costs": { "value": "250000000" },
+    "annual_fuel_consumption": { "value": "1000", "unit": "kilolitre" },
+    "hedge_ratio": { "value": "50" },
+    "hedge_months": { "value": "3" },
+    "fare_pass_through": { "value": "40" },
+    "fare_pass_through_lag": { "value": "2" }
+  }
+}
+```
+
+```bash
+API=http://127.0.0.1:8000/api/v1
+curl -s $API/simulation-models/airline_fuel_cost                 # inputs, equations, assumptions
+curl -s -X POST $API/simulations/validate -H 'Content-Type: application/json' -d @example.json
+curl -s -X POST $API/simulations -H 'Content-Type: application/json' -d @example.json
+curl -s $API/simulations/<run id>/explanation                     # every step, the pathway
+curl -s -X POST $API/simulations/<run id>/verify                  # re-execute, compare hashes
+```
+
+The run's change in operating profit is −3,550,000 INR over 12 months
+([worked by hand](simulation/airline-fuel-cost.md#worked-example-checked-by-hand)). See
+[the simulation engine](simulation/README.md) and [the API](api.md#simulation).
+
 ## 3. Frontend
 
 ```bash
@@ -133,6 +178,8 @@ See [testing.md](testing.md).
 |---|---|
 | The web client says **"Could not reach the RUMIN API"** | The API is not running, or not on `RUMIN_API_PROXY_TARGET`. Start it (step 2) and press *Try again*. |
 | **"No dataset is loaded"** | Run `uv run python -m app.db.seed` in `backend/`. |
+| A simulation with a crude-oil change is refused because **the knowledge graph does not confirm** the relationship | Build the graph (`make graph`), or rebuild it if the page says it is stale. |
+| A run is refused with **409: a changed model needs a new version number** | The code of a model version that has already run was changed. Give the change a new version ([changing a model](simulation/registry.md#changing-a-model)); on a disposable development database you can start from a fresh one instead. |
 | `/health/ready` returns **503** | The response lists which check failed: database unreachable, migrations not at head (`alembic upgrade head`), or no dataset (seed). |
 | **CORS errors** in the browser console | Only happens when the web client calls the API cross-origin (`VITE_API_BASE_URL` set). Add the web origin to `RUMIN_CORS_ORIGINS`. |
 | **413 Payload Too Large** | Request bodies are limited to `RUMIN_MAX_REQUEST_BODY_BYTES` (64 KiB). |

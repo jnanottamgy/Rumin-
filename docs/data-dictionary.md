@@ -92,7 +92,7 @@ the illustrative sample dataset. For tables, keys and constraints see
 | `description` | string, ≤ 2,000 | The question the scenario explores. Optional. |
 | `status` | `draft` | The only status in Phase 1. |
 | `shocks` | list, 1–10 | The changes, in order. |
-| `latest_run` | null | Always null: no simulation engine exists. Reserved for Phase 4. |
+| `latest_run` | null | Always null: drafts are not yet connected to the simulation engine (the Phase 5 Scenario Lab). Model runs are [a separate record](#run). |
 | `created_at`, `updated_at` | UTC timestamp | Bookkeeping. |
 
 ### Scenario shock
@@ -283,6 +283,108 @@ records name (currencies, ISIC sections, markets) and the links between them.
 | `nodes`, `edges` | Processed, valid, flagged and rejected counts, from the run itself. |
 | `node_changes`, `edge_changes` | Added, changed, retired and unchanged. |
 | `metrics` | Node and edge counts, components, degree, density and provenance coverage, each defined in [algorithms](graph/algorithms.md#graph-metrics). |
+
+## Simulation
+
+The engine, its first model and what a run stores are described in
+[`docs/simulation/`](simulation/README.md); the tables are in
+[data-model.md](data-model.md#phase-4-simulation-runs). Numbers are exact decimal strings in
+plain notation; outputs carry 10 decimal places.
+
+### Model version
+
+`simulation_model_versions`: one row per (model, version), written the first time that
+version runs.
+
+| Field | Meaning |
+|---|---|
+| `model_id`, `version` | The model's ID (`airline_fuel_cost`) and its version (MAJOR.MINOR.PATCH). Unique together. |
+| `name`, `status` | Display name; `preview`, `active` or `deprecated` (a deprecated version stays readable and explainable but no longer runs). |
+| `definition` | The whole model definition as canonical JSON: inputs, equations, outputs, graph rules, assumptions, limitations, validation rules, references. Old runs are explained from this copy, not from current code. |
+| `definition_hash` | SHA-256 over `definition`. A later run whose code has a different hash is refused (409). |
+| `registered_at` | When the version first ran. |
+
+### Model input (in a definition)
+
+| Field | Meaning |
+|---|---|
+| `id`, `label`, `description` | Identity and plain-language meaning. |
+| `category` | `scenario_input` (the change explored), `market_baseline` (a market level: stored data or the user's figure), `company_input` (the user's figures about the company), `assumption` (a parameter with a neutral default and a written rationale) or `setting` (how the run is carried out). |
+| `kind` | `decimal`, `integer`, `quantity` (a unit chosen from `units`), `currency` (an ISO 4217 code) or `graph_node` (a node key in the knowledge graph). |
+| `unit`, `unit_label`, `units` | The unit, its label, and for quantities the units accepted. Nothing converts between units the model does not list. |
+| `minimum`, `maximum`, `minimum_exclusive`, `maximum_exclusive` | The allowed range, inclusive unless marked exclusive. A value outside it is refused, never clipped. |
+| `max_decimals` | The decimal places accepted; more are refused, never rounded. |
+| `required`, `default`, `rationale` | Whether a value must be given; the default for optional inputs and why it was chosen. |
+| `variable` | The knowledge-graph variable a scenario input changes. |
+| `sources` | Stored series the value may be taken from, with whether a value is stored now. |
+| `sensitivity` | The default variation for sensitivity analysis (`absolute` or `relative`, and its step). |
+
+### Run
+
+`simulation_runs`: one completed run. Nothing updates or deletes a run.
+
+| Field | Meaning |
+|---|---|
+| `id` | UUID. |
+| `model_version_id`, `model_id`, `model_version` | The stored model version the run used. |
+| `status` | `completed`. Invalid inputs are refused with their reasons (422) and never stored as runs. |
+| `label` | An optional name, ≤ 120 characters. |
+| `entity_id` | The knowledge-graph company the run is about, if one was chosen. |
+| `horizon_months` | 1–36 for the airline model. |
+| `inputs` | Every input, including those left on their defaults ([resolved input](#resolved-input)). |
+| `inputs_hash` | SHA-256 over the model ID, version, definition hash, engine version and every input's value, unit and source. Equal numbers written differently hash the same. |
+| `assumptions`, `limitations` | The model's statements as they were at run time. |
+| `graph_snapshot` | The graph build (ID, finish time, source fingerprint, freshness), the confirming edge for each transmission rule and supporting relationship (or `null` where the graph does not state it), the entity, and the relationships around the model's variables that were listed but not followed. |
+| `data_snapshot` | Each stored observation used ([below](#resolved-input)). |
+| `outputs` | Every output: value, unit, `derived` (from the inputs alone) or `simulated` (under the scenario). |
+| `monthly` | Each monthly series, one value per month. |
+| `contributions` | For each attributable output, each change's Shapley credit. |
+| `bridge` | The accounting bridge: its signed steps and total, checked to add up before storage. |
+| `transmission` | Every propagation path: its nodes, rules, edge keys, coefficient, lag, first month and log change. |
+| `warnings` | Notes raised for the run: code, message and field. |
+| `result_hash` | SHA-256 over every output, monthly value and contribution, as stored. |
+| `engine_version` | The engine's version, also part of the inputs hash. |
+| `random_seed` | `null`: the calculation is deterministic. Reserved for a future probabilistic run. |
+| `started_at`, `finished_at`, `duration_ms`, `created_at` | Timing and bookkeeping. |
+
+### Resolved input
+
+One entry of a run's `inputs`.
+
+| Field | Meaning |
+|---|---|
+| `id`, `label`, `category`, `variable` | From the definition. |
+| `knowledge` | What the value **is**: `scenario_input`, `historical_data` (a stored observation), `user_input` (a figure the user entered), `assumption` or `setting`. |
+| `source` | Who chose it: `user`, `default` or `stored_observation`. |
+| `value`, `unit`, `unit_label` | The value used and its unit. |
+| `default`, `rationale` | The definition's default and its rationale, kept beside the value used. |
+| `observation` | For a stored observation: series, frequency, period, value as stored and as published (`raw_value`), quality status, revision, last confirmed, source capture, ingestion job, dataset and version, licence and attribution. `null` otherwise. |
+
+### Run step
+
+`simulation_run_steps`: every evaluated equation of a run, in order.
+
+| Field | Meaning |
+|---|---|
+| `sequence` | Order of evaluation from 1, unique within the run. |
+| `equation_id`, `label` | The equation (`E1`–`E19` for the airline model) and what the step calculates. |
+| `month` | The month, from 1 (scenario changes start in month 1), or `null` for annual, horizon and steady-state steps. |
+| `output_symbol`, `output_value`, `output_unit` | What was calculated: exact to 18 decimal places (`NUMERIC(38, 18)`), with its unit. |
+| `inputs` | Each term the equation read: symbol, value and unit. |
+
+### Sensitivity analysis
+
+`simulation_sensitivity_analyses`: one analysis of a run. Nothing updates or deletes one.
+
+| Field | Meaning |
+|---|---|
+| `id`, `run_id` | UUID; the run analysed (a run with analyses cannot be deleted). |
+| `metric` | The output the inputs are ranked by. |
+| `request` | Each input varied, with its mode (`default`, `absolute`, `relative` or `values`) and step or values, as resolved. |
+| `results` | Per input: label, category, unit, the run's value, mode and step; each point's value with every output and its difference from the run, or the reason it was skipped; the metric's lowest, highest and spread. Then the ranking, largest spread first. |
+| `evaluations`, `duration_ms` | Model evaluations performed (≤ 60) and time taken. |
+| `result_hash` | SHA-256 over the results, timing excluded. |
+| `created_at` | Bookkeeping. |
 
 ## Sample dataset catalogue
 

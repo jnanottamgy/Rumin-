@@ -1,9 +1,9 @@
 # Phase 4 integration
 
-How a future simulation engine (Phase 4) may use the knowledge graph, and what it must
-not assume. **No simulation exists in RUMIN.** Phase 3 prepares a read interface and
-records what each edge can and cannot support. Nothing on this page is implemented beyond
-the interface described under [the interface](#the-interface).
+How the simulation engine (Phase 4) may use the knowledge graph, and what it must not
+assume. This page was written in Phase 3, before the engine existed, as a proposal. **Phase
+4 implemented it**: see [how Phase 4 followed it](#how-phase-4-followed-it), and for the
+engine's side, [graph integration](../simulation/graph-integration.md).
 
 ## Graph edges are not equations
 
@@ -85,6 +85,23 @@ This is a proposal for Phase 4, not a design decision:
   code. The graph stays a read-only, rebuildable projection of the sources.
 - Present a simulated outcome as a forecast or as a measured fact.
 
+## How Phase 4 followed it
+
+| Proposal | What the engine does |
+|---|---|
+| 1. Pin the build | Every run stores a graph snapshot: the build ID, its finish time, source fingerprint and freshness, and each edge it relied on. A stale graph is reported on the run with the build used. Verification re-uses the snapshot, never the current graph |
+| 2. Start from the scenario's shocks | Each scenario input of a model names the variable node it changes (Brent crude, jet fuel, the exchange rate). Phase 1 scenario drafts are not connected yet (Phase 5) |
+| 3. Candidate channels, not answers | Nothing is discovered by traversal. A model **declares** its transmission rules; only those are followed. The graph's other relationships around the model's variables are listed as "not used by this model" |
+| 4. Choose by evidence status, explicitly | A rule is followed only along a current edge that passed the graph's validation (a flagged edge is refused). The one rule, T1, follows an `influences` edge, which the graph records only as a model assumption, so every run that depends on it carries the warning `assumption_based_channel`. No status is upgraded |
+| 5. Parameterise outside the graph | The elasticity and the lag are model inputs (assumptions with defaults and rationales) stored with the run. Nothing is written back to the graph, and `strength` is never read |
+| 6. Respect time and fiction | Only current edges of the latest completed build are used. Fictional entities and illustrative edges are labelled on every run that uses them |
+| 7. Explain every result | The explanation's pathway lists each relationship used with its graph edge, evidence status, coefficient and lag, and links to it in the explorer |
+
+None of the "must not" items above happens: the graph modules, API and explorer are
+unchanged apart from being read, an airline's exposure comes from the figures the user
+enters (the graph only confirms that the chosen company is in air transport), and every
+result is labelled as a calculation, not a forecast.
+
 ## What is ready and what is not
 
 | Item | Status |
@@ -93,5 +110,5 @@ This is a proposal for Phase 4, not a design decision:
 | Deterministic keys linking scenario variables to graph nodes | **Implemented** |
 | Build IDs and fingerprints to pin a run to a graph | **Implemented** (stored per build) |
 | Evidence status, validity and illustrative flags on every edge | **Implemented** |
-| Simulation engine, parameters, runs and results | **Not implemented** (Phase 4) |
-| Parameter sources (estimation from Phase 2 series, published studies) and validation method | **Not decided** (Phase 4) |
+| Simulation engine, parameters, runs and results | **Implemented** in Phase 4 ([the engine](../simulation/README.md)) |
+| Parameter sources (estimation from Phase 2 series, published studies) and validation method | **Not decided.** Parameters are stated assumptions with defaults; estimation and validation are Phase 9 |

@@ -2,10 +2,10 @@
 
 | Suite | Tool | Tests | Runs against | Command |
 |---|---|---|---|---|
-| Backend | pytest | 450 | the FastAPI app, the ingestion pipeline and the graph build with a real, migrated database (SQLite; PostgreSQL optional); providers answered by scripted responses | `uv run pytest` in `backend/` |
-| Frontend unit and pages | Vitest + Testing Library (jsdom) | 202 | the real route table, with `fetch` replaced by a fake API serving recorded responses | `npm test` in `frontend/` |
-| Integration | Vitest (Node) | 39 | a live API: the frontend's real service layer over HTTP | `npm run test:integration` with `RUMIN_API_URL` |
-| End-to-end smoke | `scripts/smoke_test.sh` | — | fresh database → migrate → seed → load the catalogue → import a synthetic price file → build the knowledge graph, rebuild it and fail if anything changed → start API → integration suite | `make smoke` |
+| Backend | pytest | 596 | the FastAPI app, the ingestion pipeline, the graph build and the simulation engine with a real, migrated database (SQLite; PostgreSQL optional); providers answered by scripted responses | `uv run pytest` in `backend/` |
+| Frontend unit and pages | Vitest + Testing Library (jsdom) | 245 | the real route table, with `fetch` replaced by a fake API serving recorded responses | `npm test` in `frontend/` |
+| Integration | Vitest (Node) | 47 | a live API: the frontend's real service layer over HTTP | `npm run test:integration` with `RUMIN_API_URL` |
+| End-to-end smoke | `scripts/smoke_test.sh` | — | fresh database → migrate → seed → load the catalogue → import a synthetic price file → build the knowledge graph, rebuild it and fail if anything changed → start API → integration suite (including a simulation run checked against a hand calculation) | `make smoke` |
 | Graph benchmark | `backend/scripts/benchmark_graph.py`, `frontend/scripts/measure-graph.mjs` | — | synthetic networks up to 20,000 companies; not part of CI | see [performance](graph/performance.md#how-it-was-measured) |
 
 **No automated test calls a real provider.** Provider behaviour is tested with scripted
@@ -34,7 +34,7 @@ the one production gets.
 | `test_domain.py` | 21 | Every edge type is registered with a meaning; rates accept only percentage-point changes; limit checks, including decimal places despite binary floating point |
 | `test_errors_and_security.py` | 13 | Error envelope for unknown routes (404), wrong methods (405), crashes (500, no internals) and database outages (503); request IDs generated or safely reused; security headers and CSP; docs can be disabled; CORS allows configured origins and refuses others; unsafe CORS settings rejected |
 | `test_migrations.py` | 3 | Migrated schema equals the models exactly; downgrade to empty and upgrade again; foreign keys enforced on SQLite |
-| `test_openapi.py` | 3 | The committed `docs/api/openapi.json` matches the application; errors are documented with the shared envelope; no simulate/run endpoint exists |
+| `test_openapi.py` | 5 | The committed `docs/api/openapi.json` matches the application; errors are documented with the shared envelope; scenario drafts still have no run endpoint; simulation runs cannot be replaced or deleted; **schema names are unique across modules** (two schemas with one name would silently rename a type in the contract) |
 
 Phase 2 (financial data):
 
@@ -61,6 +61,18 @@ Phase 3 (knowledge graph):
 | `test_graph_cli.py` | 6 | The printed validation report; `status` notices changed sources; `builds` and `report`; `validate` writes nothing; an unmigrated database explained; distinct exit codes |
 | `test_graph_api.py` | 36 | The overview before and after a build, matching the graph, noticing changed sources, and the 30-second freshness cache; the vocabulary; search (partial, identifiers first, filters, ambiguous names); node detail with resolution decisions and live data status; neighbourhoods by depth, with the limit reported and filters; edges and why each exists; paths with bounds and direction; components; builds and issues; **every limit and malformed key rejected with 422** (11 cases); read-only (405); the system's graph capabilities |
 
+Phase 4 (simulation engine). `tests/simulation_support.py` holds shared inputs (the
+hand-checked example: a fuel bill of 5,000,000 INR a month) and helpers that prepare runs
+without a database. Every number asserted was calculated by hand
+([worked example](simulation/airline-fuel-cost.md#worked-example-checked-by-hand)).
+
+| Module | Tests | Covers |
+|---|---|---|
+| `test_simulation_numbers.py` | 31 | The documented decimal context; `ln` and `exp` correct to 34 digits; impossible calculations raise instead of returning NaN or infinity; half-even rounding to 10 places; the magnitude limit; plain notation; exact percentages; the legal volume factors; prices per volume; **input parsing** (plain numbers read exactly, a float through its shortest form; exponents, separators, symbols, blanks, booleans and non-finite values refused); trailing zeros ignored when counting decimals; **no `eval` or `exec` anywhere in the engine** |
+| `test_simulation_transmission.py` | 10 | A shock at its own node; coefficients multiply and lags add along a chain; path contributions add up; **a cycle never feeds a shock back**; the depth limit; a dense graph over the path budget is refused, not truncated; the limits are bounded themselves; effects beyond the horizon listed but not counted; a zero shock propagates nothing; the result does not depend on the order of links or shocks |
+| `test_simulation_model.py` | 78 | **The released definition's hash is pinned**; the hash notices any change; versions; inconsistent definitions refused; every equation documented and every statement cited; inputs labelled by kind of knowledge; every invalid input refused with its reason (17 cases); the cross-field rules; a stored observation used exactly with its provenance, and a missing or mismatched one **never filled in**; the graph-channel checks; explicit unit conversion; each mechanism checked by hand (the crude shock, its lag, β, the jet fuel margin, hedges and their expiry, hedges not covering the currency, fare recovery after its lag, the steady state); the bridge closes; an undefined margin refused; **Shapley contributions** (an interaction split evenly, three changes, always adding up); identical inputs give identical hashes, any change changes them, `10` and `10.00` hash the same; every step recorded; sensitivity (defaults, relative variation, points skipped not clipped, an unconfirmed relationship skipped, every limit, the evaluation cap, the deadline) |
+| `test_simulation_api.py` | 25 | Models listed and described with the graph relationship that confirms each rule; unknown models and versions; validation that explains every problem and stores nothing; a run stored with everything needed to explain it; **append-only and reproducible** (the same inputs twice: two runs, identical hashes; `PUT`, `PATCH` and `DELETE` answer 405); newest first; an impossible calculation refused and not stored; request sizes; no graph, the wrong airline, a stale graph, **a relationship the graph flagged is not followed**; the explanation and provenance; **a run reproduces from its snapshot after the graph is gone**; a stored exchange rate (ingested through the real pipeline from scripted responses) used with its provenance; sensitivity analyses stored and listed, custom and bounded; **a model changed under the same version refused (409)**; a deprecated version keeps its runs; the database refuses to delete history; the system's capabilities |
+
 Run against PostgreSQL (use an empty, disposable database — the suite drops and recreates
 the schema):
 
@@ -84,7 +96,7 @@ catalogue after a World Bank run that failed because the provider was unreachabl
 | Area | Tests | Covers |
 |---|---|---|
 | `lib/apiClient` | 12 | Success, error envelope → typed `ApiError`, non-JSON, unreachable, timeout, caller cancellation, accepted non-2xx, 204, base URL |
-| `lib/contract` | 7 | Fixtures conform to the contract; the checker catches missing fields, wrong types, bad enum values, nested unions |
+| `lib/contract` | 18 | Fixtures conform to the contract, the simulation fixtures included (model, validation reports, run, explanation, provenance, verification, sensitivity, lists); the checker catches missing fields, wrong types, bad enum values, nested unions |
 | `lib/decimal` | 3 | Exact grouping of every digit, rounding for display half away from zero on the digits themselves (BigInt), plain-decimal recognition |
 | `data/chartMath` | 6 | Nice ticks; **no line drawn across a missing value or an absent period**; weekends contiguous but long trading gaps broken; nearest period; calendar-aligned time ticks |
 | `hooks/useApiResource` | 6 | Loading → success, request sharing, error and reload, refresh keeps data, no cross-key data, data from a save |
@@ -103,6 +115,10 @@ catalogue after a World Bank run that failed because the provider was unreachabl
 | `graph/layout` | 11 | Radial layout: the focus at the centre and every node on the ring of its hop count; deterministic; a minimum spacing on each ring; subtrees inside their parent's wedge; labels along the radius only on crowded rings; a focus without neighbours. Columns for paths. Animation start positions and interpolation |
 | `graph/encoding` | 15 | A distinct shape for every node type; evidence told apart by line pattern, not colour; nature rings and hollow series; sizes with a ceiling; node keys parsed and validated; explorer links built the way the build forms keys; filters (the last value cannot be turned off; answers cached per request); bounded history |
 | `graph/edgePanel` | 2 | The evidence panel says a catalogued series has no values yet, and that retrieval does not apply to reference data |
+| `simulation/format` | 6 | Decimal points moved on the digits (no floating point); money rounded for display in its currency; ratios as percentages and margin changes as percentage points; figure and unit split; signs only on non-zero values; inputs shown exactly as entered |
+| `simulation/form` | 7 | Inputs grouped by kind of knowledge; typed values sent as exact strings with units, defaults left out; a stored run's inputs rebuilt with defaults kept as defaults; the hypothetical example fills only its inputs; API error details mapped onto fields; allowed ranges stated |
+| `simulation/pathwayLayout` | 6 | Each node close to what it feeds; links that skip a layer routed beside its nodes; no overlaps, deterministic; "cannot fit" reported so the list is shown; a cycle survived; smooth flows |
+| `pages/simulation` | 13 | The page against fixtures captured from a real backend: the model before a run (pathway, labels, assumptions); inputs checked on the server with each problem beside its field and a summary whose links move focus to the field; valid inputs with the engine's notes; a run opened at its own address with its headline; a refused run explained; a stored run's inputs loaded into the form; the pathway with the graph relationship used; the pathway animates once for a new run and **never under reduced motion**; the calculation month by month; provenance and the reproducibility check; every input labelled; a sensitivity analysis ranked; a run that cannot be opened |
 | `pages/graphExplorer` | 21 | The page against fixtures captured from a real backend: the aggregate map labelled as an aggregate, with the build report; picking from the map; server search with ambiguous names flagged; exactly the API's nodes and edges drawn, with evidence and nature; selection and dimming; assumed exposures labelled "direct" or "via the industry", never as measured; expand, collapse, and a failed expansion retried; back, forward and reset; filters sent to the API; why a relationship exists; paths with the causal-chain caveat, and "no path"; the table view; not-built and stale graphs; an unreachable API; a node not in the graph; an invalid focus key; phone labels |
 
 ## Integration (`frontend/tests/integration/`)
@@ -134,8 +150,17 @@ and caveats; paths whose edges join consecutive nodes, with the causal-chain cav
 components described without calling them economic systems; the API is read-only; and
 malformed keys are rejected. Every response is checked against the OpenAPI contract.
 
-It creates and deletes scenarios, so point it only at a disposable database — which is
-what `scripts/smoke_test.sh` provides.
+Phase 4 adds `simulation.integration.test.ts` (8 tests), run through the page's own form
+code: the models listed and described; the form's request validated; the page's
+hypothetical example **matching the hand calculation** (gross fuel cost +6,000,000,
+hedging −750,000, fare recovery 1,700,000, operating profit −3,550,000, steady state
+−3,600,000 a year, the bridge closing); the explanation traced to the graph; a run
+reproduced exactly, and identical inputs giving identical hashes; a stored sensitivity
+analysis; every invalid input named with nothing stored; no way to replace or delete a
+run.
+
+It creates and deletes scenarios and adds simulation runs, so point it only at a
+disposable database — which is what `scripts/smoke_test.sh` provides.
 
 ## Manual and visual checks
 
@@ -149,8 +174,12 @@ real browser too: selection and dimming, deep links (`/universe?focus=…`), the
 network on phones, and the scenario save flow. For Phase 3, the Knowledge Graph explorer
 was checked at desktop, tablet (820 × 1180) and phone widths in both themes, against the
 sample graph and a 20,000-company synthetic graph, with a scripted walk-through of ten
-interactions ([UI review](graph/explorer.md#ui-quality-review)). These checks are not
-automated yet (see [known-limitations.md](known-limitations.md)).
+interactions ([UI review](graph/explorer.md#ui-quality-review)). For Phase 4, the
+Simulation page was checked at 1440 × 900 in both themes and at 390 × 844, with
+screenshots after each change: the form, checking and running, every results tab, the
+pathway's motion and reduced motion, keyboard use of the tabs and the monthly chart, and a
+stored run reopened ([what the review changed](simulation/preview.md#review)). These
+checks are not automated yet (see [known-limitations.md](known-limitations.md)).
 
 ## Conventions
 
@@ -162,4 +191,8 @@ automated yet (see [known-limitations.md](known-limitations.md)).
   exponent form; skipped series looked "never retrieved". Phase 3 examples: "Try again"
   after a failed expansion did not refetch; a series never retrieved was described as
   "not provider data"; names sharing common words made entity resolution quadratic.
+  Phase 4 examples: three schema names collided with existing ones, which silently renamed
+  types in the contract; a stored exchange rate was refused for having more decimal places
+  than a typed value may; a numeric string longer than the length limit got through by
+  being read as a whole number.
 - Never weaken a test to make it pass; never skip one.

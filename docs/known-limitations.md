@@ -73,18 +73,49 @@ The full list, with reasons, is in [`docs/graph/limitations.md`](graph/limitatio
   rebuild about 16 s.
 - **Read-only and unauthenticated.** No write endpoint. Builds run from the command line.
 
+## Simulation (Phase 4)
+
+The full list, with reasons, is in [`docs/simulation/limitations.md`](simulation/limitations.md).
+
+- **Not forecasts, not advice, not validated.** A run is the arithmetic consequence of the
+  inputs and assumptions shown, with everything else held constant. No parameter has been
+  estimated from data and no result has been back-tested: the crude-to-jet-fuel
+  elasticity, the lags, the hedge terms and the fare pass-through are assumptions with
+  neutral defaults.
+- **One narrow model.** An airline's fuel cost, operating profit and margin under changes
+  in crude oil, jet fuel and the exchange rate. RUMIN holds no company accounts, so the
+  airline's figures come from the user. The sample airlines are fictional, and the graph
+  relationship the model relies on is an illustrative model assumption.
+- **Deterministic only.** Uncertainty is shown by one-at-a-time sensitivity, which shows
+  no interactions and is not a confidence interval. No Monte Carlo (Phase 9).
+- **Simple dynamics.** Monthly steps; changes are permanent steps from month 1; no
+  seasonality or temporary shocks; hedging and fare pass-through are a share and a number
+  of months each.
+- **One relationship travels through the graph** (crude oil → jet fuel). Coefficients and
+  lags are inputs, never inferred from the graph or from data.
+- **Little stored data is used.** Only the exchange rate can come from stored data (the
+  latest annual World Bank average), and none is stored where Phase 4 was built, because
+  the World Bank retrieval was blocked.
+- **Scenario drafts are not connected, and runs cannot be compared side by side.** Both
+  are the Scenario Lab (Phase 5).
+- **Storage grows without limit.** Runs and analyses are append-only, there is no retention
+  policy, and anyone who can reach the API can add them.
+
 ## Product
 
-- **No simulation.** Scenarios are saved as drafts of inputs only. There is no engine, no
-  run endpoint, no results, no forecasts. Planned for Phase 4.
+- **A simulation preview, not the Scenario Lab.** The engine runs one model (an airline
+  fuel-cost shock) on inputs entered on the Simulation page. Scenario drafts are still
+  saved as inputs only and are not connected to the engine (Phase 5). No result is a
+  forecast ([above](#simulation-phase-4)).
 - **Illustrative network.** The 12 companies are fictional. The 41 relationships are
   modelling assumptions written for demonstration, each with a rationale, none estimated
   or validated. Do not use them to reason about real companies or markets.
 - **No AI analyst.** The page explains the planned feature; no model is connected. Phase 7.
 - **Graph analytics are limited on purpose.** The knowledge graph (Phase 3) offers
   neighbourhoods, shortest paths in hops, components, degree and density. There is no
-  centrality, no weighted path, no community detection and no propagation of effects:
-  see [below](#knowledge-graph-phase-3).
+  centrality, no weighted path and no community detection, and effects are propagated
+  only by the simulation engine, along relationships its model declares:
+  see [above](#knowledge-graph-phase-3).
 - **2D only.** The 3D financial universe is Phase 8.
 - **Small-graph rendering.** SVG and a synchronous layout are right for tens to a few
   hundred nodes; thousands will need a Web Worker layout and canvas/WebGL rendering.
@@ -92,8 +123,8 @@ The full list, with reasons, is in [`docs/graph/limitations.md`](graph/limitatio
 
 ## Platform
 
-- **No authentication or authorisation.** Anyone who can reach the API can read all data
-  and change scenarios. Local use only until Phase 10. For the same reason ingestion cannot
+- **No authentication or authorisation.** Anyone who can reach the API can read all data,
+  change scenarios and add simulation runs. Local use only until Phase 10. For the same reason ingestion cannot
   be started over HTTP. See [security.md](security.md).
 - **No inbound rate limiting, audit log or backups.** Outbound requests to providers are
   throttled; the API itself is not.

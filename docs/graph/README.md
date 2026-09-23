@@ -31,7 +31,7 @@ It is built from the command line (`make graph`, or `python -m app.graph build` 
 | [Explorer](explorer.md) | The web explorer: encoding, interactions, layouts, limits and accessibility |
 | [Data-quality limitations](limitations.md) | What the graph cannot tell you, and why |
 | [Performance](performance.md) | Measured build and query times on synthetic graphs up to 108k edges, bottlenecks and limits |
-| [Phase 4 integration](phase-4-integration.md) | How a future simulation engine may use the graph — and what it must not assume |
+| [Phase 4 integration](phase-4-integration.md) | How the simulation engine (Phase 4) may use the graph, what it must not assume, and how Phase 4 followed it |
 
 The API is documented in [`docs/api.md`](../api.md#knowledge-graph); testing in
 [`docs/testing.md`](../testing.md); the tables in [`docs/data-model.md`](../data-model.md).

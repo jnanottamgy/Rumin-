@@ -3,13 +3,18 @@
 **Financial intelligence and economic simulation.** RUMIN maps how companies, industries,
 countries and economic variables connect, stores the historical data that describes them,
 connects every record it holds in a knowledge graph that says why each connection exists,
-lets you define scenarios on that network, and labels everything it shows as one of five
-kinds of knowledge: observation, assumption, scenario input, simulated output or
-uncertainty.
+runs documented, versioned models on those connections with every step explained and
+reproducible, and labels everything it shows as one of five kinds of knowledge:
+observation, assumption, scenario input, simulated output or uncertainty.
 
-> **Status: Phase 3 — financial knowledge graph** (on top of the Phase 1 foundation and the
-> Phase 2 data infrastructure).
+> **Status: Phase 4 — simulation engine** (on top of the Phase 1 foundation, the Phase 2
+> data infrastructure and the Phase 3 knowledge graph).
 >
+> - **Simulations are calculations, not forecasts.** The engine runs one model, an airline
+>   fuel-cost shock, on figures you enter and assumptions it states. Each run stores every
+>   step, where each input came from and the graph relationships it used, and identical
+>   inputs give identical results. No parameter has been estimated from data and no result
+>   has been back-tested.
 > - **The knowledge graph connects the records RUMIN holds, not the economy.** Every edge
 >   has an evidence status (evidence-backed, analyst-created, model assumption or
 >   unverified) and the records that explain it. No edge is a measured effect, a
@@ -21,10 +26,11 @@ uncertainty.
 >   and revision history.
 > - The network's sample data is **illustrative**: its companies are fictional; countries,
 >   ISIC industries and variable definitions are real concepts with references.
-> - There is **no simulation engine** (Phase 4) and **no AI analyst** (Phase 7).
+> - There is **no Scenario Lab workflow** yet (Phase 5: drafts are not connected to the
+>   engine) and **no AI analyst** (Phase 7).
 > - There is **no authentication** yet (Phase 10): run it locally only. For that reason the
->   API is read-only for data and for the graph, and ingestion and graph builds start from
->   the command line.
+>   API is read-only for data and for the graph, simulation runs are append-only, and
+>   ingestion and graph builds start from the command line.
 >
 > Nothing in RUMIN is investment advice.
 
@@ -39,10 +45,12 @@ uncertainty.
 | **Graph build** | Available (command line) | Builds the graph from the stored records with entity resolution (flag, never merge), 26 validation rules and a validation report; rebuilding unchanged sources changes nothing |
 | **Data Explorer** | Available (Phase 2) | Stored series and prices with their source, licence, freshness and quality; exact-value tables; accessible charts; revision history; ingestion runs |
 | **Data ingestion** | Available (command line) | World Bank series (throttled, retried, validated, versioned) and licensed price-file import, each recorded as a job |
-| Scenario Lab | Foundation | Named drafts with variable changes, validated against published limits; **not simulated** |
+| **Simulation** | Preview (Phase 4) | The airline fuel-cost model: inputs labelled by kind of knowledge and checked on the server; results with the pathway through the knowledge graph, month-by-month figures, the accounting bridge, Shapley contributions, a sensitivity tornado, every calculation step, and provenance with a reproducibility check; stored runs reopened and varied |
+| **Simulation engine** | Available (API) | Versioned, hashed models; exact decimals; propagation only along confirmed graph relationships; append-only runs with explanations, provenance and verification; one-at-a-time sensitivity |
+| Scenario Lab | Foundation | Named drafts with variable changes, validated against published limits; **not yet connected to the engine** (Phase 5) |
 | AI Analyst | Planned (Phase 7) | A page explaining what it will do; no model is connected |
 | System & settings | Available | API, database, migration and data status; capabilities; theme and motion preferences |
-| REST API | Available | Versioned (`/api/v1`), validated, consistent errors, OpenAPI docs; data endpoints are read-only |
+| REST API | Available | Versioned (`/api/v1`), validated, consistent errors, OpenAPI docs; data and graph endpoints are read-only; simulation runs are append-only |
 
 ## Quick start
 
@@ -63,7 +71,9 @@ make frontend           # terminal 2 → web client on http://127.0.0.1:5173
 
 `make ingest` contacts `api.worldbank.org` (two requests per series, at most one per second). If
 the provider cannot be reached, the run is recorded as failed and the Data Explorer says so;
-nothing else is affected. To import prices from a file you are licensed to use, see
+nothing else is affected. To try the simulation engine, open
+<http://127.0.0.1:5173/simulation>, choose **Fill a hypothetical example** and **Run
+simulation** ([more](docs/setup.md#simulation-phase-4)). To import prices from a file you are licensed to use, see
 [Price files](docs/data/price-files.md).
 
 Without `make` (e.g. on Windows), run the same commands directly:
@@ -160,12 +170,16 @@ backend/            FastAPI application, SQLAlchemy models, Alembic migrations, 
   app/models/       ORM models
   app/schemas/      Pydantic request/response schemas (the API contract)
   app/services/     query and business logic
+  app/simulation/   simulation engine: model registry and models, exact decimals, units,
+                    validation, propagation, execution, sensitivity, explanations,
+                    persistence
   migrations/       Alembic revisions
 frontend/           React + TypeScript web client (Vite)
   src/app/          router, theme, module registry
   src/components/   shared UI primitives
   src/features/     network, graph (the explorer), scenarios, data (chart, tables,
-                    provenance, freshness)
+                    provenance, freshness), simulation (the preview: form, pathway,
+                    charts, panels)
   src/pages/        one component per route
   tests/            unit and page tests; tests/integration runs against a live API
 docs/               architecture, API, data model, data pipeline, testing, roadmap and more
@@ -187,6 +201,14 @@ scripts/            smoke_test.sh (backend/scripts and frontend/scripts: graph b
   [architecture](docs/graph/architecture.md) · [relationship types](docs/graph/relationship-types.md) ·
   [provenance](docs/graph/provenance.md) · [limitations](docs/graph/limitations.md) ·
   [performance](docs/graph/performance.md) · [Phase 4 integration](docs/graph/phase-4-integration.md)
+- Simulation: [overview](docs/simulation/README.md) ·
+  [architecture](docs/simulation/architecture.md) ·
+  [the airline fuel-cost model](docs/simulation/airline-fuel-cost.md) ·
+  [numbers and units](docs/simulation/numbers-and-units.md) ·
+  [graph integration](docs/simulation/graph-integration.md) ·
+  [provenance](docs/simulation/provenance.md) · [sensitivity](docs/simulation/sensitivity.md) ·
+  [model registry](docs/simulation/registry.md) · [the preview](docs/simulation/preview.md) ·
+  [limitations](docs/simulation/limitations.md)
 - [Design system](docs/design-system.md)
 - [Testing](docs/testing.md)
 - [Security](docs/security.md)
@@ -194,7 +216,8 @@ scripts/            smoke_test.sh (backend/scripts and frontend/scripts: graph b
 - [Roadmap](docs/roadmap.md)
 - Phase reports: [Phase 1](docs/phases/phase-1-report.md) ·
   [Phase 2 plan](docs/phases/phase-2-plan.md) · [Phase 2 report](docs/phases/phase-2-report.md) ·
-  [Phase 3 plan](docs/phases/phase-3-plan.md) · [Phase 3 report](docs/phases/phase-3-report.md)
+  [Phase 3 plan](docs/phases/phase-3-plan.md) · [Phase 3 report](docs/phases/phase-3-report.md) ·
+  [Phase 4 plan](docs/phases/phase-4-plan.md) · [Phase 4 report](docs/phases/phase-4-report.md)
 
 ## Licence
 

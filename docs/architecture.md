@@ -5,9 +5,11 @@ ingestion pipeline that fills the database from data providers. Phase 1 built th
 Phase 2 added the financial data infrastructure (providers, ingestion, provenance, quality,
 the read API and the Data Explorer — see [the data architecture](data/architecture.md));
 Phase 3 added the knowledge graph, built from those records by another command and stored
-in the same database ([the graph architecture](graph/architecture.md)). Later phases — the
-simulation engine (4), the AI analyst (7), the 3D universe (8) — extend it without
-restructuring it.
+in the same database ([the graph architecture](graph/architecture.md)). Phase 4 added the
+simulation engine: registered, versioned models run through the API, reading the graph and
+stored data, with every run stored append-only in the same database
+([the simulation architecture](simulation/architecture.md)). Later phases — the Scenario
+Lab (5), the AI analyst (7), the 3D universe (8) — extend it without restructuring it.
 
 ```mermaid
 flowchart LR
@@ -19,6 +21,7 @@ flowchart LR
         R["Routes /health, /api/v1/*"]
         S["Services<br/>queries, network projection,<br/>scenario rules"]
         D["Domain<br/>enums, relationship registry,<br/>scenario limits"]
+        SIM["Simulation engine<br/>registered models · validation ·<br/>propagation · sensitivity"]
     end
     DB[("SQLite (dev)<br/>PostgreSQL (prod)")]
     SEED["Seed loader<br/>(validated JSON dataset)"]
@@ -36,6 +39,8 @@ flowchart LR
 
     UI -- "JSON over HTTP<br/>(same origin via proxy)" --> MW --> R --> S
     S --> D
+    S --> SIM
+    SIM -- "reads graph + stored data;<br/>stores runs (append-only)" --> DB
     S -- "SQLAlchemy 2.0" --> DB
     SEED --> DB
     MIG --> DB
@@ -50,7 +55,9 @@ flowchart LR
 
 The API never contacts a provider and never writes the graph: only the command line does,
 so no anonymous HTTP client can make RUMIN send requests or change data it did not ask for
-(there is no authentication yet). The graph API is read-only.
+(there is no authentication yet). The graph API is read-only. The API's writes are scenario
+drafts and, since Phase 4, simulation runs and sensitivity analyses, which are append-only
+and never change the data or the graph they read.
 
 ## Backend (`backend/app`)
 
@@ -60,11 +67,12 @@ Layered so that each layer depends only on the ones below it:
 |---|---|---|
 | HTTP | `api/` | Routes, parameters, status codes, OpenAPI descriptions. No SQL, no business rules. |
 | Contract | `schemas/` | Pydantic models for every request and response: validation, serialisation, the OpenAPI schema. |
-| Services | `services/` | Queries and use cases: reference data, the network projection, scenario validation and persistence, system status, and the graph's read logic (limits, filters, explanations). |
+| Services | `services/` | Queries and use cases: reference data, the network projection, scenario validation and persistence, system status, the graph's read logic (limits, filters, explanations) and the simulation API (runs, explanations, verification, sensitivity). |
 | Domain | `domain/` | Pure definitions: enumerations, the relationship-type registry (what each edge type means and may connect), the graph's node, edge and evidence-status registry, scenario change limits. |
 | Persistence | `models/`, `db/` | SQLAlchemy ORM models, session management, portable column types (UTC datetimes, exact decimals), the seed loader. |
 | Ingestion | `ingestion/` | Providers, HTTP with throttling and retries, normalisation, quality rules, persistence with revisions, job tracking, the command line ([details](data/architecture.md)). |
-| Graph | `graph/` | The knowledge graph: construction rules, entity resolution, validation, persistence, the build command, algorithms (BFS, paths, components) and the typed read interface the API and Phase 4 use ([details](graph/architecture.md)). |
+| Graph | `graph/` | The knowledge graph: construction rules, entity resolution, validation, persistence, the build command, algorithms (BFS, paths, components) and the typed read interface the API and the simulation engine use ([details](graph/architecture.md)). |
+| Simulation | `simulation/` | The simulation engine: the versioned model registry and the first model, exact-decimal arithmetic, units, input validation, controlled propagation through confirmed graph relationships, execution with every step recorded, Shapley contributions, sensitivity analysis, explanations and append-only persistence ([details](simulation/architecture.md)). |
 | Cross-cutting | `core/` | Settings, logging, error envelope and handlers, middleware. |
 
 Request lifecycle: the **middleware** assigns a request ID, enforces the body-size limit
@@ -92,6 +100,11 @@ uvicorn.
   statuses. The build validates against it and the API serves it (`/api/v1/graph/types`,
   and on every edge). The explorer shows the labels, meanings and caveats the API sends;
   it only chooses how to draw them, and never decides what a relationship means.
+- **Model definitions** — `simulation/models/` defines each model's inputs (units,
+  ranges, defaults and their rationales), equations, outputs, graph rules, assumptions and
+  limitations. The engine validates and calculates with them, the API serves them
+  (`/api/v1/simulation-models/{id}`), and the Simulation page builds its form, pathway and
+  tables from what it receives. No financial figure is calculated in the browser.
 - **Honesty** — capabilities (`services/system.py`) state what exists and what is planned
   for which phase; the UI reads them rather than hard-coding claims.
 
@@ -104,11 +117,12 @@ pages).
 |---|---|
 | `app/` | Route table, theme and motion preferences, the module registry (names, status, phase of each product area) |
 | `layouts/` | The application shell: header, navigation, live workspace status, footer |
-| `pages/` | One component per route: Landing, Overview, Universe, Knowledge Graph, Data Explorer (with series, instrument and ingestion-run pages), Scenario Lab, AI Analyst, System, not-found and error pages |
+| `pages/` | One component per route: Landing, Overview, Universe, Knowledge Graph, Data Explorer (with series, instrument and ingestion-run pages), Simulation (with a stored run's page), Scenario Lab, AI Analyst, System, not-found and error pages |
 | `features/network/` | Everything about the financial network (below) |
 | `features/graph/` | The Knowledge Graph explorer: its state and history, the view model, deterministic layouts, encoding, canvas and panels ([details](graph/explorer.md)) |
 | `features/data/` | The time-series chart and its arithmetic, exact-value tables, provenance, freshness and quality components |
 | `features/scenarios/` | Scenario editor state and rules (pure), the editor and its context panel |
+| `features/simulation/` | The Simulation preview: the input form built from a model definition, exact-decimal formatting, the pathway layout, the result tables and charts, provenance and sensitivity panels ([details](simulation/preview.md)) |
 | `components/` | Shared UI primitives |
 | `hooks/` | `useApiResource` (shared request cache), element size, media queries |
 | `lib/`, `services/` | The typed HTTP client, exact-decimal formatting, and the one module that knows API paths |
@@ -171,6 +185,8 @@ optionally disabled — containerisation and deployment are Phase 10 work.
 The five epistemic categories are part of the data model, not decoration: relationships
 are stored and served as `assumption`, scenario shocks as `scenario_input`, and provider
 data (Phase 2) as `observation` — in its own tables, with its source, licence and
-revision history. Review ranges on series are labelled as assumptions. There is no storage
-for `simulated_output` yet because nothing produces it; the Phase 4 engine will get its own
-tables and label, and the UI's badges already know how to show them.
+revision history. Review ranges on series are labelled as assumptions. Simulation runs
+(Phase 4) are stored in their own tables: every input carries what it is (scenario input,
+historical data, the user's figure, assumption or setting) and where it came from, and
+every output is `derived` (from the inputs alone) or `simulated` (under the scenario),
+shown with the simulated-output badge the UI already had.

@@ -8,9 +8,9 @@ uncertainty are never blurred.
 |---|---|---|
 | **1** | **Foundation & system architecture** | **Done:** API, database and migrations, domain model, illustrative network, 2D network view, Scenario Lab (inputs only), design system, tests, CI, documentation |
 | **2** | **Financial data infrastructure** | **Done:** provider layer (World Bank), licensed price-file import, exact decimals, provenance and revisions, data-quality rules, job tracking, read-only data API, Data Explorer ([report](phases/phase-2-report.md)) |
-| **3** | **Financial knowledge graph** | **Done in this build:** a graph of every record RUMIN holds (9 node types, 18 edge types) with evidence on every edge, conservative entity resolution, validation and build reports, neighbourhoods, shortest paths, components and metrics, a read-only graph API and the Knowledge Graph explorer ([report](phases/phase-3-report.md)). Centrality and propagation were deliberately left out ([why](decisions.md#30-no-centrality-weighted-paths-or-community-detection-yet)) |
-| 4 | Simulation engine | Running scenarios: propagating shocks through the model, with stated assumptions and uncertainty |
-| 5 | Scenario Lab | Full scenario workflow: runs, comparisons, sensitivity, saved results |
+| **3** | **Financial knowledge graph** | **Done:** a graph of every record RUMIN holds (9 node types, 18 edge types) with evidence on every edge, conservative entity resolution, validation and build reports, neighbourhoods, shortest paths, components and metrics, a read-only graph API and the Knowledge Graph explorer ([report](phases/phase-3-report.md)). Centrality and propagation were deliberately left out ([why](decisions.md#30-no-centrality-weighted-paths-or-community-detection-yet)) |
+| **4** | **Simulation engine** | **Done in this build:** a versioned model registry and its first model (an airline fuel-cost shock: crude oil, jet fuel and the exchange rate through hedging and a lagged fare pass-through), exact decimals, propagation only along confirmed graph relationships, Shapley contributions, one-at-a-time sensitivity, append-only runs with provenance and verification, the simulation API and the Simulation preview ([report](phases/phase-4-report.md)). Monte Carlo was deliberately deferred ([why](decisions.md#39-one-at-a-time-sensitivity-points-outside-a-range-are-skipped)) |
+| 5 | Scenario Lab | The full scenario workflow on the engine: drafts connected to models, runs compared side by side, saved results and sensitivity views |
 | 6 | Financial intelligence | Indicators, explanations and reports built on data and simulations |
 | 7 | AI Analyst | Questions answered from the model's data, assumptions and runs, with citations |
 | 8 | 3D financial universe | A Three.js view of the same model and layout |
@@ -21,7 +21,7 @@ The Phase 1 plan named FRED as the first data source. The Phase 2 licence review
 FRED's terms prohibit storing its content in a database, so the World Bank was selected
 instead (see [decisions](decisions.md#13-world-bank-indicators-as-the-first-provider-fred-rejected)).
 
-## Data follow-ups (before or alongside Phase 4)
+## Data follow-ups (before or alongside Phase 5)
 
 1. **Verify a live World Bank run** on a machine with internet access and review the data
    in the Data Explorer (the build environment blocked the provider).
@@ -42,7 +42,7 @@ instead (see [decisions](decisions.md#13-world-bank-indicators-as-the-first-prov
 - Add browser end-to-end tests (Playwright) for the main flows, and run them in CI.
 - Decide the authentication model before any multi-user or hosted use.
 
-## Graph follow-ups (before or alongside Phase 4)
+## Graph follow-ups (before or alongside Phase 5)
 
 1. **A cheaper freshness check**: a change counter or per-table checksum written when
    sources change, so the overview no longer reads every record (about 6 s at 20,000
@@ -56,3 +56,21 @@ instead (see [decisions](decisions.md#13-world-bank-indicators-as-the-first-prov
 5. **Attribute history** (`graph_node_versions` / `graph_edge_versions`) if earlier
    descriptions or qualifiers must be reconstructable, not only membership.
 6. **Search at scale**: a trigram or full-text index for node search on PostgreSQL.
+
+## Simulation follow-ups (before or alongside Phase 5)
+
+1. **Presentation declared in the model definition** (headline, baseline-and-scenario
+   pairs, monthly series), replacing the page's naming conventions, before a second model
+   is added.
+2. **Connect scenario drafts to models**: map a draft's changes on graph variables to a
+   model's scenario inputs, refusing a change no model input accepts.
+3. **Compare runs** side by side, with the differences in inputs, assumptions and
+   outputs, and whether their hashes match.
+4. **Retention and quotas** for runs and analyses, with authentication (Phase 10).
+5. **An explanation paged by month** for larger models (36 months is about 101 kB today).
+6. **More stored inputs** with their provenance: a monthly exchange rate, and jet fuel
+   prices from a licensed source, once available.
+7. **A second model** on the same engine (financing costs, once a monthly interest-rate
+   series is stored) to prove the registry beyond one domain.
+8. **Estimated parameters** (Phase 9): β and the lags estimated from stored series, each
+   with its method, sample and uncertainty, entering as inputs with provenance.

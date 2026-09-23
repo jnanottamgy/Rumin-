@@ -25,7 +25,7 @@ Regenerate after changing an endpoint or schema: `make api-types` (or
 | Dates | Calendar dates (periods, trade dates, the provider's last update) are `YYYY-MM-DD`; they have no time zone. |
 | Pagination | List endpoints take `limit` (1–500, default 100) and `offset` (default 0) and return `{items, total, limit, offset}`. |
 | Time | Timestamps are ISO 8601 in UTC, e.g. `2026-09-23T11:46:58.387307Z`. |
-| Knowledge labels | Relationships carry `epistemic_category: "assumption"` and `evidence_level`; scenario shocks carry `epistemic_category: "scenario_input"`; economic series carry `epistemic_category: "observation"`. |
+| Knowledge labels | Relationships carry `epistemic_category: "assumption"` and `evidence_level`; scenario shocks carry `epistemic_category: "scenario_input"`; economic series carry `epistemic_category: "observation"`. Simulation inputs carry `knowledge` (`scenario_input`, `historical_data`, `user_input`, `assumption`, `setting`) and `source` (`user`, `default`, `stored_observation`); simulation outputs carry `kind` (`derived` or `simulated`). |
 | Request IDs | Every response has an `X-Request-ID` header (a safe incoming value is reused, otherwise one is generated). Error bodies repeat it, and every log line for the request includes it. |
 
 ## Endpoints
@@ -72,9 +72,9 @@ There is deliberately **no endpoint that starts ingestion**: without authenticat
 would let anyone make the server call providers and write data. Ingestion runs from the
 command line ([ingestion](data/ingestion.md)); `POST /api/v1/ingestion-jobs` answers 405.
 
-There is also **no endpoint that runs or simulates a scenario**: no simulation engine exists
-yet (Phase 4). Scenarios have `status: "draft"` and `latest_run: null`, and the API never
-returns a simulated value.
+Scenario **drafts** still cannot be run: they have `status: "draft"` and `latest_run:
+null` until the Scenario Lab connects them to the engine (Phase 5). Models are run through
+the separate, append-only [simulation endpoints](#simulation).
 
 ### Structural links in `/api/v1/network`
 
@@ -178,6 +178,99 @@ GET /api/v1/graph/edges/e-dff724fccf21ee64
 
 (Abridged: `source_node`, `target_node`, the status definition, the type's description and
 the build IDs are omitted. Deltrin Refining is a fictional company.)
+
+## Simulation
+
+Versioned models, input validation, deterministic runs and their explanations (Phase 4).
+Runs and sensitivity analyses are **append-only**: created by `POST`, never replaced or
+deleted (`PUT`, `PATCH` and `DELETE` answer 405). Everything is documented in
+[`docs/simulation/`](simulation/README.md).
+
+| Method and path | Purpose | Success |
+|---|---|---|
+| `GET /api/v1/simulation-models` | The latest version of every registered model: status, definition hash, versions, number of stored runs. | 200 |
+| `GET /api/v1/simulation-models/{model_id}` | The full definition (`?version=` for an older one): inputs with units, ranges, defaults, rationales and any stored series each can come from (with its latest value); equations; outputs; transmission rules with the graph edge that confirms each; assumptions, limitations, validation rules; the graph's freshness. | 200 / 404 |
+| `POST /api/v1/simulations/validate` | Checks inputs without running or storing anything. Always 200: `valid`, `errors` and `warnings` (each with its field), every input resolved and labelled, the graph snapshot, and the inputs hash a run would have. | 200 |
+| `POST /api/v1/simulations` | Runs a model and stores the run. Invalid inputs: 422 with one detail per problem, nothing stored. A model version whose code no longer matches its stored definition: 409. | 201 / 409 / 422 |
+| `GET /api/v1/simulations` | Stored runs, newest first, with their headline results; filter `?model_id=`. | 200 |
+| `GET /api/v1/simulations/{run_id}` | A run: inputs (each with its kind of knowledge and source), outputs, monthly series, contributions, bridge, warnings, limitations, hashes, times. | 200 / 404 |
+| `GET /api/v1/simulations/{run_id}/explanation` | Equations used, every step, the input-to-output pathway, contributions, parameters against defaults, assumptions, limitations, warnings. | 200 / 404 |
+| `GET /api/v1/simulations/{run_id}/provenance` | Model version and definition hash, engine version, hashes, stored observations used, the graph snapshot, every transmission path. | 200 / 404 |
+| `POST /api/v1/simulations/{run_id}/verify` | Re-executes the run from its stored snapshot and compares the hashes; stores nothing. | 200 / 404 |
+| `POST /api/v1/simulations/{run_id}/sensitivity` | A one-at-a-time sensitivity analysis, stored with the run (empty body: the model's defaults). | 201 / 404 / 409 / 422 |
+| `GET /api/v1/simulations/{run_id}/sensitivity` | The run's analyses, newest first. | 200 / 404 |
+| `GET /api/v1/simulations/{run_id}/sensitivity/{analysis_id}` | One analysis. | 200 / 404 |
+
+The brief's suggested `POST /simulations/run` is `POST /simulations`: the API creates
+resources by posting to the collection, as `POST /scenarios` does.
+
+**Inputs** are an object keyed by input ID. Values are exact decimal strings or JSON
+numbers; text inputs are strings; quantities name their unit; an input may ask for a stored
+observation instead of a value. Inputs left out take the model's default (and are recorded
+as defaults):
+
+```http
+POST /api/v1/simulations
+Content-Type: application/json
+
+{"model_id": "airline_fuel_cost", "label": "Example: crude +10 %",
+ "inputs": {
+   "crude_oil_change": {"value": "10"},
+   "jet_fuel_price": {"value": "750", "unit": "usd_per_kilolitre"},
+   "fx_rate": {"value": "80"},
+   "reporting_currency": {"value": "INR"},
+   "annual_revenue": {"value": "300000000"},
+   "annual_operating_costs": {"value": "250000000"},
+   "annual_fuel_consumption": {"value": "1000", "unit": "kilolitre"},
+   "hedge_ratio": {"value": "50"}, "hedge_months": {"value": "3"},
+   "fare_pass_through": {"value": "40"}, "fare_pass_through_lag": {"value": "2"}}}
+```
+
+```http
+HTTP/1.1 201 Created
+Location: /api/v1/simulations/51b90c67-3fe5-48a8-bbc1-f0186430e3c9
+
+{
+  "id": "51b90c67-3fe5-48a8-bbc1-f0186430e3c9",
+  "model_id": "airline_fuel_cost",
+  "model_version": "1.0.0",
+  "status": "completed",
+  "outputs": [
+    {"id": "operating_profit_change", "label": "Change in operating profit (horizon)",
+     "value": "-3550000", "unit": "INR", "kind": "simulated", "equation": "E14", "…": "…"},
+    "…"
+  ],
+  "inputs": [
+    {"id": "crude_oil_change", "value": "10", "knowledge": "scenario_input", "source": "user", "…": "…"},
+    {"id": "crude_pass_through", "value": "1", "knowledge": "assumption", "source": "default", "…": "…"},
+    "…"
+  ],
+  "bridge": {"steps": ["…"], "total": {"output": "operating_profit_change", "value": "-3550000"}},
+  "inputs_hash": "ca04cbff…", "result_hash": "4d5f06b9…", "random_seed": null,
+  "note": "A deterministic calculation from the inputs and assumptions shown, holding everything else constant. It is not a forecast and not investment advice.",
+  "…": "…"
+}
+```
+
+(Abridged. The figures are the Simulation page's hypothetical example — round numbers, not
+data. A stored exchange rate is requested with `"fx_rate": {"source": "stored_observation"}`.)
+
+A refused run lists every problem, with the field as `inputs.<id>`:
+
+```json
+{"error": {"code": "validation_error", "message": "The simulation inputs are invalid.",
+  "details": [
+    {"location": "body", "field": "inputs.annual_revenue", "message": "Annual revenue is required.", "type": "required"},
+    {"location": "body", "field": "inputs.hedge_ratio", "message": "Hedge ratio must be at most 100 %.", "type": "input_range"}
+  ], "request_id": "…"}}
+```
+
+Detail types: `unknown_input`, `required`, `input_range`, `unit_choice`,
+`observation_matches`, `no_stored_observation`, the model's own rules
+(`usd_rate_is_one`, `fuel_share_exceeds_costs`, `channel_confirmed`, `entity_is_airline`),
+`numerical_limit` and `transmission_limit` (a calculation outside the engine's range),
+`unknown_model`, `deprecated_model`, and for sensitivity requests `invalid_number` and
+`sensitivity_limit`.
 
 ## Scenarios
 
@@ -311,14 +404,15 @@ saying where the value came from (`body`, `query`, `path`).
 |---|---|---|
 | 400 | `bad_request` | Malformed request that is not a validation problem |
 | 404 | `not_found` | Unknown route or ID |
-| 405 | `method_not_allowed` | E.g. `PATCH /api/v1/network` |
+| 405 | `method_not_allowed` | E.g. `PATCH /api/v1/network`, `DELETE /api/v1/simulations/{id}` |
+| 409 | `conflict` | A simulation model version whose code no longer matches its stored definition |
 | 413 | `payload_too_large` | Body larger than `RUMIN_MAX_REQUEST_BODY_BYTES` (64 KiB) |
 | 422 | `validation_error` | Invalid body, query or path values, invalid JSON, wrong content type, unknown fields |
 | 500 | `internal_error` | Unexpected failure. The response never contains a stack trace; the log has it under the request ID. |
 | 503 | `service_unavailable` | The database is unreachable |
 
-The codes 401, 403, 409 and 429 (`unauthorized`, `forbidden`, `conflict`, `rate_limited`)
-are reserved in the envelope for later phases; no endpoint returns them yet.
+The codes 401, 403 and 429 (`unauthorized`, `forbidden`, `rate_limited`) are reserved in
+the envelope for later phases; no endpoint returns them yet.
 
 ## Security headers and limits
 
@@ -328,5 +422,6 @@ Every response carries `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY
 origins listed in `RUMIN_CORS_ORIGINS`, never `*` and never with credentials. See
 [security.md](security.md).
 
-There is **no authentication** yet: anyone who can reach the API can read all stored data
-and create and delete scenarios. Do not expose it beyond your own machine.
+There is **no authentication** yet: anyone who can reach the API can read all stored data,
+create and delete scenarios, and create simulation runs and analyses (which cannot be
+changed or deleted). Do not expose it beyond your own machine.

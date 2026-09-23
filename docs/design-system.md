@@ -65,11 +65,17 @@ case is shown.
 | `--viz-edge-economic` | 3.0 : 1 | 3.9 : 1 | 3 : 1 |
 | `--color-field-border` | 3.2 : 1 | 3.2 : 1 | 3 : 1 |
 | `--viz-series`, `--viz-flag` (time-series marks) | ≥ 3 : 1 | ≥ 3 : 1 | 3 : 1 |
+| `--viz-baseline` (simulation baseline marks) | 5.5 : 1 | 3.1 : 1 | 3 : 1 |
 
 The time-series pair (`--viz-series` #3a87cc / #4a93d6 and `--viz-flag` #b07a00 / #c98500,
 light / dark) was checked with a palette validator as a pair, in each theme: inside the
 lightness band, above the chroma floor, colour-vision-deficiency separation ΔE ≈ 24 (target
 ≥ 8), normal-vision separation ≈ 25, and ≥ 3 : 1 against the chart surface.
+
+The simulation pair (`--viz-baseline` #5f5d57 / #6a6e75 beside `--viz-series`) was checked
+the same way: separation ΔE 18.0 / 14.8 for colour-vision deficiency and 19.0 / 15.7 for
+normal vision (floor 15). The validator's chroma floor flags the grey by design: it is the
+grey context series of an emphasis chart, not a categorical hue.
 
 `--color-line` and `--color-line-strong` are decorative dividers (and borders of controls
 that are identified by their text) and are deliberately below 3 : 1.
@@ -158,6 +164,22 @@ On phones only the centre, the selection and the hovered node are labelled. The 
 lists only the marks in view. As in the network, a table view lists the same nodes and
 relationships.
 
+## The Simulation preview (Phase 4)
+
+The Simulation page (`/simulation`) is an instrument, not a dashboard: a form on the left,
+results on the right, one accent colour, one moment of motion. Full details, including the
+review that shaped it: [the preview](simulation/preview.md).
+
+| What | Encoding | Why |
+|---|---|---|
+| The headline | A hero figure in the interface sans with proportional digits, the unit set smaller beside it; other headline results as stat tiles with their equation ID | One number leads; units never wrap into the figure |
+| Baseline against scenario | `--viz-baseline` grey for the baseline, `--viz-series` sky blue for the scenario, one y-scale; the monthly change as columns from zero on a second plot sharing the x-axis | Emphasis, not categories: the scenario is what the reader changed. Never two y-scales on one plot |
+| Bar figures (waterfall, contributions, tornado) | Tables whose bars picture the amount written beside them; 12 px bars from zero with a rounded data end; direction carried by position and sign, never red and green | Exact values stay readable without seeing a bar |
+| Sensitivity points | A hollow circle for the input lowered, a filled circle for it raised | Shape, not colour |
+| The pathway | Layered flow, read top to bottom; inputs, graph variables and results as nodes; graph relationships keep the explorer's evidence patterns (dash–dot for a model assumption) with arrowheads and a tag giving the coefficient and lag | Structure, not quantity: which input reaches which result, and through which relationship |
+| Equations | The display serif, italic, set like a textbook | Formulas read as formulas, apart from interface text |
+| Motion | For a new run, nodes appear layer by layer and a sky-blue pulse runs once along each link (about 2.5 s); nothing moves for stored runs or under reduced motion | The one orchestrated moment shows how the change travelled |
+
 ## Knowledge labels
 
 The five epistemic categories use one glyph each, everywhere (badges, legend, landing):
@@ -169,6 +191,20 @@ The five epistemic categories use one glyph each, everywhere (badges, legend, la
 | Scenario input | diamond | sky blue — the one thing the reader controls |
 | Simulated output | hatched square | ink |
 | Uncertainty | wave | ink |
+
+The Simulation page labels its inputs and results more finely, with the same shapes where
+the meanings match. Circles and rings mark what is **given**, squares what is
+**calculated**:
+
+| Simulation label | Glyph |
+|---|---|
+| Scenario change | sky-blue diamond (as scenario input) |
+| Historical data (a stored observation) | filled circle (as observation) |
+| Your figure (entered by the user) | filled square |
+| Assumption | ring (as assumption) |
+| Setting (e.g. the horizon) | short dash |
+| Derived (from the inputs alone) | open square |
+| Simulated (under the scenario) | hatched square (as simulated output) |
 
 ## Components
 

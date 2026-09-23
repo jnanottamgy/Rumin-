@@ -1,8 +1,9 @@
 # Technology decisions
 
-Short records of the choices made in Phases 1 to 3, why, and what would make us revisit
+Short records of the choices made in Phases 1 to 4, why, and what would make us revisit
 them. Phase 2 decisions start at [13](#13-world-bank-indicators-as-the-first-provider-fred-rejected),
-Phase 3 decisions at [23](#23-the-knowledge-graph-lives-in-the-existing-relational-database).
+Phase 3 decisions at [23](#23-the-knowledge-graph-lives-in-the-existing-relational-database),
+Phase 4 decisions at [33](#33-one-narrow-domain-first-an-airline-fuel-cost-shock).
 
 ## 1. Monorepo with a Python API and a TypeScript web client
 
@@ -59,6 +60,9 @@ checksum, so what is in the database can always be traced to an exact file.
 **Why.** An endpoint or screen that appears to simulate or predict would present invented
 numbers as results. Instead the capability list states what is planned and when, the
 Scenario Lab saves inputs only, and the AI Analyst page explains what it will do.
+**Since Phase 4** a simulation engine exists, built so that its results are calculations
+from stated inputs, never invented (decisions 33–42). Scenario drafts still save inputs
+only until the Phase 5 Scenario Lab connects them.
 
 ## 8. React 19 + TypeScript + Vite + React Router
 
@@ -301,4 +305,153 @@ Playwright installation outside the project.
 needed are small, and hand-written versions can be tested against brute force.
 **Revisit if** the graph needs algorithms whose correct implementation is substantial
 (for example, community detection on large graphs). NetworkX or igraph would then be
+evaluated like any dependency.
+
+## 33. One narrow domain first: an airline fuel-cost shock
+
+**Decision.** The first model answers one question: how a change in crude oil, jet fuel or
+the exchange rate reaches one airline's fuel cost, operating profit and margin, with
+hedging and a lagged fare pass-through. Five candidates were compared on data available,
+financial relevance, mathematical clarity, validation potential and extensibility
+([plan](phases/phase-4-plan.md#2-the-domain-an-airline-fuel-cost-shock)).
+**Why.** It uses the most of what RUMIN already holds: the graph states the crude → jet
+fuel → air transport channel, the variables have defined units, and the World Bank series
+can supply a historical exchange rate. Its core is an accounting identity (volume × price
+× exchange rate), so round inputs give results checkable by hand, and it still exercises
+unit conversion, currencies, frequencies, lags and graph propagation. The closest
+alternative, interest rates on financing costs, lacked data (one annual lending rate).
+**Consequence.** RUMIN holds no company accounts, so the airline's figures always come
+from the user, and the sample airlines stay fictional.
+**Revisit** when the next question needs its own model (see 34); the registry takes it
+without changes to the engine.
+
+## 34. Models are code, versioned and hashed; no formula language
+
+**Decision.** A model is a frozen, typed definition plus a `check` and a `compute`
+function, registered in code. Its canonical JSON is hashed (SHA-256); the first run of a
+version stores the definition and hash, a later run whose code differs is refused (409),
+and a test pins every released hash. There is no formula language: nothing is ever
+evaluated from text (`eval`, `exec` or a parser).
+**Why.** A formula language would be a second programming language to secure, test and
+explain, and user-supplied formulas would be executable input. Python functions are
+typed, linted, unit-tested and reviewed like the rest of the code. Pinning the hash means
+a released model cannot change silently: stored runs keep meaning what they meant.
+**Consequence.** Any change, even to a description, needs a new version number; old
+versions stay registered so their runs can still be verified.
+**Revisit if** analysts need to define models themselves. A restricted, parsed expression
+language with a whitelist of operations would then be designed and reviewed as its own
+component, never `eval`.
+
+## 35. Exact decimals, refused rather than repaired
+
+**Decision.** All model arithmetic runs in one `Decimal` context: 34 significant digits,
+half-even rounding, traps on overflow, invalid operations and division by zero, with
+correctly rounded `ln` and `exp`. Outputs are rounded to 10 decimal places; magnitudes
+stay below 10²⁰ so every stored value fits `NUMERIC(38, 18)`. Units convert only between
+the units a model lists, with exact factors. Values out of range, with too many decimals,
+in an unlisted unit or missing are **refused** with a reason, never clipped, rounded,
+converted or filled in.
+**Why.** Binary floating point gives results that differ by platform and cannot be
+reconciled to the cent; exact, correctly rounded arithmetic gives the same hashes on every
+machine, so a run can be verified anywhere. Repairing input silently would present a
+result for a question the user did not ask. This extends decision 15 to calculations.
+**Revisit if** a model needs heavy numerical work (matrix algebra, optimisation), where
+floating point with stated tolerances would be the honest choice, with reproducibility
+defined by tolerance rather than by hash.
+
+## 36. The graph carries shocks only through declared transmission rules
+
+**Decision.** A shock travels along a graph edge only when a model's transmission rule
+declares that edge type between those nodes, the latest graph build contains it as a
+current, validated edge, and the shock needs it. Coefficients and lags are model inputs
+(assumptions with defaults and rationales), never read from edges. Propagation is
+log-linear along simple paths only (cycle protection), at most 4 hops deep and 500 paths,
+and every path is recorded. Other edges near the model's variables are listed as "not
+used", never followed. A missing edge refuses the shock with the reason.
+**Why.** The graph's edges say that a relationship exists and what supports it; they carry
+no measured size (decision 25). Propagating along any edge would invent effects.
+Declaring rules keeps the model's causal claims explicit, reviewable and testable, and
+checking the graph keeps the model honest about what RUMIN's data actually states.
+**Revisit** when coefficients are estimated from data (Phase 9); an estimate would enter
+as an input with its own provenance, not as an edge weight.
+
+## 37. Shapley values for contributions
+
+**Decision.** When several changes act at once, each output's change is attributed with
+Shapley values: the model is evaluated with every subset of the non-zero changes, and each
+change gets its average marginal effect over all orders. At most six changes are
+attributed (64 evaluations).
+**Why.** Changes interact (a weaker rupee makes a crude rise costlier). Adding changes one
+after another credits the interaction to whichever comes last, so the answer depends on an
+arbitrary order. Shapley values add up to the total exactly, treat changes symmetrically
+and need no judgement to apply.
+**Revisit if** a model has more than six simultaneous changes; grouped or sampled
+attributions would then be needed, stated as approximate.
+
+## 38. Runs are append-only and verifiable from their own snapshot
+
+**Decision.** A run stores the definition hash, every input with its source, the graph
+and data snapshots, every calculation step, the outputs, contributions and bridge, and
+the inputs and result hashes. There is no update or delete (405); a sensitivity analysis
+keeps its run (a restricting foreign key); running the same inputs again creates a new
+run. Verification re-executes from the stored snapshot alone and compares hashes.
+**Why.** An explanation must describe the calculation that happened, not the one current
+code and data would do. Re-reading the graph or the latest observation during
+verification would test today's data, not the run. Storing rather than recomputing makes
+every stored number traceable to its step.
+**Consequence.** Storage grows with use (about 16–17 kB of JSON per 12-month run) and
+there is no retention policy yet.
+**Revisit** with authentication (Phase 10): retention, archiving and deletion by an
+authorised owner, with an audit record.
+
+## 39. One-at-a-time sensitivity; points outside a range are skipped
+
+**Decision.** Sensitivity varies one input at a time around a stored run (defaults per
+input, or absolute, relative or listed values), evaluates every output at every point,
+and ranks inputs by the spread of one metric. A point outside an input's range, or one the
+model refuses, is skipped and listed with the reason, never clipped. Limits: 8 inputs,
+7 points each, 60 evaluations, 10 seconds; a request over a limit is refused whole.
+Monte Carlo is deferred; runs record `random_seed: null` so that probabilistic runs can
+be reproduced later.
+**Why.** One-at-a-time analysis answers "what moves the result most" exactly and
+explainably. Distributions would need estimated uncertainty for each input, which RUMIN
+does not have; drawing from invented distributions would present made-up probabilities.
+Clipping a point would report the result of a different question.
+**Revisit** when inputs have estimated distributions (Phase 9), and for two-way grids when
+interactions matter.
+
+## 40. Runs are created by `POST /simulations`
+
+**Decision.** The brief suggested `POST /simulations/run`; RUMIN creates a run with
+`POST /api/v1/simulations` (201 with `Location`), like `POST /scenarios`. Validation
+without storing is `POST /simulations/validate`, and verification is
+`POST /simulations/{id}/verify`.
+**Why.** The existing API creates resources by posting to their collection. A verb in the
+path would be the only one of its kind. `validate` and `verify` are actions that store
+nothing, so they are verbs.
+
+## 41. The browser calculates nothing
+
+**Decision.** The Simulation page renders definitions and results the API returns: form
+fields from the input definitions, the pathway from the model's declared links, the
+tables and charts from stored outputs. Every figure it shows is an exact decimal string
+from the server that the page only formats (a sign, grouping, a unit, a shifted decimal
+point for percentages). Values become floating-point numbers only to position marks in a
+chart, never to produce a figure. The page's presentation helpers still find
+baseline-and-scenario pairs by naming convention.
+**Why.** Financial logic in one place cannot drift between clients, is tested in one
+language, and is covered by the run's hashes. A figure calculated in the browser would
+have no step, no provenance and no hash.
+**Revisit** when a second model arrives: its presentation (pairs, monthly series,
+headline) should be declared in its definition rather than inferred from names.
+
+## 42. Still no new dependencies
+
+**Decision.** Phase 4 adds no runtime or development dependency. Exact arithmetic uses the
+standard library's `decimal`; hashing uses `hashlib`; Shapley values, propagation,
+sensitivity, the pathway layout and the charts are written in the project and tested.
+**Why.** As in 21 and 32. Every calculation that matters is small enough to write and
+verify by hand, and a numerical library would bring binary floating point back into the
+path (see 35).
+**Revisit** with Monte Carlo or estimation (Phase 9), where a statistics library would be
 evaluated like any dependency.
