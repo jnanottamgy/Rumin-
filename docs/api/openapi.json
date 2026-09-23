@@ -1,0 +1,2686 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "RUMIN API",
+    "summary": "Financial intelligence and economic simulation platform.",
+    "description": "\nRUMIN is an interactive financial intelligence and economic simulation platform.\nThis is the **Phase 1 foundation** of its API.\n\n### Five kinds of knowledge\nRUMIN never blurs these categories; responses label them with `epistemic_category`.\n\n| Category | Meaning | In this build |\n|---|---|---|\n| `observation` | Historical data from a cited source | None stored yet (Phase 2) |\n| `assumption` | Rules, parameters and relationships defined by the model | Every relationship |\n| `scenario_input` | Values changed by a user | Scenario shocks |\n| `simulated_output` | Results computed by a simulation engine | None: no engine yet (Phase 4) |\n| `uncertainty` | Limitations and ranges | Documented qualitatively |\n\n### Sample data\nThe loaded dataset is **illustrative**. Companies are fictional; countries, ISIC Rev. 4\nindustries and economic-variable definitions are real concepts with references. The\ndataset contains no prices, financial figures or time series.\n\n### Errors\nEvery error response uses one envelope:\n`{\"error\": {\"code\", \"message\", \"details\", \"request_id\"}}`.\n",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Liveness probe",
+        "description": "Returns 200 whenever the process is serving requests. Does not touch the database, so a database outage does not make the process look dead.",
+        "operationId": "health",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Readiness probe",
+        "description": "Returns 200 when the database is reachable, migrations are current and a dataset is loaded; otherwise 503 with the failing checks.",
+        "operationId": "ready",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Not ready.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/entities": {
+      "get": {
+        "tags": [
+          "reference data"
+        ],
+        "summary": "List entities",
+        "description": "Companies, industries, countries and economic variables, ordered by name.",
+        "operationId": "list_entities",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/EntityKind"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only return this kind.",
+              "title": "Kind"
+            },
+            "description": "Only return this kind."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "description": "Maximum number of items to return.",
+              "default": 100,
+              "title": "Limit"
+            },
+            "description": "Maximum number of items to return."
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0,
+              "description": "Items to skip.",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Items to skip."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntityPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/entities/{entity_id}": {
+      "get": {
+        "tags": [
+          "reference data"
+        ],
+        "summary": "Get an entity",
+        "operationId": "get_entity",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z]{2,4}_[a-z0-9_]{2,59}$",
+              "examples": [
+                "co_aerisca_airways"
+              ],
+              "title": "Entity Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/CompanyRead"
+                    },
+                    {
+                      "$ref": "#/components/schemas/IndustryRead"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CountryRead"
+                    },
+                    {
+                      "$ref": "#/components/schemas/EconomicVariableRead"
+                    }
+                  ],
+                  "discriminator": {
+                    "propertyName": "kind",
+                    "mapping": {
+                      "company": "#/components/schemas/CompanyRead",
+                      "industry": "#/components/schemas/IndustryRead",
+                      "country": "#/components/schemas/CountryRead",
+                      "economic_variable": "#/components/schemas/EconomicVariableRead"
+                    }
+                  },
+                  "title": "Response Get Entity"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/industries": {
+      "get": {
+        "tags": [
+          "reference data"
+        ],
+        "summary": "List industries",
+        "operationId": "list_industries",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "description": "Maximum number of items to return.",
+              "default": 100,
+              "title": "Limit"
+            },
+            "description": "Maximum number of items to return."
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0,
+              "description": "Items to skip.",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Items to skip."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndustryPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/variables": {
+      "get": {
+        "tags": [
+          "reference data"
+        ],
+        "summary": "List economic variables",
+        "description": "Each variable includes `scenario_rules`: the kinds of change it accepts in a scenario and the limits the API enforces.",
+        "operationId": "list_variables",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "description": "Maximum number of items to return.",
+              "default": 100,
+              "title": "Limit"
+            },
+            "description": "Maximum number of items to return."
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0,
+              "description": "Items to skip.",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Items to skip."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EconomicVariablePage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/relationships": {
+      "get": {
+        "tags": [
+          "reference data"
+        ],
+        "summary": "List relationships",
+        "description": "Curated economic relationships. All are modelling assumptions; see `evidence_level` and `rationale` on each.",
+        "operationId": "list_relationships",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/RelationshipType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by type.",
+              "title": "Type"
+            },
+            "description": "Filter by type."
+          },
+          {
+            "name": "entity_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[a-z]{2,4}_[a-z0-9_]{2,59}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only relationships touching this entity.",
+              "title": "Entity Id"
+            },
+            "description": "Only relationships touching this entity."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "description": "Maximum number of items to return.",
+              "default": 100,
+              "title": "Limit"
+            },
+            "description": "Maximum number of items to return."
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0,
+              "description": "Items to skip.",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Items to skip."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RelationshipPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/relationship-types": {
+      "get": {
+        "tags": [
+          "reference data"
+        ],
+        "summary": "List relationship types",
+        "description": "The registry that defines what every edge type means.",
+        "operationId": "list_relationship_types",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RelationshipTypeRead"
+                  },
+                  "type": "array",
+                  "title": "Response List Relationship Types"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/network": {
+      "get": {
+        "tags": [
+          "network"
+        ],
+        "summary": "Financial network projection",
+        "description": "All nodes and edges for visualisation: curated economic relationships plus structural links derived from entity attributes, with degree per node and the relationship-type registry for legends.",
+        "operationId": "get_network",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NetworkResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios": {
+      "get": {
+        "tags": [
+          "scenarios"
+        ],
+        "summary": "List scenarios",
+        "operationId": "list_scenarios",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "description": "Maximum number of items to return.",
+              "default": 100,
+              "title": "Limit"
+            },
+            "description": "Maximum number of items to return."
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0,
+              "description": "Items to skip.",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Items to skip."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "scenarios"
+        ],
+        "summary": "Create a draft scenario",
+        "description": "Stores scenario *inputs*. Nothing is simulated: `latest_run` stays null until the Phase 4 simulation engine exists.",
+        "operationId": "create_scenario",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScenarioInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}": {
+      "get": {
+        "tags": [
+          "scenarios"
+        ],
+        "summary": "Get a scenario",
+        "operationId": "get_scenario",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Scenario Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "scenarios"
+        ],
+        "summary": "Replace a scenario's configuration",
+        "operationId": "replace_scenario",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Scenario Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScenarioInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "scenarios"
+        ],
+        "summary": "Delete a scenario",
+        "operationId": "delete_scenario",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Scenario Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/system": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "System status",
+        "description": "Environment, database and migration state, the loaded dataset, and the capabilities this build does and does not have.",
+        "operationId": "system_status",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemStatus"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Capability": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "planned_phase": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned Phase",
+            "description": "Roadmap phase that delivers it, if planned."
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "available",
+          "planned_phase",
+          "note"
+        ],
+        "title": "Capability"
+      },
+      "ChangeRuleRead": {
+        "properties": {
+          "change_type": {
+            "$ref": "#/components/schemas/ChangeType"
+          },
+          "minimum": {
+            "type": "number",
+            "title": "Minimum"
+          },
+          "maximum": {
+            "type": "number",
+            "title": "Maximum"
+          },
+          "minimum_exclusive": {
+            "type": "boolean",
+            "title": "Minimum Exclusive"
+          },
+          "unit_label": {
+            "type": "string",
+            "title": "Unit Label",
+            "examples": [
+              "%",
+              "percentage points",
+              "USD per barrel"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "change_type",
+          "minimum",
+          "maximum",
+          "minimum_exclusive",
+          "unit_label"
+        ],
+        "title": "ChangeRuleRead",
+        "description": "A kind of scenario change a variable accepts, with its input limits."
+      },
+      "ChangeType": {
+        "type": "string",
+        "enum": [
+          "percent_change",
+          "absolute_change"
+        ],
+        "title": "ChangeType"
+      },
+      "CompanyRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "is_fictional": {
+            "type": "boolean",
+            "title": "Is Fictional",
+            "description": "True for invented entities (all sample companies)."
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference",
+            "description": "Citation for the entity's definition."
+          },
+          "reference_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference Url"
+          },
+          "attributes": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Attributes"
+          },
+          "dataset_id": {
+            "type": "string",
+            "title": "Dataset Id",
+            "description": "Dataset the record was loaded from (provenance)."
+          },
+          "kind": {
+            "type": "string",
+            "const": "company",
+            "title": "Kind"
+          },
+          "industry_id": {
+            "type": "string",
+            "title": "Industry Id"
+          },
+          "country_id": {
+            "type": "string",
+            "title": "Country Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "is_fictional",
+          "reference",
+          "reference_url",
+          "attributes",
+          "dataset_id",
+          "kind",
+          "industry_id",
+          "country_id"
+        ],
+        "title": "CompanyRead"
+      },
+      "CountryRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "is_fictional": {
+            "type": "boolean",
+            "title": "Is Fictional",
+            "description": "True for invented entities (all sample companies)."
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference",
+            "description": "Citation for the entity's definition."
+          },
+          "reference_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference Url"
+          },
+          "attributes": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Attributes"
+          },
+          "dataset_id": {
+            "type": "string",
+            "title": "Dataset Id",
+            "description": "Dataset the record was loaded from (provenance)."
+          },
+          "kind": {
+            "type": "string",
+            "const": "country",
+            "title": "Kind"
+          },
+          "iso_alpha2": {
+            "type": "string",
+            "title": "Iso Alpha2"
+          },
+          "currency_code": {
+            "type": "string",
+            "title": "Currency Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "is_fictional",
+          "reference",
+          "reference_url",
+          "attributes",
+          "dataset_id",
+          "kind",
+          "iso_alpha2",
+          "currency_code"
+        ],
+        "title": "CountryRead"
+      },
+      "DatabaseStatus": {
+        "properties": {
+          "backend": {
+            "type": "string",
+            "title": "Backend",
+            "examples": [
+              "sqlite",
+              "postgresql"
+            ]
+          },
+          "reachable": {
+            "type": "boolean",
+            "title": "Reachable"
+          },
+          "migration_revision": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Migration Revision"
+          },
+          "migration_head": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Migration Head"
+          },
+          "schema_up_to_date": {
+            "type": "boolean",
+            "title": "Schema Up To Date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "backend",
+          "reachable",
+          "migration_revision",
+          "migration_head",
+          "schema_up_to_date"
+        ],
+        "title": "DatabaseStatus"
+      },
+      "DatasetStatus": {
+        "properties": {
+          "loaded": {
+            "type": "boolean",
+            "title": "Loaded"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DatasetSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "entity_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Entity Counts"
+          },
+          "relationship_count": {
+            "type": "integer",
+            "title": "Relationship Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loaded",
+          "summary",
+          "entity_counts",
+          "relationship_count"
+        ],
+        "title": "DatasetStatus"
+      },
+      "DatasetSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "is_illustrative": {
+            "type": "boolean",
+            "title": "Is Illustrative"
+          },
+          "provenance_note": {
+            "type": "string",
+            "title": "Provenance Note"
+          },
+          "license": {
+            "type": "string",
+            "title": "License"
+          },
+          "checksum_sha256": {
+            "type": "string",
+            "title": "Checksum Sha256"
+          },
+          "loaded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Loaded At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "version",
+          "name",
+          "description",
+          "is_illustrative",
+          "provenance_note",
+          "license",
+          "checksum_sha256",
+          "loaded_at"
+        ],
+        "title": "DatasetSummary"
+      },
+      "EconomicVariablePage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/EconomicVariableRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total",
+            "description": "Total number of items matching the query."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "EconomicVariablePage",
+        "description": "A page of economic variables."
+      },
+      "EconomicVariableRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "is_fictional": {
+            "type": "boolean",
+            "title": "Is Fictional",
+            "description": "True for invented entities (all sample companies)."
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference",
+            "description": "Citation for the entity's definition."
+          },
+          "reference_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference Url"
+          },
+          "attributes": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Attributes"
+          },
+          "dataset_id": {
+            "type": "string",
+            "title": "Dataset Id",
+            "description": "Dataset the record was loaded from (provenance)."
+          },
+          "kind": {
+            "type": "string",
+            "const": "economic_variable",
+            "title": "Kind"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "value_kind": {
+            "$ref": "#/components/schemas/ValueKind"
+          },
+          "frequency": {
+            "$ref": "#/components/schemas/Frequency"
+          },
+          "category": {
+            "$ref": "#/components/schemas/VariableCategory"
+          },
+          "country_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country Id",
+            "description": "Economy described; null for global benchmarks."
+          },
+          "scenario_rules": {
+            "items": {
+              "$ref": "#/components/schemas/ChangeRuleRead"
+            },
+            "type": "array",
+            "title": "Scenario Rules",
+            "description": "Which scenario changes this variable accepts, and the enforced limits.",
+            "readOnly": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "is_fictional",
+          "reference",
+          "reference_url",
+          "attributes",
+          "dataset_id",
+          "kind",
+          "unit",
+          "value_kind",
+          "frequency",
+          "category",
+          "country_id",
+          "scenario_rules"
+        ],
+        "title": "EconomicVariableRead"
+      },
+      "EntityKind": {
+        "type": "string",
+        "enum": [
+          "company",
+          "industry",
+          "country",
+          "economic_variable"
+        ],
+        "title": "EntityKind"
+      },
+      "EntityKindPair": {
+        "properties": {
+          "source_kind": {
+            "$ref": "#/components/schemas/EntityKind"
+          },
+          "target_kind": {
+            "$ref": "#/components/schemas/EntityKind"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_kind",
+          "target_kind"
+        ],
+        "title": "EntityKindPair"
+      },
+      "EntityPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/CompanyRead"
+                },
+                {
+                  "$ref": "#/components/schemas/IndustryRead"
+                },
+                {
+                  "$ref": "#/components/schemas/CountryRead"
+                },
+                {
+                  "$ref": "#/components/schemas/EconomicVariableRead"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "kind",
+                "mapping": {
+                  "company": "#/components/schemas/CompanyRead",
+                  "country": "#/components/schemas/CountryRead",
+                  "economic_variable": "#/components/schemas/EconomicVariableRead",
+                  "industry": "#/components/schemas/IndustryRead"
+                }
+              }
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total",
+            "description": "Total number of items matching the query."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "EntityPage",
+        "description": "A page of entities."
+      },
+      "ErrorBody": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code",
+            "description": "Stable machine-readable error code.",
+            "examples": [
+              "not_found"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Human-readable summary, safe to display."
+          },
+          "details": {
+            "items": {
+              "$ref": "#/components/schemas/ErrorDetail"
+            },
+            "type": "array",
+            "title": "Details"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id",
+            "description": "Correlates the error with server logs (X-Request-ID)."
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "ErrorBody"
+      },
+      "ErrorDetail": {
+        "properties": {
+          "location": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "body",
+                  "query",
+                  "path",
+                  "header",
+                  "cookie"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location",
+            "description": "Part of the request the problem was found in."
+          },
+          "field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field",
+            "description": "Path of the offending field, e.g. `shocks[0].value`.",
+            "examples": [
+              "shocks[0].value"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Type",
+            "description": "Machine-readable error type."
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "ErrorDetail"
+      },
+      "ErrorResponse": {
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorBody"
+          }
+        },
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "title": "ErrorResponse",
+        "description": "Every non-2xx response from the API uses this envelope."
+      },
+      "EvidenceLevel": {
+        "type": "string",
+        "enum": [
+          "illustrative",
+          "documented",
+          "estimated",
+          "validated"
+        ],
+        "title": "EvidenceLevel",
+        "description": "How well a relationship is supported. Phase 1 data is entirely ``illustrative``.\n\n* ``illustrative`` — constructed to demonstrate the model; not evidence-based.\n* ``documented`` — qualitatively supported by a cited public source.\n* ``estimated`` — quantified by a documented statistical estimate.\n* ``validated`` — an estimate that has also been validated out of sample."
+      },
+      "Frequency": {
+        "type": "string",
+        "enum": [
+          "daily",
+          "weekly",
+          "monthly",
+          "quarterly",
+          "annual",
+          "irregular"
+        ],
+        "title": "Frequency"
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ok",
+            "title": "Status"
+          },
+          "service": {
+            "type": "string",
+            "title": "Service"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "service",
+          "version"
+        ],
+        "title": "HealthResponse"
+      },
+      "IndustryPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/IndustryRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total",
+            "description": "Total number of items matching the query."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "IndustryPage",
+        "description": "A page of industries."
+      },
+      "IndustryRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "is_fictional": {
+            "type": "boolean",
+            "title": "Is Fictional",
+            "description": "True for invented entities (all sample companies)."
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference",
+            "description": "Citation for the entity's definition."
+          },
+          "reference_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference Url"
+          },
+          "attributes": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Attributes"
+          },
+          "dataset_id": {
+            "type": "string",
+            "title": "Dataset Id",
+            "description": "Dataset the record was loaded from (provenance)."
+          },
+          "kind": {
+            "type": "string",
+            "const": "industry",
+            "title": "Kind"
+          },
+          "classification_system": {
+            "type": "string",
+            "title": "Classification System",
+            "examples": [
+              "ISIC Rev. 4"
+            ]
+          },
+          "classification_code": {
+            "type": "string",
+            "title": "Classification Code",
+            "examples": [
+              "51"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "is_fictional",
+          "reference",
+          "reference_url",
+          "attributes",
+          "dataset_id",
+          "kind",
+          "classification_system",
+          "classification_code"
+        ],
+        "title": "IndustryRead"
+      },
+      "NetworkNode": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "degree": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Degree",
+            "description": "Number of edges touching this node in the projection."
+          },
+          "entity": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/CompanyRead"
+              },
+              {
+                "$ref": "#/components/schemas/IndustryRead"
+              },
+              {
+                "$ref": "#/components/schemas/CountryRead"
+              },
+              {
+                "$ref": "#/components/schemas/EconomicVariableRead"
+              }
+            ],
+            "title": "Entity",
+            "discriminator": {
+              "propertyName": "kind",
+              "mapping": {
+                "company": "#/components/schemas/CompanyRead",
+                "country": "#/components/schemas/CountryRead",
+                "economic_variable": "#/components/schemas/EconomicVariableRead",
+                "industry": "#/components/schemas/IndustryRead"
+              }
+            }
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "degree",
+          "entity"
+        ],
+        "title": "NetworkNode"
+      },
+      "NetworkResponse": {
+        "properties": {
+          "dataset": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DatasetSummary"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Null when no dataset has been loaded."
+          },
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/NetworkNode"
+            },
+            "type": "array",
+            "title": "Nodes"
+          },
+          "edges": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/RelationshipRead"
+                },
+                {
+                  "$ref": "#/components/schemas/StructuralLinkRead"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "category",
+                "mapping": {
+                  "economic": "#/components/schemas/RelationshipRead",
+                  "structural": "#/components/schemas/StructuralLinkRead"
+                }
+              }
+            },
+            "type": "array",
+            "title": "Edges"
+          },
+          "relationship_types": {
+            "items": {
+              "$ref": "#/components/schemas/RelationshipTypeRead"
+            },
+            "type": "array",
+            "title": "Relationship Types"
+          },
+          "stats": {
+            "$ref": "#/components/schemas/NetworkStats"
+          }
+        },
+        "type": "object",
+        "required": [
+          "dataset",
+          "nodes",
+          "edges",
+          "relationship_types",
+          "stats"
+        ],
+        "title": "NetworkResponse"
+      },
+      "NetworkStats": {
+        "properties": {
+          "node_count": {
+            "type": "integer",
+            "title": "Node Count"
+          },
+          "edge_count": {
+            "type": "integer",
+            "title": "Edge Count"
+          },
+          "economic_edge_count": {
+            "type": "integer",
+            "title": "Economic Edge Count"
+          },
+          "structural_edge_count": {
+            "type": "integer",
+            "title": "Structural Edge Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "node_count",
+          "edge_count",
+          "economic_edge_count",
+          "structural_edge_count"
+        ],
+        "title": "NetworkStats"
+      },
+      "Polarity": {
+        "type": "string",
+        "enum": [
+          "positive",
+          "negative",
+          "mixed",
+          "not_applicable"
+        ],
+        "title": "Polarity",
+        "description": "Assumed direction of effect: does an *increase* in the source raise the target?"
+      },
+      "ReadinessChecks": {
+        "properties": {
+          "database": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "unavailable"
+            ],
+            "title": "Database"
+          },
+          "migrations": {
+            "type": "string",
+            "enum": [
+              "up_to_date",
+              "outdated",
+              "missing",
+              "unknown"
+            ],
+            "title": "Migrations"
+          },
+          "dataset": {
+            "type": "string",
+            "enum": [
+              "loaded",
+              "missing",
+              "unknown"
+            ],
+            "title": "Dataset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "database",
+          "migrations",
+          "dataset"
+        ],
+        "title": "ReadinessChecks"
+      },
+      "ReadinessResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "not_ready"
+            ],
+            "title": "Status"
+          },
+          "checks": {
+            "$ref": "#/components/schemas/ReadinessChecks"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "checks"
+        ],
+        "title": "ReadinessResponse"
+      },
+      "RelationshipCategory": {
+        "type": "string",
+        "enum": [
+          "economic",
+          "structural"
+        ],
+        "title": "RelationshipCategory"
+      },
+      "RelationshipPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RelationshipRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total",
+            "description": "Total number of items matching the query."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "RelationshipPage",
+        "description": "A page of relationships."
+      },
+      "RelationshipRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "category": {
+            "type": "string",
+            "const": "economic",
+            "title": "Category",
+            "default": "economic"
+          },
+          "type": {
+            "$ref": "#/components/schemas/RelationshipType"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "target_id": {
+            "type": "string",
+            "title": "Target Id"
+          },
+          "polarity": {
+            "$ref": "#/components/schemas/Polarity",
+            "description": "Assumed effect of an increase in the source on the target measure."
+          },
+          "strength": {
+            "$ref": "#/components/schemas/Strength",
+            "description": "Illustrative ordinal strength."
+          },
+          "evidence_level": {
+            "$ref": "#/components/schemas/EvidenceLevel"
+          },
+          "epistemic_category": {
+            "type": "string",
+            "const": "assumption",
+            "title": "Epistemic Category",
+            "description": "Relationships are modelling assumptions; evidence_level says how well each one is supported.",
+            "default": "assumption"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "rationale": {
+            "type": "string",
+            "title": "Rationale",
+            "description": "Why the relationship is plausible."
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          },
+          "dataset_id": {
+            "type": "string",
+            "title": "Dataset Id"
+          },
+          "directed": {
+            "type": "boolean",
+            "title": "Directed",
+            "description": "False for symmetric types such as competes_with.",
+            "readOnly": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "source_id",
+          "target_id",
+          "polarity",
+          "strength",
+          "evidence_level",
+          "description",
+          "rationale",
+          "reference",
+          "dataset_id",
+          "directed"
+        ],
+        "title": "RelationshipRead",
+        "description": "A curated economic relationship — always a model assumption."
+      },
+      "RelationshipType": {
+        "type": "string",
+        "enum": [
+          "supplies_to",
+          "lends_to",
+          "competes_with",
+          "affects_costs",
+          "affects_revenue",
+          "affects_financing",
+          "influences"
+        ],
+        "title": "RelationshipType",
+        "description": "Curated relationships stored in the database (economic assertions)."
+      },
+      "RelationshipTypeRead": {
+        "properties": {
+          "type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RelationshipType"
+              },
+              {
+                "$ref": "#/components/schemas/StructuralLinkType"
+              }
+            ],
+            "title": "Type"
+          },
+          "category": {
+            "$ref": "#/components/schemas/RelationshipCategory"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "description": "Reads as '<source> <label> <target>'."
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "directed": {
+            "type": "boolean",
+            "title": "Directed"
+          },
+          "has_polarity": {
+            "type": "boolean",
+            "title": "Has Polarity"
+          },
+          "allowed_pairs": {
+            "items": {
+              "$ref": "#/components/schemas/EntityKindPair"
+            },
+            "type": "array",
+            "title": "Allowed Pairs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "category",
+          "label",
+          "description",
+          "directed",
+          "has_polarity",
+          "allowed_pairs"
+        ],
+        "title": "RelationshipTypeRead"
+      },
+      "ScenarioInput": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "examples": [
+              "Oil price shock"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Description",
+            "default": ""
+          },
+          "shocks": {
+            "items": {
+              "$ref": "#/components/schemas/ShockInput"
+            },
+            "type": "array",
+            "maxItems": 10,
+            "minItems": 1,
+            "title": "Shocks"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "shocks"
+        ],
+        "title": "ScenarioInput",
+        "description": "Body for creating a scenario, or replacing one with PUT."
+      },
+      "ScenarioPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ScenarioRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total",
+            "description": "Total number of items matching the query."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "ScenarioPage",
+        "description": "A page of scenarios."
+      },
+      "ScenarioRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ScenarioStatus"
+          },
+          "shocks": {
+            "items": {
+              "$ref": "#/components/schemas/ShockRead"
+            },
+            "type": "array",
+            "title": "Shocks"
+          },
+          "latest_run": {
+            "type": "null",
+            "title": "Latest Run",
+            "description": "Simulation results. Always null in Phase 1: no simulation engine exists yet, and RUMIN never shows results that were not computed."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "status",
+          "shocks",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ScenarioRead"
+      },
+      "ScenarioStatus": {
+        "type": "string",
+        "enum": [
+          "draft"
+        ],
+        "title": "ScenarioStatus",
+        "description": "Phase 1 only supports drafts. Simulation runs arrive in Phase 4 as a separate\nresource, so a scenario's configuration and its results are never conflated."
+      },
+      "ShockInput": {
+        "properties": {
+          "variable_id": {
+            "type": "string",
+            "maxLength": 64,
+            "pattern": "^[a-z]{2,4}_[a-z0-9_]{2,59}$",
+            "title": "Variable Id",
+            "examples": [
+              "var_brent_crude"
+            ]
+          },
+          "change_type": {
+            "$ref": "#/components/schemas/ChangeType"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value",
+            "description": "Percent for `percent_change` (30 = +30 %); the variable's unit for `absolute_change` (percentage points for rates).",
+            "examples": [
+              30
+            ]
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Note",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "variable_id",
+          "change_type",
+          "value"
+        ],
+        "title": "ShockInput"
+      },
+      "ShockRead": {
+        "properties": {
+          "variable_id": {
+            "type": "string",
+            "title": "Variable Id"
+          },
+          "change_type": {
+            "$ref": "#/components/schemas/ChangeType"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "epistemic_category": {
+            "type": "string",
+            "const": "scenario_input",
+            "title": "Epistemic Category",
+            "default": "scenario_input"
+          }
+        },
+        "type": "object",
+        "required": [
+          "variable_id",
+          "change_type",
+          "value",
+          "note"
+        ],
+        "title": "ShockRead"
+      },
+      "Strength": {
+        "type": "string",
+        "enum": [
+          "weak",
+          "moderate",
+          "strong"
+        ],
+        "title": "Strength",
+        "description": "Ordinal, illustrative strength. Deliberately not a precise-looking number."
+      },
+      "StructuralLinkRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "category": {
+            "type": "string",
+            "const": "structural",
+            "title": "Category",
+            "default": "structural"
+          },
+          "type": {
+            "$ref": "#/components/schemas/StructuralLinkType"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "target_id": {
+            "type": "string",
+            "title": "Target Id"
+          },
+          "directed": {
+            "type": "boolean",
+            "title": "Directed",
+            "default": true
+          },
+          "derived_from": {
+            "type": "string",
+            "title": "Derived From",
+            "examples": [
+              "companies.industry_id"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "source_id",
+          "target_id",
+          "derived_from",
+          "description"
+        ],
+        "title": "StructuralLinkRead",
+        "description": "A link derived from an entity attribute, e.g. a company's industry."
+      },
+      "StructuralLinkType": {
+        "type": "string",
+        "enum": [
+          "in_industry",
+          "domiciled_in",
+          "measured_for"
+        ],
+        "title": "StructuralLinkType",
+        "description": "Links derived from entity attributes (never stored as relationship rows)."
+      },
+      "SystemStatus": {
+        "properties": {
+          "service": {
+            "type": "string",
+            "title": "Service"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "api_version": {
+            "type": "string",
+            "title": "Api Version"
+          },
+          "environment": {
+            "type": "string",
+            "title": "Environment"
+          },
+          "server_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Server Time"
+          },
+          "database": {
+            "$ref": "#/components/schemas/DatabaseStatus"
+          },
+          "dataset": {
+            "$ref": "#/components/schemas/DatasetStatus"
+          },
+          "capabilities": {
+            "items": {
+              "$ref": "#/components/schemas/Capability"
+            },
+            "type": "array",
+            "title": "Capabilities"
+          }
+        },
+        "type": "object",
+        "required": [
+          "service",
+          "version",
+          "api_version",
+          "environment",
+          "server_time",
+          "database",
+          "dataset",
+          "capabilities"
+        ],
+        "title": "SystemStatus"
+      },
+      "ValueKind": {
+        "type": "string",
+        "enum": [
+          "price",
+          "rate",
+          "exchange_rate",
+          "index"
+        ],
+        "title": "ValueKind",
+        "description": "How a variable's values behave; determines which scenario changes make sense."
+      },
+      "VariableCategory": {
+        "type": "string",
+        "enum": [
+          "commodity",
+          "monetary_policy",
+          "exchange_rate",
+          "inflation"
+        ],
+        "title": "VariableCategory"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "health",
+      "description": "Liveness and readiness probes."
+    },
+    {
+      "name": "reference data",
+      "description": "Entities, relationships and their types."
+    },
+    {
+      "name": "network",
+      "description": "Graph projection for visualisation."
+    },
+    {
+      "name": "scenarios",
+      "description": "Draft scenario inputs. Nothing is simulated."
+    },
+    {
+      "name": "system",
+      "description": "Runtime status and capabilities."
+    }
+  ]
+}
