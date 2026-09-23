@@ -104,6 +104,11 @@ The ingestion commands exit with `0` (completed, possibly with warnings), `1` (f
 `3` (partially failed), `130` (cancelled) or `2` (not started: bad input, another run in
 progress, or the database is not migrated).
 
+If a run fails, `make ingest-jobs` and `… job <id>` show which series failed and why. The
+[troubleshooting table](docs/data/ingestion.md#troubleshooting) lists the usual causes and
+fixes. Provider settings (base URL, pacing, timeouts, retries) are optional
+[environment variables](docs/environment.md#data-ingestion-phase-2); no provider needs a key.
+
 ### Using PostgreSQL
 
 SQLite is the default for development; PostgreSQL is the production target. Both run the

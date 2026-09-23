@@ -1,10 +1,10 @@
 # Phase 2 report — Financial data infrastructure
 
-**Status: implemented and verified locally, with one gap: no live World Bank retrieval
-could be run where Phase 2 was built** (the build environment's network policy blocks the
-provider). Everything else — schema, provider layer, pipeline, quality rules, provenance,
-API, Data Explorer, tests and documentation — is implemented and tested. The plan written
-before implementation is in [phase-2-plan.md](phase-2-plan.md).
+**Status: implemented and verified, locally and in CI, with one gap: no live World Bank
+retrieval could be run where Phase 2 was built** (the build environment's network policy
+blocks the provider). Everything else — schema, provider layer, pipeline, quality rules,
+provenance, API, Data Explorer, tests and documentation — is implemented and tested. The
+plan written before implementation is in [phase-2-plan.md](phase-2-plan.md).
 
 ## At a glance: what kind of data and functionality exists
 
@@ -182,7 +182,7 @@ notation. There is deliberately no endpoint that starts ingestion. See [api.md](
 
 ## 12. Testing results
 
-Final local results on the committed code:
+Results on the final code, run locally and again by GitHub Actions:
 
 | Suite | Result |
 |---|---|
@@ -191,6 +191,7 @@ Final local results on the committed code:
 | Frontend (Vitest, jsdom) | **142 passed** (25 new) |
 | Live integration (smoke test: migrate, seed, load catalogue, import a synthetic price file, start the API) | **26 passed** (7 new) |
 | Lint, format, type checks (Ruff, mypy strict, Biome, TypeScript strict), OpenAPI snapshot, production build | clean |
+| GitHub Actions CI, run #2 on `7d298a4`: all of the above (backend on SQLite and a PostgreSQL 16 service), plus the check that the frontend's API types match the contract | **passed** (3 of 3 jobs) |
 
 The tests cover the brief's list: normalisation, date parsing, currency and identifier
 metadata, numeric validation, duplicate detection, every quality rule, provider response
@@ -267,5 +268,5 @@ later phases (graph analytics, simulation, AI analyst, 3D).
 | Endpoints work; request validation; pagination; consistent errors; API documentation | ✓ |
 | Data explorer, filters, search, metadata, freshness, loading and error states, responsive design | ✓ tested and checked visually |
 | No secrets in the frontend or repository; credentials handled securely; inputs validated; logs without secrets | ✓ (no credentials exist yet) |
-| Unit, integration, mocked-provider, frontend and re-run tests pass | ✓ |
+| Unit, integration, mocked-provider, frontend and re-run tests pass | ✓ locally and in CI |
 | README, data dictionary, provider details, quality rules, known limitations | ✓ |
