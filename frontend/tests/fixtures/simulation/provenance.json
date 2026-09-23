@@ -1,0 +1,434 @@
+{
+  "run_id": "51b90c67-3fe5-48a8-bbc1-f0186430e3c9",
+  "model": {
+    "model_id": "airline_fuel_cost",
+    "version": "1.0.0",
+    "name": "Airline fuel-cost shock",
+    "status": "preview",
+    "definition_hash": "5758b04209995f7c10e621443cc8c2275ef3bc00221df42423eda8d2c70c8090",
+    "registered_at": "2026-09-23T17:53:17.686033Z"
+  },
+  "engine_version": "1.0.0",
+  "inputs_hash": "ca04cbffb990781cb5620d846140908dad97e810a4fd8b633a67419c6b691c07",
+  "result_hash": "4d5f06b903e7ff4e5c47f1fb6516892db977e7081fc8b6d8da37d44c49f605ec",
+  "random_seed": null,
+  "started_at": "2026-09-23T17:55:36.296035Z",
+  "finished_at": "2026-09-23T17:55:36.298436Z",
+  "created_at": "2026-09-23T17:55:36.300025Z",
+  "inputs": [
+    {
+      "id": "crude_oil_change",
+      "label": "Crude oil price change",
+      "category": "scenario_input",
+      "knowledge": "scenario_input",
+      "source": "user",
+      "value": "10",
+      "unit": "percent_change",
+      "unit_label": "% change",
+      "default": "0",
+      "rationale": "No change unless you enter one.",
+      "variable": "variable:var_brent_crude",
+      "observation": null
+    },
+    {
+      "id": "jet_fuel_margin_change",
+      "label": "Additional jet fuel price change",
+      "category": "scenario_input",
+      "knowledge": "scenario_input",
+      "source": "default",
+      "value": "0",
+      "unit": "percent_change",
+      "unit_label": "% change",
+      "default": "0",
+      "rationale": "No change unless you enter one.",
+      "variable": "variable:var_jet_fuel",
+      "observation": null
+    },
+    {
+      "id": "usd_change",
+      "label": "Exchange-rate change",
+      "category": "scenario_input",
+      "knowledge": "scenario_input",
+      "source": "default",
+      "value": "0",
+      "unit": "percent_change",
+      "unit_label": "% change",
+      "default": "0",
+      "rationale": "No change unless you enter one.",
+      "variable": "variable:var_usd_inr",
+      "observation": null
+    },
+    {
+      "id": "jet_fuel_price",
+      "label": "Baseline jet fuel price",
+      "category": "market_baseline",
+      "knowledge": "user_input",
+      "source": "user",
+      "value": "750",
+      "unit": "usd_per_kilolitre",
+      "unit_label": "USD per kilolitre",
+      "default": null,
+      "rationale": null,
+      "variable": "variable:var_jet_fuel",
+      "observation": null
+    },
+    {
+      "id": "fx_rate",
+      "label": "Baseline exchange rate",
+      "category": "market_baseline",
+      "knowledge": "user_input",
+      "source": "user",
+      "value": "80",
+      "unit": "currency_per_usd",
+      "unit_label": "INR per USD",
+      "default": null,
+      "rationale": null,
+      "variable": "variable:var_usd_inr",
+      "observation": null
+    },
+    {
+      "id": "entity",
+      "label": "Airline in the knowledge graph",
+      "category": "company_input",
+      "knowledge": "user_input",
+      "source": "default",
+      "value": null,
+      "unit": "graph_node",
+      "unit_label": "knowledge-graph node",
+      "default": null,
+      "rationale": null,
+      "variable": null,
+      "observation": null
+    },
+    {
+      "id": "reporting_currency",
+      "label": "Reporting currency",
+      "category": "company_input",
+      "knowledge": "user_input",
+      "source": "user",
+      "value": "INR",
+      "unit": "currency_code",
+      "unit_label": "ISO 4217 code",
+      "default": null,
+      "rationale": null,
+      "variable": null,
+      "observation": null
+    },
+    {
+      "id": "annual_revenue",
+      "label": "Annual revenue",
+      "category": "company_input",
+      "knowledge": "user_input",
+      "source": "user",
+      "value": "300000000",
+      "unit": "currency_per_year",
+      "unit_label": "INR per year",
+      "default": null,
+      "rationale": null,
+      "variable": null,
+      "observation": null
+    },
+    {
+      "id": "annual_operating_costs",
+      "label": "Annual operating costs",
+      "category": "company_input",
+      "knowledge": "user_input",
+      "source": "user",
+      "value": "250000000",
+      "unit": "currency_per_year",
+      "unit_label": "INR per year",
+      "default": null,
+      "rationale": null,
+      "variable": null,
+      "observation": null
+    },
+    {
+      "id": "annual_fuel_consumption",
+      "label": "Annual fuel consumption",
+      "category": "company_input",
+      "knowledge": "user_input",
+      "source": "user",
+      "value": "1000",
+      "unit": "kilolitre",
+      "unit_label": "kilolitre per year",
+      "default": null,
+      "rationale": null,
+      "variable": null,
+      "observation": null
+    },
+    {
+      "id": "crude_pass_through",
+      "label": "Crude-to-jet-fuel elasticity (β)",
+      "category": "assumption",
+      "knowledge": "assumption",
+      "source": "default",
+      "value": "1",
+      "unit": "elasticity",
+      "unit_label": "elasticity (dimensionless)",
+      "default": "1",
+      "rationale": "β = 1 keeps the refining margin a constant proportion of the price, so jet fuel moves by the same percentage as crude. A neutral starting point, not an estimate: test other values with sensitivity analysis.",
+      "variable": null,
+      "observation": null
+    },
+    {
+      "id": "crude_pass_through_lag",
+      "label": "Crude-to-jet-fuel lag",
+      "category": "assumption",
+      "knowledge": "assumption",
+      "source": "default",
+      "value": "0",
+      "unit": "months",
+      "unit_label": "months",
+      "default": "0",
+      "rationale": "0 assumes crude changes reach jet fuel in the same month. Set it to how the airline's fuel contracts reprice.",
+      "variable": null,
+      "observation": null
+    },
+    {
+      "id": "hedge_ratio",
+      "label": "Hedge ratio",
+      "category": "assumption",
+      "knowledge": "assumption",
+      "source": "user",
+      "value": "50",
+      "unit": "percent",
+      "unit_label": "%",
+      "default": "0",
+      "rationale": "0 assumes no hedging. Enter the share of the coming months' fuel the airline has hedged.",
+      "variable": null,
+      "observation": null
+    },
+    {
+      "id": "hedge_months",
+      "label": "Hedge cover",
+      "category": "assumption",
+      "knowledge": "assumption",
+      "source": "user",
+      "value": "3",
+      "unit": "months",
+      "unit_label": "months",
+      "default": "0",
+      "rationale": "0 assumes no hedge cover. Hedges are assumed not to be rolled over when they expire.",
+      "variable": null,
+      "observation": null
+    },
+    {
+      "id": "fare_pass_through",
+      "label": "Fare pass-through",
+      "category": "assumption",
+      "knowledge": "assumption",
+      "source": "user",
+      "value": "40",
+      "unit": "percent",
+      "unit_label": "%",
+      "default": "0",
+      "rationale": "0 assumes fares do not change. Enter the share of a fuel-cost change the airline expects to pass on to passengers.",
+      "variable": null,
+      "observation": null
+    },
+    {
+      "id": "fare_pass_through_lag",
+      "label": "Fare pass-through lag",
+      "category": "assumption",
+      "knowledge": "assumption",
+      "source": "user",
+      "value": "2",
+      "unit": "months",
+      "unit_label": "months",
+      "default": "0",
+      "rationale": "0 assumes fares adjust in the same month as the fuel cost. Enter the delay you expect.",
+      "variable": null,
+      "observation": null
+    },
+    {
+      "id": "horizon_months",
+      "label": "Horizon",
+      "category": "setting",
+      "knowledge": "setting",
+      "source": "default",
+      "value": "12",
+      "unit": "months",
+      "unit_label": "months",
+      "default": "12",
+      "rationale": "Twelve months shows a full year after the shock.",
+      "variable": null,
+      "observation": null
+    }
+  ],
+  "observations": [],
+  "graph": {
+    "build_id": 4,
+    "build_finished_at": "2026-09-23T15:39:58.041974+00:00",
+    "source_fingerprint": "b72e791155eb2b514b35b9bc9a8e1933e78ce654ffcf805d8b5e05fd6e26bd10",
+    "freshness": "current",
+    "transmission": {
+      "T1": {
+        "rule": "T1",
+        "role": "transmission",
+        "edge_key": "e-ea305310288a3f88",
+        "edge_type": "influences",
+        "source": "variable:var_brent_crude",
+        "target": "variable:var_jet_fuel",
+        "evidence_status": "model_assumption",
+        "is_illustrative": true,
+        "description": "A change in Brent crude reaches the jet fuel price with elasticity β after the stated lag."
+      }
+    },
+    "supporting": {
+      "S1": {
+        "rule": "S1",
+        "role": "supporting",
+        "edge_key": "e-df536e008d0660a5",
+        "edge_type": "affects_costs",
+        "source": "variable:var_jet_fuel",
+        "target": "industry:ind_air_transport",
+        "evidence_status": "model_assumption",
+        "is_illustrative": true,
+        "description": "Jet fuel is a cost of air transport: the reason the fuel bill (E2–E10) belongs in an airline's operating costs. Cited, not propagated."
+      }
+    },
+    "entity": null,
+    "unused": [
+      {
+        "edge_key": "e-d7af3853725f085a",
+        "edge_type": "related_measure_of",
+        "source": "series:wb-ind-pa-nus-fcrf",
+        "target": "variable:var_usd_inr",
+        "evidence_status": "analyst_created"
+      },
+      {
+        "edge_key": "e-5b3dfdaaf8d458c9",
+        "edge_type": "affects_costs",
+        "source": "variable:var_brent_crude",
+        "target": "industry:ind_land_transport",
+        "evidence_status": "model_assumption"
+      },
+      {
+        "edge_key": "e-235c56ef17fc35ed",
+        "edge_type": "affects_costs",
+        "source": "variable:var_brent_crude",
+        "target": "industry:ind_petroleum_refining",
+        "evidence_status": "model_assumption"
+      },
+      {
+        "edge_key": "e-1cd600a6c634bc37",
+        "edge_type": "affects_revenue",
+        "source": "variable:var_brent_crude",
+        "target": "industry:ind_oil_gas_extraction",
+        "evidence_status": "model_assumption"
+      },
+      {
+        "edge_key": "e-c50b129f9181c94f",
+        "edge_type": "influences",
+        "source": "variable:var_brent_crude",
+        "target": "variable:var_india_cpi_inflation",
+        "evidence_status": "model_assumption"
+      },
+      {
+        "edge_key": "e-2202a51d4a09a79b",
+        "edge_type": "affects_revenue",
+        "source": "variable:var_jet_fuel",
+        "target": "industry:ind_petroleum_refining",
+        "evidence_status": "model_assumption"
+      },
+      {
+        "edge_key": "e-6e089ceadfef679c",
+        "edge_type": "measured_for",
+        "source": "variable:var_jet_fuel",
+        "target": "country:cty_us",
+        "evidence_status": "analyst_created"
+      },
+      {
+        "edge_key": "e-0ad272aa06e1d7d6",
+        "edge_type": "influences",
+        "source": "variable:var_us_fed_funds",
+        "target": "variable:var_usd_inr",
+        "evidence_status": "model_assumption"
+      },
+      {
+        "edge_key": "e-2afc04ee80f0699e",
+        "edge_type": "affects_costs",
+        "source": "variable:var_usd_inr",
+        "target": "company:co_aerisca_airways",
+        "evidence_status": "model_assumption"
+      },
+      {
+        "edge_key": "e-dff724fccf21ee64",
+        "edge_type": "affects_costs",
+        "source": "variable:var_usd_inr",
+        "target": "company:co_deltrin_refining",
+        "evidence_status": "model_assumption"
+      },
+      {
+        "edge_key": "e-c93a6964520b431b",
+        "edge_type": "affects_costs",
+        "source": "variable:var_usd_inr",
+        "target": "company:co_skyvara_air",
+        "evidence_status": "model_assumption"
+      },
+      {
+        "edge_key": "e-30bd282fe1fdf72a",
+        "edge_type": "affects_revenue",
+        "source": "variable:var_usd_inr",
+        "target": "company:co_kovalent_digital",
+        "evidence_status": "model_assumption"
+      },
+      {
+        "edge_key": "e-e2f1d52da5ce0ff9",
+        "edge_type": "influences",
+        "source": "variable:var_usd_inr",
+        "target": "variable:var_india_cpi_inflation",
+        "evidence_status": "model_assumption"
+      },
+      {
+        "edge_key": "e-03239d9ebfdfaa7c",
+        "edge_type": "measured_for",
+        "source": "variable:var_usd_inr",
+        "target": "country:cty_in",
+        "evidence_status": "analyst_created"
+      }
+    ],
+    "unused_total": 14,
+    "names": {
+      "company:co_aerisca_airways": "Aerisca Airways",
+      "company:co_deltrin_refining": "Deltrin Refining",
+      "company:co_kovalent_digital": "Kovalent Digital",
+      "company:co_skyvara_air": "Skyvara Air",
+      "country:cty_in": "India",
+      "country:cty_us": "United States",
+      "industry:ind_air_transport": "Air transport",
+      "industry:ind_land_transport": "Land transport",
+      "industry:ind_oil_gas_extraction": "Crude petroleum & natural gas extraction",
+      "industry:ind_petroleum_refining": "Refined petroleum products",
+      "series:wb-ind-pa-nus-fcrf": "Official exchange rate (INR per US$, period average) — India",
+      "variable:var_brent_crude": "Brent crude oil price",
+      "variable:var_india_cpi_inflation": "India CPI inflation",
+      "variable:var_jet_fuel": "Jet fuel price (U.S. Gulf Coast)",
+      "variable:var_us_fed_funds": "U.S. effective federal funds rate",
+      "variable:var_usd_inr": "USD/INR exchange rate"
+    }
+  },
+  "transmission": [
+    {
+      "input": "crude_oil_change",
+      "nodes": ["variable:var_brent_crude"],
+      "rules": [],
+      "edge_keys": [],
+      "coefficient": "1",
+      "lag": 0,
+      "first_month": 1,
+      "log_change": "0.0953101798"
+    },
+    {
+      "input": "crude_oil_change",
+      "nodes": ["variable:var_brent_crude", "variable:var_jet_fuel"],
+      "rules": ["T1"],
+      "edge_keys": ["e-ea305310288a3f88"],
+      "coefficient": "1",
+      "lag": 0,
+      "first_month": 1,
+      "log_change": "0.0953101798"
+    }
+  ],
+  "reproducibility": "The inputs hash covers the model, its version and definition hash, the engine version and every input value with its source. The result hash covers every output, monthly value and contribution. Re-executing the stored inputs (POST …/verify) must give the same result hash."
+}

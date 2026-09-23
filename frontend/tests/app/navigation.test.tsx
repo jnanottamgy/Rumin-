@@ -15,7 +15,7 @@ describe("application shell and routing", () => {
       }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/None\. The simulation engine arrives in Phase 4\./),
+      screen.getByText(/Deterministic runs of one preview model \(an airline fuel-cost shock\)/),
     ).toBeInTheDocument();
     // The illustrative network drawing appears once the API has answered.
     expect(await screen.findByText(/30 entities and 71 links/)).toBeInTheDocument();
@@ -94,7 +94,10 @@ describe("application shell and routing", () => {
     renderRoute("/system");
     expect(await screen.findByText("Simulation engine")).toBeInTheDocument();
     expect(screen.getByText("AI analyst")).toBeInTheDocument();
-    expect(screen.getByText(/No simulation engine exists/)).toBeInTheDocument();
+    expect(screen.getByText("Probabilistic simulation")).toBeInTheDocument();
+    expect(
+      screen.getByText(/runs are deterministic and no probabilities are estimated/),
+    ).toBeInTheDocument();
   });
 
   it("switches the colour theme and remembers the choice", async () => {

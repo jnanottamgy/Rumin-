@@ -1,0 +1,3699 @@
+{
+  "run_id": "51b90c67-3fe5-48a8-bbc1-f0186430e3c9",
+  "equations": [
+    {
+      "id": "E1",
+      "name": "Consumption in the price's volume unit",
+      "formula": "V = Q × λ(u_Q) / λ(u_P)",
+      "output": {
+        "symbol": "V",
+        "meaning": "annual fuel consumption in the price's volume unit",
+        "unit": "volume per year"
+      },
+      "terms": [
+        {
+          "symbol": "Q",
+          "meaning": "annual fuel consumption as entered",
+          "unit": "volume per year"
+        },
+        {
+          "symbol": "λ(u)",
+          "meaning": "litres in one unit u (exact legal definitions)",
+          "unit": "litres"
+        }
+      ],
+      "explanation": "An explicit unit conversion. The factor is exact (barrel → gallon = 42) or correctly rounded to 34 significant digits (kilolitre → gallon).",
+      "scope": "annual",
+      "used": true,
+      "assumptions": [],
+      "limitations": []
+    },
+    {
+      "id": "E2",
+      "name": "Baseline benchmark fuel cost in US dollars",
+      "formula": "B_USD = V × P₀",
+      "output": {
+        "symbol": "B_USD",
+        "meaning": "annual benchmark fuel cost",
+        "unit": "USD per year"
+      },
+      "terms": [
+        {
+          "symbol": "V",
+          "meaning": "annual consumption in the price's volume unit",
+          "unit": "volume per year"
+        },
+        {
+          "symbol": "P₀",
+          "meaning": "baseline benchmark jet fuel price",
+          "unit": "USD per volume"
+        }
+      ],
+      "explanation": "What the year's fuel costs at the benchmark price.",
+      "scope": "annual",
+      "used": true,
+      "assumptions": [
+        {
+          "id": "A3",
+          "text": "The fuel bill is consumption × the benchmark jet fuel price × the exchange rate. Taxes, fees and supplier margins that do not follow the benchmark are outside the model."
+        }
+      ],
+      "limitations": [
+        {
+          "id": "L4",
+          "text": "Only the benchmark-linked fuel cost is modelled. Ad-valorem taxes that scale with the price are not captured, so a real fuel bill can move more than the benchmark."
+        }
+      ]
+    },
+    {
+      "id": "E3",
+      "name": "Baseline benchmark fuel cost in the reporting currency",
+      "formula": "B = B_USD × X₀",
+      "output": {
+        "symbol": "B",
+        "meaning": "annual benchmark fuel cost",
+        "unit": "reporting currency per year"
+      },
+      "terms": [
+        {
+          "symbol": "B_USD",
+          "meaning": "annual benchmark fuel cost",
+          "unit": "USD per year"
+        },
+        {
+          "symbol": "X₀",
+          "meaning": "baseline exchange rate",
+          "unit": "reporting currency per USD"
+        }
+      ],
+      "explanation": "An explicit currency conversion at the baseline exchange rate (an input, never assumed).",
+      "scope": "annual",
+      "used": true,
+      "assumptions": [
+        {
+          "id": "A8",
+          "text": "The exchange rate affects the fuel bill only: other dollar costs and any dollar revenue are outside the model."
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "E4",
+      "name": "Fuel share of operating costs",
+      "formula": "f = B / O",
+      "output": {
+        "symbol": "f",
+        "meaning": "benchmark fuel cost as a share of operating costs",
+        "unit": "ratio"
+      },
+      "terms": [
+        {
+          "symbol": "B",
+          "meaning": "annual benchmark fuel cost",
+          "unit": "reporting currency per year"
+        },
+        {
+          "symbol": "O",
+          "meaning": "annual operating costs",
+          "unit": "reporting currency per year"
+        }
+      ],
+      "explanation": "A consistency check: the fuel bill cannot exceed operating costs (f ≤ 1).",
+      "scope": "annual",
+      "used": true,
+      "assumptions": [],
+      "limitations": []
+    },
+    {
+      "id": "E5",
+      "name": "Monthly baseline fuel cost",
+      "formula": "b₀ = B / 12",
+      "output": {
+        "symbol": "b₀",
+        "meaning": "baseline fuel cost in one month",
+        "unit": "reporting currency per month"
+      },
+      "terms": [
+        {
+          "symbol": "B",
+          "meaning": "annual benchmark fuel cost",
+          "unit": "reporting currency per year"
+        }
+      ],
+      "explanation": "A frequency conversion: an annual flow spread evenly over twelve months.",
+      "scope": "annual",
+      "used": true,
+      "assumptions": [
+        {
+          "id": "A2",
+          "text": "Fuel is consumed evenly through the year: each month uses one twelfth of the annual volume, and annual revenue and costs accrue evenly."
+        }
+      ],
+      "limitations": [
+        {
+          "id": "L6",
+          "text": "Monthly steps: timing within a month is ignored, and seasonality is not modelled."
+        }
+      ]
+    },
+    {
+      "id": "E6",
+      "name": "Jet fuel log-change",
+      "formula": "ℓ(m) = β · ln(1 + c) · 𝟙[m > L] + ln(1 + s)",
+      "output": {
+        "symbol": "ℓ(m)",
+        "meaning": "log-change of the jet fuel price in month m",
+        "unit": "log change"
+      },
+      "terms": [
+        {
+          "symbol": "β",
+          "meaning": "crude-to-jet-fuel elasticity",
+          "unit": "elasticity"
+        },
+        {
+          "symbol": "c",
+          "meaning": "crude oil price change",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "L",
+          "meaning": "crude-to-jet-fuel lag",
+          "unit": "months"
+        },
+        {
+          "symbol": "s",
+          "meaning": "additional jet fuel price change",
+          "unit": "fraction"
+        }
+      ],
+      "explanation": "Propagated by the transmission engine along rule T1 (Brent crude → influences → jet fuel), plus the direct change to jet fuel itself.",
+      "scope": "monthly",
+      "used": true,
+      "assumptions": [
+        {
+          "id": "A4",
+          "text": "Scenario changes are permanent step changes that start in month 1 and last for the whole horizon."
+        },
+        {
+          "id": "A5",
+          "text": "Jet fuel responds to crude oil with a constant elasticity β after a lag: ln(jet fuel) changes by β × ln(1 + crude change). With β = 1 the refining margin stays a constant proportion of the price."
+        }
+      ],
+      "limitations": [
+        {
+          "id": "L5",
+          "text": "The elasticity, lags, hedge terms and pass-through are assumptions with stated defaults. None has been estimated from data in RUMIN."
+        }
+      ]
+    },
+    {
+      "id": "E7",
+      "name": "Jet fuel price relative to baseline",
+      "formula": "r(m) = exp(ℓ(m))",
+      "output": {
+        "symbol": "r(m)",
+        "meaning": "jet fuel price in month m relative to the baseline",
+        "unit": "ratio"
+      },
+      "terms": [
+        {
+          "symbol": "ℓ(m)",
+          "meaning": "log-change of the jet fuel price",
+          "unit": "log change"
+        }
+      ],
+      "explanation": "Turns the log-change back into a price ratio (r = 1.3 means +30 %).",
+      "scope": "monthly",
+      "used": true,
+      "assumptions": [],
+      "limitations": []
+    },
+    {
+      "id": "E8",
+      "name": "Exchange rate relative to baseline",
+      "formula": "q = 1 + x",
+      "output": {
+        "symbol": "q",
+        "meaning": "exchange rate relative to the baseline",
+        "unit": "ratio"
+      },
+      "terms": [
+        {
+          "symbol": "x",
+          "meaning": "exchange-rate change",
+          "unit": "fraction"
+        }
+      ],
+      "explanation": "The reporting currency's price of a dollar, relative to the baseline.",
+      "scope": "monthly",
+      "used": true,
+      "assumptions": [
+        {
+          "id": "A4",
+          "text": "Scenario changes are permanent step changes that start in month 1 and last for the whole horizon."
+        },
+        {
+          "id": "A8",
+          "text": "The exchange rate affects the fuel bill only: other dollar costs and any dollar revenue are outside the model."
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "E9",
+      "name": "Hedged share in month m",
+      "formula": "h(m) = h if m ≤ M_h, otherwise 0",
+      "output": {
+        "symbol": "h(m)",
+        "meaning": "share of month m's fuel that is hedged",
+        "unit": "ratio"
+      },
+      "terms": [
+        {
+          "symbol": "h",
+          "meaning": "hedge ratio",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "M_h",
+          "meaning": "months of hedge cover",
+          "unit": "months"
+        }
+      ],
+      "explanation": "Hedges cover the first M_h months and are not rolled over.",
+      "scope": "monthly",
+      "used": true,
+      "assumptions": [
+        {
+          "id": "A6",
+          "text": "Hedged fuel pays the baseline US-dollar price until the hedges expire; the exchange rate is not hedged; hedges are not rolled over."
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "E10",
+      "name": "Scenario monthly fuel cost",
+      "formula": "b₁(m) = b₀ × q × [h(m) + (1 − h(m)) × r(m)]",
+      "output": {
+        "symbol": "b₁(m)",
+        "meaning": "fuel cost in month m under the scenario",
+        "unit": "reporting currency per month"
+      },
+      "terms": [
+        {
+          "symbol": "b₀",
+          "meaning": "baseline monthly fuel cost",
+          "unit": "reporting currency per month"
+        },
+        {
+          "symbol": "q",
+          "meaning": "exchange rate relative to baseline",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "h(m)",
+          "meaning": "hedged share",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "r(m)",
+          "meaning": "jet fuel price relative to baseline",
+          "unit": "ratio"
+        }
+      ],
+      "explanation": "Hedged fuel keeps the baseline dollar price; unhedged fuel pays the new price. All fuel is paid in dollars converted at the new exchange rate.",
+      "scope": "monthly",
+      "used": true,
+      "assumptions": [
+        {
+          "id": "A1",
+          "text": "Everything the model does not include stays at its baseline: fuel consumption, other costs, traffic, capacity, fares (apart from the stated pass-through) and financing."
+        },
+        {
+          "id": "A3",
+          "text": "The fuel bill is consumption × the benchmark jet fuel price × the exchange rate. Taxes, fees and supplier margins that do not follow the benchmark are outside the model."
+        },
+        {
+          "id": "A6",
+          "text": "Hedged fuel pays the baseline US-dollar price until the hedges expire; the exchange rate is not hedged; hedges are not rolled over."
+        },
+        {
+          "id": "A8",
+          "text": "The exchange rate affects the fuel bill only: other dollar costs and any dollar revenue are outside the model."
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "E11",
+      "name": "Change in fuel cost",
+      "formula": "Δb(m) = b₁(m) − b₀",
+      "output": {
+        "symbol": "Δb(m)",
+        "meaning": "change in fuel cost in month m",
+        "unit": "reporting currency per month"
+      },
+      "terms": [
+        {
+          "symbol": "b₁(m)",
+          "meaning": "scenario monthly fuel cost",
+          "unit": "reporting currency per month"
+        },
+        {
+          "symbol": "b₀",
+          "meaning": "baseline monthly fuel cost",
+          "unit": "reporting currency per month"
+        }
+      ],
+      "explanation": "Positive means the scenario costs more than the baseline.",
+      "scope": "monthly",
+      "used": true,
+      "assumptions": [],
+      "limitations": []
+    },
+    {
+      "id": "E12",
+      "name": "Fare recovery",
+      "formula": "Δr(m) = φ × Δb(m − L_f) if m > L_f, otherwise 0",
+      "output": {
+        "symbol": "Δr(m)",
+        "meaning": "change in revenue from fares in month m",
+        "unit": "reporting currency per month"
+      },
+      "terms": [
+        {
+          "symbol": "φ",
+          "meaning": "fare pass-through",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "Δb",
+          "meaning": "change in fuel cost",
+          "unit": "reporting currency per month"
+        },
+        {
+          "symbol": "L_f",
+          "meaning": "fare pass-through lag",
+          "unit": "months"
+        }
+      ],
+      "explanation": "Fares recover a share of the change in fuel cost after a delay, for rises and falls alike.",
+      "scope": "monthly",
+      "used": true,
+      "assumptions": [
+        {
+          "id": "A7",
+          "text": "Fares recover a fixed share of the change in fuel cost after a lag, for rises and falls alike, and passenger demand does not respond."
+        }
+      ],
+      "limitations": [
+        {
+          "id": "L2",
+          "text": "Passenger demand, capacity and schedules do not respond to fares or costs."
+        },
+        {
+          "id": "L3",
+          "text": "Competitors' responses and market share are not modelled."
+        }
+      ]
+    },
+    {
+      "id": "E13",
+      "name": "Change in operating profit",
+      "formula": "Δπ(m) = Δr(m) − Δb(m)",
+      "output": {
+        "symbol": "Δπ(m)",
+        "meaning": "change in operating profit in month m",
+        "unit": "reporting currency per month"
+      },
+      "terms": [
+        {
+          "symbol": "Δr(m)",
+          "meaning": "fare recovery",
+          "unit": "reporting currency per month"
+        },
+        {
+          "symbol": "Δb(m)",
+          "meaning": "change in fuel cost",
+          "unit": "reporting currency per month"
+        }
+      ],
+      "explanation": "Everything else is held at its baseline.",
+      "scope": "monthly",
+      "used": true,
+      "assumptions": [
+        {
+          "id": "A1",
+          "text": "Everything the model does not include stays at its baseline: fuel consumption, other costs, traffic, capacity, fares (apart from the stated pass-through) and financing."
+        }
+      ],
+      "limitations": [
+        {
+          "id": "L7",
+          "text": "Operating profit only: no interest, tax, hedge accounting, working capital or cash-flow timing."
+        }
+      ]
+    },
+    {
+      "id": "E14",
+      "name": "Totals over the horizon",
+      "formula": "ΣΔb = Σₘ Δb(m); ΣΔr = Σₘ Δr(m); ΣΔπ = Σₘ Δπ(m), m = 1…H",
+      "output": {
+        "symbol": "ΣΔπ",
+        "meaning": "change in operating profit over the horizon",
+        "unit": "reporting currency"
+      },
+      "terms": [
+        {
+          "symbol": "Δb(m)",
+          "meaning": "change in fuel cost",
+          "unit": "reporting currency per month"
+        },
+        {
+          "symbol": "Δr(m)",
+          "meaning": "fare recovery",
+          "unit": "reporting currency per month"
+        },
+        {
+          "symbol": "H",
+          "meaning": "horizon",
+          "unit": "months"
+        }
+      ],
+      "explanation": "Sums of the monthly changes.",
+      "scope": "horizon",
+      "used": true,
+      "assumptions": [],
+      "limitations": []
+    },
+    {
+      "id": "E15",
+      "name": "Operating profit over the horizon",
+      "formula": "Π₀ = (R − O) × H / 12; Π₁ = Π₀ + ΣΔπ",
+      "output": {
+        "symbol": "Π₁",
+        "meaning": "operating profit over the horizon under the scenario",
+        "unit": "reporting currency"
+      },
+      "terms": [
+        {
+          "symbol": "R",
+          "meaning": "annual revenue",
+          "unit": "reporting currency per year"
+        },
+        {
+          "symbol": "O",
+          "meaning": "annual operating costs",
+          "unit": "reporting currency per year"
+        },
+        {
+          "symbol": "H",
+          "meaning": "horizon",
+          "unit": "months"
+        },
+        {
+          "symbol": "ΣΔπ",
+          "meaning": "change in operating profit over the horizon",
+          "unit": "reporting currency"
+        }
+      ],
+      "explanation": "The baseline is the entered annual figures, spread evenly over the horizon.",
+      "scope": "horizon",
+      "used": true,
+      "assumptions": [
+        {
+          "id": "A1",
+          "text": "Everything the model does not include stays at its baseline: fuel consumption, other costs, traffic, capacity, fares (apart from the stated pass-through) and financing."
+        },
+        {
+          "id": "A2",
+          "text": "Fuel is consumed evenly through the year: each month uses one twelfth of the annual volume, and annual revenue and costs accrue evenly."
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "E16",
+      "name": "Operating margins",
+      "formula": "μ₀ = (R − O) / R; μ₁ = (R·H/12 + ΣΔr − O·H/12 − ΣΔb) / (R·H/12 + ΣΔr)",
+      "output": {
+        "symbol": "μ₁",
+        "meaning": "operating margin over the horizon under the scenario",
+        "unit": "ratio"
+      },
+      "terms": [
+        {
+          "symbol": "R",
+          "meaning": "annual revenue",
+          "unit": "reporting currency per year"
+        },
+        {
+          "symbol": "O",
+          "meaning": "annual operating costs",
+          "unit": "reporting currency per year"
+        },
+        {
+          "symbol": "ΣΔr",
+          "meaning": "fare recovery over the horizon",
+          "unit": "reporting currency"
+        },
+        {
+          "symbol": "ΣΔb",
+          "meaning": "change in fuel cost over the horizon",
+          "unit": "reporting currency"
+        }
+      ],
+      "explanation": "Operating profit divided by revenue, before and after the scenario.",
+      "scope": "horizon",
+      "used": true,
+      "assumptions": [],
+      "limitations": []
+    },
+    {
+      "id": "E17",
+      "name": "Steady-state annual effect",
+      "formula": "ΔB* = B × [q × exp(β·ln(1 + c) + ln(1 + s)) − 1]; ΔΠ* = (φ − 1) × ΔB*",
+      "output": {
+        "symbol": "ΔB*",
+        "meaning": "annual change in fuel cost once lags have passed and hedges expired",
+        "unit": "reporting currency per year"
+      },
+      "terms": [
+        {
+          "symbol": "B",
+          "meaning": "annual benchmark fuel cost",
+          "unit": "reporting currency per year"
+        },
+        {
+          "symbol": "q",
+          "meaning": "exchange rate relative to baseline",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "φ",
+          "meaning": "fare pass-through",
+          "unit": "fraction"
+        }
+      ],
+      "explanation": "The full annual effect after every lag has passed and every hedge has expired.",
+      "scope": "steady_state",
+      "used": true,
+      "assumptions": [
+        {
+          "id": "A4",
+          "text": "Scenario changes are permanent step changes that start in month 1 and last for the whole horizon."
+        },
+        {
+          "id": "A5",
+          "text": "Jet fuel responds to crude oil with a constant elasticity β after a lag: ln(jet fuel) changes by β × ln(1 + crude change). With β = 1 the refining margin stays a constant proportion of the price."
+        },
+        {
+          "id": "A7",
+          "text": "Fares recover a fixed share of the change in fuel cost after a lag, for rises and falls alike, and passenger demand does not respond."
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "E18",
+      "name": "Offsetting revenue change",
+      "formula": "g = ΣΔb / (R × H / 12)",
+      "output": {
+        "symbol": "g",
+        "meaning": "revenue change over the horizon that would offset the fuel-cost change",
+        "unit": "ratio"
+      },
+      "terms": [
+        {
+          "symbol": "ΣΔb",
+          "meaning": "change in fuel cost over the horizon",
+          "unit": "reporting currency"
+        },
+        {
+          "symbol": "R",
+          "meaning": "annual revenue",
+          "unit": "reporting currency per year"
+        },
+        {
+          "symbol": "H",
+          "meaning": "horizon",
+          "unit": "months"
+        }
+      ],
+      "explanation": "How much revenue would have to change, uniformly, to leave operating profit unchanged. It is arithmetic, not a recommendation to raise fares.",
+      "scope": "horizon",
+      "used": true,
+      "assumptions": [],
+      "limitations": [
+        {
+          "id": "L2",
+          "text": "Passenger demand, capacity and schedules do not respond to fares or costs."
+        }
+      ]
+    },
+    {
+      "id": "E19",
+      "name": "Hedging effect",
+      "formula": "G = Σₘ b₀ × (q × r(m) − 1); hedging effect = ΣΔb − G",
+      "output": {
+        "symbol": "hedging effect",
+        "meaning": "how much the hedges change the fuel-cost change",
+        "unit": "reporting currency"
+      },
+      "terms": [
+        {
+          "symbol": "b₀",
+          "meaning": "baseline monthly fuel cost",
+          "unit": "reporting currency per month"
+        },
+        {
+          "symbol": "q",
+          "meaning": "exchange rate relative to baseline",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "r(m)",
+          "meaning": "jet fuel price relative to baseline",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "ΣΔb",
+          "meaning": "change in fuel cost over the horizon",
+          "unit": "reporting currency"
+        }
+      ],
+      "explanation": "G is the change the fuel bill would see with no hedges. The bridge −G − hedging effect + ΣΔr = ΣΔπ is exact.",
+      "scope": "horizon",
+      "used": true,
+      "assumptions": [
+        {
+          "id": "A6",
+          "text": "Hedged fuel pays the baseline US-dollar price until the hedges expire; the exchange rate is not hedged; hedges are not rolled over."
+        }
+      ],
+      "limitations": []
+    }
+  ],
+  "steps": [
+    {
+      "sequence": 1,
+      "equation": "E1",
+      "label": "Annual consumption in the price's volume unit",
+      "month": null,
+      "output": {
+        "symbol": "V",
+        "value": "1000",
+        "unit": "kilolitre per year"
+      },
+      "inputs": [
+        {
+          "symbol": "Q",
+          "value": "1000",
+          "unit": "kilolitre per year"
+        },
+        {
+          "symbol": "λ(u_Q)/λ(u_P)",
+          "value": "1",
+          "unit": "kilolitre per kilolitre"
+        }
+      ]
+    },
+    {
+      "sequence": 2,
+      "equation": "E2",
+      "label": "Baseline benchmark fuel cost in US dollars",
+      "month": null,
+      "output": {
+        "symbol": "B_USD",
+        "value": "750000",
+        "unit": "USD per year"
+      },
+      "inputs": [
+        {
+          "symbol": "V",
+          "value": "1000",
+          "unit": "kilolitre per year"
+        },
+        {
+          "symbol": "P₀",
+          "value": "750",
+          "unit": "USD per kilolitre"
+        }
+      ]
+    },
+    {
+      "sequence": 3,
+      "equation": "E3",
+      "label": "Baseline benchmark fuel cost in the reporting currency",
+      "month": null,
+      "output": {
+        "symbol": "B",
+        "value": "60000000",
+        "unit": "INR per year"
+      },
+      "inputs": [
+        {
+          "symbol": "B_USD",
+          "value": "750000",
+          "unit": "USD per year"
+        },
+        {
+          "symbol": "X₀",
+          "value": "80",
+          "unit": "INR per USD"
+        }
+      ]
+    },
+    {
+      "sequence": 4,
+      "equation": "E4",
+      "label": "Fuel share of operating costs",
+      "month": null,
+      "output": {
+        "symbol": "f",
+        "value": "0.24",
+        "unit": "ratio"
+      },
+      "inputs": [
+        {
+          "symbol": "B",
+          "value": "60000000",
+          "unit": "INR per year"
+        },
+        {
+          "symbol": "O",
+          "value": "250000000",
+          "unit": "INR per year"
+        }
+      ]
+    },
+    {
+      "sequence": 5,
+      "equation": "E5",
+      "label": "Monthly baseline fuel cost",
+      "month": null,
+      "output": {
+        "symbol": "b₀",
+        "value": "5000000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "B",
+          "value": "60000000",
+          "unit": "INR per year"
+        }
+      ]
+    },
+    {
+      "sequence": 6,
+      "equation": "E8",
+      "label": "Exchange rate relative to baseline",
+      "month": null,
+      "output": {
+        "symbol": "q",
+        "value": "1",
+        "unit": "ratio"
+      },
+      "inputs": [
+        {
+          "symbol": "x",
+          "value": "0",
+          "unit": "fraction"
+        }
+      ]
+    },
+    {
+      "sequence": 7,
+      "equation": "E6",
+      "label": "Jet fuel log-change",
+      "month": 1,
+      "output": {
+        "symbol": "ℓ",
+        "value": "0.0953101798",
+        "unit": "log change"
+      },
+      "inputs": [
+        {
+          "symbol": "β",
+          "value": "1",
+          "unit": "elasticity"
+        },
+        {
+          "symbol": "c",
+          "value": "0.1",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "L",
+          "value": "0",
+          "unit": "months"
+        },
+        {
+          "symbol": "s",
+          "value": "0",
+          "unit": "fraction"
+        }
+      ]
+    },
+    {
+      "sequence": 8,
+      "equation": "E7",
+      "label": "Jet fuel price relative to baseline",
+      "month": 1,
+      "output": {
+        "symbol": "r",
+        "value": "1.1",
+        "unit": "ratio"
+      },
+      "inputs": [
+        {
+          "symbol": "ℓ",
+          "value": "0.0953101798",
+          "unit": "log change"
+        }
+      ]
+    },
+    {
+      "sequence": 9,
+      "equation": "E9",
+      "label": "Hedged share",
+      "month": 1,
+      "output": {
+        "symbol": "h",
+        "value": "0.5",
+        "unit": "ratio"
+      },
+      "inputs": [
+        {
+          "symbol": "h",
+          "value": "0.5",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "M_h",
+          "value": "3",
+          "unit": "months"
+        }
+      ]
+    },
+    {
+      "sequence": 10,
+      "equation": "E10",
+      "label": "Scenario monthly fuel cost",
+      "month": 1,
+      "output": {
+        "symbol": "b₁",
+        "value": "5250000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "b₀",
+          "value": "5000000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "q",
+          "value": "1",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "h",
+          "value": "0.5",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "r",
+          "value": "1.1",
+          "unit": "ratio"
+        }
+      ]
+    },
+    {
+      "sequence": 11,
+      "equation": "E11",
+      "label": "Change in fuel cost",
+      "month": 1,
+      "output": {
+        "symbol": "Δb",
+        "value": "250000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "b₁",
+          "value": "5250000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "b₀",
+          "value": "5000000",
+          "unit": "INR per month"
+        }
+      ]
+    },
+    {
+      "sequence": 12,
+      "equation": "E12",
+      "label": "Fare recovery",
+      "month": 1,
+      "output": {
+        "symbol": "Δr",
+        "value": "0",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "φ",
+          "value": "0.4",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "Δb(m − L_f)",
+          "value": "0",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "L_f",
+          "value": "2",
+          "unit": "months"
+        }
+      ]
+    },
+    {
+      "sequence": 13,
+      "equation": "E13",
+      "label": "Change in operating profit",
+      "month": 1,
+      "output": {
+        "symbol": "Δπ",
+        "value": "-250000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "Δr",
+          "value": "0",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "Δb",
+          "value": "250000",
+          "unit": "INR per month"
+        }
+      ]
+    },
+    {
+      "sequence": 14,
+      "equation": "E6",
+      "label": "Jet fuel log-change",
+      "month": 2,
+      "output": {
+        "symbol": "ℓ",
+        "value": "0.0953101798",
+        "unit": "log change"
+      },
+      "inputs": [
+        {
+          "symbol": "β",
+          "value": "1",
+          "unit": "elasticity"
+        },
+        {
+          "symbol": "c",
+          "value": "0.1",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "L",
+          "value": "0",
+          "unit": "months"
+        },
+        {
+          "symbol": "s",
+          "value": "0",
+          "unit": "fraction"
+        }
+      ]
+    },
+    {
+      "sequence": 15,
+      "equation": "E7",
+      "label": "Jet fuel price relative to baseline",
+      "month": 2,
+      "output": {
+        "symbol": "r",
+        "value": "1.1",
+        "unit": "ratio"
+      },
+      "inputs": [
+        {
+          "symbol": "ℓ",
+          "value": "0.0953101798",
+          "unit": "log change"
+        }
+      ]
+    },
+    {
+      "sequence": 16,
+      "equation": "E9",
+      "label": "Hedged share",
+      "month": 2,
+      "output": {
+        "symbol": "h",
+        "value": "0.5",
+        "unit": "ratio"
+      },
+      "inputs": [
+        {
+          "symbol": "h",
+          "value": "0.5",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "M_h",
+          "value": "3",
+          "unit": "months"
+        }
+      ]
+    },
+    {
+      "sequence": 17,
+      "equation": "E10",
+      "label": "Scenario monthly fuel cost",
+      "month": 2,
+      "output": {
+        "symbol": "b₁",
+        "value": "5250000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "b₀",
+          "value": "5000000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "q",
+          "value": "1",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "h",
+          "value": "0.5",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "r",
+          "value": "1.1",
+          "unit": "ratio"
+        }
+      ]
+    },
+    {
+      "sequence": 18,
+      "equation": "E11",
+      "label": "Change in fuel cost",
+      "month": 2,
+      "output": {
+        "symbol": "Δb",
+        "value": "250000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "b₁",
+          "value": "5250000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "b₀",
+          "value": "5000000",
+          "unit": "INR per month"
+        }
+      ]
+    },
+    {
+      "sequence": 19,
+      "equation": "E12",
+      "label": "Fare recovery",
+      "month": 2,
+      "output": {
+        "symbol": "Δr",
+        "value": "0",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "φ",
+          "value": "0.4",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "Δb(m − L_f)",
+          "value": "0",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "L_f",
+          "value": "2",
+          "unit": "months"
+        }
+      ]
+    },
+    {
+      "sequence": 20,
+      "equation": "E13",
+      "label": "Change in operating profit",
+      "month": 2,
+      "output": {
+        "symbol": "Δπ",
+        "value": "-250000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "Δr",
+          "value": "0",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "Δb",
+          "value": "250000",
+          "unit": "INR per month"
+        }
+      ]
+    },
+    {
+      "sequence": 21,
+      "equation": "E6",
+      "label": "Jet fuel log-change",
+      "month": 3,
+      "output": {
+        "symbol": "ℓ",
+        "value": "0.0953101798",
+        "unit": "log change"
+      },
+      "inputs": [
+        {
+          "symbol": "β",
+          "value": "1",
+          "unit": "elasticity"
+        },
+        {
+          "symbol": "c",
+          "value": "0.1",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "L",
+          "value": "0",
+          "unit": "months"
+        },
+        {
+          "symbol": "s",
+          "value": "0",
+          "unit": "fraction"
+        }
+      ]
+    },
+    {
+      "sequence": 22,
+      "equation": "E7",
+      "label": "Jet fuel price relative to baseline",
+      "month": 3,
+      "output": {
+        "symbol": "r",
+        "value": "1.1",
+        "unit": "ratio"
+      },
+      "inputs": [
+        {
+          "symbol": "ℓ",
+          "value": "0.0953101798",
+          "unit": "log change"
+        }
+      ]
+    },
+    {
+      "sequence": 23,
+      "equation": "E9",
+      "label": "Hedged share",
+      "month": 3,
+      "output": {
+        "symbol": "h",
+        "value": "0.5",
+        "unit": "ratio"
+      },
+      "inputs": [
+        {
+          "symbol": "h",
+          "value": "0.5",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "M_h",
+          "value": "3",
+          "unit": "months"
+        }
+      ]
+    },
+    {
+      "sequence": 24,
+      "equation": "E10",
+      "label": "Scenario monthly fuel cost",
+      "month": 3,
+      "output": {
+        "symbol": "b₁",
+        "value": "5250000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "b₀",
+          "value": "5000000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "q",
+          "value": "1",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "h",
+          "value": "0.5",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "r",
+          "value": "1.1",
+          "unit": "ratio"
+        }
+      ]
+    },
+    {
+      "sequence": 25,
+      "equation": "E11",
+      "label": "Change in fuel cost",
+      "month": 3,
+      "output": {
+        "symbol": "Δb",
+        "value": "250000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "b₁",
+          "value": "5250000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "b₀",
+          "value": "5000000",
+          "unit": "INR per month"
+        }
+      ]
+    },
+    {
+      "sequence": 26,
+      "equation": "E12",
+      "label": "Fare recovery",
+      "month": 3,
+      "output": {
+        "symbol": "Δr",
+        "value": "100000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "φ",
+          "value": "0.4",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "Δb(m − L_f)",
+          "value": "250000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "L_f",
+          "value": "2",
+          "unit": "months"
+        }
+      ]
+    },
+    {
+      "sequence": 27,
+      "equation": "E13",
+      "label": "Change in operating profit",
+      "month": 3,
+      "output": {
+        "symbol": "Δπ",
+        "value": "-150000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "Δr",
+          "value": "100000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "Δb",
+          "value": "250000",
+          "unit": "INR per month"
+        }
+      ]
+    },
+    {
+      "sequence": 28,
+      "equation": "E6",
+      "label": "Jet fuel log-change",
+      "month": 4,
+      "output": {
+        "symbol": "ℓ",
+        "value": "0.0953101798",
+        "unit": "log change"
+      },
+      "inputs": [
+        {
+          "symbol": "β",
+          "value": "1",
+          "unit": "elasticity"
+        },
+        {
+          "symbol": "c",
+          "value": "0.1",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "L",
+          "value": "0",
+          "unit": "months"
+        },
+        {
+          "symbol": "s",
+          "value": "0",
+          "unit": "fraction"
+        }
+      ]
+    },
+    {
+      "sequence": 29,
+      "equation": "E7",
+      "label": "Jet fuel price relative to baseline",
+      "month": 4,
+      "output": {
+        "symbol": "r",
+        "value": "1.1",
+        "unit": "ratio"
+      },
+      "inputs": [
+        {
+          "symbol": "ℓ",
+          "value": "0.0953101798",
+          "unit": "log change"
+        }
+      ]
+    },
+    {
+      "sequence": 30,
+      "equation": "E9",
+      "label": "Hedged share",
+      "month": 4,
+      "output": {
+        "symbol": "h",
+        "value": "0",
+        "unit": "ratio"
+      },
+      "inputs": [
+        {
+          "symbol": "h",
+          "value": "0.5",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "M_h",
+          "value": "3",
+          "unit": "months"
+        }
+      ]
+    },
+    {
+      "sequence": 31,
+      "equation": "E10",
+      "label": "Scenario monthly fuel cost",
+      "month": 4,
+      "output": {
+        "symbol": "b₁",
+        "value": "5500000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "b₀",
+          "value": "5000000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "q",
+          "value": "1",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "h",
+          "value": "0",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "r",
+          "value": "1.1",
+          "unit": "ratio"
+        }
+      ]
+    },
+    {
+      "sequence": 32,
+      "equation": "E11",
+      "label": "Change in fuel cost",
+      "month": 4,
+      "output": {
+        "symbol": "Δb",
+        "value": "500000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "b₁",
+          "value": "5500000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "b₀",
+          "value": "5000000",
+          "unit": "INR per month"
+        }
+      ]
+    },
+    {
+      "sequence": 33,
+      "equation": "E12",
+      "label": "Fare recovery",
+      "month": 4,
+      "output": {
+        "symbol": "Δr",
+        "value": "100000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "φ",
+          "value": "0.4",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "Δb(m − L_f)",
+          "value": "250000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "L_f",
+          "value": "2",
+          "unit": "months"
+        }
+      ]
+    },
+    {
+      "sequence": 34,
+      "equation": "E13",
+      "label": "Change in operating profit",
+      "month": 4,
+      "output": {
+        "symbol": "Δπ",
+        "value": "-400000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "Δr",
+          "value": "100000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "Δb",
+          "value": "500000",
+          "unit": "INR per month"
+        }
+      ]
+    },
+    {
+      "sequence": 35,
+      "equation": "E6",
+      "label": "Jet fuel log-change",
+      "month": 5,
+      "output": {
+        "symbol": "ℓ",
+        "value": "0.0953101798",
+        "unit": "log change"
+      },
+      "inputs": [
+        {
+          "symbol": "β",
+          "value": "1",
+          "unit": "elasticity"
+        },
+        {
+          "symbol": "c",
+          "value": "0.1",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "L",
+          "value": "0",
+          "unit": "months"
+        },
+        {
+          "symbol": "s",
+          "value": "0",
+          "unit": "fraction"
+        }
+      ]
+    },
+    {
+      "sequence": 36,
+      "equation": "E7",
+      "label": "Jet fuel price relative to baseline",
+      "month": 5,
+      "output": {
+        "symbol": "r",
+        "value": "1.1",
+        "unit": "ratio"
+      },
+      "inputs": [
+        {
+          "symbol": "ℓ",
+          "value": "0.0953101798",
+          "unit": "log change"
+        }
+      ]
+    },
+    {
+      "sequence": 37,
+      "equation": "E9",
+      "label": "Hedged share",
+      "month": 5,
+      "output": {
+        "symbol": "h",
+        "value": "0",
+        "unit": "ratio"
+      },
+      "inputs": [
+        {
+          "symbol": "h",
+          "value": "0.5",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "M_h",
+          "value": "3",
+          "unit": "months"
+        }
+      ]
+    },
+    {
+      "sequence": 38,
+      "equation": "E10",
+      "label": "Scenario monthly fuel cost",
+      "month": 5,
+      "output": {
+        "symbol": "b₁",
+        "value": "5500000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "b₀",
+          "value": "5000000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "q",
+          "value": "1",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "h",
+          "value": "0",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "r",
+          "value": "1.1",
+          "unit": "ratio"
+        }
+      ]
+    },
+    {
+      "sequence": 39,
+      "equation": "E11",
+      "label": "Change in fuel cost",
+      "month": 5,
+      "output": {
+        "symbol": "Δb",
+        "value": "500000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "b₁",
+          "value": "5500000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "b₀",
+          "value": "5000000",
+          "unit": "INR per month"
+        }
+      ]
+    },
+    {
+      "sequence": 40,
+      "equation": "E12",
+      "label": "Fare recovery",
+      "month": 5,
+      "output": {
+        "symbol": "Δr",
+        "value": "100000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "φ",
+          "value": "0.4",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "Δb(m − L_f)",
+          "value": "250000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "L_f",
+          "value": "2",
+          "unit": "months"
+        }
+      ]
+    },
+    {
+      "sequence": 41,
+      "equation": "E13",
+      "label": "Change in operating profit",
+      "month": 5,
+      "output": {
+        "symbol": "Δπ",
+        "value": "-400000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "Δr",
+          "value": "100000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "Δb",
+          "value": "500000",
+          "unit": "INR per month"
+        }
+      ]
+    },
+    {
+      "sequence": 42,
+      "equation": "E6",
+      "label": "Jet fuel log-change",
+      "month": 6,
+      "output": {
+        "symbol": "ℓ",
+        "value": "0.0953101798",
+        "unit": "log change"
+      },
+      "inputs": [
+        {
+          "symbol": "β",
+          "value": "1",
+          "unit": "elasticity"
+        },
+        {
+          "symbol": "c",
+          "value": "0.1",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "L",
+          "value": "0",
+          "unit": "months"
+        },
+        {
+          "symbol": "s",
+          "value": "0",
+          "unit": "fraction"
+        }
+      ]
+    },
+    {
+      "sequence": 43,
+      "equation": "E7",
+      "label": "Jet fuel price relative to baseline",
+      "month": 6,
+      "output": {
+        "symbol": "r",
+        "value": "1.1",
+        "unit": "ratio"
+      },
+      "inputs": [
+        {
+          "symbol": "ℓ",
+          "value": "0.0953101798",
+          "unit": "log change"
+        }
+      ]
+    },
+    {
+      "sequence": 44,
+      "equation": "E9",
+      "label": "Hedged share",
+      "month": 6,
+      "output": {
+        "symbol": "h",
+        "value": "0",
+        "unit": "ratio"
+      },
+      "inputs": [
+        {
+          "symbol": "h",
+          "value": "0.5",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "M_h",
+          "value": "3",
+          "unit": "months"
+        }
+      ]
+    },
+    {
+      "sequence": 45,
+      "equation": "E10",
+      "label": "Scenario monthly fuel cost",
+      "month": 6,
+      "output": {
+        "symbol": "b₁",
+        "value": "5500000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "b₀",
+          "value": "5000000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "q",
+          "value": "1",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "h",
+          "value": "0",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "r",
+          "value": "1.1",
+          "unit": "ratio"
+        }
+      ]
+    },
+    {
+      "sequence": 46,
+      "equation": "E11",
+      "label": "Change in fuel cost",
+      "month": 6,
+      "output": {
+        "symbol": "Δb",
+        "value": "500000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "b₁",
+          "value": "5500000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "b₀",
+          "value": "5000000",
+          "unit": "INR per month"
+        }
+      ]
+    },
+    {
+      "sequence": 47,
+      "equation": "E12",
+      "label": "Fare recovery",
+      "month": 6,
+      "output": {
+        "symbol": "Δr",
+        "value": "200000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "φ",
+          "value": "0.4",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "Δb(m − L_f)",
+          "value": "500000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "L_f",
+          "value": "2",
+          "unit": "months"
+        }
+      ]
+    },
+    {
+      "sequence": 48,
+      "equation": "E13",
+      "label": "Change in operating profit",
+      "month": 6,
+      "output": {
+        "symbol": "Δπ",
+        "value": "-300000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "Δr",
+          "value": "200000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "Δb",
+          "value": "500000",
+          "unit": "INR per month"
+        }
+      ]
+    },
+    {
+      "sequence": 49,
+      "equation": "E6",
+      "label": "Jet fuel log-change",
+      "month": 7,
+      "output": {
+        "symbol": "ℓ",
+        "value": "0.0953101798",
+        "unit": "log change"
+      },
+      "inputs": [
+        {
+          "symbol": "β",
+          "value": "1",
+          "unit": "elasticity"
+        },
+        {
+          "symbol": "c",
+          "value": "0.1",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "L",
+          "value": "0",
+          "unit": "months"
+        },
+        {
+          "symbol": "s",
+          "value": "0",
+          "unit": "fraction"
+        }
+      ]
+    },
+    {
+      "sequence": 50,
+      "equation": "E7",
+      "label": "Jet fuel price relative to baseline",
+      "month": 7,
+      "output": {
+        "symbol": "r",
+        "value": "1.1",
+        "unit": "ratio"
+      },
+      "inputs": [
+        {
+          "symbol": "ℓ",
+          "value": "0.0953101798",
+          "unit": "log change"
+        }
+      ]
+    },
+    {
+      "sequence": 51,
+      "equation": "E9",
+      "label": "Hedged share",
+      "month": 7,
+      "output": {
+        "symbol": "h",
+        "value": "0",
+        "unit": "ratio"
+      },
+      "inputs": [
+        {
+          "symbol": "h",
+          "value": "0.5",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "M_h",
+          "value": "3",
+          "unit": "months"
+        }
+      ]
+    },
+    {
+      "sequence": 52,
+      "equation": "E10",
+      "label": "Scenario monthly fuel cost",
+      "month": 7,
+      "output": {
+        "symbol": "b₁",
+        "value": "5500000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "b₀",
+          "value": "5000000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "q",
+          "value": "1",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "h",
+          "value": "0",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "r",
+          "value": "1.1",
+          "unit": "ratio"
+        }
+      ]
+    },
+    {
+      "sequence": 53,
+      "equation": "E11",
+      "label": "Change in fuel cost",
+      "month": 7,
+      "output": {
+        "symbol": "Δb",
+        "value": "500000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "b₁",
+          "value": "5500000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "b₀",
+          "value": "5000000",
+          "unit": "INR per month"
+        }
+      ]
+    },
+    {
+      "sequence": 54,
+      "equation": "E12",
+      "label": "Fare recovery",
+      "month": 7,
+      "output": {
+        "symbol": "Δr",
+        "value": "200000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "φ",
+          "value": "0.4",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "Δb(m − L_f)",
+          "value": "500000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "L_f",
+          "value": "2",
+          "unit": "months"
+        }
+      ]
+    },
+    {
+      "sequence": 55,
+      "equation": "E13",
+      "label": "Change in operating profit",
+      "month": 7,
+      "output": {
+        "symbol": "Δπ",
+        "value": "-300000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "Δr",
+          "value": "200000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "Δb",
+          "value": "500000",
+          "unit": "INR per month"
+        }
+      ]
+    },
+    {
+      "sequence": 56,
+      "equation": "E6",
+      "label": "Jet fuel log-change",
+      "month": 8,
+      "output": {
+        "symbol": "ℓ",
+        "value": "0.0953101798",
+        "unit": "log change"
+      },
+      "inputs": [
+        {
+          "symbol": "β",
+          "value": "1",
+          "unit": "elasticity"
+        },
+        {
+          "symbol": "c",
+          "value": "0.1",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "L",
+          "value": "0",
+          "unit": "months"
+        },
+        {
+          "symbol": "s",
+          "value": "0",
+          "unit": "fraction"
+        }
+      ]
+    },
+    {
+      "sequence": 57,
+      "equation": "E7",
+      "label": "Jet fuel price relative to baseline",
+      "month": 8,
+      "output": {
+        "symbol": "r",
+        "value": "1.1",
+        "unit": "ratio"
+      },
+      "inputs": [
+        {
+          "symbol": "ℓ",
+          "value": "0.0953101798",
+          "unit": "log change"
+        }
+      ]
+    },
+    {
+      "sequence": 58,
+      "equation": "E9",
+      "label": "Hedged share",
+      "month": 8,
+      "output": {
+        "symbol": "h",
+        "value": "0",
+        "unit": "ratio"
+      },
+      "inputs": [
+        {
+          "symbol": "h",
+          "value": "0.5",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "M_h",
+          "value": "3",
+          "unit": "months"
+        }
+      ]
+    },
+    {
+      "sequence": 59,
+      "equation": "E10",
+      "label": "Scenario monthly fuel cost",
+      "month": 8,
+      "output": {
+        "symbol": "b₁",
+        "value": "5500000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "b₀",
+          "value": "5000000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "q",
+          "value": "1",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "h",
+          "value": "0",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "r",
+          "value": "1.1",
+          "unit": "ratio"
+        }
+      ]
+    },
+    {
+      "sequence": 60,
+      "equation": "E11",
+      "label": "Change in fuel cost",
+      "month": 8,
+      "output": {
+        "symbol": "Δb",
+        "value": "500000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "b₁",
+          "value": "5500000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "b₀",
+          "value": "5000000",
+          "unit": "INR per month"
+        }
+      ]
+    },
+    {
+      "sequence": 61,
+      "equation": "E12",
+      "label": "Fare recovery",
+      "month": 8,
+      "output": {
+        "symbol": "Δr",
+        "value": "200000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "φ",
+          "value": "0.4",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "Δb(m − L_f)",
+          "value": "500000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "L_f",
+          "value": "2",
+          "unit": "months"
+        }
+      ]
+    },
+    {
+      "sequence": 62,
+      "equation": "E13",
+      "label": "Change in operating profit",
+      "month": 8,
+      "output": {
+        "symbol": "Δπ",
+        "value": "-300000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "Δr",
+          "value": "200000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "Δb",
+          "value": "500000",
+          "unit": "INR per month"
+        }
+      ]
+    },
+    {
+      "sequence": 63,
+      "equation": "E6",
+      "label": "Jet fuel log-change",
+      "month": 9,
+      "output": {
+        "symbol": "ℓ",
+        "value": "0.0953101798",
+        "unit": "log change"
+      },
+      "inputs": [
+        {
+          "symbol": "β",
+          "value": "1",
+          "unit": "elasticity"
+        },
+        {
+          "symbol": "c",
+          "value": "0.1",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "L",
+          "value": "0",
+          "unit": "months"
+        },
+        {
+          "symbol": "s",
+          "value": "0",
+          "unit": "fraction"
+        }
+      ]
+    },
+    {
+      "sequence": 64,
+      "equation": "E7",
+      "label": "Jet fuel price relative to baseline",
+      "month": 9,
+      "output": {
+        "symbol": "r",
+        "value": "1.1",
+        "unit": "ratio"
+      },
+      "inputs": [
+        {
+          "symbol": "ℓ",
+          "value": "0.0953101798",
+          "unit": "log change"
+        }
+      ]
+    },
+    {
+      "sequence": 65,
+      "equation": "E9",
+      "label": "Hedged share",
+      "month": 9,
+      "output": {
+        "symbol": "h",
+        "value": "0",
+        "unit": "ratio"
+      },
+      "inputs": [
+        {
+          "symbol": "h",
+          "value": "0.5",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "M_h",
+          "value": "3",
+          "unit": "months"
+        }
+      ]
+    },
+    {
+      "sequence": 66,
+      "equation": "E10",
+      "label": "Scenario monthly fuel cost",
+      "month": 9,
+      "output": {
+        "symbol": "b₁",
+        "value": "5500000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "b₀",
+          "value": "5000000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "q",
+          "value": "1",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "h",
+          "value": "0",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "r",
+          "value": "1.1",
+          "unit": "ratio"
+        }
+      ]
+    },
+    {
+      "sequence": 67,
+      "equation": "E11",
+      "label": "Change in fuel cost",
+      "month": 9,
+      "output": {
+        "symbol": "Δb",
+        "value": "500000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "b₁",
+          "value": "5500000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "b₀",
+          "value": "5000000",
+          "unit": "INR per month"
+        }
+      ]
+    },
+    {
+      "sequence": 68,
+      "equation": "E12",
+      "label": "Fare recovery",
+      "month": 9,
+      "output": {
+        "symbol": "Δr",
+        "value": "200000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "φ",
+          "value": "0.4",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "Δb(m − L_f)",
+          "value": "500000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "L_f",
+          "value": "2",
+          "unit": "months"
+        }
+      ]
+    },
+    {
+      "sequence": 69,
+      "equation": "E13",
+      "label": "Change in operating profit",
+      "month": 9,
+      "output": {
+        "symbol": "Δπ",
+        "value": "-300000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "Δr",
+          "value": "200000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "Δb",
+          "value": "500000",
+          "unit": "INR per month"
+        }
+      ]
+    },
+    {
+      "sequence": 70,
+      "equation": "E6",
+      "label": "Jet fuel log-change",
+      "month": 10,
+      "output": {
+        "symbol": "ℓ",
+        "value": "0.0953101798",
+        "unit": "log change"
+      },
+      "inputs": [
+        {
+          "symbol": "β",
+          "value": "1",
+          "unit": "elasticity"
+        },
+        {
+          "symbol": "c",
+          "value": "0.1",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "L",
+          "value": "0",
+          "unit": "months"
+        },
+        {
+          "symbol": "s",
+          "value": "0",
+          "unit": "fraction"
+        }
+      ]
+    },
+    {
+      "sequence": 71,
+      "equation": "E7",
+      "label": "Jet fuel price relative to baseline",
+      "month": 10,
+      "output": {
+        "symbol": "r",
+        "value": "1.1",
+        "unit": "ratio"
+      },
+      "inputs": [
+        {
+          "symbol": "ℓ",
+          "value": "0.0953101798",
+          "unit": "log change"
+        }
+      ]
+    },
+    {
+      "sequence": 72,
+      "equation": "E9",
+      "label": "Hedged share",
+      "month": 10,
+      "output": {
+        "symbol": "h",
+        "value": "0",
+        "unit": "ratio"
+      },
+      "inputs": [
+        {
+          "symbol": "h",
+          "value": "0.5",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "M_h",
+          "value": "3",
+          "unit": "months"
+        }
+      ]
+    },
+    {
+      "sequence": 73,
+      "equation": "E10",
+      "label": "Scenario monthly fuel cost",
+      "month": 10,
+      "output": {
+        "symbol": "b₁",
+        "value": "5500000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "b₀",
+          "value": "5000000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "q",
+          "value": "1",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "h",
+          "value": "0",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "r",
+          "value": "1.1",
+          "unit": "ratio"
+        }
+      ]
+    },
+    {
+      "sequence": 74,
+      "equation": "E11",
+      "label": "Change in fuel cost",
+      "month": 10,
+      "output": {
+        "symbol": "Δb",
+        "value": "500000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "b₁",
+          "value": "5500000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "b₀",
+          "value": "5000000",
+          "unit": "INR per month"
+        }
+      ]
+    },
+    {
+      "sequence": 75,
+      "equation": "E12",
+      "label": "Fare recovery",
+      "month": 10,
+      "output": {
+        "symbol": "Δr",
+        "value": "200000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "φ",
+          "value": "0.4",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "Δb(m − L_f)",
+          "value": "500000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "L_f",
+          "value": "2",
+          "unit": "months"
+        }
+      ]
+    },
+    {
+      "sequence": 76,
+      "equation": "E13",
+      "label": "Change in operating profit",
+      "month": 10,
+      "output": {
+        "symbol": "Δπ",
+        "value": "-300000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "Δr",
+          "value": "200000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "Δb",
+          "value": "500000",
+          "unit": "INR per month"
+        }
+      ]
+    },
+    {
+      "sequence": 77,
+      "equation": "E6",
+      "label": "Jet fuel log-change",
+      "month": 11,
+      "output": {
+        "symbol": "ℓ",
+        "value": "0.0953101798",
+        "unit": "log change"
+      },
+      "inputs": [
+        {
+          "symbol": "β",
+          "value": "1",
+          "unit": "elasticity"
+        },
+        {
+          "symbol": "c",
+          "value": "0.1",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "L",
+          "value": "0",
+          "unit": "months"
+        },
+        {
+          "symbol": "s",
+          "value": "0",
+          "unit": "fraction"
+        }
+      ]
+    },
+    {
+      "sequence": 78,
+      "equation": "E7",
+      "label": "Jet fuel price relative to baseline",
+      "month": 11,
+      "output": {
+        "symbol": "r",
+        "value": "1.1",
+        "unit": "ratio"
+      },
+      "inputs": [
+        {
+          "symbol": "ℓ",
+          "value": "0.0953101798",
+          "unit": "log change"
+        }
+      ]
+    },
+    {
+      "sequence": 79,
+      "equation": "E9",
+      "label": "Hedged share",
+      "month": 11,
+      "output": {
+        "symbol": "h",
+        "value": "0",
+        "unit": "ratio"
+      },
+      "inputs": [
+        {
+          "symbol": "h",
+          "value": "0.5",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "M_h",
+          "value": "3",
+          "unit": "months"
+        }
+      ]
+    },
+    {
+      "sequence": 80,
+      "equation": "E10",
+      "label": "Scenario monthly fuel cost",
+      "month": 11,
+      "output": {
+        "symbol": "b₁",
+        "value": "5500000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "b₀",
+          "value": "5000000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "q",
+          "value": "1",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "h",
+          "value": "0",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "r",
+          "value": "1.1",
+          "unit": "ratio"
+        }
+      ]
+    },
+    {
+      "sequence": 81,
+      "equation": "E11",
+      "label": "Change in fuel cost",
+      "month": 11,
+      "output": {
+        "symbol": "Δb",
+        "value": "500000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "b₁",
+          "value": "5500000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "b₀",
+          "value": "5000000",
+          "unit": "INR per month"
+        }
+      ]
+    },
+    {
+      "sequence": 82,
+      "equation": "E12",
+      "label": "Fare recovery",
+      "month": 11,
+      "output": {
+        "symbol": "Δr",
+        "value": "200000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "φ",
+          "value": "0.4",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "Δb(m − L_f)",
+          "value": "500000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "L_f",
+          "value": "2",
+          "unit": "months"
+        }
+      ]
+    },
+    {
+      "sequence": 83,
+      "equation": "E13",
+      "label": "Change in operating profit",
+      "month": 11,
+      "output": {
+        "symbol": "Δπ",
+        "value": "-300000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "Δr",
+          "value": "200000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "Δb",
+          "value": "500000",
+          "unit": "INR per month"
+        }
+      ]
+    },
+    {
+      "sequence": 84,
+      "equation": "E6",
+      "label": "Jet fuel log-change",
+      "month": 12,
+      "output": {
+        "symbol": "ℓ",
+        "value": "0.0953101798",
+        "unit": "log change"
+      },
+      "inputs": [
+        {
+          "symbol": "β",
+          "value": "1",
+          "unit": "elasticity"
+        },
+        {
+          "symbol": "c",
+          "value": "0.1",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "L",
+          "value": "0",
+          "unit": "months"
+        },
+        {
+          "symbol": "s",
+          "value": "0",
+          "unit": "fraction"
+        }
+      ]
+    },
+    {
+      "sequence": 85,
+      "equation": "E7",
+      "label": "Jet fuel price relative to baseline",
+      "month": 12,
+      "output": {
+        "symbol": "r",
+        "value": "1.1",
+        "unit": "ratio"
+      },
+      "inputs": [
+        {
+          "symbol": "ℓ",
+          "value": "0.0953101798",
+          "unit": "log change"
+        }
+      ]
+    },
+    {
+      "sequence": 86,
+      "equation": "E9",
+      "label": "Hedged share",
+      "month": 12,
+      "output": {
+        "symbol": "h",
+        "value": "0",
+        "unit": "ratio"
+      },
+      "inputs": [
+        {
+          "symbol": "h",
+          "value": "0.5",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "M_h",
+          "value": "3",
+          "unit": "months"
+        }
+      ]
+    },
+    {
+      "sequence": 87,
+      "equation": "E10",
+      "label": "Scenario monthly fuel cost",
+      "month": 12,
+      "output": {
+        "symbol": "b₁",
+        "value": "5500000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "b₀",
+          "value": "5000000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "q",
+          "value": "1",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "h",
+          "value": "0",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "r",
+          "value": "1.1",
+          "unit": "ratio"
+        }
+      ]
+    },
+    {
+      "sequence": 88,
+      "equation": "E11",
+      "label": "Change in fuel cost",
+      "month": 12,
+      "output": {
+        "symbol": "Δb",
+        "value": "500000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "b₁",
+          "value": "5500000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "b₀",
+          "value": "5000000",
+          "unit": "INR per month"
+        }
+      ]
+    },
+    {
+      "sequence": 89,
+      "equation": "E12",
+      "label": "Fare recovery",
+      "month": 12,
+      "output": {
+        "symbol": "Δr",
+        "value": "200000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "φ",
+          "value": "0.4",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "Δb(m − L_f)",
+          "value": "500000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "L_f",
+          "value": "2",
+          "unit": "months"
+        }
+      ]
+    },
+    {
+      "sequence": 90,
+      "equation": "E13",
+      "label": "Change in operating profit",
+      "month": 12,
+      "output": {
+        "symbol": "Δπ",
+        "value": "-300000",
+        "unit": "INR per month"
+      },
+      "inputs": [
+        {
+          "symbol": "Δr",
+          "value": "200000",
+          "unit": "INR per month"
+        },
+        {
+          "symbol": "Δb",
+          "value": "500000",
+          "unit": "INR per month"
+        }
+      ]
+    },
+    {
+      "sequence": 91,
+      "equation": "E14",
+      "label": "Change in operating profit over the horizon",
+      "month": null,
+      "output": {
+        "symbol": "ΣΔπ",
+        "value": "-3550000",
+        "unit": "INR"
+      },
+      "inputs": [
+        {
+          "symbol": "ΣΔb",
+          "value": "5250000",
+          "unit": "INR"
+        },
+        {
+          "symbol": "ΣΔr",
+          "value": "1700000",
+          "unit": "INR"
+        },
+        {
+          "symbol": "H",
+          "value": "12",
+          "unit": "months"
+        }
+      ]
+    },
+    {
+      "sequence": 92,
+      "equation": "E15",
+      "label": "Baseline operating profit over the horizon",
+      "month": null,
+      "output": {
+        "symbol": "Π₀",
+        "value": "50000000",
+        "unit": "INR"
+      },
+      "inputs": [
+        {
+          "symbol": "R",
+          "value": "300000000",
+          "unit": "INR per year"
+        },
+        {
+          "symbol": "O",
+          "value": "250000000",
+          "unit": "INR per year"
+        },
+        {
+          "symbol": "H",
+          "value": "12",
+          "unit": "months"
+        }
+      ]
+    },
+    {
+      "sequence": 93,
+      "equation": "E15",
+      "label": "Scenario operating profit over the horizon",
+      "month": null,
+      "output": {
+        "symbol": "Π₁",
+        "value": "46450000",
+        "unit": "INR"
+      },
+      "inputs": [
+        {
+          "symbol": "Π₀",
+          "value": "50000000",
+          "unit": "INR"
+        },
+        {
+          "symbol": "ΣΔπ",
+          "value": "-3550000",
+          "unit": "INR"
+        }
+      ]
+    },
+    {
+      "sequence": 94,
+      "equation": "E16",
+      "label": "Baseline operating margin",
+      "month": null,
+      "output": {
+        "symbol": "μ₀",
+        "value": "0.1666666667",
+        "unit": "ratio"
+      },
+      "inputs": [
+        {
+          "symbol": "R",
+          "value": "300000000",
+          "unit": "INR per year"
+        },
+        {
+          "symbol": "O",
+          "value": "250000000",
+          "unit": "INR per year"
+        }
+      ]
+    },
+    {
+      "sequence": 95,
+      "equation": "E16",
+      "label": "Scenario operating margin",
+      "month": null,
+      "output": {
+        "symbol": "μ₁",
+        "value": "0.1539608883",
+        "unit": "ratio"
+      },
+      "inputs": [
+        {
+          "symbol": "R·H/12 + ΣΔr",
+          "value": "301700000",
+          "unit": "INR"
+        },
+        {
+          "symbol": "O·H/12 + ΣΔb",
+          "value": "255250000",
+          "unit": "INR"
+        }
+      ]
+    },
+    {
+      "sequence": 96,
+      "equation": "E17",
+      "label": "Steady-state annual fuel-cost change",
+      "month": null,
+      "output": {
+        "symbol": "ΔB*",
+        "value": "6000000",
+        "unit": "INR per year"
+      },
+      "inputs": [
+        {
+          "symbol": "B",
+          "value": "60000000",
+          "unit": "INR per year"
+        },
+        {
+          "symbol": "q",
+          "value": "1",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "exp(ℓ*)",
+          "value": "1.1",
+          "unit": "ratio"
+        }
+      ]
+    },
+    {
+      "sequence": 97,
+      "equation": "E17",
+      "label": "Steady-state annual operating-profit change",
+      "month": null,
+      "output": {
+        "symbol": "ΔΠ*",
+        "value": "-3600000",
+        "unit": "INR per year"
+      },
+      "inputs": [
+        {
+          "symbol": "φ",
+          "value": "0.4",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "ΔB*",
+          "value": "6000000",
+          "unit": "INR per year"
+        }
+      ]
+    },
+    {
+      "sequence": 98,
+      "equation": "E18",
+      "label": "Offsetting revenue change",
+      "month": null,
+      "output": {
+        "symbol": "g",
+        "value": "0.0175",
+        "unit": "ratio"
+      },
+      "inputs": [
+        {
+          "symbol": "ΣΔb",
+          "value": "5250000",
+          "unit": "INR"
+        },
+        {
+          "symbol": "R",
+          "value": "300000000",
+          "unit": "INR per year"
+        },
+        {
+          "symbol": "H",
+          "value": "12",
+          "unit": "months"
+        }
+      ]
+    },
+    {
+      "sequence": 99,
+      "equation": "E19",
+      "label": "Hedging effect",
+      "month": null,
+      "output": {
+        "symbol": "ΣΔb − G",
+        "value": "-750000",
+        "unit": "INR"
+      },
+      "inputs": [
+        {
+          "symbol": "ΣΔb",
+          "value": "5250000",
+          "unit": "INR"
+        },
+        {
+          "symbol": "G",
+          "value": "6000000",
+          "unit": "INR"
+        }
+      ]
+    }
+  ],
+  "pathway": {
+    "nodes": [
+      {
+        "id": "input:crude_oil_change",
+        "kind": "input",
+        "label": "Crude oil price change",
+        "value": "10",
+        "unit": "% change",
+        "knowledge": "scenario_input"
+      },
+      {
+        "id": "variable:var_brent_crude",
+        "kind": "variable",
+        "label": "Brent crude oil price",
+        "value": "0.1",
+        "unit": "relative change",
+        "knowledge": "simulated_output"
+      },
+      {
+        "id": "variable:var_jet_fuel",
+        "kind": "variable",
+        "label": "Jet fuel price (U.S. Gulf Coast)",
+        "value": "0.1",
+        "unit": "relative change",
+        "knowledge": "simulated_output"
+      },
+      {
+        "id": "input:jet_fuel_margin_change",
+        "kind": "input",
+        "label": "Additional jet fuel price change",
+        "value": "0",
+        "unit": "% change",
+        "knowledge": "scenario_input"
+      },
+      {
+        "id": "input:usd_change",
+        "kind": "input",
+        "label": "Exchange-rate change",
+        "value": "0",
+        "unit": "% change",
+        "knowledge": "scenario_input"
+      },
+      {
+        "id": "variable:var_usd_inr",
+        "kind": "variable",
+        "label": "USD/INR exchange rate",
+        "value": null,
+        "unit": "relative change",
+        "knowledge": "derived"
+      },
+      {
+        "id": "output:fuel_cost_change",
+        "kind": "output",
+        "label": "Change in fuel cost (horizon)",
+        "value": "5250000",
+        "unit": "INR",
+        "knowledge": "simulated_output"
+      },
+      {
+        "id": "input:hedge_ratio",
+        "kind": "input",
+        "label": "Hedge ratio",
+        "value": "50",
+        "unit": "%",
+        "knowledge": "assumption"
+      },
+      {
+        "id": "output:fare_recovery",
+        "kind": "output",
+        "label": "Fare recovery (horizon)",
+        "value": "1700000",
+        "unit": "INR",
+        "knowledge": "simulated_output"
+      },
+      {
+        "id": "output:operating_profit_change",
+        "kind": "output",
+        "label": "Change in operating profit (horizon)",
+        "value": "-3550000",
+        "unit": "INR",
+        "knowledge": "simulated_output"
+      }
+    ],
+    "links": [
+      {
+        "source": "input:crude_oil_change",
+        "target": "variable:var_brent_crude",
+        "label": "changes",
+        "equations": [],
+        "rule": null,
+        "edge": null,
+        "coefficient": null,
+        "lag_months": null
+      },
+      {
+        "source": "variable:var_brent_crude",
+        "target": "variable:var_jet_fuel",
+        "label": "influences (β, lag)",
+        "equations": ["E6"],
+        "rule": "T1",
+        "edge": {
+          "rule": "T1",
+          "role": "transmission",
+          "edge_key": "e-ea305310288a3f88",
+          "edge_type": "influences",
+          "source": "variable:var_brent_crude",
+          "target": "variable:var_jet_fuel",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true,
+          "description": "A change in Brent crude reaches the jet fuel price with elasticity β after the stated lag."
+        },
+        "coefficient": "1",
+        "lag_months": "0"
+      },
+      {
+        "source": "input:jet_fuel_margin_change",
+        "target": "variable:var_jet_fuel",
+        "label": "changes",
+        "equations": ["E6"],
+        "rule": null,
+        "edge": null,
+        "coefficient": null,
+        "lag_months": null
+      },
+      {
+        "source": "input:usd_change",
+        "target": "variable:var_usd_inr",
+        "label": "changes",
+        "equations": ["E8"],
+        "rule": null,
+        "edge": null,
+        "coefficient": null,
+        "lag_months": null
+      },
+      {
+        "source": "variable:var_jet_fuel",
+        "target": "output:fuel_cost_change",
+        "label": "prices the unhedged fuel",
+        "equations": ["E7", "E10", "E11"],
+        "rule": null,
+        "edge": null,
+        "coefficient": null,
+        "lag_months": null
+      },
+      {
+        "source": "variable:var_usd_inr",
+        "target": "output:fuel_cost_change",
+        "label": "converts the dollar bill",
+        "equations": ["E3", "E8", "E10"],
+        "rule": null,
+        "edge": null,
+        "coefficient": null,
+        "lag_months": null
+      },
+      {
+        "source": "input:hedge_ratio",
+        "target": "output:fuel_cost_change",
+        "label": "fixes part of the price",
+        "equations": ["E9", "E10"],
+        "rule": null,
+        "edge": null,
+        "coefficient": null,
+        "lag_months": null
+      },
+      {
+        "source": "output:fuel_cost_change",
+        "target": "output:fare_recovery",
+        "label": "is partly passed on",
+        "equations": ["E12"],
+        "rule": null,
+        "edge": null,
+        "coefficient": null,
+        "lag_months": null
+      },
+      {
+        "source": "output:fuel_cost_change",
+        "target": "output:operating_profit_change",
+        "label": "reduces",
+        "equations": ["E13"],
+        "rule": null,
+        "edge": null,
+        "coefficient": null,
+        "lag_months": null
+      },
+      {
+        "source": "output:fare_recovery",
+        "target": "output:operating_profit_change",
+        "label": "adds back",
+        "equations": ["E13"],
+        "rule": null,
+        "edge": null,
+        "coefficient": null,
+        "lag_months": null
+      }
+    ]
+  },
+  "contributions": [
+    {
+      "output": "jet_fuel_price_change",
+      "label": "Jet fuel price change (steady state)",
+      "items": [
+        {
+          "input": "crude_oil_change",
+          "label": "Crude oil price change",
+          "value": "0.1"
+        }
+      ]
+    },
+    {
+      "output": "fuel_cost_change",
+      "label": "Change in fuel cost (horizon)",
+      "items": [
+        {
+          "input": "crude_oil_change",
+          "label": "Crude oil price change",
+          "value": "5250000"
+        }
+      ]
+    },
+    {
+      "output": "gross_fuel_cost_change",
+      "label": "Change in fuel cost without hedges (horizon)",
+      "items": [
+        {
+          "input": "crude_oil_change",
+          "label": "Crude oil price change",
+          "value": "6000000"
+        }
+      ]
+    },
+    {
+      "output": "hedging_effect",
+      "label": "Hedging effect (horizon)",
+      "items": [
+        {
+          "input": "crude_oil_change",
+          "label": "Crude oil price change",
+          "value": "-750000"
+        }
+      ]
+    },
+    {
+      "output": "fare_recovery",
+      "label": "Fare recovery (horizon)",
+      "items": [
+        {
+          "input": "crude_oil_change",
+          "label": "Crude oil price change",
+          "value": "1700000"
+        }
+      ]
+    },
+    {
+      "output": "operating_profit_change",
+      "label": "Change in operating profit (horizon)",
+      "items": [
+        {
+          "input": "crude_oil_change",
+          "label": "Crude oil price change",
+          "value": "-3550000"
+        }
+      ]
+    },
+    {
+      "output": "operating_margin_change",
+      "label": "Change in operating margin",
+      "items": [
+        {
+          "input": "crude_oil_change",
+          "label": "Crude oil price change",
+          "value": "-0.0127057784"
+        }
+      ]
+    },
+    {
+      "output": "steady_state_fuel_cost_change",
+      "label": "Steady-state annual fuel-cost change",
+      "items": [
+        {
+          "input": "crude_oil_change",
+          "label": "Crude oil price change",
+          "value": "6000000"
+        }
+      ]
+    },
+    {
+      "output": "steady_state_operating_profit_change",
+      "label": "Steady-state annual operating-profit change",
+      "items": [
+        {
+          "input": "crude_oil_change",
+          "label": "Crude oil price change",
+          "value": "-3600000"
+        }
+      ]
+    },
+    {
+      "output": "offsetting_revenue_change",
+      "label": "Offsetting revenue change",
+      "items": [
+        {
+          "input": "crude_oil_change",
+          "label": "Crude oil price change",
+          "value": "0.0175"
+        }
+      ]
+    }
+  ],
+  "bridge": {
+    "steps": [
+      {
+        "output": "gross_fuel_cost_change",
+        "label": "Fuel-cost change without hedges",
+        "sign": -1,
+        "value": "-6000000"
+      },
+      {
+        "output": "hedging_effect",
+        "label": "Hedging",
+        "sign": -1,
+        "value": "750000"
+      },
+      {
+        "output": "fare_recovery",
+        "label": "Fare recovery",
+        "sign": 1,
+        "value": "1700000"
+      }
+    ],
+    "total": {
+      "output": "operating_profit_change",
+      "value": "-3550000"
+    }
+  },
+  "parameters": [
+    {
+      "id": "crude_pass_through",
+      "label": "Crude-to-jet-fuel elasticity (β)",
+      "value": "1",
+      "unit": "elasticity (dimensionless)",
+      "default": "1",
+      "source": "default",
+      "changed_from_default": false,
+      "rationale": "β = 1 keeps the refining margin a constant proportion of the price, so jet fuel moves by the same percentage as crude. A neutral starting point, not an estimate: test other values with sensitivity analysis."
+    },
+    {
+      "id": "crude_pass_through_lag",
+      "label": "Crude-to-jet-fuel lag",
+      "value": "0",
+      "unit": "months",
+      "default": "0",
+      "source": "default",
+      "changed_from_default": false,
+      "rationale": "0 assumes crude changes reach jet fuel in the same month. Set it to how the airline's fuel contracts reprice."
+    },
+    {
+      "id": "hedge_ratio",
+      "label": "Hedge ratio",
+      "value": "50",
+      "unit": "%",
+      "default": "0",
+      "source": "user",
+      "changed_from_default": true,
+      "rationale": "0 assumes no hedging. Enter the share of the coming months' fuel the airline has hedged."
+    },
+    {
+      "id": "hedge_months",
+      "label": "Hedge cover",
+      "value": "3",
+      "unit": "months",
+      "default": "0",
+      "source": "user",
+      "changed_from_default": true,
+      "rationale": "0 assumes no hedge cover. Hedges are assumed not to be rolled over when they expire."
+    },
+    {
+      "id": "fare_pass_through",
+      "label": "Fare pass-through",
+      "value": "40",
+      "unit": "%",
+      "default": "0",
+      "source": "user",
+      "changed_from_default": true,
+      "rationale": "0 assumes fares do not change. Enter the share of a fuel-cost change the airline expects to pass on to passengers."
+    },
+    {
+      "id": "fare_pass_through_lag",
+      "label": "Fare pass-through lag",
+      "value": "2",
+      "unit": "months",
+      "default": "0",
+      "source": "user",
+      "changed_from_default": true,
+      "rationale": "0 assumes fares adjust in the same month as the fuel cost. Enter the delay you expect."
+    }
+  ],
+  "assumptions": [
+    {
+      "id": "A1",
+      "text": "Everything the model does not include stays at its baseline: fuel consumption, other costs, traffic, capacity, fares (apart from the stated pass-through) and financing."
+    },
+    {
+      "id": "A2",
+      "text": "Fuel is consumed evenly through the year: each month uses one twelfth of the annual volume, and annual revenue and costs accrue evenly."
+    },
+    {
+      "id": "A3",
+      "text": "The fuel bill is consumption × the benchmark jet fuel price × the exchange rate. Taxes, fees and supplier margins that do not follow the benchmark are outside the model."
+    },
+    {
+      "id": "A4",
+      "text": "Scenario changes are permanent step changes that start in month 1 and last for the whole horizon."
+    },
+    {
+      "id": "A5",
+      "text": "Jet fuel responds to crude oil with a constant elasticity β after a lag: ln(jet fuel) changes by β × ln(1 + crude change). With β = 1 the refining margin stays a constant proportion of the price."
+    },
+    {
+      "id": "A6",
+      "text": "Hedged fuel pays the baseline US-dollar price until the hedges expire; the exchange rate is not hedged; hedges are not rolled over."
+    },
+    {
+      "id": "A7",
+      "text": "Fares recover a fixed share of the change in fuel cost after a lag, for rises and falls alike, and passenger demand does not respond."
+    },
+    {
+      "id": "A8",
+      "text": "The exchange rate affects the fuel bill only: other dollar costs and any dollar revenue are outside the model."
+    }
+  ],
+  "limitations": [
+    {
+      "id": "L1",
+      "text": "The model shows the arithmetic consequence of the inputs and assumptions. It is not a forecast of what will happen, and not investment advice."
+    },
+    {
+      "id": "L2",
+      "text": "Passenger demand, capacity and schedules do not respond to fares or costs."
+    },
+    {
+      "id": "L3",
+      "text": "Competitors' responses and market share are not modelled."
+    },
+    {
+      "id": "L4",
+      "text": "Only the benchmark-linked fuel cost is modelled. Ad-valorem taxes that scale with the price are not captured, so a real fuel bill can move more than the benchmark."
+    },
+    {
+      "id": "L5",
+      "text": "The elasticity, lags, hedge terms and pass-through are assumptions with stated defaults. None has been estimated from data in RUMIN."
+    },
+    {
+      "id": "L6",
+      "text": "Monthly steps: timing within a month is ignored, and seasonality is not modelled."
+    },
+    {
+      "id": "L7",
+      "text": "Operating profit only: no interest, tax, hedge accounting, working capital or cash-flow timing."
+    }
+  ],
+  "warnings": [
+    {
+      "code": "assumption_based_channel",
+      "message": "Rule T1 follows a relationship the knowledge graph records as a model assumption, not an empirical finding: results that depend on it are assumption-driven.",
+      "field": "crude_oil_change"
+    }
+  ],
+  "method": {
+    "contributions": "Shapley values over the scenario's non-zero changes: each change is credited with its average marginal effect over every order of adding the changes. The credits add up to the total (within rounding to 10 decimal places).",
+    "rounding": "Calculations use 34 significant digits; results are rounded half to even to 10 decimal places."
+  }
+}

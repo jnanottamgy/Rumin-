@@ -105,8 +105,9 @@ export function AnalystPage() {
               ))}
             </ul>
             <p className={styles.dependency}>
-              Answers about simulated outputs depend on the simulation engine (Phase 4); every
-              answer will distinguish <EpistemicBadge category="assumption" /> from{" "}
+              Answers about simulated outputs will draw on stored simulation runs, with their
+              equations and provenance; every answer will distinguish{" "}
+              <EpistemicBadge category="assumption" /> from{" "}
               <EpistemicBadge category="simulated_output" />.
             </p>
           </Panel>

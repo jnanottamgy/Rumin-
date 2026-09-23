@@ -39,6 +39,19 @@ import type {
   Scenario,
   ScenarioInput,
   ScenarioPage,
+  SensitivityAnalysis,
+  SensitivityAnalysisList,
+  SensitivityRequest,
+  SimulationExplanation,
+  SimulationModelDetail,
+  SimulationModelSummary,
+  SimulationProvenance,
+  SimulationRequest,
+  SimulationRun,
+  SimulationRunPage,
+  SimulationRunRequest,
+  SimulationValidation,
+  SimulationVerification,
   SourceCapture,
   SystemStatus,
 } from "@/types/api";
@@ -293,4 +306,61 @@ export const graphApi = {
 
   build: (id: number, options?: Options) =>
     apiRequest<GraphBuildDetail>(`/api/v1/graph/builds/${id}`, options),
+};
+
+/**
+ * The simulation engine (Phase 4). Runs and sensitivity analyses are append-only: they
+ * are created with POST and never replaced or deleted.
+ */
+export const simulationApi = {
+  models: (options?: Options) =>
+    apiRequest<SimulationModelSummary[]>("/api/v1/simulation-models", options),
+
+  model: (id: string, options?: Options) =>
+    apiRequest<SimulationModelDetail>(`/api/v1/simulation-models/${segment(id)}`, options),
+
+  validate: (request: SimulationRequest, options?: Options) =>
+    apiRequest<SimulationValidation>("/api/v1/simulations/validate", {
+      ...options,
+      method: "POST",
+      body: request,
+    }),
+
+  run: (request: SimulationRunRequest, options?: Options) =>
+    apiRequest<SimulationRun>("/api/v1/simulations", { ...options, method: "POST", body: request }),
+
+  runs: (query: { modelId?: string; limit?: number } = {}, options?: Options) =>
+    apiRequest<SimulationRunPage>(
+      `/api/v1/simulations${toQuery({ model_id: query.modelId, limit: query.limit ?? 10 })}`,
+      options,
+    ),
+
+  get: (id: string, options?: Options) =>
+    apiRequest<SimulationRun>(`/api/v1/simulations/${segment(id)}`, options),
+
+  explanation: (id: string, options?: Options) =>
+    apiRequest<SimulationExplanation>(`/api/v1/simulations/${segment(id)}/explanation`, options),
+
+  provenance: (id: string, options?: Options) =>
+    apiRequest<SimulationProvenance>(`/api/v1/simulations/${segment(id)}/provenance`, options),
+
+  verify: (id: string, options?: Options) =>
+    apiRequest<SimulationVerification>(`/api/v1/simulations/${segment(id)}/verify`, {
+      ...options,
+      method: "POST",
+    }),
+
+  sensitivity: {
+    list: (id: string, options?: Options) =>
+      apiRequest<SensitivityAnalysisList>(
+        `/api/v1/simulations/${segment(id)}/sensitivity`,
+        options,
+      ),
+    create: (id: string, request: SensitivityRequest, options?: Options) =>
+      apiRequest<SensitivityAnalysis>(`/api/v1/simulations/${segment(id)}/sensitivity`, {
+        ...options,
+        method: "POST",
+        body: request,
+      }),
+  },
 };

@@ -190,7 +190,7 @@ export interface paths {
         put?: never;
         /**
          * Create a draft scenario
-         * @description Stores scenario *inputs*. Nothing is simulated: `latest_run` stays null until the Phase 4 simulation engine exists.
+         * @description Stores scenario *inputs*. Nothing is simulated: `latest_run` stays null until drafts are connected to the simulation engine (Phase 5 Scenario Lab).
          */
         post: operations["create_scenario"];
         delete?: never;
@@ -746,6 +746,208 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/simulation-models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List simulation models
+         * @description The latest version of every registered model, with its status and the number of stored runs. Models are defined in code and versioned: a changed equation is a new version, never an edit of an old one.
+         */
+        get: operations["list_simulation_models"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/simulation-models/{model_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a simulation model
+         * @description The full definition: inputs (units, ranges, defaults and any stored series an input can be read from), equations, outputs, transmission rules with the knowledge-graph relationship that confirms each, assumptions, limitations and validation rules.
+         */
+        get: operations["get_simulation_model"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/simulations/validate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Validate simulation inputs
+         * @description Checks the inputs without running or storing anything: types, units, currencies, ranges and decimal places, the model's consistency rules and whether the knowledge graph confirms every relationship a shock would travel along. Always 200: `valid` says whether a run would be accepted; `errors` and `warnings` say why.
+         */
+        post: operations["validate_simulation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/simulations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List simulation runs
+         * @description Stored runs, newest first, with their headline results.
+         */
+        get: operations["list_simulation_runs"];
+        put?: never;
+        /**
+         * Run a simulation
+         * @description Validates the inputs, executes the model deterministically and stores the run with its input snapshot, graph snapshot, every calculation step and the result hash. Invalid inputs are refused (422) with one detail per problem; nothing is stored. Identical inputs give an identical result hash.
+         */
+        post: operations["create_simulation_run"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/simulations/{run_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a simulation run
+         * @description Inputs (each labelled as historical data, a user input, an assumption, a scenario change or a setting), outputs, monthly series, contributions, the accounting bridge, warnings and limitations.
+         */
+        get: operations["get_simulation_run"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/simulations/{run_id}/explanation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Explain a simulation run
+         * @description The equations the run evaluated, every calculation step in order, the input-to-output pathway with the knowledge-graph relationships it used, the contribution of each change to each output, the assumptions with the values used, limitations and warnings. Built from what the run stored.
+         */
+        get: operations["get_simulation_explanation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/simulations/{run_id}/provenance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a simulation run's provenance
+         * @description The model version and definition hash, engine version, hashes, timestamps, every input with its source, the stored observations used (with licence and attribution), the graph snapshot and every transmission path.
+         */
+        get: operations["get_simulation_provenance"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/simulations/{run_id}/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Re-execute a run and compare
+         * @description Re-executes the run from its stored snapshot (never from current data) and compares the hashes. Stores nothing.
+         */
+        post: operations["verify_simulation_run"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/simulations/{run_id}/sensitivity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List a run's sensitivity analyses */
+        get: operations["list_sensitivity_analyses"];
+        put?: never;
+        /**
+         * Run a sensitivity analysis
+         * @description Moves one input at a time — low and high around the run's value, relative steps or listed values — while every other input keeps the run's value, and reports each result against the run. Points outside an input's allowed range are skipped and reported, never clipped. With no inputs listed, the model's default set is used. Bounded: at most 8 inputs, 7 points each and 60 evaluations.
+         */
+        post: operations["create_sensitivity_analysis"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/simulations/{run_id}/sensitivity/{analysis_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a sensitivity analysis */
+        get: operations["get_sensitivity_analysis"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/system": {
         parameters: {
             query?: never;
@@ -770,6 +972,47 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** BridgeItemRead */
+        BridgeItemRead: {
+            /** Output */
+            output: string;
+            /** Sign */
+            sign: number;
+            /** Label */
+            label: string;
+        };
+        /** BridgeRead */
+        BridgeRead: {
+            /** Steps */
+            steps: components["schemas"]["BridgeStepRead"][];
+            total: components["schemas"]["BridgeTotalRead"];
+        };
+        /** BridgeStepRead */
+        BridgeStepRead: {
+            /** Output */
+            output: string;
+            /** Label */
+            label: string;
+            /** Sign */
+            sign: number;
+            /**
+             * Value
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            value: string;
+        };
+        /** BridgeTotalRead */
+        BridgeTotalRead: {
+            /** Output */
+            output: string;
+            /**
+             * Value
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            value: string;
+        };
         /** BuildChanges */
         BuildChanges: {
             /** Added */
@@ -956,6 +1199,28 @@ export interface components {
             evidence_status: components["schemas"]["EvidenceStatus"] | null;
             /** Description */
             description: string;
+        };
+        /** ContributionItemRead */
+        ContributionItemRead: {
+            /** Input */
+            input: string;
+            /** Label */
+            label: string;
+            /**
+             * Value
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            value: string;
+        };
+        /** ContributionRead */
+        ContributionRead: {
+            /** Output */
+            output: string;
+            /** Label */
+            label: string;
+            /** Items */
+            items: components["schemas"]["ContributionItemRead"][];
         };
         /** CountryRead */
         CountryRead: {
@@ -1362,6 +1627,60 @@ export interface components {
             /** Offset */
             offset: number;
         };
+        /** EntityRead */
+        EntityRead: {
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /** Nature */
+            nature: string;
+        };
+        /** EquationRead */
+        EquationRead: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Formula */
+            formula: string;
+            output: components["schemas"]["TermRead"];
+            /** Terms */
+            terms: components["schemas"]["TermRead"][];
+            /** Explanation */
+            explanation: string;
+            /**
+             * Scope
+             * @enum {string}
+             */
+            scope: "annual" | "monthly" | "horizon" | "steady_state";
+            /** Assumptions */
+            assumptions: string[];
+            /** Limitations */
+            limitations: string[];
+        };
+        /** EquationUseRead */
+        EquationUseRead: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Formula */
+            formula: string;
+            output: components["schemas"]["TermRead"];
+            /** Terms */
+            terms: components["schemas"]["TermRead"][];
+            /** Explanation */
+            explanation: string;
+            /** Scope */
+            scope: string;
+            /** Used */
+            used: boolean;
+            /** Assumptions */
+            assumptions: components["schemas"]["StatementRead"][];
+            /** Limitations */
+            limitations: components["schemas"]["StatementRead"][];
+        };
         /** ErrorBody */
         ErrorBody: {
             /**
@@ -1487,6 +1806,34 @@ export interface components {
             label: string;
             /** Definition */
             definition: string;
+        };
+        /** ExplanationRead */
+        ExplanationRead: {
+            /**
+             * Run Id
+             * Format: uuid
+             */
+            run_id: string;
+            /** Equations */
+            equations: components["schemas"]["EquationUseRead"][];
+            /** Steps */
+            steps: components["schemas"]["StepRead"][];
+            pathway: components["schemas"]["PathwayRead"];
+            /** Contributions */
+            contributions: components["schemas"]["ContributionRead"][];
+            bridge: components["schemas"]["BridgeRead"] | null;
+            /** Parameters */
+            parameters: components["schemas"]["ParameterRead"][];
+            /** Assumptions */
+            assumptions: components["schemas"]["StatementRead"][];
+            /** Limitations */
+            limitations: components["schemas"]["StatementRead"][];
+            /** Warnings */
+            warnings: components["schemas"]["SimulationIssueRead"][];
+            /** Method */
+            method: {
+                [key: string]: string;
+            };
         };
         /** ExposureRead */
         ExposureRead: {
@@ -1663,6 +2010,30 @@ export interface components {
             first_build_id: number;
             /** Changed Build Id */
             changed_build_id: number;
+        };
+        /** GraphEdgeRead */
+        GraphEdgeRead: {
+            /** Rule */
+            rule: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "transmission" | "supporting";
+            /** Edge Key */
+            edge_key: string;
+            /** Edge Type */
+            edge_type: string;
+            /** Source */
+            source: string;
+            /** Target */
+            target: string;
+            /** Evidence Status */
+            evidence_status: string;
+            /** Is Illustrative */
+            is_illustrative: boolean;
+            /** Description */
+            description: string;
         };
         /** GraphEdgeSummary */
         GraphEdgeSummary: {
@@ -1859,6 +2230,37 @@ export interface components {
             /** Notes */
             notes: string[];
         };
+        /** GraphSnapshotRead */
+        GraphSnapshotRead: {
+            /** Build Id */
+            build_id: number | null;
+            /** Build Finished At */
+            build_finished_at: string | null;
+            /** Source Fingerprint */
+            source_fingerprint: string | null;
+            /** Freshness */
+            freshness: string;
+            /** Transmission */
+            transmission: {
+                [key: string]: components["schemas"]["GraphEdgeRead"] | null;
+            };
+            /** Supporting */
+            supporting: {
+                [key: string]: components["schemas"]["GraphEdgeRead"] | null;
+            };
+            entity: components["schemas"]["EntityRead"] | null;
+            /**
+             * Unused
+             * @description Graph relationships around the model's variables that no rule accepts: listed, never followed.
+             */
+            unused: components["schemas"]["UnusedEdgeRead"][];
+            /** Unused Total */
+            unused_total: number;
+            /** Names */
+            names: {
+                [key: string]: string;
+            };
+        };
         /** GraphTypesResponse */
         GraphTypesResponse: {
             /** Node Types */
@@ -1971,6 +2373,54 @@ export interface components {
              * @example 51
              */
             classification_code: string;
+        };
+        /** InputDefinitionRead */
+        InputDefinitionRead: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /**
+             * Category
+             * @enum {string}
+             */
+            category: "scenario_input" | "market_baseline" | "company_input" | "assumption" | "setting";
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "decimal" | "integer" | "quantity" | "currency" | "graph_node";
+            /** Description */
+            description: string;
+            /** Unit */
+            unit: string | null;
+            /** Unit Label */
+            unit_label: string | null;
+            /** Units */
+            units: components["schemas"]["UnitChoice"][];
+            /** Minimum */
+            minimum: string | null;
+            /** Maximum */
+            maximum: string | null;
+            /** Minimum Exclusive */
+            minimum_exclusive: boolean;
+            /** Maximum Exclusive */
+            maximum_exclusive: boolean;
+            /** Max Decimals */
+            max_decimals: number;
+            /** Required */
+            required: boolean;
+            /** Default */
+            default: string | null;
+            /** Rationale */
+            rationale: string | null;
+            /** Variable */
+            variable: string | null;
+            /** Variable Name */
+            variable_name: string | null;
+            /** Sources */
+            sources: components["schemas"]["ObservationSourceRead"][];
+            sensitivity: components["schemas"]["SensitivitySpecRead"] | null;
         };
         /** InstrumentDetail */
         InstrumentDetail: {
@@ -2435,6 +2885,42 @@ export interface components {
             /** Limitations */
             limitations: string;
         };
+        /** ModelVersionRead */
+        ModelVersionRead: {
+            /** Model Id */
+            model_id: string;
+            /** Version */
+            version: string;
+            /** Name */
+            name: string;
+            /** Status */
+            status: string;
+            /** Definition Hash */
+            definition_hash: string;
+            /**
+             * Registered At
+             * Format: date-time
+             */
+            registered_at: string;
+        };
+        /** MonthlySeriesRead */
+        MonthlySeriesRead: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Unit */
+            unit: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "derived" | "simulated";
+            /** Equation */
+            equation: string;
+            /** Values */
+            values: string[];
+        };
         /** NeighborNode */
         NeighborNode: {
             /**
@@ -2694,6 +3180,30 @@ export interface components {
              */
             capture_id: number | null;
         };
+        /** ObservationSourceRead */
+        ObservationSourceRead: {
+            /** Series Id */
+            series_id: string;
+            /** Label */
+            label: string;
+            /** Unit */
+            unit: string;
+            /** Currency Pair */
+            currency_pair: string[];
+            /** Caveat */
+            caveat: string;
+            /**
+             * Available
+             * @description Whether RUMIN stores a value of this series now.
+             */
+            available: boolean;
+            /** Latest Period */
+            latest_period: string | null;
+            /** Latest Value */
+            latest_value: string | null;
+            /** Last Confirmed At */
+            last_confirmed_at: string | null;
+        };
         /**
          * ObservationStatus
          * @description ``reported`` carries a value; ``missing`` means the provider listed the period
@@ -2701,6 +3211,50 @@ export interface components {
          * @enum {string}
          */
         ObservationStatus: "reported" | "missing";
+        /** OutputDefinitionRead */
+        OutputDefinitionRead: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Unit */
+            unit: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "derived" | "simulated";
+            /** Description */
+            description: string;
+            /** Equation */
+            equation: string;
+            /** Attributable */
+            attributable: boolean;
+        };
+        /** OutputRead */
+        OutputRead: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /**
+             * Value
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            value: string;
+            /** Unit */
+            unit: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "derived" | "simulated";
+            /** Description */
+            description: string;
+            /** Equation */
+            equation: string;
+        };
         /** Page[GraphBuildSummary] */
         Page_GraphBuildSummary_: {
             /** Items */
@@ -2757,6 +3311,39 @@ export interface components {
             /** Offset */
             offset: number;
         };
+        /** Page[SimulationRunSummary] */
+        Page_SimulationRunSummary_: {
+            /** Items */
+            items: components["schemas"]["SimulationRunSummary"][];
+            /**
+             * Total
+             * @description Total number of items matching the query.
+             */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
+        /** ParameterRead */
+        ParameterRead: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Value */
+            value: string | null;
+            /** Unit */
+            unit: string;
+            /** Default */
+            default: string | null;
+            /** Source */
+            source: string;
+            /** Changed From Default */
+            changed_from_default: boolean;
+            /** Rationale */
+            rationale: string | null;
+        };
         /** PathRead */
         PathRead: {
             /** Nodes */
@@ -2795,6 +3382,62 @@ export interface components {
             nodes_explored: number;
             /** Note */
             note: string;
+        };
+        /** PathwayEdgeRead */
+        PathwayEdgeRead: {
+            /** Source */
+            source: string;
+            /** Target */
+            target: string;
+            /** Label */
+            label: string;
+            /** Equations */
+            equations: string[];
+            /** Rule */
+            rule: string | null;
+            edge: components["schemas"]["GraphEdgeRead"] | null;
+            /** Coefficient */
+            coefficient: string | null;
+            /** Lag Months */
+            lag_months: string | null;
+        };
+        /** PathwayLinkRead */
+        PathwayLinkRead: {
+            /** Source */
+            source: string;
+            /** Target */
+            target: string;
+            /** Label */
+            label: string;
+            /** Equations */
+            equations: string[];
+            /** Rule */
+            rule: string | null;
+        };
+        /** PathwayNodeRead */
+        PathwayNodeRead: {
+            /** Id */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "input" | "variable" | "output";
+            /** Label */
+            label: string;
+            /** Value */
+            value: string | null;
+            /** Unit */
+            unit: string | null;
+            /** Knowledge */
+            knowledge: string;
+        };
+        /** PathwayRead */
+        PathwayRead: {
+            /** Nodes */
+            nodes: components["schemas"]["PathwayNodeRead"][];
+            /** Links */
+            links: components["schemas"]["PathwayEdgeRead"][];
         };
         /**
          * Polarity
@@ -2902,6 +3545,47 @@ export interface components {
          * @enum {string}
          */
         PriceBasis: "nominal" | "real" | "not_applicable";
+        /** ProvenanceRead */
+        ProvenanceRead: {
+            /**
+             * Run Id
+             * Format: uuid
+             */
+            run_id: string;
+            model: components["schemas"]["ModelVersionRead"];
+            /** Engine Version */
+            engine_version: string;
+            /** Inputs Hash */
+            inputs_hash: string;
+            /** Result Hash */
+            result_hash: string;
+            /** Random Seed */
+            random_seed: number | null;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /**
+             * Finished At
+             * Format: date-time
+             */
+            finished_at: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Inputs */
+            inputs: components["schemas"]["ResolvedInputRead"][];
+            /** Observations */
+            observations: components["schemas"]["SimulationObservationRead"][];
+            graph: components["schemas"]["GraphSnapshotRead"];
+            /** Transmission */
+            transmission: components["schemas"]["TransmissionPathRead"][];
+            /** Reproducibility */
+            reproducibility: string;
+        };
         /**
          * ProviderAuth
          * @enum {string}
@@ -3126,6 +3810,38 @@ export interface components {
          * @enum {string}
          */
         ResolutionOutcome: "linked" | "identifier_attached" | "candidate_flagged" | "conflict" | "rejected";
+        /** ResolvedInputRead */
+        ResolvedInputRead: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Category */
+            category: string;
+            /**
+             * Knowledge
+             * @enum {string}
+             */
+            knowledge: "scenario_input" | "historical_data" | "user_input" | "assumption" | "setting";
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "user" | "default" | "stored_observation";
+            /** Value */
+            value: string | null;
+            /** Unit */
+            unit: string | null;
+            /** Unit Label */
+            unit_label: string;
+            /** Default */
+            default: string | null;
+            /** Rationale */
+            rationale: string | null;
+            /** Variable */
+            variable: string | null;
+            observation: components["schemas"]["SimulationObservationRead"] | null;
+        };
         /**
          * ReviewStatus
          * @description Human review state of an issue. There is no review workflow yet, so every issue
@@ -3206,7 +3922,7 @@ export interface components {
             shocks: components["schemas"]["ShockRead"][];
             /**
              * Latest Run
-             * @description Simulation results. Always null in Phase 1: no simulation engine exists yet, and RUMIN never shows results that were not computed.
+             * @description Simulation results for this scenario. Always null: drafts are not yet connected to the simulation engine (that is the Phase 5 Scenario Lab), and RUMIN never shows results that were not computed. Model runs are a separate resource: `/api/v1/simulations`.
              */
             latest_run?: null;
             /**
@@ -3232,6 +3948,163 @@ export interface components {
          * @enum {string}
          */
         SeasonalAdjustment: "seasonally_adjusted" | "not_seasonally_adjusted" | "not_applicable";
+        /** SensitivityAnalysisList */
+        SensitivityAnalysisList: {
+            /** Items */
+            items: components["schemas"]["SensitivityAnalysisRead"][];
+        };
+        /** SensitivityAnalysisRead */
+        SensitivityAnalysisRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Run Id
+             * Format: uuid
+             */
+            run_id: string;
+            /** Metric */
+            metric: string;
+            /** Metric Label */
+            metric_label: string;
+            /** Base */
+            base: {
+                [key: string]: string;
+            };
+            /** Items */
+            items: components["schemas"]["SensitivityItemRead"][];
+            /** Ranking */
+            ranking: components["schemas"]["SensitivityRankRead"][];
+            /** Evaluations */
+            evaluations: number;
+            /** Duration Ms */
+            duration_ms: number;
+            /** Result Hash */
+            result_hash: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Note */
+            note: string;
+        };
+        /** SensitivityInputRequest */
+        SensitivityInputRequest: {
+            /** Input */
+            input: string;
+            /**
+             * Mode
+             * @description `default`: the model's own low/high variation. `absolute`: base ± step (in the input's unit). `relative`: base × (1 ± step %). `values`: the listed values.
+             * @default default
+             * @enum {string}
+             */
+            mode: "default" | "absolute" | "relative" | "values";
+            /** Step */
+            step?: string | number | null;
+            /** Values */
+            values?: (string | number)[];
+        };
+        /** SensitivityItemRead */
+        SensitivityItemRead: {
+            /** Input */
+            input: string;
+            /** Label */
+            label: string;
+            /** Category */
+            category: string;
+            /** Unit */
+            unit: string | null;
+            /** Base Value */
+            base_value: string;
+            /** Mode */
+            mode: string;
+            /** Step */
+            step: string | null;
+            /** Points */
+            points: components["schemas"]["SensitivityPointRead"][];
+            range: components["schemas"]["SensitivityRangeRead"] | null;
+        };
+        /** SensitivityPointRead */
+        SensitivityPointRead: {
+            /** Role */
+            role: string;
+            /** Value */
+            value: string;
+            /** Outputs */
+            outputs: {
+                [key: string]: string;
+            } | null;
+            /** Deltas */
+            deltas: {
+                [key: string]: string;
+            } | null;
+            /** Skipped */
+            skipped: string | null;
+        };
+        /** SensitivityRangeRead */
+        SensitivityRangeRead: {
+            /**
+             * Low
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            low: string;
+            /**
+             * High
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            high: string;
+            /**
+             * Spread
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            spread: string;
+        };
+        /** SensitivityRankRead */
+        SensitivityRankRead: {
+            /** Input */
+            input: string;
+            /** Label */
+            label: string;
+            /**
+             * Spread
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            spread: string;
+        };
+        /** SensitivityRequest */
+        SensitivityRequest: {
+            /**
+             * Inputs
+             * @description Inputs to vary; empty means the model's default selection.
+             */
+            inputs?: components["schemas"]["SensitivityInputRequest"][];
+            /**
+             * Metric
+             * @description The output to rank inputs by.
+             */
+            metric?: string | null;
+        };
+        /** SensitivitySpecRead */
+        SensitivitySpecRead: {
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "absolute" | "relative";
+            /**
+             * Step
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            step: string;
+        };
         /** SeriesDetail */
         SeriesDetail: {
             /** Id */
@@ -3478,6 +4351,335 @@ export interface components {
              */
             epistemic_category: "scenario_input";
         };
+        /** SimulationInputValue */
+        SimulationInputValue: {
+            /**
+             * Value
+             * @description The value: an exact decimal string ("2.35") or a JSON number; a code or node key for text inputs. Omit it to take the model's default (optional inputs) or to use a stored observation.
+             * @example 30
+             */
+            value?: string | number | null;
+            /**
+             * Unit
+             * @description For quantities: one of the listed units.
+             */
+            unit?: string | null;
+            /**
+             * Source
+             * @description `stored_observation` takes the latest stored value of a series the model lists for this input.
+             */
+            source?: ("user" | "stored_observation") | null;
+            /** Series Id */
+            series_id?: string | null;
+        };
+        /** SimulationIssueRead */
+        SimulationIssueRead: {
+            /** Code */
+            code: string;
+            /** Message */
+            message: string;
+            /** Field */
+            field: string | null;
+        };
+        /** SimulationModelDetail */
+        SimulationModelDetail: {
+            /** Id */
+            id: string;
+            /** Version */
+            version: string;
+            /** Name */
+            name: string;
+            /** Summary */
+            summary: string;
+            /** Domain */
+            domain: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "preview" | "active" | "deprecated";
+            /** Definition Hash */
+            definition_hash: string;
+            /** Versions */
+            versions: string[];
+            /**
+             * Runs
+             * @description Stored runs of this model (all versions).
+             */
+            runs: number;
+            /** Description */
+            description: string;
+            /** Inputs */
+            inputs: components["schemas"]["InputDefinitionRead"][];
+            /** Equations */
+            equations: components["schemas"]["EquationRead"][];
+            /** Outputs */
+            outputs: components["schemas"]["OutputDefinitionRead"][];
+            /** Monthly Outputs */
+            monthly_outputs: components["schemas"]["OutputDefinitionRead"][];
+            /** Transmission Rules */
+            transmission_rules: components["schemas"]["TransmissionRuleRead"][];
+            /** Supporting Relationships */
+            supporting_relationships: components["schemas"]["SupportingRelationshipRead"][];
+            /** Assumptions */
+            assumptions: components["schemas"]["StatementRead"][];
+            /** Limitations */
+            limitations: components["schemas"]["StatementRead"][];
+            /** Validation Rules */
+            validation_rules: components["schemas"]["SimulationValidationRuleRead"][];
+            /** References */
+            references: components["schemas"]["StatementRead"][];
+            /** Pathway */
+            pathway: components["schemas"]["PathwayLinkRead"][];
+            /** Bridge */
+            bridge: components["schemas"]["BridgeItemRead"][];
+            /** Bridge Total */
+            bridge_total: string | null;
+            /**
+             * Headline Outputs
+             * @description The outputs a summary of a run leads with.
+             */
+            headline_outputs: string[];
+            /** Sensitivity Defaults */
+            sensitivity_defaults: string[];
+            /** Sensitivity Metric */
+            sensitivity_metric: string | null;
+            /** Time Step */
+            time_step: string;
+            /** Max Horizon Months */
+            max_horizon_months: number;
+            /** Max Propagation Depth */
+            max_propagation_depth: number;
+            /** Graph Build Id */
+            graph_build_id: number | null;
+            /**
+             * Graph Freshness
+             * @enum {string}
+             */
+            graph_freshness: "current" | "stale" | "not_built";
+        };
+        /** SimulationModelSummary */
+        SimulationModelSummary: {
+            /** Id */
+            id: string;
+            /** Version */
+            version: string;
+            /** Name */
+            name: string;
+            /** Summary */
+            summary: string;
+            /** Domain */
+            domain: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "preview" | "active" | "deprecated";
+            /** Definition Hash */
+            definition_hash: string;
+            /** Versions */
+            versions: string[];
+            /**
+             * Runs
+             * @description Stored runs of this model (all versions).
+             */
+            runs: number;
+        };
+        /** SimulationObservationRead */
+        SimulationObservationRead: {
+            /** Series Id */
+            series_id: string;
+            /** Series Name */
+            series_name: string;
+            /** Series Unit */
+            series_unit: string;
+            /** Frequency */
+            frequency: string;
+            /** Period Label */
+            period_label: string;
+            /** Period Start */
+            period_start: string;
+            /**
+             * Value
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            value: string;
+            /** Raw Value */
+            raw_value: string | null;
+            /** Quality Status */
+            quality_status: string;
+            /** Revision */
+            revision: number;
+            /** Last Confirmed At */
+            last_confirmed_at: string;
+            /** Capture Id */
+            capture_id: number | null;
+            /** Job Id */
+            job_id: string;
+            /** Dataset Id */
+            dataset_id: string;
+            /** Dataset Version */
+            dataset_version: string;
+            /** License */
+            license: string;
+            /** Attribution */
+            attribution: string | null;
+        };
+        /** SimulationRequest */
+        SimulationRequest: {
+            /**
+             * Model Id
+             * @example airline_fuel_cost
+             */
+            model_id: string;
+            /**
+             * Model Version
+             * @description Defaults to the latest runnable version.
+             */
+            model_version?: string | null;
+            /**
+             * Inputs
+             * @description Input values by input id.
+             */
+            inputs?: {
+                [key: string]: components["schemas"]["SimulationInputValue"];
+            };
+        };
+        /** SimulationRunRead */
+        SimulationRunRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Model Id */
+            model_id: string;
+            /** Model Name */
+            model_name: string;
+            /** Model Version */
+            model_version: string;
+            /** Definition Hash */
+            definition_hash: string;
+            /**
+             * Status
+             * @constant
+             */
+            status: "completed";
+            /** Label */
+            label: string | null;
+            entity: components["schemas"]["EntityRead"] | null;
+            /** Horizon Months */
+            horizon_months: number;
+            /** Inputs */
+            inputs: components["schemas"]["ResolvedInputRead"][];
+            /** Outputs */
+            outputs: components["schemas"]["OutputRead"][];
+            /** Monthly */
+            monthly: components["schemas"]["MonthlySeriesRead"][];
+            /** Contributions */
+            contributions: components["schemas"]["ContributionRead"][];
+            bridge: components["schemas"]["BridgeRead"] | null;
+            /** Warnings */
+            warnings: components["schemas"]["SimulationIssueRead"][];
+            /** Limitations */
+            limitations: components["schemas"]["StatementRead"][];
+            /** Inputs Hash */
+            inputs_hash: string;
+            /** Result Hash */
+            result_hash: string;
+            /** Engine Version */
+            engine_version: string;
+            /** Random Seed */
+            random_seed: number | null;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /**
+             * Finished At
+             * Format: date-time
+             */
+            finished_at: string;
+            /** Duration Ms */
+            duration_ms: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Sensitivity Analyses */
+            sensitivity_analyses: number;
+            /**
+             * Note
+             * @description What the numbers are, and are not, in one sentence.
+             */
+            note: string;
+        };
+        /** SimulationRunRequest */
+        SimulationRunRequest: {
+            /**
+             * Model Id
+             * @example airline_fuel_cost
+             */
+            model_id: string;
+            /**
+             * Model Version
+             * @description Defaults to the latest runnable version.
+             */
+            model_version?: string | null;
+            /**
+             * Inputs
+             * @description Input values by input id.
+             */
+            inputs?: {
+                [key: string]: components["schemas"]["SimulationInputValue"];
+            };
+            /**
+             * Label
+             * @description An optional name for the run.
+             */
+            label?: string | null;
+        };
+        /** SimulationRunSummary */
+        SimulationRunSummary: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Model Id */
+            model_id: string;
+            /** Model Version */
+            model_version: string;
+            /** Label */
+            label: string | null;
+            entity: components["schemas"]["EntityRead"] | null;
+            /** Horizon Months */
+            horizon_months: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Headline */
+            headline: components["schemas"]["OutputRead"][];
+            /** Result Hash */
+            result_hash: string;
+        };
+        /** SimulationValidationRuleRead */
+        SimulationValidationRuleRead: {
+            /** Id */
+            id: string;
+            /** Description */
+            description: string;
+            /**
+             * Severity
+             * @enum {string}
+             */
+            severity: "error" | "warning";
+        };
         /** SourceRecordRead */
         SourceRecordRead: {
             /** Table */
@@ -3490,6 +4692,40 @@ export interface components {
             dataset_version?: string | null;
             /** Fields */
             fields?: string[];
+        };
+        /** StatementRead */
+        StatementRead: {
+            /** Id */
+            id: string;
+            /** Text */
+            text: string;
+        };
+        /** StepRead */
+        StepRead: {
+            /** Sequence */
+            sequence: number;
+            /** Equation */
+            equation: string;
+            /** Label */
+            label: string;
+            /** Month */
+            month: number | null;
+            output: components["schemas"]["StepValueRead"];
+            /** Inputs */
+            inputs: components["schemas"]["StepValueRead"][];
+        };
+        /** StepValueRead */
+        StepValueRead: {
+            /** Symbol */
+            symbol: string;
+            /**
+             * Value
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            value: string;
+            /** Unit */
+            unit: string;
         };
         /**
          * Strength
@@ -3533,6 +4769,21 @@ export interface components {
          * @enum {string}
          */
         StructuralLinkType: "in_industry" | "domiciled_in" | "measured_for";
+        /** SupportingRelationshipRead */
+        SupportingRelationshipRead: {
+            /** Id */
+            id: string;
+            /** Edge Type */
+            edge_type: string;
+            /** Source */
+            source: string;
+            /** Target */
+            target: string;
+            /** Role */
+            role: string;
+            /** Required With Entity */
+            required_with_entity: boolean;
+        };
         /** SystemStatus */
         SystemStatus: {
             /** Service */
@@ -3553,6 +4804,67 @@ export interface components {
             data: components["schemas"]["DataStatus"];
             /** Capabilities */
             capabilities: components["schemas"]["Capability"][];
+        };
+        /** TermRead */
+        TermRead: {
+            /** Symbol */
+            symbol: string;
+            /** Meaning */
+            meaning: string;
+            /** Unit */
+            unit: string;
+        };
+        /** TransmissionPathRead */
+        TransmissionPathRead: {
+            /** Input */
+            input: string;
+            /** Nodes */
+            nodes: string[];
+            /** Rules */
+            rules: string[];
+            /** Edge Keys */
+            edge_keys: (string | null)[];
+            /**
+             * Coefficient
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            coefficient: string;
+            /** Lag */
+            lag: number;
+            /** First Month */
+            first_month: number;
+            /**
+             * Log Change
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            log_change: string;
+        };
+        /** TransmissionRuleRead */
+        TransmissionRuleRead: {
+            /** Id */
+            id: string;
+            /** Edge Type */
+            edge_type: string;
+            /** Source */
+            source: string;
+            /** Source Name */
+            source_name: string | null;
+            /** Target */
+            target: string;
+            /** Target Name */
+            target_name: string | null;
+            /** Coefficient Input */
+            coefficient_input: string;
+            /** Lag Input */
+            lag_input: string | null;
+            /** Form */
+            form: string;
+            /** Description */
+            description: string;
+            /** @description The confirming edge in the latest graph build, or null if the graph does not state it (then a shock needing it cannot run). */
+            graph_edge: components["schemas"]["GraphEdgeRead"] | null;
         };
         /** TraversalLimits */
         TraversalLimits: {
@@ -3581,6 +4893,49 @@ export interface components {
             /** Count */
             count: number;
         };
+        /** UnitChoice */
+        UnitChoice: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+        };
+        /** UnusedEdgeRead */
+        UnusedEdgeRead: {
+            /** Edge Key */
+            edge_key: string;
+            /** Edge Type */
+            edge_type: string;
+            /** Source */
+            source: string;
+            /** Target */
+            target: string;
+            /** Evidence Status */
+            evidence_status: string;
+        };
+        /** ValidationReport */
+        ValidationReport: {
+            /** Valid */
+            valid: boolean;
+            /** Model Id */
+            model_id: string;
+            /** Model Version */
+            model_version: string;
+            /** Definition Hash */
+            definition_hash: string;
+            /** Errors */
+            errors: components["schemas"]["SimulationIssueRead"][];
+            /** Warnings */
+            warnings: components["schemas"]["SimulationIssueRead"][];
+            /** Inputs */
+            inputs: components["schemas"]["ResolvedInputRead"][];
+            graph: components["schemas"]["GraphSnapshotRead"];
+            /**
+             * Inputs Hash
+             * @description What the run's inputs hash will be (null while the inputs are invalid).
+             */
+            inputs_hash: string | null;
+        };
         /** ValidationRuleRead */
         ValidationRuleRead: {
             /** Code */
@@ -3602,6 +4957,37 @@ export interface components {
          * @enum {string}
          */
         VariableCategory: "commodity" | "monetary_policy" | "exchange_rate" | "inflation";
+        /** VerificationRead */
+        VerificationRead: {
+            /**
+             * Run Id
+             * Format: uuid
+             */
+            run_id: string;
+            /** Reproduced */
+            reproduced: boolean;
+            /** Inputs Hash Matches */
+            inputs_hash_matches: boolean;
+            /** Result Hash Matches */
+            result_hash_matches: boolean;
+            /** Stored Result Hash */
+            stored_result_hash: string;
+            /** Recomputed Result Hash */
+            recomputed_result_hash: string | null;
+            /** Model Registered */
+            model_registered: boolean;
+            /** Definition Matches */
+            definition_matches: boolean;
+            /**
+             * Graph Edges
+             * @description Whether each graph edge the run used is still current in the latest build (informational: verification re-uses the stored snapshot).
+             */
+            graph_edges: {
+                [key: string]: unknown;
+            }[];
+            /** Message */
+            message: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -5491,6 +6877,591 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Page_GraphIssueRead_"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_simulation_models: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SimulationModelSummary"][];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_simulation_model: {
+        parameters: {
+            query?: {
+                /** @description Default: the latest. */
+                version?: string | null;
+            };
+            header?: never;
+            path: {
+                model_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SimulationModelDetail"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    validate_simulation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SimulationRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationReport"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_simulation_runs: {
+        parameters: {
+            query?: {
+                /** @description Only this model. */
+                model_id?: string | null;
+                /** @description Maximum number of items to return. */
+                limit?: number;
+                /** @description Items to skip. */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_SimulationRunSummary_"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_simulation_run: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SimulationRunRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SimulationRunRead"];
+                };
+            };
+            /** @description The model version's code no longer matches its stored definition. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_simulation_run: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SimulationRunRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_simulation_explanation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExplanationRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_simulation_provenance: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProvenanceRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    verify_simulation_run: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VerificationRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_sensitivity_analyses: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SensitivityAnalysisList"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_sensitivity_analysis: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SensitivityRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SensitivityAnalysisRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The model version's code no longer matches its stored definition. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_sensitivity_analysis: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+                analysis_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SensitivityAnalysisRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description The request contains invalid values. */

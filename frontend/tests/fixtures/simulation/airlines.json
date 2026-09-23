@@ -1,0 +1,33 @@
+{
+  "items": [
+    {
+      "id": "company:co_aerisca_airways",
+      "type": "company",
+      "name": "Aerisca Airways",
+      "subtitle": "Fictional company · Air transport · India",
+      "nature": "fictional",
+      "quality_status": "validated",
+      "degree": 6,
+      "primary_identifier": null,
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "company:co_skyvara_air",
+      "type": "company",
+      "name": "Skyvara Air",
+      "subtitle": "Fictional company · Air transport · India",
+      "nature": "fictional",
+      "quality_status": "validated",
+      "degree": 5,
+      "primary_identifier": null,
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    }
+  ],
+  "total": 2,
+  "limit": 50,
+  "offset": 0
+}

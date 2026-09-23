@@ -1,0 +1,1554 @@
+{
+  "id": "airline_fuel_cost",
+  "version": "1.0.0",
+  "name": "Airline fuel-cost shock",
+  "summary": "What a change in crude oil, jet fuel and the exchange rate does to an airline's fuel bill and operating profit, month by month, with hedging and fare pass-through.",
+  "domain": "Aviation · commodity prices · exchange rates",
+  "status": "preview",
+  "definition_hash": "5758b04209995f7c10e621443cc8c2275ef3bc00221df42423eda8d2c70c8090",
+  "versions": ["1.0.0"],
+  "runs": 2,
+  "description": "A deterministic, monthly model of one airline. The baseline fuel bill is annual consumption × the benchmark jet fuel price × the exchange rate. Scenario changes to crude oil (propagated to jet fuel along a validated knowledge-graph relationship), to jet fuel directly and to the exchange rate change the monthly bill. Hedges fix the dollar price of part of the fuel for a number of months; fares recover a share of the change after a lag. Everything else stays at its baseline.",
+  "inputs": [
+    {
+      "id": "crude_oil_change",
+      "label": "Crude oil price change",
+      "category": "scenario_input",
+      "kind": "decimal",
+      "description": "Change in the Brent crude oil price, in percent (30 means +30 %). A permanent step change from month 1. It reaches jet fuel only through the knowledge-graph relationship 'Brent crude influences jet fuel' (rule T1).",
+      "unit": "percent_change",
+      "unit_label": "% change",
+      "units": [],
+      "minimum": "-100",
+      "maximum": "1000",
+      "minimum_exclusive": true,
+      "maximum_exclusive": false,
+      "max_decimals": 4,
+      "required": false,
+      "default": "0",
+      "rationale": "No change unless you enter one.",
+      "variable": "variable:var_brent_crude",
+      "variable_name": "Brent crude oil price",
+      "sources": [],
+      "sensitivity": {
+        "mode": "absolute",
+        "step": "10"
+      }
+    },
+    {
+      "id": "jet_fuel_margin_change",
+      "label": "Additional jet fuel price change",
+      "category": "scenario_input",
+      "kind": "decimal",
+      "description": "A change in the jet fuel price beyond what crude oil explains (for example a wider refining margin), in percent. A permanent step change from month 1.",
+      "unit": "percent_change",
+      "unit_label": "% change",
+      "units": [],
+      "minimum": "-100",
+      "maximum": "1000",
+      "minimum_exclusive": true,
+      "maximum_exclusive": false,
+      "max_decimals": 4,
+      "required": false,
+      "default": "0",
+      "rationale": "No change unless you enter one.",
+      "variable": "variable:var_jet_fuel",
+      "variable_name": "Jet fuel price (U.S. Gulf Coast)",
+      "sources": [],
+      "sensitivity": {
+        "mode": "absolute",
+        "step": "10"
+      }
+    },
+    {
+      "id": "usd_change",
+      "label": "Exchange-rate change",
+      "category": "scenario_input",
+      "kind": "decimal",
+      "description": "Change in the price of one US dollar in the reporting currency, in percent. Positive means the reporting currency weakens (more rupees per dollar), which raises the cost of dollar-priced fuel. A permanent step change from month 1.",
+      "unit": "percent_change",
+      "unit_label": "% change",
+      "units": [],
+      "minimum": "-100",
+      "maximum": "1000",
+      "minimum_exclusive": true,
+      "maximum_exclusive": false,
+      "max_decimals": 4,
+      "required": false,
+      "default": "0",
+      "rationale": "No change unless you enter one.",
+      "variable": "variable:var_usd_inr",
+      "variable_name": "USD/INR exchange rate",
+      "sources": [],
+      "sensitivity": {
+        "mode": "absolute",
+        "step": "5"
+      }
+    },
+    {
+      "id": "jet_fuel_price",
+      "label": "Baseline jet fuel price",
+      "category": "market_baseline",
+      "kind": "quantity",
+      "description": "The benchmark jet fuel price the airline's fuel is priced from, in US dollars per unit of volume. RUMIN holds no jet fuel prices: enter the benchmark and the date you rely on.",
+      "unit": null,
+      "unit_label": null,
+      "units": [
+        {
+          "id": "usd_per_us_gallon",
+          "label": "USD per US gallon"
+        },
+        {
+          "id": "usd_per_us_barrel",
+          "label": "USD per US barrel"
+        },
+        {
+          "id": "usd_per_kilolitre",
+          "label": "USD per kilolitre"
+        }
+      ],
+      "minimum": "0",
+      "maximum": "100000",
+      "minimum_exclusive": true,
+      "maximum_exclusive": false,
+      "max_decimals": 6,
+      "required": true,
+      "default": null,
+      "rationale": null,
+      "variable": "variable:var_jet_fuel",
+      "variable_name": "Jet fuel price (U.S. Gulf Coast)",
+      "sources": [],
+      "sensitivity": {
+        "mode": "relative",
+        "step": "10"
+      }
+    },
+    {
+      "id": "fx_rate",
+      "label": "Baseline exchange rate",
+      "category": "market_baseline",
+      "kind": "decimal",
+      "description": "Units of the reporting currency per US dollar at the baseline. Enter a rate, or use the latest World Bank annual average stored in RUMIN.",
+      "unit": "currency_per_usd",
+      "unit_label": "reporting currency per USD",
+      "units": [],
+      "minimum": "0",
+      "maximum": "100000",
+      "minimum_exclusive": true,
+      "maximum_exclusive": false,
+      "max_decimals": 6,
+      "required": true,
+      "default": null,
+      "rationale": null,
+      "variable": "variable:var_usd_inr",
+      "variable_name": "USD/INR exchange rate",
+      "sources": [
+        {
+          "series_id": "wb-ind-pa-nus-fcrf",
+          "label": "World Bank: official exchange rate, INR per US$ (annual average)",
+          "unit": "INR per USD",
+          "currency_pair": ["INR", "USD"],
+          "caveat": "An annual average of the official exchange rate, not a current market rate: movements within the year are smoothed out.",
+          "available": false,
+          "latest_period": null,
+          "latest_value": null,
+          "last_confirmed_at": null
+        }
+      ],
+      "sensitivity": {
+        "mode": "relative",
+        "step": "5"
+      }
+    },
+    {
+      "id": "entity",
+      "label": "Airline in the knowledge graph",
+      "category": "company_input",
+      "kind": "graph_node",
+      "description": "Optional: the airline in RUMIN's knowledge graph this run is about. It must be a company that operates in air transport. RUMIN's sample airlines are fictional; the figures you enter are what the model uses.",
+      "unit": "graph_node",
+      "unit_label": "knowledge-graph node",
+      "units": [],
+      "minimum": null,
+      "maximum": null,
+      "minimum_exclusive": false,
+      "maximum_exclusive": false,
+      "max_decimals": 6,
+      "required": false,
+      "default": null,
+      "rationale": null,
+      "variable": null,
+      "variable_name": null,
+      "sources": [],
+      "sensitivity": null
+    },
+    {
+      "id": "reporting_currency",
+      "label": "Reporting currency",
+      "category": "company_input",
+      "kind": "currency",
+      "description": "The currency the airline reports in (ISO 4217 code, e.g. INR).",
+      "unit": "currency_code",
+      "unit_label": "ISO 4217 code",
+      "units": [],
+      "minimum": null,
+      "maximum": null,
+      "minimum_exclusive": false,
+      "maximum_exclusive": false,
+      "max_decimals": 6,
+      "required": true,
+      "default": null,
+      "rationale": null,
+      "variable": null,
+      "variable_name": null,
+      "sources": [],
+      "sensitivity": null
+    },
+    {
+      "id": "annual_revenue",
+      "label": "Annual revenue",
+      "category": "company_input",
+      "kind": "decimal",
+      "description": "Annual revenue in the reporting currency, from the airline's own accounts or plan. RUMIN holds no company financial data.",
+      "unit": "currency_per_year",
+      "unit_label": "reporting currency per year",
+      "units": [],
+      "minimum": "0",
+      "maximum": "1000000000000000",
+      "minimum_exclusive": true,
+      "maximum_exclusive": false,
+      "max_decimals": 6,
+      "required": true,
+      "default": null,
+      "rationale": null,
+      "variable": null,
+      "variable_name": null,
+      "sources": [],
+      "sensitivity": {
+        "mode": "relative",
+        "step": "10"
+      }
+    },
+    {
+      "id": "annual_operating_costs",
+      "label": "Annual operating costs",
+      "category": "company_input",
+      "kind": "decimal",
+      "description": "Annual operating costs, including fuel, in the reporting currency.",
+      "unit": "currency_per_year",
+      "unit_label": "reporting currency per year",
+      "units": [],
+      "minimum": "0",
+      "maximum": "1000000000000000",
+      "minimum_exclusive": true,
+      "maximum_exclusive": false,
+      "max_decimals": 6,
+      "required": true,
+      "default": null,
+      "rationale": null,
+      "variable": null,
+      "variable_name": null,
+      "sources": [],
+      "sensitivity": {
+        "mode": "relative",
+        "step": "10"
+      }
+    },
+    {
+      "id": "annual_fuel_consumption",
+      "label": "Annual fuel consumption",
+      "category": "company_input",
+      "kind": "quantity",
+      "description": "Jet fuel consumed in a year, in kilolitres, US gallons or US barrels.",
+      "unit": null,
+      "unit_label": null,
+      "units": [
+        {
+          "id": "kilolitre",
+          "label": "kilolitre"
+        },
+        {
+          "id": "us_gallon",
+          "label": "US gallon"
+        },
+        {
+          "id": "us_barrel",
+          "label": "US barrel"
+        }
+      ],
+      "minimum": "0",
+      "maximum": "1000000000000",
+      "minimum_exclusive": true,
+      "maximum_exclusive": false,
+      "max_decimals": 6,
+      "required": true,
+      "default": null,
+      "rationale": null,
+      "variable": null,
+      "variable_name": null,
+      "sources": [],
+      "sensitivity": {
+        "mode": "relative",
+        "step": "10"
+      }
+    },
+    {
+      "id": "crude_pass_through",
+      "label": "Crude-to-jet-fuel elasticity (β)",
+      "category": "assumption",
+      "kind": "decimal",
+      "description": "How strongly jet fuel responds to crude oil: a 1 % change in crude changes jet fuel by β % (in log terms).",
+      "unit": "elasticity",
+      "unit_label": "elasticity (dimensionless)",
+      "units": [],
+      "minimum": "0",
+      "maximum": "3",
+      "minimum_exclusive": false,
+      "maximum_exclusive": false,
+      "max_decimals": 4,
+      "required": false,
+      "default": "1",
+      "rationale": "β = 1 keeps the refining margin a constant proportion of the price, so jet fuel moves by the same percentage as crude. A neutral starting point, not an estimate: test other values with sensitivity analysis.",
+      "variable": null,
+      "variable_name": null,
+      "sources": [],
+      "sensitivity": {
+        "mode": "absolute",
+        "step": "0.2"
+      }
+    },
+    {
+      "id": "crude_pass_through_lag",
+      "label": "Crude-to-jet-fuel lag",
+      "category": "assumption",
+      "kind": "integer",
+      "description": "Months before a crude oil change reaches jet fuel prices.",
+      "unit": "months",
+      "unit_label": "months",
+      "units": [],
+      "minimum": "0",
+      "maximum": "12",
+      "minimum_exclusive": false,
+      "maximum_exclusive": false,
+      "max_decimals": 0,
+      "required": false,
+      "default": "0",
+      "rationale": "0 assumes crude changes reach jet fuel in the same month. Set it to how the airline's fuel contracts reprice.",
+      "variable": null,
+      "variable_name": null,
+      "sources": [],
+      "sensitivity": {
+        "mode": "absolute",
+        "step": "1"
+      }
+    },
+    {
+      "id": "hedge_ratio",
+      "label": "Hedge ratio",
+      "category": "assumption",
+      "kind": "decimal",
+      "description": "The share of fuel consumption hedged at the baseline US-dollar price, in percent.",
+      "unit": "percent",
+      "unit_label": "%",
+      "units": [],
+      "minimum": "0",
+      "maximum": "100",
+      "minimum_exclusive": false,
+      "maximum_exclusive": false,
+      "max_decimals": 4,
+      "required": false,
+      "default": "0",
+      "rationale": "0 assumes no hedging. Enter the share of the coming months' fuel the airline has hedged.",
+      "variable": null,
+      "variable_name": null,
+      "sources": [],
+      "sensitivity": {
+        "mode": "absolute",
+        "step": "20"
+      }
+    },
+    {
+      "id": "hedge_months",
+      "label": "Hedge cover",
+      "category": "assumption",
+      "kind": "integer",
+      "description": "How many months, from month 1, the existing hedges cover.",
+      "unit": "months",
+      "unit_label": "months",
+      "units": [],
+      "minimum": "0",
+      "maximum": "36",
+      "minimum_exclusive": false,
+      "maximum_exclusive": false,
+      "max_decimals": 0,
+      "required": false,
+      "default": "0",
+      "rationale": "0 assumes no hedge cover. Hedges are assumed not to be rolled over when they expire.",
+      "variable": null,
+      "variable_name": null,
+      "sources": [],
+      "sensitivity": {
+        "mode": "absolute",
+        "step": "3"
+      }
+    },
+    {
+      "id": "fare_pass_through",
+      "label": "Fare pass-through",
+      "category": "assumption",
+      "kind": "decimal",
+      "description": "The share of any change in fuel cost recovered through fares, in percent.",
+      "unit": "percent",
+      "unit_label": "%",
+      "units": [],
+      "minimum": "0",
+      "maximum": "100",
+      "minimum_exclusive": false,
+      "maximum_exclusive": false,
+      "max_decimals": 4,
+      "required": false,
+      "default": "0",
+      "rationale": "0 assumes fares do not change. Enter the share of a fuel-cost change the airline expects to pass on to passengers.",
+      "variable": null,
+      "variable_name": null,
+      "sources": [],
+      "sensitivity": {
+        "mode": "absolute",
+        "step": "20"
+      }
+    },
+    {
+      "id": "fare_pass_through_lag",
+      "label": "Fare pass-through lag",
+      "category": "assumption",
+      "kind": "integer",
+      "description": "Months before fares respond to a change in fuel cost.",
+      "unit": "months",
+      "unit_label": "months",
+      "units": [],
+      "minimum": "0",
+      "maximum": "12",
+      "minimum_exclusive": false,
+      "maximum_exclusive": false,
+      "max_decimals": 0,
+      "required": false,
+      "default": "0",
+      "rationale": "0 assumes fares adjust in the same month as the fuel cost. Enter the delay you expect.",
+      "variable": null,
+      "variable_name": null,
+      "sources": [],
+      "sensitivity": {
+        "mode": "absolute",
+        "step": "2"
+      }
+    },
+    {
+      "id": "horizon_months",
+      "label": "Horizon",
+      "category": "setting",
+      "kind": "integer",
+      "description": "How many months to simulate.",
+      "unit": "months",
+      "unit_label": "months",
+      "units": [],
+      "minimum": "1",
+      "maximum": "36",
+      "minimum_exclusive": false,
+      "maximum_exclusive": false,
+      "max_decimals": 0,
+      "required": false,
+      "default": "12",
+      "rationale": "Twelve months shows a full year after the shock.",
+      "variable": null,
+      "variable_name": null,
+      "sources": [],
+      "sensitivity": null
+    }
+  ],
+  "equations": [
+    {
+      "id": "E1",
+      "name": "Consumption in the price's volume unit",
+      "formula": "V = Q × λ(u_Q) / λ(u_P)",
+      "output": {
+        "symbol": "V",
+        "meaning": "annual fuel consumption in the price's volume unit",
+        "unit": "volume per year"
+      },
+      "terms": [
+        {
+          "symbol": "Q",
+          "meaning": "annual fuel consumption as entered",
+          "unit": "volume per year"
+        },
+        {
+          "symbol": "λ(u)",
+          "meaning": "litres in one unit u (exact legal definitions)",
+          "unit": "litres"
+        }
+      ],
+      "explanation": "An explicit unit conversion. The factor is exact (barrel → gallon = 42) or correctly rounded to 34 significant digits (kilolitre → gallon).",
+      "scope": "annual",
+      "assumptions": [],
+      "limitations": []
+    },
+    {
+      "id": "E2",
+      "name": "Baseline benchmark fuel cost in US dollars",
+      "formula": "B_USD = V × P₀",
+      "output": {
+        "symbol": "B_USD",
+        "meaning": "annual benchmark fuel cost",
+        "unit": "USD per year"
+      },
+      "terms": [
+        {
+          "symbol": "V",
+          "meaning": "annual consumption in the price's volume unit",
+          "unit": "volume per year"
+        },
+        {
+          "symbol": "P₀",
+          "meaning": "baseline benchmark jet fuel price",
+          "unit": "USD per volume"
+        }
+      ],
+      "explanation": "What the year's fuel costs at the benchmark price.",
+      "scope": "annual",
+      "assumptions": ["A3"],
+      "limitations": ["L4"]
+    },
+    {
+      "id": "E3",
+      "name": "Baseline benchmark fuel cost in the reporting currency",
+      "formula": "B = B_USD × X₀",
+      "output": {
+        "symbol": "B",
+        "meaning": "annual benchmark fuel cost",
+        "unit": "reporting currency per year"
+      },
+      "terms": [
+        {
+          "symbol": "B_USD",
+          "meaning": "annual benchmark fuel cost",
+          "unit": "USD per year"
+        },
+        {
+          "symbol": "X₀",
+          "meaning": "baseline exchange rate",
+          "unit": "reporting currency per USD"
+        }
+      ],
+      "explanation": "An explicit currency conversion at the baseline exchange rate (an input, never assumed).",
+      "scope": "annual",
+      "assumptions": ["A8"],
+      "limitations": []
+    },
+    {
+      "id": "E4",
+      "name": "Fuel share of operating costs",
+      "formula": "f = B / O",
+      "output": {
+        "symbol": "f",
+        "meaning": "benchmark fuel cost as a share of operating costs",
+        "unit": "ratio"
+      },
+      "terms": [
+        {
+          "symbol": "B",
+          "meaning": "annual benchmark fuel cost",
+          "unit": "reporting currency per year"
+        },
+        {
+          "symbol": "O",
+          "meaning": "annual operating costs",
+          "unit": "reporting currency per year"
+        }
+      ],
+      "explanation": "A consistency check: the fuel bill cannot exceed operating costs (f ≤ 1).",
+      "scope": "annual",
+      "assumptions": [],
+      "limitations": []
+    },
+    {
+      "id": "E5",
+      "name": "Monthly baseline fuel cost",
+      "formula": "b₀ = B / 12",
+      "output": {
+        "symbol": "b₀",
+        "meaning": "baseline fuel cost in one month",
+        "unit": "reporting currency per month"
+      },
+      "terms": [
+        {
+          "symbol": "B",
+          "meaning": "annual benchmark fuel cost",
+          "unit": "reporting currency per year"
+        }
+      ],
+      "explanation": "A frequency conversion: an annual flow spread evenly over twelve months.",
+      "scope": "annual",
+      "assumptions": ["A2"],
+      "limitations": ["L6"]
+    },
+    {
+      "id": "E6",
+      "name": "Jet fuel log-change",
+      "formula": "ℓ(m) = β · ln(1 + c) · 𝟙[m > L] + ln(1 + s)",
+      "output": {
+        "symbol": "ℓ(m)",
+        "meaning": "log-change of the jet fuel price in month m",
+        "unit": "log change"
+      },
+      "terms": [
+        {
+          "symbol": "β",
+          "meaning": "crude-to-jet-fuel elasticity",
+          "unit": "elasticity"
+        },
+        {
+          "symbol": "c",
+          "meaning": "crude oil price change",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "L",
+          "meaning": "crude-to-jet-fuel lag",
+          "unit": "months"
+        },
+        {
+          "symbol": "s",
+          "meaning": "additional jet fuel price change",
+          "unit": "fraction"
+        }
+      ],
+      "explanation": "Propagated by the transmission engine along rule T1 (Brent crude → influences → jet fuel), plus the direct change to jet fuel itself.",
+      "scope": "monthly",
+      "assumptions": ["A4", "A5"],
+      "limitations": ["L5"]
+    },
+    {
+      "id": "E7",
+      "name": "Jet fuel price relative to baseline",
+      "formula": "r(m) = exp(ℓ(m))",
+      "output": {
+        "symbol": "r(m)",
+        "meaning": "jet fuel price in month m relative to the baseline",
+        "unit": "ratio"
+      },
+      "terms": [
+        {
+          "symbol": "ℓ(m)",
+          "meaning": "log-change of the jet fuel price",
+          "unit": "log change"
+        }
+      ],
+      "explanation": "Turns the log-change back into a price ratio (r = 1.3 means +30 %).",
+      "scope": "monthly",
+      "assumptions": [],
+      "limitations": []
+    },
+    {
+      "id": "E8",
+      "name": "Exchange rate relative to baseline",
+      "formula": "q = 1 + x",
+      "output": {
+        "symbol": "q",
+        "meaning": "exchange rate relative to the baseline",
+        "unit": "ratio"
+      },
+      "terms": [
+        {
+          "symbol": "x",
+          "meaning": "exchange-rate change",
+          "unit": "fraction"
+        }
+      ],
+      "explanation": "The reporting currency's price of a dollar, relative to the baseline.",
+      "scope": "monthly",
+      "assumptions": ["A4", "A8"],
+      "limitations": []
+    },
+    {
+      "id": "E9",
+      "name": "Hedged share in month m",
+      "formula": "h(m) = h if m ≤ M_h, otherwise 0",
+      "output": {
+        "symbol": "h(m)",
+        "meaning": "share of month m's fuel that is hedged",
+        "unit": "ratio"
+      },
+      "terms": [
+        {
+          "symbol": "h",
+          "meaning": "hedge ratio",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "M_h",
+          "meaning": "months of hedge cover",
+          "unit": "months"
+        }
+      ],
+      "explanation": "Hedges cover the first M_h months and are not rolled over.",
+      "scope": "monthly",
+      "assumptions": ["A6"],
+      "limitations": []
+    },
+    {
+      "id": "E10",
+      "name": "Scenario monthly fuel cost",
+      "formula": "b₁(m) = b₀ × q × [h(m) + (1 − h(m)) × r(m)]",
+      "output": {
+        "symbol": "b₁(m)",
+        "meaning": "fuel cost in month m under the scenario",
+        "unit": "reporting currency per month"
+      },
+      "terms": [
+        {
+          "symbol": "b₀",
+          "meaning": "baseline monthly fuel cost",
+          "unit": "reporting currency per month"
+        },
+        {
+          "symbol": "q",
+          "meaning": "exchange rate relative to baseline",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "h(m)",
+          "meaning": "hedged share",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "r(m)",
+          "meaning": "jet fuel price relative to baseline",
+          "unit": "ratio"
+        }
+      ],
+      "explanation": "Hedged fuel keeps the baseline dollar price; unhedged fuel pays the new price. All fuel is paid in dollars converted at the new exchange rate.",
+      "scope": "monthly",
+      "assumptions": ["A1", "A3", "A6", "A8"],
+      "limitations": []
+    },
+    {
+      "id": "E11",
+      "name": "Change in fuel cost",
+      "formula": "Δb(m) = b₁(m) − b₀",
+      "output": {
+        "symbol": "Δb(m)",
+        "meaning": "change in fuel cost in month m",
+        "unit": "reporting currency per month"
+      },
+      "terms": [
+        {
+          "symbol": "b₁(m)",
+          "meaning": "scenario monthly fuel cost",
+          "unit": "reporting currency per month"
+        },
+        {
+          "symbol": "b₀",
+          "meaning": "baseline monthly fuel cost",
+          "unit": "reporting currency per month"
+        }
+      ],
+      "explanation": "Positive means the scenario costs more than the baseline.",
+      "scope": "monthly",
+      "assumptions": [],
+      "limitations": []
+    },
+    {
+      "id": "E12",
+      "name": "Fare recovery",
+      "formula": "Δr(m) = φ × Δb(m − L_f) if m > L_f, otherwise 0",
+      "output": {
+        "symbol": "Δr(m)",
+        "meaning": "change in revenue from fares in month m",
+        "unit": "reporting currency per month"
+      },
+      "terms": [
+        {
+          "symbol": "φ",
+          "meaning": "fare pass-through",
+          "unit": "fraction"
+        },
+        {
+          "symbol": "Δb",
+          "meaning": "change in fuel cost",
+          "unit": "reporting currency per month"
+        },
+        {
+          "symbol": "L_f",
+          "meaning": "fare pass-through lag",
+          "unit": "months"
+        }
+      ],
+      "explanation": "Fares recover a share of the change in fuel cost after a delay, for rises and falls alike.",
+      "scope": "monthly",
+      "assumptions": ["A7"],
+      "limitations": ["L2", "L3"]
+    },
+    {
+      "id": "E13",
+      "name": "Change in operating profit",
+      "formula": "Δπ(m) = Δr(m) − Δb(m)",
+      "output": {
+        "symbol": "Δπ(m)",
+        "meaning": "change in operating profit in month m",
+        "unit": "reporting currency per month"
+      },
+      "terms": [
+        {
+          "symbol": "Δr(m)",
+          "meaning": "fare recovery",
+          "unit": "reporting currency per month"
+        },
+        {
+          "symbol": "Δb(m)",
+          "meaning": "change in fuel cost",
+          "unit": "reporting currency per month"
+        }
+      ],
+      "explanation": "Everything else is held at its baseline.",
+      "scope": "monthly",
+      "assumptions": ["A1"],
+      "limitations": ["L7"]
+    },
+    {
+      "id": "E14",
+      "name": "Totals over the horizon",
+      "formula": "ΣΔb = Σₘ Δb(m); ΣΔr = Σₘ Δr(m); ΣΔπ = Σₘ Δπ(m), m = 1…H",
+      "output": {
+        "symbol": "ΣΔπ",
+        "meaning": "change in operating profit over the horizon",
+        "unit": "reporting currency"
+      },
+      "terms": [
+        {
+          "symbol": "Δb(m)",
+          "meaning": "change in fuel cost",
+          "unit": "reporting currency per month"
+        },
+        {
+          "symbol": "Δr(m)",
+          "meaning": "fare recovery",
+          "unit": "reporting currency per month"
+        },
+        {
+          "symbol": "H",
+          "meaning": "horizon",
+          "unit": "months"
+        }
+      ],
+      "explanation": "Sums of the monthly changes.",
+      "scope": "horizon",
+      "assumptions": [],
+      "limitations": []
+    },
+    {
+      "id": "E15",
+      "name": "Operating profit over the horizon",
+      "formula": "Π₀ = (R − O) × H / 12; Π₁ = Π₀ + ΣΔπ",
+      "output": {
+        "symbol": "Π₁",
+        "meaning": "operating profit over the horizon under the scenario",
+        "unit": "reporting currency"
+      },
+      "terms": [
+        {
+          "symbol": "R",
+          "meaning": "annual revenue",
+          "unit": "reporting currency per year"
+        },
+        {
+          "symbol": "O",
+          "meaning": "annual operating costs",
+          "unit": "reporting currency per year"
+        },
+        {
+          "symbol": "H",
+          "meaning": "horizon",
+          "unit": "months"
+        },
+        {
+          "symbol": "ΣΔπ",
+          "meaning": "change in operating profit over the horizon",
+          "unit": "reporting currency"
+        }
+      ],
+      "explanation": "The baseline is the entered annual figures, spread evenly over the horizon.",
+      "scope": "horizon",
+      "assumptions": ["A1", "A2"],
+      "limitations": []
+    },
+    {
+      "id": "E16",
+      "name": "Operating margins",
+      "formula": "μ₀ = (R − O) / R; μ₁ = (R·H/12 + ΣΔr − O·H/12 − ΣΔb) / (R·H/12 + ΣΔr)",
+      "output": {
+        "symbol": "μ₁",
+        "meaning": "operating margin over the horizon under the scenario",
+        "unit": "ratio"
+      },
+      "terms": [
+        {
+          "symbol": "R",
+          "meaning": "annual revenue",
+          "unit": "reporting currency per year"
+        },
+        {
+          "symbol": "O",
+          "meaning": "annual operating costs",
+          "unit": "reporting currency per year"
+        },
+        {
+          "symbol": "ΣΔr",
+          "meaning": "fare recovery over the horizon",
+          "unit": "reporting currency"
+        },
+        {
+          "symbol": "ΣΔb",
+          "meaning": "change in fuel cost over the horizon",
+          "unit": "reporting currency"
+        }
+      ],
+      "explanation": "Operating profit divided by revenue, before and after the scenario.",
+      "scope": "horizon",
+      "assumptions": [],
+      "limitations": []
+    },
+    {
+      "id": "E17",
+      "name": "Steady-state annual effect",
+      "formula": "ΔB* = B × [q × exp(β·ln(1 + c) + ln(1 + s)) − 1]; ΔΠ* = (φ − 1) × ΔB*",
+      "output": {
+        "symbol": "ΔB*",
+        "meaning": "annual change in fuel cost once lags have passed and hedges expired",
+        "unit": "reporting currency per year"
+      },
+      "terms": [
+        {
+          "symbol": "B",
+          "meaning": "annual benchmark fuel cost",
+          "unit": "reporting currency per year"
+        },
+        {
+          "symbol": "q",
+          "meaning": "exchange rate relative to baseline",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "φ",
+          "meaning": "fare pass-through",
+          "unit": "fraction"
+        }
+      ],
+      "explanation": "The full annual effect after every lag has passed and every hedge has expired.",
+      "scope": "steady_state",
+      "assumptions": ["A4", "A5", "A7"],
+      "limitations": []
+    },
+    {
+      "id": "E18",
+      "name": "Offsetting revenue change",
+      "formula": "g = ΣΔb / (R × H / 12)",
+      "output": {
+        "symbol": "g",
+        "meaning": "revenue change over the horizon that would offset the fuel-cost change",
+        "unit": "ratio"
+      },
+      "terms": [
+        {
+          "symbol": "ΣΔb",
+          "meaning": "change in fuel cost over the horizon",
+          "unit": "reporting currency"
+        },
+        {
+          "symbol": "R",
+          "meaning": "annual revenue",
+          "unit": "reporting currency per year"
+        },
+        {
+          "symbol": "H",
+          "meaning": "horizon",
+          "unit": "months"
+        }
+      ],
+      "explanation": "How much revenue would have to change, uniformly, to leave operating profit unchanged. It is arithmetic, not a recommendation to raise fares.",
+      "scope": "horizon",
+      "assumptions": [],
+      "limitations": ["L2"]
+    },
+    {
+      "id": "E19",
+      "name": "Hedging effect",
+      "formula": "G = Σₘ b₀ × (q × r(m) − 1); hedging effect = ΣΔb − G",
+      "output": {
+        "symbol": "hedging effect",
+        "meaning": "how much the hedges change the fuel-cost change",
+        "unit": "reporting currency"
+      },
+      "terms": [
+        {
+          "symbol": "b₀",
+          "meaning": "baseline monthly fuel cost",
+          "unit": "reporting currency per month"
+        },
+        {
+          "symbol": "q",
+          "meaning": "exchange rate relative to baseline",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "r(m)",
+          "meaning": "jet fuel price relative to baseline",
+          "unit": "ratio"
+        },
+        {
+          "symbol": "ΣΔb",
+          "meaning": "change in fuel cost over the horizon",
+          "unit": "reporting currency"
+        }
+      ],
+      "explanation": "G is the change the fuel bill would see with no hedges. The bridge −G − hedging effect + ΣΔr = ΣΔπ is exact.",
+      "scope": "horizon",
+      "assumptions": ["A6"],
+      "limitations": []
+    }
+  ],
+  "outputs": [
+    {
+      "id": "annual_consumption_in_price_unit",
+      "label": "Annual consumption in the price's unit",
+      "unit": "volume_per_year",
+      "kind": "derived",
+      "description": "Q converted to the price's volume unit.",
+      "equation": "E1",
+      "attributable": false
+    },
+    {
+      "id": "baseline_fuel_cost_usd",
+      "label": "Baseline fuel cost (USD)",
+      "unit": "usd_per_year",
+      "kind": "derived",
+      "description": "Annual benchmark fuel cost in US dollars.",
+      "equation": "E2",
+      "attributable": false
+    },
+    {
+      "id": "baseline_fuel_cost",
+      "label": "Baseline fuel cost",
+      "unit": "currency_per_year",
+      "kind": "derived",
+      "description": "Annual benchmark fuel cost in the reporting currency.",
+      "equation": "E3",
+      "attributable": false
+    },
+    {
+      "id": "fuel_share",
+      "label": "Fuel share of operating costs",
+      "unit": "ratio",
+      "kind": "derived",
+      "description": "Benchmark fuel cost ÷ operating costs.",
+      "equation": "E4",
+      "attributable": false
+    },
+    {
+      "id": "monthly_baseline_fuel_cost",
+      "label": "Monthly baseline fuel cost",
+      "unit": "currency_per_month",
+      "kind": "derived",
+      "description": "One twelfth of the annual fuel cost.",
+      "equation": "E5",
+      "attributable": false
+    },
+    {
+      "id": "baseline_operating_profit",
+      "label": "Baseline operating profit (horizon)",
+      "unit": "currency",
+      "kind": "derived",
+      "description": "Operating profit over the horizon with no change.",
+      "equation": "E15",
+      "attributable": false
+    },
+    {
+      "id": "baseline_operating_margin",
+      "label": "Baseline operating margin",
+      "unit": "ratio",
+      "kind": "derived",
+      "description": "Operating profit ÷ revenue with no change.",
+      "equation": "E16",
+      "attributable": false
+    },
+    {
+      "id": "jet_fuel_price_change",
+      "label": "Jet fuel price change (steady state)",
+      "unit": "ratio",
+      "kind": "simulated",
+      "description": "The jet fuel price change once the crude lag has passed.",
+      "equation": "E7",
+      "attributable": true
+    },
+    {
+      "id": "fuel_cost_change",
+      "label": "Change in fuel cost (horizon)",
+      "unit": "currency",
+      "kind": "simulated",
+      "description": "Extra fuel cost over the horizon, after hedges. Positive means fuel costs more.",
+      "equation": "E14",
+      "attributable": true
+    },
+    {
+      "id": "gross_fuel_cost_change",
+      "label": "Change in fuel cost without hedges (horizon)",
+      "unit": "currency",
+      "kind": "simulated",
+      "description": "The fuel-cost change over the horizon if nothing were hedged.",
+      "equation": "E19",
+      "attributable": true
+    },
+    {
+      "id": "hedging_effect",
+      "label": "Hedging effect (horizon)",
+      "unit": "currency",
+      "kind": "simulated",
+      "description": "What the hedges changed: negative means they reduced the increase.",
+      "equation": "E19",
+      "attributable": true
+    },
+    {
+      "id": "fare_recovery",
+      "label": "Fare recovery (horizon)",
+      "unit": "currency",
+      "kind": "simulated",
+      "description": "Extra revenue from fares over the horizon, as part of the fuel-cost change is passed on.",
+      "equation": "E14",
+      "attributable": true
+    },
+    {
+      "id": "operating_profit_change",
+      "label": "Change in operating profit (horizon)",
+      "unit": "currency",
+      "kind": "simulated",
+      "description": "Fare recovery minus the fuel-cost change, over the horizon.",
+      "equation": "E14",
+      "attributable": true
+    },
+    {
+      "id": "scenario_operating_profit",
+      "label": "Scenario operating profit (horizon)",
+      "unit": "currency",
+      "kind": "simulated",
+      "description": "Baseline operating profit plus the change, over the horizon.",
+      "equation": "E15",
+      "attributable": false
+    },
+    {
+      "id": "scenario_operating_margin",
+      "label": "Scenario operating margin",
+      "unit": "ratio",
+      "kind": "simulated",
+      "description": "Operating profit ÷ revenue over the horizon, under the scenario.",
+      "equation": "E16",
+      "attributable": false
+    },
+    {
+      "id": "operating_margin_change",
+      "label": "Change in operating margin",
+      "unit": "ratio_points",
+      "kind": "simulated",
+      "description": "Scenario margin minus baseline margin (0.01 is one percentage point).",
+      "equation": "E16",
+      "attributable": true
+    },
+    {
+      "id": "steady_state_fuel_cost_change",
+      "label": "Steady-state annual fuel-cost change",
+      "unit": "currency_per_year",
+      "kind": "simulated",
+      "description": "The yearly fuel-cost change once every lag has passed and the hedges have expired.",
+      "equation": "E17",
+      "attributable": true
+    },
+    {
+      "id": "steady_state_operating_profit_change",
+      "label": "Steady-state annual operating-profit change",
+      "unit": "currency_per_year",
+      "kind": "simulated",
+      "description": "The yearly operating-profit change in that steady state, after fare recovery.",
+      "equation": "E17",
+      "attributable": true
+    },
+    {
+      "id": "offsetting_revenue_change",
+      "label": "Offsetting revenue change",
+      "unit": "ratio",
+      "kind": "simulated",
+      "description": "The revenue increase, as a share of revenue, that would offset the fuel-cost change.",
+      "equation": "E18",
+      "attributable": true
+    }
+  ],
+  "monthly_outputs": [
+    {
+      "id": "jet_fuel_relative",
+      "label": "Jet fuel price relative to baseline",
+      "unit": "price_relative",
+      "kind": "simulated",
+      "description": "r(m): 1.3 means 30 % above the baseline.",
+      "equation": "E7",
+      "attributable": false
+    },
+    {
+      "id": "hedged_share",
+      "label": "Hedged share",
+      "unit": "ratio",
+      "kind": "derived",
+      "description": "h(m): the share of the month's fuel at the hedged price.",
+      "equation": "E9",
+      "attributable": false
+    },
+    {
+      "id": "baseline_fuel_cost",
+      "label": "Baseline fuel cost",
+      "unit": "currency_per_month",
+      "kind": "derived",
+      "description": "b₀: one twelfth of the annual benchmark fuel cost.",
+      "equation": "E5",
+      "attributable": false
+    },
+    {
+      "id": "scenario_fuel_cost",
+      "label": "Scenario fuel cost",
+      "unit": "currency_per_month",
+      "kind": "simulated",
+      "description": "b₁(m): the month's fuel cost under the scenario.",
+      "equation": "E10",
+      "attributable": false
+    },
+    {
+      "id": "fuel_cost_change",
+      "label": "Change in fuel cost",
+      "unit": "currency_per_month",
+      "kind": "simulated",
+      "description": "Δb(m) = b₁(m) − b₀.",
+      "equation": "E11",
+      "attributable": false
+    },
+    {
+      "id": "fare_recovery",
+      "label": "Fare recovery",
+      "unit": "currency_per_month",
+      "kind": "simulated",
+      "description": "Δr(m): revenue recovered through fares.",
+      "equation": "E12",
+      "attributable": false
+    },
+    {
+      "id": "operating_profit_change",
+      "label": "Change in operating profit",
+      "unit": "currency_per_month",
+      "kind": "simulated",
+      "description": "Δπ(m) = Δr(m) − Δb(m).",
+      "equation": "E13",
+      "attributable": false
+    }
+  ],
+  "transmission_rules": [
+    {
+      "id": "T1",
+      "edge_type": "influences",
+      "source": "variable:var_brent_crude",
+      "source_name": "Brent crude oil price",
+      "target": "variable:var_jet_fuel",
+      "target_name": "Jet fuel price (U.S. Gulf Coast)",
+      "coefficient_input": "crude_pass_through",
+      "lag_input": "crude_pass_through_lag",
+      "form": "log_linear",
+      "description": "A change in Brent crude reaches the jet fuel price with elasticity β after the stated lag.",
+      "graph_edge": {
+        "rule": "T1",
+        "role": "transmission",
+        "edge_key": "e-ea305310288a3f88",
+        "edge_type": "influences",
+        "source": "variable:var_brent_crude",
+        "target": "variable:var_jet_fuel",
+        "evidence_status": "model_assumption",
+        "is_illustrative": true,
+        "description": "A change in Brent crude reaches the jet fuel price with elasticity β after the stated lag."
+      }
+    }
+  ],
+  "supporting_relationships": [
+    {
+      "id": "S1",
+      "edge_type": "affects_costs",
+      "source": "variable:var_jet_fuel",
+      "target": "industry:ind_air_transport",
+      "role": "Jet fuel is a cost of air transport: the reason the fuel bill (E2–E10) belongs in an airline's operating costs. Cited, not propagated.",
+      "required_with_entity": false
+    },
+    {
+      "id": "S2",
+      "edge_type": "in_industry",
+      "source": "{entity}",
+      "target": "industry:ind_air_transport",
+      "role": "The chosen airline operates in air transport.",
+      "required_with_entity": true
+    },
+    {
+      "id": "S3",
+      "edge_type": "affects_costs",
+      "source": "variable:var_usd_inr",
+      "target": "{entity}",
+      "role": "The exchange rate affects the chosen airline's costs (E3, E8). Cited, not propagated.",
+      "required_with_entity": false
+    }
+  ],
+  "assumptions": [
+    {
+      "id": "A1",
+      "text": "Everything the model does not include stays at its baseline: fuel consumption, other costs, traffic, capacity, fares (apart from the stated pass-through) and financing."
+    },
+    {
+      "id": "A2",
+      "text": "Fuel is consumed evenly through the year: each month uses one twelfth of the annual volume, and annual revenue and costs accrue evenly."
+    },
+    {
+      "id": "A3",
+      "text": "The fuel bill is consumption × the benchmark jet fuel price × the exchange rate. Taxes, fees and supplier margins that do not follow the benchmark are outside the model."
+    },
+    {
+      "id": "A4",
+      "text": "Scenario changes are permanent step changes that start in month 1 and last for the whole horizon."
+    },
+    {
+      "id": "A5",
+      "text": "Jet fuel responds to crude oil with a constant elasticity β after a lag: ln(jet fuel) changes by β × ln(1 + crude change). With β = 1 the refining margin stays a constant proportion of the price."
+    },
+    {
+      "id": "A6",
+      "text": "Hedged fuel pays the baseline US-dollar price until the hedges expire; the exchange rate is not hedged; hedges are not rolled over."
+    },
+    {
+      "id": "A7",
+      "text": "Fares recover a fixed share of the change in fuel cost after a lag, for rises and falls alike, and passenger demand does not respond."
+    },
+    {
+      "id": "A8",
+      "text": "The exchange rate affects the fuel bill only: other dollar costs and any dollar revenue are outside the model."
+    }
+  ],
+  "limitations": [
+    {
+      "id": "L1",
+      "text": "The model shows the arithmetic consequence of the inputs and assumptions. It is not a forecast of what will happen, and not investment advice."
+    },
+    {
+      "id": "L2",
+      "text": "Passenger demand, capacity and schedules do not respond to fares or costs."
+    },
+    {
+      "id": "L3",
+      "text": "Competitors' responses and market share are not modelled."
+    },
+    {
+      "id": "L4",
+      "text": "Only the benchmark-linked fuel cost is modelled. Ad-valorem taxes that scale with the price are not captured, so a real fuel bill can move more than the benchmark."
+    },
+    {
+      "id": "L5",
+      "text": "The elasticity, lags, hedge terms and pass-through are assumptions with stated defaults. None has been estimated from data in RUMIN."
+    },
+    {
+      "id": "L6",
+      "text": "Monthly steps: timing within a month is ignored, and seasonality is not modelled."
+    },
+    {
+      "id": "L7",
+      "text": "Operating profit only: no interest, tax, hedge accounting, working capital or cash-flow timing."
+    }
+  ],
+  "validation_rules": [
+    {
+      "id": "input_range",
+      "description": "Every number is within its range and has at most the allowed decimal places; required inputs are present.",
+      "severity": "error"
+    },
+    {
+      "id": "percent_change_limits",
+      "description": "Scenario changes are greater than −100 % and at most +1,000 %, with at most 4 decimals — the limits Phase 1 publishes for scenario inputs.",
+      "severity": "error"
+    },
+    {
+      "id": "unit_choice",
+      "description": "Quantities use one of the listed units; no other unit is converted.",
+      "severity": "error"
+    },
+    {
+      "id": "usd_rate_is_one",
+      "description": "When the reporting currency is USD, the exchange rate must be exactly 1.",
+      "severity": "error"
+    },
+    {
+      "id": "observation_matches",
+      "description": "A stored observation may supply the exchange rate only when its currency pair and unit match the reporting currency.",
+      "severity": "error"
+    },
+    {
+      "id": "fuel_share_exceeds_costs",
+      "description": "The benchmark fuel cost of the stated consumption cannot exceed operating costs.",
+      "severity": "error"
+    },
+    {
+      "id": "fuel_share_low",
+      "description": "A benchmark fuel cost below 1 % of operating costs is flagged: it usually means a wrong consumption or price unit.",
+      "severity": "warning"
+    },
+    {
+      "id": "channel_confirmed",
+      "description": "A crude oil change reaches jet fuel only if the knowledge graph states that Brent crude influences jet fuel.",
+      "severity": "error"
+    },
+    {
+      "id": "entity_is_airline",
+      "description": "A chosen entity must be a company that operates in air transport in the knowledge graph.",
+      "severity": "error"
+    },
+    {
+      "id": "timing_within_horizon",
+      "description": "Hedges, lags and fare responses that fall outside the horizon are flagged.",
+      "severity": "warning"
+    },
+    {
+      "id": "no_shock",
+      "description": "A run in which every scenario change is zero is flagged: it equals the baseline.",
+      "severity": "warning"
+    }
+  ],
+  "references": [
+    {
+      "id": "U1",
+      "text": "Units: the US gallon is 231 cubic inches, exactly 3.785411784 litres; the US barrel of petroleum is 42 US gallons, exactly 158.987294928 litres."
+    },
+    {
+      "id": "V1",
+      "text": "Variables: Brent crude (USD per barrel), jet fuel, U.S. Gulf Coast (USD per gallon) and USD/INR (INR per USD) are defined in RUMIN's reference data, with their publishers. RUMIN stores no values for them."
+    },
+    {
+      "id": "D1",
+      "text": "Stored data: the exchange rate may come from the World Bank's World Development Indicators (PA.NUS.FCRF, CC BY 4.0) when a retrieval has stored it."
+    }
+  ],
+  "pathway": [
+    {
+      "source": "input:crude_oil_change",
+      "target": "variable:var_brent_crude",
+      "label": "changes",
+      "equations": [],
+      "rule": null
+    },
+    {
+      "source": "variable:var_brent_crude",
+      "target": "variable:var_jet_fuel",
+      "label": "influences (β, lag)",
+      "equations": ["E6"],
+      "rule": "T1"
+    },
+    {
+      "source": "input:jet_fuel_margin_change",
+      "target": "variable:var_jet_fuel",
+      "label": "changes",
+      "equations": ["E6"],
+      "rule": null
+    },
+    {
+      "source": "input:usd_change",
+      "target": "variable:var_usd_inr",
+      "label": "changes",
+      "equations": ["E8"],
+      "rule": null
+    },
+    {
+      "source": "variable:var_jet_fuel",
+      "target": "output:fuel_cost_change",
+      "label": "prices the unhedged fuel",
+      "equations": ["E7", "E10", "E11"],
+      "rule": null
+    },
+    {
+      "source": "variable:var_usd_inr",
+      "target": "output:fuel_cost_change",
+      "label": "converts the dollar bill",
+      "equations": ["E3", "E8", "E10"],
+      "rule": null
+    },
+    {
+      "source": "input:hedge_ratio",
+      "target": "output:fuel_cost_change",
+      "label": "fixes part of the price",
+      "equations": ["E9", "E10"],
+      "rule": null
+    },
+    {
+      "source": "output:fuel_cost_change",
+      "target": "output:fare_recovery",
+      "label": "is partly passed on",
+      "equations": ["E12"],
+      "rule": null
+    },
+    {
+      "source": "output:fuel_cost_change",
+      "target": "output:operating_profit_change",
+      "label": "reduces",
+      "equations": ["E13"],
+      "rule": null
+    },
+    {
+      "source": "output:fare_recovery",
+      "target": "output:operating_profit_change",
+      "label": "adds back",
+      "equations": ["E13"],
+      "rule": null
+    }
+  ],
+  "bridge": [
+    {
+      "output": "gross_fuel_cost_change",
+      "sign": -1,
+      "label": "Fuel-cost change without hedges"
+    },
+    {
+      "output": "hedging_effect",
+      "sign": -1,
+      "label": "Hedging"
+    },
+    {
+      "output": "fare_recovery",
+      "sign": 1,
+      "label": "Fare recovery"
+    }
+  ],
+  "bridge_total": "operating_profit_change",
+  "headline_outputs": [
+    "fuel_cost_change",
+    "operating_profit_change",
+    "operating_margin_change",
+    "steady_state_operating_profit_change"
+  ],
+  "sensitivity_defaults": [
+    "crude_oil_change",
+    "usd_change",
+    "crude_pass_through",
+    "hedge_ratio",
+    "fare_pass_through",
+    "jet_fuel_price",
+    "annual_fuel_consumption"
+  ],
+  "sensitivity_metric": "operating_profit_change",
+  "time_step": "month",
+  "max_horizon_months": 36,
+  "max_propagation_depth": 4,
+  "graph_build_id": 4,
+  "graph_freshness": "current"
+}

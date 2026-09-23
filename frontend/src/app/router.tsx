@@ -72,6 +72,18 @@ export const routes: RouteObject[] = [
         }),
       },
       {
+        path: "simulation",
+        lazy: async () => ({
+          Component: (await import("@/pages/SimulationPage")).SimulationPage,
+        }),
+      },
+      {
+        path: "simulation/runs/:runId",
+        lazy: async () => ({
+          Component: (await import("@/pages/SimulationPage")).SimulationPage,
+        }),
+      },
+      {
         path: "analyst",
         lazy: async () => ({ Component: (await import("@/pages/AnalystPage")).AnalystPage }),
       },

@@ -243,7 +243,7 @@ export function DashboardPage() {
         <StatTile
           label="Draft scenarios"
           value={scenarios.status === "success" ? formatCount(scenarios.data.total) : UNAVAILABLE}
-          detail="None simulated — no engine in this build"
+          detail="Drafts are not run yet: that arrives with the Scenario Lab in Phase 5"
           source="Scenario Lab"
         />
         <StatTile

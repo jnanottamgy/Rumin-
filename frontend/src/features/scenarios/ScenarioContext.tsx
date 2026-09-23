@@ -96,9 +96,9 @@ export function ScenarioContext({
         <div className={styles.placeholder}>
           <p className={styles.placeholderTitle}>Not simulated</p>
           <p>
-            This build has no simulation engine, so no effects have been computed. The engine is
-            planned for Phase 4. RUMIN will not show projected effects until an engine has computed
-            them.
+            Scenario drafts are not connected to the simulation engine yet, so no effects have been
+            computed for this draft; that connection is the Phase 5 Scenario Lab. Models can be run
+            today on the <Link to="/simulation">Simulation</Link> page.
           </p>
         </div>
       </section>

@@ -1,0 +1,151 @@
+{
+  "items": [
+    {
+      "id": "51b90c67-3fe5-48a8-bbc1-f0186430e3c9",
+      "model_id": "airline_fuel_cost",
+      "model_version": "1.0.0",
+      "label": "Example: crude +10 %",
+      "entity": null,
+      "horizon_months": 12,
+      "created_at": "2026-09-23T17:55:36.300025Z",
+      "headline": [
+        {
+          "id": "fuel_cost_change",
+          "label": "Change in fuel cost (horizon)",
+          "value": "5250000",
+          "unit": "INR",
+          "kind": "simulated",
+          "description": "Extra fuel cost over the horizon, after hedges. Positive means fuel costs more.",
+          "equation": "E14"
+        },
+        {
+          "id": "operating_profit_change",
+          "label": "Change in operating profit (horizon)",
+          "value": "-3550000",
+          "unit": "INR",
+          "kind": "simulated",
+          "description": "Fare recovery minus the fuel-cost change, over the horizon.",
+          "equation": "E14"
+        },
+        {
+          "id": "operating_margin_change",
+          "label": "Change in operating margin",
+          "value": "-0.0127057784",
+          "unit": "ratio_points",
+          "kind": "simulated",
+          "description": "Scenario margin minus baseline margin (0.01 is one percentage point).",
+          "equation": "E16"
+        },
+        {
+          "id": "steady_state_operating_profit_change",
+          "label": "Steady-state annual operating-profit change",
+          "value": "-3600000",
+          "unit": "INR per year",
+          "kind": "simulated",
+          "description": "The yearly operating-profit change in that steady state, after fare recovery.",
+          "equation": "E17"
+        }
+      ],
+      "result_hash": "4d5f06b903e7ff4e5c47f1fb6516892db977e7081fc8b6d8da37d44c49f605ec"
+    },
+    {
+      "id": "baeacd7f-e880-4ff8-aacd-44aa6132e331",
+      "model_id": "airline_fuel_cost",
+      "model_version": "1.0.0",
+      "label": null,
+      "entity": null,
+      "horizon_months": 12,
+      "created_at": "2026-09-23T17:54:41.002906Z",
+      "headline": [
+        {
+          "id": "fuel_cost_change",
+          "label": "Change in fuel cost (horizon)",
+          "value": "5250000",
+          "unit": "INR",
+          "kind": "simulated",
+          "description": "Extra fuel cost over the horizon, after hedges. Positive means fuel costs more.",
+          "equation": "E14"
+        },
+        {
+          "id": "operating_profit_change",
+          "label": "Change in operating profit (horizon)",
+          "value": "-3550000",
+          "unit": "INR",
+          "kind": "simulated",
+          "description": "Fare recovery minus the fuel-cost change, over the horizon.",
+          "equation": "E14"
+        },
+        {
+          "id": "operating_margin_change",
+          "label": "Change in operating margin",
+          "value": "-0.0127057784",
+          "unit": "ratio_points",
+          "kind": "simulated",
+          "description": "Scenario margin minus baseline margin (0.01 is one percentage point).",
+          "equation": "E16"
+        },
+        {
+          "id": "steady_state_operating_profit_change",
+          "label": "Steady-state annual operating-profit change",
+          "value": "-3600000",
+          "unit": "INR per year",
+          "kind": "simulated",
+          "description": "The yearly operating-profit change in that steady state, after fare recovery.",
+          "equation": "E17"
+        }
+      ],
+      "result_hash": "4d5f06b903e7ff4e5c47f1fb6516892db977e7081fc8b6d8da37d44c49f605ec"
+    },
+    {
+      "id": "29392880-e937-4ad1-a0e9-47f22b5aade9",
+      "model_id": "airline_fuel_cost",
+      "model_version": "1.0.0",
+      "label": null,
+      "entity": null,
+      "horizon_months": 12,
+      "created_at": "2026-09-23T17:53:17.688716Z",
+      "headline": [
+        {
+          "id": "fuel_cost_change",
+          "label": "Change in fuel cost (horizon)",
+          "value": "5250000",
+          "unit": "INR",
+          "kind": "simulated",
+          "description": "Extra fuel cost over the horizon, after hedges. Positive means fuel costs more.",
+          "equation": "E14"
+        },
+        {
+          "id": "operating_profit_change",
+          "label": "Change in operating profit (horizon)",
+          "value": "-3550000",
+          "unit": "INR",
+          "kind": "simulated",
+          "description": "Fare recovery minus the fuel-cost change, over the horizon.",
+          "equation": "E14"
+        },
+        {
+          "id": "operating_margin_change",
+          "label": "Change in operating margin",
+          "value": "-0.0127057784",
+          "unit": "ratio_points",
+          "kind": "simulated",
+          "description": "Scenario margin minus baseline margin (0.01 is one percentage point).",
+          "equation": "E16"
+        },
+        {
+          "id": "steady_state_operating_profit_change",
+          "label": "Steady-state annual operating-profit change",
+          "value": "-3600000",
+          "unit": "INR per year",
+          "kind": "simulated",
+          "description": "The yearly operating-profit change in that steady state, after fare recovery.",
+          "equation": "E17"
+        }
+      ],
+      "result_hash": "4d5f06b903e7ff4e5c47f1fb6516892db977e7081fc8b6d8da37d44c49f605ec"
+    }
+  ],
+  "total": 3,
+  "limit": 10,
+  "offset": 0
+}

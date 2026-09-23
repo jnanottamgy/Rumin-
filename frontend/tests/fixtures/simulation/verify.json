@@ -1,0 +1,18 @@
+{
+  "run_id": "51b90c67-3fe5-48a8-bbc1-f0186430e3c9",
+  "reproduced": true,
+  "inputs_hash_matches": true,
+  "result_hash_matches": true,
+  "stored_result_hash": "4d5f06b903e7ff4e5c47f1fb6516892db977e7081fc8b6d8da37d44c49f605ec",
+  "recomputed_result_hash": "4d5f06b903e7ff4e5c47f1fb6516892db977e7081fc8b6d8da37d44c49f605ec",
+  "model_registered": true,
+  "definition_matches": true,
+  "graph_edges": [
+    {
+      "rule": "T1",
+      "edge_key": "e-ea305310288a3f88",
+      "still_current": true
+    }
+  ],
+  "message": "Re-executed from the stored inputs: identical result."
+}

@@ -1,0 +1,13 @@
+[
+  {
+    "id": "airline_fuel_cost",
+    "version": "1.0.0",
+    "name": "Airline fuel-cost shock",
+    "summary": "What a change in crude oil, jet fuel and the exchange rate does to an airline's fuel bill and operating profit, month by month, with hedging and fare pass-through.",
+    "domain": "Aviation · commodity prices · exchange rates",
+    "status": "preview",
+    "definition_hash": "5758b04209995f7c10e621443cc8c2275ef3bc00221df42423eda8d2c70c8090",
+    "versions": ["1.0.0"],
+    "runs": 2
+  }
+]

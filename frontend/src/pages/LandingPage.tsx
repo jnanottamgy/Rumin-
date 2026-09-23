@@ -21,8 +21,10 @@ const IN_THIS_BUILD: Record<EpistemicCategory, string> = {
     "World Bank indicators and licensed price files, retrieved from the command line — historical, never live.",
   assumption: "Every relationship in the sample network, each with a written rationale.",
   scenario_input: "Draft scenarios can be defined and saved in the Scenario Lab.",
-  simulated_output: "None. The simulation engine arrives in Phase 4.",
-  uncertainty: "Stated in words for now; quantified ranges come with simulation.",
+  simulated_output:
+    "Deterministic runs of one preview model (an airline fuel-cost shock), stored with every calculation step.",
+  uncertainty:
+    "Stated in words, plus one-at-a-time sensitivity ranges for simulation runs. No probabilities are estimated.",
 };
 
 export function LandingPage() {

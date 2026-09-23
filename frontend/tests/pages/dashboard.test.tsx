@@ -43,16 +43,19 @@ describe("Overview dashboard", () => {
     expect(screen.getByText("+ 30 structural links derived from records")).toBeInTheDocument();
     expect(screen.getByText("All illustrative assumptions")).toBeInTheDocument();
     expect(statValue("Draft scenarios")).toBe("1");
-    expect(screen.getByText("None simulated — no engine in this build")).toBeInTheDocument();
+    expect(
+      screen.getByText("Drafts are not run yet: that arrives with the Scenario Lab in Phase 5"),
+    ).toBeInTheDocument();
     expect(statValue("Dataset")).toBe("v1.0.0");
 
     const recent = screen.getByRole("link", { name: /Oil price shock/ });
     expect(recent).toHaveAttribute("href", `/scenarios/${scenarioFixture().id}`);
     expect(within(recent).getByText("Not simulated")).toBeInTheDocument();
 
-    // Capabilities that do not exist yet are listed as such.
-    expect(screen.getByText("Simulation engine")).toBeInTheDocument();
-    expect(screen.getByText("Not available · Phase 4")).toBeInTheDocument();
+    // Capabilities that do not exist yet are listed as such; the simulation engine exists.
+    expect(screen.queryByText("Simulation engine")).not.toBeInTheDocument();
+    expect(screen.getByText("Probabilistic simulation")).toBeInTheDocument();
+    expect(screen.getByText("Not available · Phase 9")).toBeInTheDocument();
     expect(screen.getByText("Not connected")).toBeInTheDocument(); // live market data
   });
 

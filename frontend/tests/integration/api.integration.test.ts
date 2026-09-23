@@ -97,7 +97,9 @@ describe("responses match the committed OpenAPI contract", () => {
     expect(contractViolations("SystemStatus", system)).toEqual([]);
     expect(system.dataset.loaded).toBe(true);
     const simulation = system.capabilities.find((c) => c.id === "simulation_engine");
-    expect(simulation?.available).toBe(false);
+    expect(simulation?.available).toBe(true);
+    const probabilistic = system.capabilities.find((c) => c.id === "probabilistic_simulation");
+    expect(probabilistic?.available).toBe(false);
   });
 
   it("scenario list", async () => {

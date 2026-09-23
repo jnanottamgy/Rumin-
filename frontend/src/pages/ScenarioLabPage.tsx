@@ -258,11 +258,11 @@ export function ScenarioLabPage() {
       <PageHeader
         eyebrow="Scenario Lab · Foundation"
         title="Define a scenario"
-        description="Choose economic variables and how they change. RUMIN stores these inputs as a draft; simulating their effects arrives with the Phase 4 engine."
+        description="Choose economic variables and how they change. RUMIN stores these inputs as a draft; running drafts through the simulation engine arrives with the full Scenario Lab in Phase 5."
         meta={
           <>
             <EpistemicBadge category="scenario_input" suffix="what you change" />
-            <Badge tone="outline">No simulation engine in this build</Badge>
+            <Badge tone="outline">Drafts are not simulated yet</Badge>
           </>
         }
       />

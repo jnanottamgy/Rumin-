@@ -1,0 +1,21 @@
+{
+  "error": {
+    "code": "validation_error",
+    "message": "The simulation inputs are invalid.",
+    "details": [
+      {
+        "location": "body",
+        "field": "inputs.annual_revenue",
+        "message": "Annual revenue is required.",
+        "type": "required"
+      },
+      {
+        "location": "body",
+        "field": "inputs.hedge_ratio",
+        "message": "Hedge ratio must be at most 100 %.",
+        "type": "input_range"
+      }
+    ],
+    "request_id": "c964b3f7cbed43b88b078cdc2644cbe5"
+  }
+}

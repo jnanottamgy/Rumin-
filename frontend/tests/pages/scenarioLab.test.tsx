@@ -18,7 +18,7 @@ describe("Scenario Lab", () => {
 
     expect(screen.getByRole("heading", { level: 2, name: "New scenario" })).toBeInTheDocument();
     expect(screen.getByText("Not simulated yet")).toBeInTheDocument();
-    expect(screen.getByText("No simulation engine in this build")).toBeInTheDocument();
+    expect(screen.getByText("Drafts are not simulated yet")).toBeInTheDocument();
     expect(
       screen.getByText("Saving stores the inputs only. It does not run a simulation."),
     ).toBeInTheDocument();

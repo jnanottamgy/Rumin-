@@ -60,13 +60,24 @@ export const APP_MODULES: readonly AppModule[] = [
     phase: 2,
   },
   {
+    id: "simulation",
+    path: "/simulation",
+    navLabel: "Simulation",
+    title: "Simulation",
+    summary:
+      "Run a model on stated inputs and assumptions, and see how the result was reached: pathway, months, contributions, sensitivity and provenance.",
+    status: "available",
+    statusNote: "Preview · one model: an airline fuel-cost shock",
+    phase: 4,
+  },
+  {
     id: "scenarios",
     path: "/scenarios",
     navLabel: "Scenario Lab",
     title: "Scenario Lab",
     summary: "Define scenario inputs on the same network.",
     status: "foundation",
-    statusNote: "Drafts only · simulation engine planned for Phase 4",
+    statusNote: "Drafts only · running scenarios arrives with the full Scenario Lab in Phase 5",
     phase: 1,
   },
   {
@@ -102,7 +113,7 @@ export interface RoadmapPhase {
   title: string;
 }
 
-export const CURRENT_PHASE = 3;
+export const CURRENT_PHASE = 4;
 
 export const ROADMAP: readonly RoadmapPhase[] = [
   { phase: 1, title: "Foundation & system architecture" },
