@@ -102,9 +102,22 @@ class NameMatch:
     reason: str
 
 
+def name_words(normalized: str) -> frozenset[str]:
+    """The distinct words of a normalised name, without stop words."""
+    return frozenset(normalized.split()) - STOP_WORDS
+
+
 def compare_names(first: str, second: str) -> NameMatch | None:
     """Whether two names are similar enough to be reviewed as a possible match."""
     a, b = normalize_name(first), normalize_name(second)
+    return compare_normalized(a, name_words(a), b, name_words(b))
+
+
+def compare_normalized(
+    a: str, words_a: frozenset[str], b: str, words_b: frozenset[str]
+) -> NameMatch | None:
+    """``compare_names`` for names already normalised, so a name is normalised once no
+    matter how many others it is compared with."""
     if not a or not b:
         return None
     if a == b:
@@ -112,8 +125,6 @@ def compare_names(first: str, second: str) -> NameMatch | None:
             MatchStrength.STRONG,
             f'Both names normalise to "{a}" (case, punctuation and legal forms ignored).',
         )
-    words_a = set(a.split()) - STOP_WORDS
-    words_b = set(b.split()) - STOP_WORDS
     if words_a == words_b:
         return NameMatch(
             MatchStrength.WEAK, f'"{a}" and "{b}" have the same words in another order.'

@@ -6,12 +6,13 @@ traversal is bounded by limits the routes validate; nothing here writes.
 
 from __future__ import annotations
 
+import time
 from collections import Counter, defaultdict
 from collections.abc import Iterable, Sequence
 from datetime import date
 from typing import Any, Literal
 
-from sqlalchemy import and_, case, func, or_, select
+from sqlalchemy import case, func, or_, select, union_all
 from sqlalchemy.orm import Session, aliased
 
 from app.core.errors import NotFoundError
@@ -39,7 +40,14 @@ from app.graph.drafts import KEY_PREFIX
 from app.graph.metrics import METRIC_DEFINITIONS
 from app.graph.rules import CONSTRUCTION_RULES
 from app.graph.sources import read_sources
-from app.graph.store import EdgeRecord, EvidenceRecord, GraphReader, NodeRecord, node_record
+from app.graph.store import (
+    EdgeRecord,
+    EvidenceRecord,
+    GraphReader,
+    NodeRecord,
+    edge_ids_touching,
+    node_record,
+)
 from app.graph.validation import GRAPH_RULES
 from app.models import (
     EconomicSeries,
@@ -301,6 +309,32 @@ def _issue_read(row: GraphIssue) -> GraphIssueRead:
 # --- Overview and types -----------------------------------------------------------------------
 
 
+# Checking freshness reads and hashes every source record, so its cost grows with the
+# data (see docs/graph/performance.md). The answer is kept for a short time per API
+# process: a source change can take up to this long to show as "stale".
+FRESHNESS_TTL_SECONDS = 30.0
+_freshness_cache: dict[tuple[int, str | None, str | None], tuple[float, bool]] = {}
+
+
+def clear_freshness_cache() -> None:
+    """Forget cached overview answers (tests, and anything that rewrites the graph)."""
+    _freshness_cache.clear()
+    _type_map_cache.clear()
+
+
+def _sources_unchanged(session: Session, build: GraphBuild) -> bool:
+    finished = build.finished_at.isoformat() if build.finished_at else None
+    key = (build.id, finished, build.source_fingerprint)
+    now = time.monotonic()
+    cached = _freshness_cache.get(key)
+    if cached and now - cached[0] < FRESHNESS_TTL_SECONDS:
+        return cached[1]
+    unchanged = build.source_fingerprint == read_sources(session).fingerprint()
+    _freshness_cache.clear()  # only the latest build's answer is ever needed
+    _freshness_cache[key] = (now, unchanged)
+    return unchanged
+
+
 def freshness(session: Session, build: GraphBuild | None) -> Freshness:
     if build is None:
         return Freshness(
@@ -308,7 +342,7 @@ def freshness(session: Session, build: GraphBuild | None) -> Freshness:
             message="No knowledge graph has been built yet. Run `make graph` "
             "(python -m app.graph build).",
         )
-    if build.source_fingerprint == read_sources(session).fingerprint():
+    if _sources_unchanged(session, build):
         return Freshness(
             status="current", message=f"Built from the current sources (build #{build.id})."
         )
@@ -319,8 +353,18 @@ def freshness(session: Session, build: GraphBuild | None) -> Freshness:
     )
 
 
-def overview(session: Session) -> GraphOverview:
-    build = _latest_build(session)
+# The type map is a pure function of a build (the graph changes only when a build runs),
+# so it is counted once per build and kept for the life of the API process.
+_type_map_cache: dict[tuple[int, str], tuple[list[TypeMapNode], list[TypeMapLink]]] = {}
+
+
+def _type_map(
+    session: Session, build: GraphBuild | None
+) -> tuple[list[TypeMapNode], list[TypeMapLink]]:
+    # Only a finished build's map is cached: a running build is still changing the graph.
+    key = (build.id, build.finished_at.isoformat()) if build and build.finished_at else None
+    if key is not None and key in _type_map_cache:
+        return _type_map_cache[key]
     counts: Counter[GraphNodeType] = Counter(
         {
             node_type: count
@@ -339,33 +383,44 @@ def overview(session: Session) -> GraphOverview:
         .where(GraphEdge.retired_build_id.is_(None))
         .group_by(source.node_type, target.node_type, GraphEdge.edge_type)
     ).all()
+    type_map = [
+        TypeMapNode(
+            type=node_type,
+            label=NODE_TYPES[node_type].label,
+            plural=NODE_TYPES[node_type].plural,
+            count=counts[node_type],
+        )
+        for node_type in NODE_TYPE_ORDER
+        if counts[node_type]
+    ]
+    type_links = sorted(
+        (
+            TypeMapLink(
+                source_type=source_type,
+                target_type=target_type,
+                edge_type=edge_type,
+                label=EDGE_TYPES[edge_type].label,
+                count=count,
+            )
+            for source_type, target_type, edge_type, count in links
+        ),
+        key=lambda link: (-link.count, link.edge_type.value),
+    )
+    if key is not None:
+        _type_map_cache.clear()  # only the latest build's map is ever needed
+        _type_map_cache[key] = (type_map, type_links)
+    return type_map, type_links
+
+
+def overview(session: Session) -> GraphOverview:
+    build = _latest_build(session)
+    type_map, type_links = _type_map(session, build)
     return GraphOverview(
         build=_build_summary(build) if build else None,
         freshness=freshness(session, build),
         metrics=build.metrics if build else {},
-        type_map=[
-            TypeMapNode(
-                type=node_type,
-                label=NODE_TYPES[node_type].label,
-                plural=NODE_TYPES[node_type].plural,
-                count=counts[node_type],
-            )
-            for node_type in NODE_TYPE_ORDER
-            if counts[node_type]
-        ],
-        type_links=sorted(
-            (
-                TypeMapLink(
-                    source_type=source_type,
-                    target_type=target_type,
-                    edge_type=edge_type,
-                    label=EDGE_TYPES[edge_type].label,
-                    count=count,
-                )
-                for source_type, target_type, edge_type, count in links
-            ),
-            key=lambda link: (-link.count, link.edge_type.value),
-        ),
+        type_map=type_map,
+        type_links=type_links,
         metric_definitions=[MetricDefinitionRead(**vars(item)) for item in METRIC_DEFINITIONS],
         notes=list(NOTES),
     )
@@ -445,22 +500,18 @@ def search_nodes(
     if nature is not None:
         statement = statement.where(GraphNode.nature == nature)
     if related_to:
+        active = GraphEdge.retired_build_id.is_(None)
         statement = statement.where(
-            select(GraphEdge.id)
-            .where(
-                GraphEdge.retired_build_id.is_(None),
-                or_(
-                    and_(
-                        GraphEdge.source_node_id == GraphNode.id,
-                        GraphEdge.target_node_id == related_to,
+            GraphNode.id.in_(
+                union_all(
+                    select(GraphEdge.target_node_id).where(
+                        active, GraphEdge.source_node_id == related_to
                     ),
-                    and_(
-                        GraphEdge.target_node_id == GraphNode.id,
-                        GraphEdge.source_node_id == related_to,
+                    select(GraphEdge.source_node_id).where(
+                        active, GraphEdge.target_node_id == related_to
                     ),
-                ),
+                )
             )
-            .exists()
         )
     order: list[Any] = []
     if q:
@@ -552,8 +603,7 @@ def get_node(session: Session, key: str) -> GraphNodeDetail:
     counts: Counter[tuple[GraphEdgeType, str]] = Counter()
     for edge_type, source, directed in session.execute(
         select(GraphEdge.edge_type, GraphEdge.source_node_id, GraphEdge.directed).where(
-            GraphEdge.retired_build_id.is_(None),
-            or_(GraphEdge.source_node_id == key, GraphEdge.target_node_id == key),
+            GraphEdge.id.in_(edge_ids_touching([key]))
         )
     ):
         direction = "undirected" if not directed else "outgoing" if source == key else "incoming"
@@ -764,9 +814,7 @@ def list_edges(
     if evidence_statuses:
         statement = statement.where(GraphEdge.evidence_status.in_(evidence_statuses))
     if node:
-        statement = statement.where(
-            or_(GraphEdge.source_node_id == node, GraphEdge.target_node_id == node)
-        )
+        statement = statement.where(GraphEdge.id.in_(edge_ids_touching([node])))
     if illustrative is not None:
         statement = statement.where(GraphEdge.is_illustrative.is_(illustrative))
     statement = statement.order_by(

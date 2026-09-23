@@ -48,6 +48,7 @@ from app.models import (
     Scenario,
     SourceCapture,
 )
+from app.services.graph import clear_freshness_cache
 
 ALLOWED_ORIGIN = "http://localhost:5173"
 
@@ -164,6 +165,14 @@ def wipe_graph(session: Session) -> None:
     ):
         session.execute(delete(model))
     session.commit()
+
+
+@pytest.fixture(autouse=True)
+def _uncached_graph_freshness() -> Iterator[None]:
+    """Every test computes graph freshness from its own data, never a cached answer."""
+    clear_freshness_cache()
+    yield
+    clear_freshness_cache()
 
 
 @pytest.fixture

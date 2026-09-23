@@ -15,11 +15,12 @@ do not count as changes: they are derived from the edges, not stated by a source
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Any, TypeVar
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session
 
 from app.domain.graph_types import EDGE_TYPES
@@ -42,6 +43,7 @@ from app.models import (
 )
 
 _BATCH = 500
+T = TypeVar("T")
 
 
 @dataclass
@@ -97,54 +99,103 @@ def _write_nodes(
     component_of: dict[str, int],
 ) -> Diff:
     diff = Diff()
-    stored = {row.id: row for row in session.scalars(select(GraphNode))}
+    # Compared by hash from plain rows: loading every node as an ORM object costs far more
+    # than the comparison, and an unchanged rebuild writes nothing but derived values.
+    stored = {
+        key: (digest, retired, (total, incoming, outgoing, component))
+        for key, digest, retired, total, incoming, outgoing, component in session.execute(
+            select(
+                GraphNode.id,
+                GraphNode.content_hash,
+                GraphNode.retired_build_id,
+                GraphNode.degree,
+                GraphNode.in_degree,
+                GraphNode.out_degree,
+                GraphNode.component,
+            )
+        )
+    }
+    inserts: list[dict[str, object]] = []
+    rewrites: list[dict[str, object]] = []
+    derived_only: list[dict[str, object]] = []
     for key, node in nodes.items():
         digest = content_hash(node.hash_payload())
-        row = stored.get(key)
-        if row is None:
-            row = GraphNode(
-                id=key,
-                **_node_values(node),
-                content_hash=digest,
-                first_build_id=build_id,
-                changed_build_id=build_id,
-                created_at=now,
-                updated_at=now,
+        value = degree[key]
+        # Derived from the edges: refreshed every build, never counted as a change.
+        derived = {
+            "degree": value.total,
+            "in_degree": value.incoming,
+            "out_degree": value.outgoing,
+            "component": component_of[key],
+        }
+        found = stored.get(key)
+        if found is None:
+            inserts.append(
+                {
+                    "id": key,
+                    **_node_values(node),
+                    **derived,
+                    "content_hash": digest,
+                    "first_build_id": build_id,
+                    "changed_build_id": build_id,
+                    "created_at": now,
+                    "updated_at": now,
+                }
             )
-            session.add(row)
             diff.added += 1
-        elif row.retired_build_id is not None or row.content_hash != digest:
-            if row.retired_build_id is not None:
+        elif found[1] is not None or found[0] != digest:
+            if found[1] is not None:
                 diff.added += 1
             else:
                 diff.changed += 1
-            for name, value in _node_values(node).items():
-                setattr(row, name, value)
-            row.content_hash = digest
-            row.changed_build_id = build_id
-            row.retired_build_id = None
-            row.updated_at = now
+            rewrites.append(
+                {
+                    "id": key,
+                    **_node_values(node),
+                    **derived,
+                    "content_hash": digest,
+                    "changed_build_id": build_id,
+                    "retired_build_id": None,
+                    "updated_at": now,
+                }
+            )
         else:
             diff.unchanged += 1
-        # Derived from the edges: refreshed every build, never counted as a change.
-        value = degree[key]
-        if (row.degree, row.in_degree, row.out_degree, row.component) != (
-            value.total,
-            value.incoming,
-            value.outgoing,
-            component_of[key],
-        ):
-            row.degree, row.in_degree, row.out_degree = value.total, value.incoming, value.outgoing
-            row.component = component_of[key]
-    for key, row in stored.items():
-        if key not in nodes and row.retired_build_id is None:
-            row.retired_build_id = build_id
-            row.component = None
-            row.degree = row.in_degree = row.out_degree = 0
-            row.updated_at = now
-            diff.retired += 1
+            if found[2] != tuple(derived.values()):
+                derived_only.append({"id": key, **derived})
+    retire = [key for key, found in stored.items() if key not in nodes and found[1] is None]
+    diff.retired = len(retire)
+
+    _bulk(session, insert(GraphNode), inserts)
+    _bulk(session, update(GraphNode), rewrites)
+    _bulk(session, update(GraphNode), derived_only)
+    for batch in _batches(retire):
+        session.execute(
+            update(GraphNode)
+            .where(GraphNode.id.in_(batch))
+            .values(
+                retired_build_id=build_id,
+                component=None,
+                degree=0,
+                in_degree=0,
+                out_degree=0,
+                updated_at=now,
+            ),
+            execution_options={"synchronize_session": False},
+        )
     session.flush()
     return diff
+
+
+def _batches(items: list[T]) -> Iterator[list[T]]:
+    for start in range(0, len(items), _BATCH):
+        yield items[start : start + _BATCH]
+
+
+def _bulk(session: Session, statement: Any, rows: list[dict[str, object]]) -> None:
+    """An ORM bulk INSERT, or a bulk UPDATE by primary key, in batches."""
+    for batch in _batches(rows):
+        session.execute(statement, batch)
 
 
 def _write_identifiers(session: Session, nodes: Iterable[NodeDraft]) -> None:
@@ -193,70 +244,92 @@ def _write_edges(
     session: Session, edges: dict[str, EdgeDraft], build_id: int, now: datetime
 ) -> Diff:
     diff = Diff()
-    stored = {row.id: row for row in session.scalars(select(GraphEdge))}
+    stored = {
+        key: (digest, retired)
+        for key, digest, retired in session.execute(
+            select(GraphEdge.id, GraphEdge.content_hash, GraphEdge.retired_build_id)
+        )
+    }
+    inserts: list[dict[str, object]] = []
+    rewrites: list[dict[str, object]] = []
     rewrite_evidence: list[str] = []
     for key, edge in edges.items():
         digest = content_hash(edge.hash_payload())
-        row = stored.get(key)
-        if row is None:
-            session.add(
-                GraphEdge(
-                    id=key,
+        found = stored.get(key)
+        if found is None:
+            inserts.append(
+                {
+                    "id": key,
                     **_edge_values(edge),
-                    content_hash=digest,
-                    first_build_id=build_id,
-                    changed_build_id=build_id,
-                    created_at=now,
-                    updated_at=now,
-                )
+                    "content_hash": digest,
+                    "first_build_id": build_id,
+                    "changed_build_id": build_id,
+                    "created_at": now,
+                    "updated_at": now,
+                }
             )
             rewrite_evidence.append(key)
             diff.added += 1
-        elif row.retired_build_id is not None or row.content_hash != digest:
-            if row.retired_build_id is not None:
+        elif found[1] is not None or found[0] != digest:
+            if found[1] is not None:
                 diff.added += 1
             else:
                 diff.changed += 1
-            for name, value in _edge_values(edge).items():
-                setattr(row, name, value)
-            row.content_hash = digest
-            row.changed_build_id = build_id
-            row.retired_build_id = None
-            row.updated_at = now
+            rewrites.append(
+                {
+                    "id": key,
+                    **_edge_values(edge),
+                    "content_hash": digest,
+                    "changed_build_id": build_id,
+                    "retired_build_id": None,
+                    "updated_at": now,
+                }
+            )
             rewrite_evidence.append(key)
         else:
             diff.unchanged += 1
-    for key, row in stored.items():
-        if key not in edges and row.retired_build_id is None:
-            row.retired_build_id = build_id
-            row.updated_at = now
-            diff.retired += 1
+    retire = [key for key, found in stored.items() if key not in edges and found[1] is None]
+    diff.retired = len(retire)
+
+    _bulk(session, insert(GraphEdge), inserts)
+    _bulk(session, update(GraphEdge), rewrites)
+    for batch in _batches(retire):
+        session.execute(
+            update(GraphEdge)
+            .where(GraphEdge.id.in_(batch))
+            .values(retired_build_id=build_id, updated_at=now),
+            execution_options={"synchronize_session": False},
+        )
     session.flush()
 
     # Evidence is replaced for new and changed edges; retired edges keep theirs (history).
     for start in range(0, len(rewrite_evidence), _BATCH):
         batch = rewrite_evidence[start : start + _BATCH]
         session.execute(delete(GraphEdgeEvidence).where(GraphEdgeEvidence.edge_id.in_(batch)))
-    session.add_all(
-        GraphEdgeEvidence(
-            edge_id=key,
-            rule_id=item.rule,
-            source_kind=item.source_kind,
-            source_table=item.source.table,
-            source_record_id=item.source.record_id,
-            dataset_id=item.source.dataset_id,
-            dataset_version=item.source.dataset_version,
-            statement=item.statement,
-            transformation=item.transformation,
-            derivation=item.derivation,
-            derived_from=list(item.derived_from),
-            citation=item.citation,
-            citation_url=item.citation_url,
-            retrieved_at=item.retrieved_at,
-            recorded_at=item.recorded_at,
-        )
-        for key in rewrite_evidence
-        for item in edges[key].evidence
+    _bulk(
+        session,
+        insert(GraphEdgeEvidence),
+        [
+            {
+                "edge_id": key,
+                "rule_id": item.rule,
+                "source_kind": item.source_kind,
+                "source_table": item.source.table,
+                "source_record_id": item.source.record_id,
+                "dataset_id": item.source.dataset_id,
+                "dataset_version": item.source.dataset_version,
+                "statement": item.statement,
+                "transformation": item.transformation,
+                "derivation": item.derivation,
+                "derived_from": list(item.derived_from),
+                "citation": item.citation,
+                "citation_url": item.citation_url,
+                "retrieved_at": item.retrieved_at,
+                "recorded_at": item.recorded_at,
+            }
+            for key in rewrite_evidence
+            for item in edges[key].evidence
+        ],
     )
     session.flush()
     return diff

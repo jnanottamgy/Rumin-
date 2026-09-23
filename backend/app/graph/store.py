@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Any
 
-from sqlalchemy import or_, select
+from sqlalchemy import CompoundSelect, select, union_all
 from sqlalchemy.orm import Session
 
 from app.domain.enums import (
@@ -60,32 +60,59 @@ class SqlAdjacency:
         keys = list(dict.fromkeys(node_keys))
         wanted = set(keys)
         result: dict[str, list[Incidence]] = {key: [] for key in keys}
+        seen: dict[str, set[str]] = {key: set() for key in keys}
+        columns = (
+            GraphEdge.id,
+            GraphEdge.edge_type,
+            GraphEdge.source_node_id,
+            GraphEdge.target_node_id,
+            GraphEdge.directed,
+            GraphEdge.evidence_status,
+            GraphEdge.is_illustrative,
+        )
+        active = GraphEdge.retired_build_id.is_(None)
         for start in range(0, len(keys), _CHUNK):
             chunk = keys[start : start + _CHUNK]
+            # Two index searches in one round trip. `source IN … OR target IN …` would make
+            # SQLite scan every edge.
             rows = self.session.execute(
-                select(
-                    GraphEdge.id,
-                    GraphEdge.edge_type,
-                    GraphEdge.source_node_id,
-                    GraphEdge.target_node_id,
-                    GraphEdge.directed,
-                    GraphEdge.evidence_status,
-                    GraphEdge.is_illustrative,
-                ).where(
-                    GraphEdge.retired_build_id.is_(None),
-                    or_(GraphEdge.source_node_id.in_(chunk), GraphEdge.target_node_id.in_(chunk)),
+                union_all(
+                    select(*columns).where(active, GraphEdge.source_node_id.in_(chunk)),
+                    select(*columns).where(active, GraphEdge.target_node_id.in_(chunk)),
                 )
             ).all()
             self.queries += 1
             for edge_id, edge_type, source, target, directed, status, illustrative in rows:
                 edge = Incidence(
-                    edge_id, edge_type.value, source, target, directed, status.value, illustrative
+                    edge_id,
+                    _value(edge_type),
+                    source,
+                    target,
+                    directed,
+                    _value(status),
+                    bool(illustrative),
                 )
-                # An edge between two keys of different chunks is fetched twice; keep one.
+                # An edge between two wanted keys comes back from both halves; keep one.
                 for end in {source, target} & wanted:
-                    if edge not in result[end]:
+                    if edge_id not in seen[end]:
+                        seen[end].add(edge_id)
                         result[end].append(edge)
         return result
+
+
+def _value(item: object) -> str:
+    """Enum columns in a UNION may come back as plain strings."""
+    return str(getattr(item, "value", item))
+
+
+def edge_ids_touching(keys: Collection[str]) -> CompoundSelect[tuple[str]]:
+    """IDs of the current edges with an end in ``keys``, as a UNION of two index searches
+    (an ``OR`` across the two endpoint columns would scan every edge)."""
+    active = GraphEdge.retired_build_id.is_(None)
+    return union_all(
+        select(GraphEdge.id).where(active, GraphEdge.source_node_id.in_(keys)),
+        select(GraphEdge.id).where(active, GraphEdge.target_node_id.in_(keys)),
+    )
 
 
 # --- Records ----------------------------------------------------------------------------------

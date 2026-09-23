@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass, field
 
 from app.domain.enums import (
@@ -41,15 +41,16 @@ from app.graph.drafts import (
     node_key,
 )
 from app.graph.names import (
-    STOP_WORDS,
     MatchStrength,
-    compare_names,
+    NameMatch,
+    compare_normalized,
     currency_is_valid,
     isin_is_valid,
     iso_alpha2_is_valid,
     iso_alpha3_is_valid,
     mic_is_valid,
-    name_tokens,
+    name_words,
+    normalize_name,
 )
 from app.graph.rules import CodeClaim
 from app.graph.sources import SourceSnapshot
@@ -361,29 +362,68 @@ def _identifier_clash(
 # --- Stages 4 to 6: names suggest, never merge -------------------------------------------------
 
 
-def _token_pairs(
-    left: list[NodeDraft], right: list[NodeDraft] | None = None
-) -> Iterable[tuple[NodeDraft, NodeDraft]]:
-    """Pairs of nodes whose names share at least one word ("blocking").
+# A word shared by more names than this identifies nothing on its own ("company", "india",
+# or "synthetic" in a generated dataset), so it is not used to find candidate pairs.
+# Pairs with the same normalised name, or the same words in another order, are always
+# compared; what can be missed is a partial match made only of such common words.
+MAX_BLOCK_SIZE = 100
 
-    Every pair a name rule can match shares a word, so nothing is missed, and the many
-    unrelated pairs are never compared. With one list, each pair is returned once.
+
+@dataclass(frozen=True)
+class _Named:
+    node: NodeDraft
+    normalized: str
+    words: frozenset[str]
+
+
+def _named(nodes: Iterable[NodeDraft]) -> list[_Named]:
+    """Each name normalised once, however many names it is compared with."""
+    named = []
+    for node in nodes:
+        normalized = normalize_name(node.display_name)
+        if normalized:
+            named.append(_Named(node, normalized, name_words(normalized)))
+    return named
+
+
+def _candidate_pairs(
+    left: list[_Named], right: list[_Named] | None = None
+) -> Iterator[tuple[_Named, _Named]]:
+    """Pairs worth comparing ("blocking"): the same normalised name, the same words, or a
+    shared word used by at most ``MAX_BLOCK_SIZE`` names. Unrelated pairs are never
+    compared, so the cost follows the number of plausible pairs rather than n². With one
+    list, each pair is returned once.
     """
     same = right is None
-    words: dict[str, list[NodeDraft]] = defaultdict(list)
-    for node in left if right is None else right:
-        for word in set(name_tokens(node.display_name)) - STOP_WORDS:
-            words[word].append(node)
+    pool = left if right is None else right
+    by_name: dict[str, list[_Named]] = defaultdict(list)
+    by_words: dict[frozenset[str], list[_Named]] = defaultdict(list)
+    by_word: dict[str, list[_Named]] = defaultdict(list)
+    for item in pool:
+        by_name[item.normalized].append(item)
+        by_words[item.words].append(item)
+        for word in item.words:
+            by_word[word].append(item)
     seen: set[tuple[str, str]] = set()
-    for node in left:
-        for word in set(name_tokens(node.display_name)) - STOP_WORDS:
-            for other in words.get(word, ()):
-                if other.key == node.key:
-                    continue
-                first, second = (other, node) if same and other.key < node.key else (node, other)
-                if (first.key, second.key) not in seen:
-                    seen.add((first.key, second.key))
-                    yield first, second
+    for item in left:
+        others = [*by_name.get(item.normalized, ()), *by_words.get(item.words, ())]
+        for word in item.words:
+            block = by_word.get(word, ())
+            if len(block) <= MAX_BLOCK_SIZE:
+                others.extend(block)
+        for other in others:
+            if other.node.key == item.node.key:
+                continue
+            first, second = (
+                (other, item) if same and other.node.key < item.node.key else (item, other)
+            )
+            if (first.node.key, second.node.key) not in seen:
+                seen.add((first.node.key, second.node.key))
+                yield first, second
+
+
+def _compare(first: _Named, second: _Named) -> NameMatch | None:
+    return compare_normalized(first.normalized, first.words, second.normalized, second.words)
 
 
 def _name_candidates(result: Resolution) -> None:
@@ -392,27 +432,31 @@ def _name_candidates(result: Resolution) -> None:
         by_type[node.node_type].append(node)
 
     for node_type in _DUPLICATE_CHECKED:
-        for first, second in _token_pairs(by_type[node_type]):
-            match = compare_names(first.display_name, second.display_name)
+        for first, second in _candidate_pairs(_named(by_type[node_type])):
+            match = _compare(first, second)
             if match is None:
                 continue
-            if first.nature is not second.nature:
-                _ruled_out(result, first, second, match.reason)
+            if first.node.nature is not second.node.nature:
+                _ruled_out(result, first.node, second.node, match.reason)
             elif match.strength is MatchStrength.STRONG:
-                _flag(result, "possible_duplicate", first, second, match.reason)
+                _flag(result, "possible_duplicate", first.node, second.node, match.reason)
             else:
-                _flag(result, "similar_name", first, second, match.reason)
+                _flag(result, "similar_name", first.node, second.node, match.reason)
 
-    companies = by_type[GraphNodeType.COMPANY]
-    for instrument, company in _token_pairs(by_type[GraphNodeType.INSTRUMENT], companies):
-        match = compare_names(instrument.display_name, company.display_name)
+    companies = _named(by_type[GraphNodeType.COMPANY])
+    for instrument, company in _candidate_pairs(
+        _named(by_type[GraphNodeType.INSTRUMENT]), companies
+    ):
+        match = _compare(instrument, company)
         if match is None:
             continue
-        compatible = (instrument.nature is NodeNature.REAL) == (company.nature is NodeNature.REAL)
+        compatible = (instrument.node.nature is NodeNature.REAL) == (
+            company.node.nature is NodeNature.REAL
+        )
         if compatible:
-            _flag(result, "possible_issuer", instrument, company, match.reason)
+            _flag(result, "possible_issuer", instrument.node, company.node, match.reason)
         else:
-            _ruled_out(result, instrument, company, match.reason)
+            _ruled_out(result, instrument.node, company.node, match.reason)
 
 
 def _flag(result: Resolution, code: str, first: NodeDraft, second: NodeDraft, reason: str) -> None:

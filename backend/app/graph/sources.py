@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass, fields
 from datetime import date, datetime
 from typing import Any
 
@@ -209,17 +209,23 @@ class SourceSnapshot:
         same graph would be built; a different one means the stored graph is out of date."""
         payload = {
             "rules_version": RULES_VERSION,
-            "datasets": [asdict(item) for item in sorted(self.datasets.values(), key=_by_id)],
-            "countries": [asdict(item) for item in self.countries],
-            "industries": [asdict(item) for item in self.industries],
-            "companies": [asdict(item) for item in self.companies],
-            "variables": [asdict(item) for item in self.variables],
-            "relationships": [asdict(item) for item in self.relationships],
-            "series": [asdict(item) for item in self.series],
-            "instruments": [asdict(item) for item in self.instruments],
+            "datasets": [_fields(item) for item in sorted(self.datasets.values(), key=_by_id)],
+            "countries": [_fields(item) for item in self.countries],
+            "industries": [_fields(item) for item in self.industries],
+            "companies": [_fields(item) for item in self.companies],
+            "variables": [_fields(item) for item in self.variables],
+            "relationships": [_fields(item) for item in self.relationships],
+            "series": [_fields(item) for item in self.series],
+            "instruments": [_fields(item) for item in self.instruments],
         }
         text = json.dumps(payload, sort_keys=True, separators=(",", ":"), default=_json_default)
         return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def _fields(record: object) -> dict[str, object]:
+    """A record's fields as a dict. The records are flat, so this equals
+    ``dataclasses.asdict`` without its deep copies (several times faster)."""
+    return {field.name: getattr(record, field.name) for field in fields(record)}  # type: ignore[arg-type]
 
 
 def _by_id(item: DatasetRecord) -> str:

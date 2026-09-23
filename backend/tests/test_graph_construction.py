@@ -18,6 +18,7 @@ from app.domain.enums import (
 )
 from app.graph.assemble import assemble
 from app.graph.drafts import EdgeDraft, EvidenceDraft, GraphDraft, SourceRef, content_hash, edge_key
+from app.graph.resolution import MAX_BLOCK_SIZE
 from app.graph.validation import GRAPH_RULES, check_edge
 from tests.graph_factories import (
     AERISCA,
@@ -209,6 +210,39 @@ def test_a_contained_name_is_only_noted() -> None:
     assert found["similar_name"] == 1
     assert not {"possible_duplicate", "unsupported_merge"} & set(found)
     assert all(node.quality_status is QualityStatus.VALIDATED for node in draft.nodes.values())
+
+
+def test_common_words_do_not_make_every_name_a_candidate() -> None:
+    """A word shared by more names than MAX_BLOCK_SIZE is not used to find pairs, so a
+    large network is not compared pair by pair. Exact duplicates are still found, and a
+    rarer shared word still finds a partial match."""
+    many = tuple(
+        company(f"co_bp_{index:03d}", f"Bharat Power {index:03d}", AIR.id, INDIA.id)
+        for index in range(MAX_BLOCK_SIZE + 20)
+    )
+    twins = (
+        company("co_bp_a", "Bharat Power", AIR.id, INDIA.id),
+        company("co_bp_b", "BHARAT POWER LTD.", AIR.id, USA.id),
+    )
+    rare = (
+        company("co_kov", "Kovalent Digital", AIR.id, INDIA.id),
+        company("co_kov_eu", "Kovalent Digital Europe", AIR.id, USA.id),
+    )
+    draft = build(companies=(*many, *twins, *rare), relationships=())
+    found = rules_found(draft)
+    duplicates = {
+        frozenset(d.candidate_node_keys)
+        for d in draft.decisions
+        if d.outcome is ResolutionOutcome.CANDIDATE_FLAGGED and "normalise to" in d.rationale
+    }
+    assert duplicates == {frozenset({"company:co_bp_a", "company:co_bp_b"})}
+    # The documented trade-off: "Bharat Power 007" contains "Bharat Power", but both of
+    # its shared words are common, so that partial match is not searched for.
+    assert found.get("similar_name") == 1
+    similar = [d for d in draft.decisions if "Every word of" in d.rationale]
+    assert {frozenset(d.candidate_node_keys) for d in similar} == {
+        frozenset({"company:co_kov", "company:co_kov_eu"})
+    }
 
 
 def test_fiction_is_never_matched_with_a_real_instrument() -> None:

@@ -15,6 +15,7 @@ from app.graph.build import run_build
 from app.ingestion.catalog import DEFAULT_CATALOG_PATH, read_catalog, sync_catalog
 from app.ingestion.registry import PROFILES
 from app.models import Company
+from app.services import graph as graph_service
 from tests.test_price_import import CSV, do_import, manifest, write
 
 API = "/api/v1/graph"
@@ -80,6 +81,25 @@ def test_overview_notices_changed_sources(built: Session, client: TestClient) ->
     try:
         company.name = "Kovalent Digital (renamed)"
         built.commit()
+        assert get(client, "/overview")["freshness"]["status"] == "stale"
+    finally:
+        company.name = original
+        built.commit()
+
+
+def test_freshness_is_cached_briefly(
+    built: Session, client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    assert get(client, "/overview")["freshness"]["status"] == "current"
+    company = built.get_one(Company, "co_kovalent_digital")
+    original = company.name
+    try:
+        company.name = "Kovalent Digital (renamed)"
+        built.commit()
+        # Within the cache window the earlier answer stands...
+        assert get(client, "/overview")["freshness"]["status"] == "current"
+        # ...and it is checked again once the window has passed.
+        monkeypatch.setattr(graph_service, "FRESHNESS_TTL_SECONDS", 0.0)
         assert get(client, "/overview")["freshness"]["status"] == "stale"
     finally:
         company.name = original
