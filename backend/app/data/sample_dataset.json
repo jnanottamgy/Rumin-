@@ -1,0 +1,699 @@
+{
+  "dataset": {
+    "id": "rumin-sample",
+    "version": "1.0.0",
+    "name": "RUMIN Illustrative Sample Network",
+    "description": "A small, curated network used to demonstrate RUMIN's data model and financial network visualisation. It connects fictional companies to real-world industry classifications, countries and economic-variable definitions through illustrative relationships.",
+    "is_illustrative": true,
+    "provenance_note": "Countries (ISO 3166-1 / ISO 4217 codes), industry classifications (ISIC Rev. 4) and the definitions of economic variables refer to real-world concepts; each carries a reference to its authoritative publisher. All companies are fictional. All relationships, polarities and strengths are illustrative modelling assumptions written for demonstration: they are not empirical findings and have not been validated. The dataset contains no observed financial values, prices or time series.",
+    "license": "Authored for the RUMIN project. Contains no third-party data values."
+  },
+  "countries": [
+    {
+      "id": "cty_in",
+      "name": "India",
+      "description": "Home economy of most fictional companies in this sample and of the rupee-denominated variables.",
+      "iso_alpha2": "IN",
+      "currency_code": "INR",
+      "reference": "ISO 3166-1 alpha-2 country code IN; ISO 4217 currency code INR."
+    },
+    {
+      "id": "cty_us",
+      "name": "United States",
+      "description": "Home economy of the fictional U.S. companies and of the U.S. benchmark variables in this sample.",
+      "iso_alpha2": "US",
+      "currency_code": "USD",
+      "reference": "ISO 3166-1 alpha-2 country code US; ISO 4217 currency code USD."
+    },
+    {
+      "id": "cty_ae",
+      "name": "United Arab Emirates",
+      "description": "Domicile of a fictional crude oil producer in this sample.",
+      "iso_alpha2": "AE",
+      "currency_code": "AED",
+      "reference": "ISO 3166-1 alpha-2 country code AE; ISO 4217 currency code AED."
+    }
+  ],
+  "industries": [
+    {
+      "id": "ind_oil_gas_extraction",
+      "name": "Crude petroleum & natural gas extraction",
+      "description": "Exploration for and production of crude oil and natural gas (the upstream segment of the energy value chain).",
+      "classification_system": "ISIC Rev. 4",
+      "classification_code": "06",
+      "reference": "UN Statistics Division, ISIC Rev. 4, Division 06: Extraction of crude petroleum and natural gas."
+    },
+    {
+      "id": "ind_petroleum_refining",
+      "name": "Refined petroleum products",
+      "description": "Refining crude oil into transport fuels such as petrol, diesel and jet fuel, and into petrochemical feedstocks.",
+      "classification_system": "ISIC Rev. 4",
+      "classification_code": "19",
+      "reference": "UN Statistics Division, ISIC Rev. 4, Division 19: Manufacture of coke and refined petroleum products."
+    },
+    {
+      "id": "ind_chemicals",
+      "name": "Chemicals & chemical products",
+      "description": "Production of basic chemicals, fertilisers, plastics in primary forms and other chemical products.",
+      "classification_system": "ISIC Rev. 4",
+      "classification_code": "20",
+      "reference": "UN Statistics Division, ISIC Rev. 4, Division 20: Manufacture of chemicals and chemical products."
+    },
+    {
+      "id": "ind_power",
+      "name": "Electricity & gas supply",
+      "description": "Generation, transmission and distribution of electric power, and distribution of gaseous fuels.",
+      "classification_system": "ISIC Rev. 4",
+      "classification_code": "35",
+      "reference": "UN Statistics Division, ISIC Rev. 4, Division 35: Electricity, gas, steam and air conditioning supply."
+    },
+    {
+      "id": "ind_land_transport",
+      "name": "Land transport",
+      "description": "Road and rail transport of freight and passengers. In this sample it is represented by a road-freight operator.",
+      "classification_system": "ISIC Rev. 4",
+      "classification_code": "49",
+      "reference": "UN Statistics Division, ISIC Rev. 4, Division 49: Land transport and transport via pipelines."
+    },
+    {
+      "id": "ind_air_transport",
+      "name": "Air transport",
+      "description": "Scheduled and non-scheduled transport of passengers and freight by air.",
+      "classification_system": "ISIC Rev. 4",
+      "classification_code": "51",
+      "reference": "UN Statistics Division, ISIC Rev. 4, Division 51: Air transport."
+    },
+    {
+      "id": "ind_it_services",
+      "name": "IT services",
+      "description": "Software development, IT consulting and the management of clients' computer systems.",
+      "classification_system": "ISIC Rev. 4",
+      "classification_code": "62",
+      "reference": "UN Statistics Division, ISIC Rev. 4, Division 62: Computer programming, consultancy and related activities."
+    },
+    {
+      "id": "ind_banking",
+      "name": "Banking",
+      "description": "Deposit-taking and lending by banks and similar monetary intermediaries.",
+      "classification_system": "ISIC Rev. 4",
+      "classification_code": "64",
+      "reference": "UN Statistics Division, ISIC Rev. 4, Division 64: Financial service activities, except insurance and pension funding."
+    }
+  ],
+  "economic_variables": [
+    {
+      "id": "var_brent_crude",
+      "name": "Brent crude oil price",
+      "description": "International benchmark price for light, sweet crude oil from the North Sea, widely used to price internationally traded crude.",
+      "unit": "USD per barrel",
+      "value_kind": "price",
+      "frequency": "daily",
+      "category": "commodity",
+      "country_id": null,
+      "reference": "U.S. Energy Information Administration, Europe Brent spot price FOB (FRED series DCOILBRENTEU).",
+      "reference_url": "https://fred.stlouisfed.org/series/DCOILBRENTEU"
+    },
+    {
+      "id": "var_jet_fuel",
+      "name": "Jet fuel price (U.S. Gulf Coast)",
+      "description": "Spot price of kerosene-type jet fuel on the U.S. Gulf Coast. Used in this sample as a proxy for international jet fuel prices.",
+      "unit": "USD per gallon",
+      "value_kind": "price",
+      "frequency": "daily",
+      "category": "commodity",
+      "country_id": "cty_us",
+      "reference": "U.S. Energy Information Administration, U.S. Gulf Coast kerosene-type jet fuel spot price FOB (FRED series DJFUELUSGULF).",
+      "reference_url": "https://fred.stlouisfed.org/series/DJFUELUSGULF"
+    },
+    {
+      "id": "var_henry_hub_gas",
+      "name": "Natural gas price (Henry Hub)",
+      "description": "Spot price of natural gas at the Henry Hub in Louisiana, the main U.S. natural gas pricing benchmark.",
+      "unit": "USD per million Btu",
+      "value_kind": "price",
+      "frequency": "daily",
+      "category": "commodity",
+      "country_id": "cty_us",
+      "reference": "U.S. Energy Information Administration, Henry Hub natural gas spot price (FRED series DHHNGSP).",
+      "reference_url": "https://fred.stlouisfed.org/series/DHHNGSP"
+    },
+    {
+      "id": "var_usd_inr",
+      "name": "USD/INR exchange rate",
+      "description": "Indian rupees per U.S. dollar. A higher value means a weaker rupee.",
+      "unit": "INR per USD",
+      "value_kind": "exchange_rate",
+      "frequency": "daily",
+      "category": "exchange_rate",
+      "country_id": "cty_in",
+      "reference": "Board of Governors of the Federal Reserve System, H.10 release (FRED series DEXINUS).",
+      "reference_url": "https://fred.stlouisfed.org/series/DEXINUS"
+    },
+    {
+      "id": "var_rbi_repo_rate",
+      "name": "RBI policy repo rate",
+      "description": "The rate at which the Reserve Bank of India provides liquidity to banks; set by its Monetary Policy Committee.",
+      "unit": "percent per annum",
+      "value_kind": "rate",
+      "frequency": "irregular",
+      "category": "monetary_policy",
+      "country_id": "cty_in",
+      "reference": "Reserve Bank of India, Monetary Policy Committee statements.",
+      "reference_url": "https://www.rbi.org.in"
+    },
+    {
+      "id": "var_us_fed_funds",
+      "name": "U.S. effective federal funds rate",
+      "description": "The overnight rate at which U.S. depository institutions lend reserve balances to each other. Its target range is set by the Federal Open Market Committee.",
+      "unit": "percent per annum",
+      "value_kind": "rate",
+      "frequency": "monthly",
+      "category": "monetary_policy",
+      "country_id": "cty_us",
+      "reference": "Board of Governors of the Federal Reserve System (FRED series FEDFUNDS).",
+      "reference_url": "https://fred.stlouisfed.org/series/FEDFUNDS"
+    },
+    {
+      "id": "var_india_cpi_inflation",
+      "name": "India CPI inflation",
+      "description": "Year-on-year change in India's all-India Consumer Price Index (Combined), the inflation measure targeted by the RBI's monetary policy framework.",
+      "unit": "percent, year-on-year",
+      "value_kind": "rate",
+      "frequency": "monthly",
+      "category": "inflation",
+      "country_id": "cty_in",
+      "reference": "National Statistics Office, Ministry of Statistics and Programme Implementation (MoSPI), Consumer Price Index (Combined).",
+      "reference_url": "https://www.mospi.gov.in"
+    }
+  ],
+  "companies": [
+    {
+      "id": "co_orvane_petroleum",
+      "name": "Orvane Petroleum",
+      "description": "Fictional upstream producer of crude oil, selling to refiners in Asia.",
+      "industry_id": "ind_oil_gas_extraction",
+      "country_id": "cty_ae",
+      "is_fictional": true
+    },
+    {
+      "id": "co_tessaline_energy",
+      "name": "Tessaline Energy",
+      "description": "Fictional U.S. producer of crude oil and natural gas.",
+      "industry_id": "ind_oil_gas_extraction",
+      "country_id": "cty_us",
+      "is_fictional": true
+    },
+    {
+      "id": "co_deltrin_refining",
+      "name": "Deltrin Refining",
+      "description": "Fictional Indian refiner that processes imported crude oil into transport fuels.",
+      "industry_id": "ind_petroleum_refining",
+      "country_id": "cty_in",
+      "is_fictional": true
+    },
+    {
+      "id": "co_solvane_refining",
+      "name": "Solvane Refining",
+      "description": "Fictional U.S. Gulf Coast refiner producing transport fuels and petrochemical feedstocks.",
+      "industry_id": "ind_petroleum_refining",
+      "country_id": "cty_us",
+      "is_fictional": true
+    },
+    {
+      "id": "co_aerisca_airways",
+      "name": "Aerisca Airways",
+      "description": "Fictional Indian full-service airline.",
+      "industry_id": "ind_air_transport",
+      "country_id": "cty_in",
+      "is_fictional": true
+    },
+    {
+      "id": "co_skyvara_air",
+      "name": "Skyvara Air",
+      "description": "Fictional Indian low-cost airline.",
+      "industry_id": "ind_air_transport",
+      "country_id": "cty_in",
+      "is_fictional": true
+    },
+    {
+      "id": "co_trakvel_logistics",
+      "name": "Trakvel Logistics",
+      "description": "Fictional Indian road-freight operator running a truck fleet partly financed with floating-rate loans.",
+      "industry_id": "ind_land_transport",
+      "country_id": "cty_in",
+      "is_fictional": true
+    },
+    {
+      "id": "co_lumeric_chemicals",
+      "name": "Lumeric Chemicals",
+      "description": "Fictional U.S. producer of basic chemicals that uses natural gas and refinery by-products as feedstock.",
+      "industry_id": "ind_chemicals",
+      "country_id": "cty_us",
+      "is_fictional": true
+    },
+    {
+      "id": "co_gridwell_power",
+      "name": "Gridwell Power",
+      "description": "Fictional Indian independent power producer with a capital-intensive, largely debt-funded asset base.",
+      "industry_id": "ind_power",
+      "country_id": "cty_in",
+      "is_fictional": true
+    },
+    {
+      "id": "co_kovalent_digital",
+      "name": "Kovalent Digital",
+      "description": "Fictional Indian IT services exporter that bills most clients in U.S. dollars while incurring most costs in rupees.",
+      "industry_id": "ind_it_services",
+      "country_id": "cty_in",
+      "is_fictional": true
+    },
+    {
+      "id": "co_anvaya_bank",
+      "name": "Anvaya Bank",
+      "description": "Fictional Indian commercial bank lending to corporate borrowers.",
+      "industry_id": "ind_banking",
+      "country_id": "cty_in",
+      "is_fictional": true
+    },
+    {
+      "id": "co_brookvane_bank",
+      "name": "Brookvane Bank",
+      "description": "Fictional U.S. commercial bank lending to industrial and energy companies.",
+      "industry_id": "ind_banking",
+      "country_id": "cty_us",
+      "is_fictional": true
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel_brent_influences_jet_fuel",
+      "type": "influences",
+      "source_id": "var_brent_crude",
+      "target_id": "var_jet_fuel",
+      "polarity": "positive",
+      "strength": "strong",
+      "description": "The Brent crude oil price influences the jet fuel price.",
+      "rationale": "Jet fuel is refined from crude oil, so benchmark jet fuel prices generally move with crude prices. Refining margins (the crack spread) cause the two to diverge at times."
+    },
+    {
+      "id": "rel_brent_influences_india_cpi",
+      "type": "influences",
+      "source_id": "var_brent_crude",
+      "target_id": "var_india_cpi_inflation",
+      "polarity": "positive",
+      "strength": "moderate",
+      "description": "The Brent crude oil price influences India CPI inflation.",
+      "rationale": "India imports most of the crude oil it consumes. Higher crude prices can raise domestic fuel and transport costs and feed into consumer prices, although taxes, administered pricing and CPI basket weights moderate the pass-through."
+    },
+    {
+      "id": "rel_usd_inr_influences_india_cpi",
+      "type": "influences",
+      "source_id": "var_usd_inr",
+      "target_id": "var_india_cpi_inflation",
+      "polarity": "positive",
+      "strength": "moderate",
+      "description": "The USD/INR exchange rate influences India CPI inflation.",
+      "rationale": "A weaker rupee (more rupees per dollar) raises the rupee cost of imports, including crude oil, which can pass through to consumer prices over time."
+    },
+    {
+      "id": "rel_fed_funds_influences_usd_inr",
+      "type": "influences",
+      "source_id": "var_us_fed_funds",
+      "target_id": "var_usd_inr",
+      "polarity": "positive",
+      "strength": "weak",
+      "description": "The U.S. federal funds rate influences the USD/INR exchange rate.",
+      "rationale": "Higher U.S. policy rates can strengthen the dollar and draw portfolio capital away from emerging markets, adding depreciation pressure on the rupee. The link is unstable and often dominated by other factors, hence 'weak'."
+    },
+    {
+      "id": "rel_india_cpi_influences_rbi_repo",
+      "type": "influences",
+      "source_id": "var_india_cpi_inflation",
+      "target_id": "var_rbi_repo_rate",
+      "polarity": "positive",
+      "strength": "moderate",
+      "description": "India CPI inflation influences the RBI policy repo rate.",
+      "rationale": "The RBI's monetary policy framework targets CPI inflation, so persistently higher inflation raises the likelihood of a higher policy rate. Policy decisions also weigh growth and financial conditions."
+    },
+    {
+      "id": "rel_brent_revenue_oil_gas_extraction",
+      "type": "affects_revenue",
+      "source_id": "var_brent_crude",
+      "target_id": "ind_oil_gas_extraction",
+      "polarity": "positive",
+      "strength": "strong",
+      "description": "The Brent crude oil price affects the revenue of crude petroleum & natural gas extraction.",
+      "rationale": "Upstream producers' realised crude prices are typically linked to international benchmarks such as Brent."
+    },
+    {
+      "id": "rel_jet_fuel_revenue_refining",
+      "type": "affects_revenue",
+      "source_id": "var_jet_fuel",
+      "target_id": "ind_petroleum_refining",
+      "polarity": "positive",
+      "strength": "moderate",
+      "description": "The jet fuel price affects the revenue of refined petroleum products.",
+      "rationale": "Jet fuel is one of the products refiners sell. Higher product prices raise refiners' revenue, although their margins also depend on crude costs."
+    },
+    {
+      "id": "rel_henry_hub_revenue_tessaline",
+      "type": "affects_revenue",
+      "source_id": "var_henry_hub_gas",
+      "target_id": "co_tessaline_energy",
+      "polarity": "positive",
+      "strength": "moderate",
+      "description": "The Henry Hub natural gas price affects the revenue of Tessaline Energy.",
+      "rationale": "Tessaline (fictional) sells natural gas produced in the United States, where Henry Hub is the main pricing benchmark."
+    },
+    {
+      "id": "rel_usd_inr_revenue_kovalent",
+      "type": "affects_revenue",
+      "source_id": "var_usd_inr",
+      "target_id": "co_kovalent_digital",
+      "polarity": "positive",
+      "strength": "strong",
+      "description": "The USD/INR exchange rate affects the revenue of Kovalent Digital.",
+      "rationale": "Kovalent (fictional) bills most clients in U.S. dollars, so a weaker rupee raises its revenue when reported in rupees. Currency hedging would dampen the effect."
+    },
+    {
+      "id": "rel_rbi_repo_revenue_anvaya",
+      "type": "affects_revenue",
+      "source_id": "var_rbi_repo_rate",
+      "target_id": "co_anvaya_bank",
+      "polarity": "mixed",
+      "strength": "moderate",
+      "description": "The RBI policy repo rate affects the revenue of Anvaya Bank.",
+      "rationale": "Policy rate changes reprice a bank's loans and deposits at different speeds, so the net effect on interest income and margins depends on the bank's balance-sheet structure."
+    },
+    {
+      "id": "rel_fed_funds_revenue_brookvane",
+      "type": "affects_revenue",
+      "source_id": "var_us_fed_funds",
+      "target_id": "co_brookvane_bank",
+      "polarity": "mixed",
+      "strength": "moderate",
+      "description": "The U.S. federal funds rate affects the revenue of Brookvane Bank.",
+      "rationale": "Policy rate changes reprice a bank's loans and deposits at different speeds, so the net effect on interest income and margins depends on the bank's balance-sheet structure."
+    },
+    {
+      "id": "rel_brent_costs_refining",
+      "type": "affects_costs",
+      "source_id": "var_brent_crude",
+      "target_id": "ind_petroleum_refining",
+      "polarity": "positive",
+      "strength": "strong",
+      "description": "The Brent crude oil price affects the costs of refined petroleum products.",
+      "rationale": "Crude oil is the principal feedstock for refiners, so crude prices drive their input costs."
+    },
+    {
+      "id": "rel_jet_fuel_costs_air_transport",
+      "type": "affects_costs",
+      "source_id": "var_jet_fuel",
+      "target_id": "ind_air_transport",
+      "polarity": "positive",
+      "strength": "strong",
+      "description": "The jet fuel price affects the costs of air transport.",
+      "rationale": "Fuel is typically one of the largest operating costs for airlines."
+    },
+    {
+      "id": "rel_brent_costs_land_transport",
+      "type": "affects_costs",
+      "source_id": "var_brent_crude",
+      "target_id": "ind_land_transport",
+      "polarity": "positive",
+      "strength": "moderate",
+      "description": "The Brent crude oil price affects the costs of land transport.",
+      "rationale": "Diesel, refined from crude oil, is a major operating cost for road-freight operators. Fuel-surcharge clauses can pass part of a change on to customers."
+    },
+    {
+      "id": "rel_henry_hub_costs_lumeric",
+      "type": "affects_costs",
+      "source_id": "var_henry_hub_gas",
+      "target_id": "co_lumeric_chemicals",
+      "polarity": "positive",
+      "strength": "strong",
+      "description": "The Henry Hub natural gas price affects the costs of Lumeric Chemicals.",
+      "rationale": "Lumeric (fictional) uses natural gas as both a feedstock and a fuel."
+    },
+    {
+      "id": "rel_usd_inr_costs_deltrin",
+      "type": "affects_costs",
+      "source_id": "var_usd_inr",
+      "target_id": "co_deltrin_refining",
+      "polarity": "positive",
+      "strength": "strong",
+      "description": "The USD/INR exchange rate affects the costs of Deltrin Refining.",
+      "rationale": "Deltrin (fictional) imports crude oil priced in U.S. dollars, so a weaker rupee raises its input costs in rupees."
+    },
+    {
+      "id": "rel_usd_inr_costs_aerisca",
+      "type": "affects_costs",
+      "source_id": "var_usd_inr",
+      "target_id": "co_aerisca_airways",
+      "polarity": "positive",
+      "strength": "moderate",
+      "description": "The USD/INR exchange rate affects the costs of Aerisca Airways.",
+      "rationale": "Aircraft leases and maintenance are commonly priced in U.S. dollars, so a weaker rupee raises an Indian airline's costs in rupees."
+    },
+    {
+      "id": "rel_usd_inr_costs_skyvara",
+      "type": "affects_costs",
+      "source_id": "var_usd_inr",
+      "target_id": "co_skyvara_air",
+      "polarity": "positive",
+      "strength": "moderate",
+      "description": "The USD/INR exchange rate affects the costs of Skyvara Air.",
+      "rationale": "Aircraft leases and maintenance are commonly priced in U.S. dollars, so a weaker rupee raises an Indian airline's costs in rupees."
+    },
+    {
+      "id": "rel_rbi_repo_financing_gridwell",
+      "type": "affects_financing",
+      "source_id": "var_rbi_repo_rate",
+      "target_id": "co_gridwell_power",
+      "polarity": "positive",
+      "strength": "moderate",
+      "description": "The RBI policy repo rate affects the financing costs of Gridwell Power.",
+      "rationale": "Gridwell (fictional) funds long-lived power assets largely with debt, so higher policy rates tend to raise its borrowing and refinancing costs."
+    },
+    {
+      "id": "rel_rbi_repo_financing_trakvel",
+      "type": "affects_financing",
+      "source_id": "var_rbi_repo_rate",
+      "target_id": "co_trakvel_logistics",
+      "polarity": "positive",
+      "strength": "weak",
+      "description": "The RBI policy repo rate affects the financing costs of Trakvel Logistics.",
+      "rationale": "Trakvel (fictional) finances part of its truck fleet with floating-rate loans that reprice as lending rates respond to policy."
+    },
+    {
+      "id": "rel_fed_funds_financing_lumeric",
+      "type": "affects_financing",
+      "source_id": "var_us_fed_funds",
+      "target_id": "co_lumeric_chemicals",
+      "polarity": "positive",
+      "strength": "weak",
+      "description": "The U.S. federal funds rate affects the financing costs of Lumeric Chemicals.",
+      "rationale": "Lumeric (fictional) carries some floating-rate debt linked to U.S. short-term interest rates."
+    },
+    {
+      "id": "rel_extraction_supplies_refining",
+      "type": "supplies_to",
+      "source_id": "ind_oil_gas_extraction",
+      "target_id": "ind_petroleum_refining",
+      "polarity": "not_applicable",
+      "strength": "strong",
+      "description": "Crude petroleum & natural gas extraction supplies crude oil to refined petroleum products.",
+      "rationale": "Crude oil is the refining industry's primary input."
+    },
+    {
+      "id": "rel_refining_supplies_air_transport",
+      "type": "supplies_to",
+      "source_id": "ind_petroleum_refining",
+      "target_id": "ind_air_transport",
+      "polarity": "not_applicable",
+      "strength": "strong",
+      "description": "Refined petroleum products supplies jet fuel to air transport.",
+      "rationale": "Airlines buy jet fuel produced by refiners."
+    },
+    {
+      "id": "rel_refining_supplies_land_transport",
+      "type": "supplies_to",
+      "source_id": "ind_petroleum_refining",
+      "target_id": "ind_land_transport",
+      "polarity": "not_applicable",
+      "strength": "strong",
+      "description": "Refined petroleum products supplies diesel to land transport.",
+      "rationale": "Road-freight fleets run largely on diesel produced by refiners."
+    },
+    {
+      "id": "rel_refining_supplies_chemicals",
+      "type": "supplies_to",
+      "source_id": "ind_petroleum_refining",
+      "target_id": "ind_chemicals",
+      "polarity": "not_applicable",
+      "strength": "moderate",
+      "description": "Refined petroleum products supplies feedstocks to chemicals & chemical products.",
+      "rationale": "Refineries produce feedstocks such as naphtha and propylene that chemical producers process further."
+    },
+    {
+      "id": "rel_orvane_supplies_deltrin",
+      "type": "supplies_to",
+      "source_id": "co_orvane_petroleum",
+      "target_id": "co_deltrin_refining",
+      "polarity": "not_applicable",
+      "strength": "strong",
+      "description": "Orvane Petroleum supplies crude oil to Deltrin Refining.",
+      "rationale": "Fictional supply relationship: Deltrin processes imported crude, part of which it buys from Orvane."
+    },
+    {
+      "id": "rel_tessaline_supplies_solvane",
+      "type": "supplies_to",
+      "source_id": "co_tessaline_energy",
+      "target_id": "co_solvane_refining",
+      "polarity": "not_applicable",
+      "strength": "strong",
+      "description": "Tessaline Energy supplies crude oil to Solvane Refining.",
+      "rationale": "Fictional supply relationship between a U.S. producer and a U.S. refiner."
+    },
+    {
+      "id": "rel_tessaline_supplies_lumeric",
+      "type": "supplies_to",
+      "source_id": "co_tessaline_energy",
+      "target_id": "co_lumeric_chemicals",
+      "polarity": "not_applicable",
+      "strength": "moderate",
+      "description": "Tessaline Energy supplies natural gas to Lumeric Chemicals.",
+      "rationale": "Fictional supply relationship: Lumeric uses natural gas as feedstock and fuel."
+    },
+    {
+      "id": "rel_solvane_supplies_lumeric",
+      "type": "supplies_to",
+      "source_id": "co_solvane_refining",
+      "target_id": "co_lumeric_chemicals",
+      "polarity": "not_applicable",
+      "strength": "moderate",
+      "description": "Solvane Refining supplies refinery feedstocks to Lumeric Chemicals.",
+      "rationale": "Fictional supply relationship: refinery by-products are an input to Lumeric's chemical production."
+    },
+    {
+      "id": "rel_deltrin_supplies_aerisca",
+      "type": "supplies_to",
+      "source_id": "co_deltrin_refining",
+      "target_id": "co_aerisca_airways",
+      "polarity": "not_applicable",
+      "strength": "strong",
+      "description": "Deltrin Refining supplies jet fuel to Aerisca Airways.",
+      "rationale": "Fictional supply relationship between a domestic refiner and an airline."
+    },
+    {
+      "id": "rel_deltrin_supplies_skyvara",
+      "type": "supplies_to",
+      "source_id": "co_deltrin_refining",
+      "target_id": "co_skyvara_air",
+      "polarity": "not_applicable",
+      "strength": "moderate",
+      "description": "Deltrin Refining supplies jet fuel to Skyvara Air.",
+      "rationale": "Fictional supply relationship between a domestic refiner and an airline."
+    },
+    {
+      "id": "rel_deltrin_supplies_trakvel",
+      "type": "supplies_to",
+      "source_id": "co_deltrin_refining",
+      "target_id": "co_trakvel_logistics",
+      "polarity": "not_applicable",
+      "strength": "moderate",
+      "description": "Deltrin Refining supplies diesel to Trakvel Logistics.",
+      "rationale": "Fictional supply relationship: Trakvel's truck fleet runs on diesel."
+    },
+    {
+      "id": "rel_kovalent_supplies_anvaya",
+      "type": "supplies_to",
+      "source_id": "co_kovalent_digital",
+      "target_id": "co_anvaya_bank",
+      "polarity": "not_applicable",
+      "strength": "moderate",
+      "description": "Kovalent Digital supplies IT services to Anvaya Bank.",
+      "rationale": "Fictional outsourcing relationship covering core-banking maintenance."
+    },
+    {
+      "id": "rel_kovalent_supplies_brookvane",
+      "type": "supplies_to",
+      "source_id": "co_kovalent_digital",
+      "target_id": "co_brookvane_bank",
+      "polarity": "not_applicable",
+      "strength": "moderate",
+      "description": "Kovalent Digital supplies IT services to Brookvane Bank.",
+      "rationale": "Fictional cross-border outsourcing relationship."
+    },
+    {
+      "id": "rel_anvaya_lends_aerisca",
+      "type": "lends_to",
+      "source_id": "co_anvaya_bank",
+      "target_id": "co_aerisca_airways",
+      "polarity": "not_applicable",
+      "strength": "moderate",
+      "description": "Anvaya Bank lends to Aerisca Airways.",
+      "rationale": "Fictional credit relationship: working-capital facilities to an airline."
+    },
+    {
+      "id": "rel_anvaya_lends_gridwell",
+      "type": "lends_to",
+      "source_id": "co_anvaya_bank",
+      "target_id": "co_gridwell_power",
+      "polarity": "not_applicable",
+      "strength": "strong",
+      "description": "Anvaya Bank lends to Gridwell Power.",
+      "rationale": "Fictional credit relationship: long-term project finance for power plants."
+    },
+    {
+      "id": "rel_anvaya_lends_trakvel",
+      "type": "lends_to",
+      "source_id": "co_anvaya_bank",
+      "target_id": "co_trakvel_logistics",
+      "polarity": "not_applicable",
+      "strength": "moderate",
+      "description": "Anvaya Bank lends to Trakvel Logistics.",
+      "rationale": "Fictional credit relationship: floating-rate fleet finance."
+    },
+    {
+      "id": "rel_anvaya_lends_deltrin",
+      "type": "lends_to",
+      "source_id": "co_anvaya_bank",
+      "target_id": "co_deltrin_refining",
+      "polarity": "not_applicable",
+      "strength": "moderate",
+      "description": "Anvaya Bank lends to Deltrin Refining.",
+      "rationale": "Fictional credit relationship: trade finance for crude imports."
+    },
+    {
+      "id": "rel_brookvane_lends_lumeric",
+      "type": "lends_to",
+      "source_id": "co_brookvane_bank",
+      "target_id": "co_lumeric_chemicals",
+      "polarity": "not_applicable",
+      "strength": "moderate",
+      "description": "Brookvane Bank lends to Lumeric Chemicals.",
+      "rationale": "Fictional credit relationship: a floating-rate term loan."
+    },
+    {
+      "id": "rel_brookvane_lends_tessaline",
+      "type": "lends_to",
+      "source_id": "co_brookvane_bank",
+      "target_id": "co_tessaline_energy",
+      "polarity": "not_applicable",
+      "strength": "moderate",
+      "description": "Brookvane Bank lends to Tessaline Energy.",
+      "rationale": "Fictional credit relationship: a reserve-based lending facility."
+    },
+    {
+      "id": "rel_aerisca_competes_skyvara",
+      "type": "competes_with",
+      "source_id": "co_aerisca_airways",
+      "target_id": "co_skyvara_air",
+      "polarity": "not_applicable",
+      "strength": "strong",
+      "description": "Aerisca Airways and Skyvara Air compete with each other.",
+      "rationale": "Both fictional airlines operate domestic passenger services in India."
+    }
+  ]
+}
