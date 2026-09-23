@@ -1,0 +1,210 @@
+{
+  "items": [
+    {
+      "id": "var_brent_crude",
+      "name": "Brent crude oil price",
+      "description": "International benchmark price for light, sweet crude oil from the North Sea, widely used to price internationally traded crude.",
+      "is_fictional": false,
+      "reference": "U.S. Energy Information Administration, Europe Brent spot price FOB (FRED series DCOILBRENTEU).",
+      "reference_url": "https://fred.stlouisfed.org/series/DCOILBRENTEU",
+      "attributes": {},
+      "dataset_id": "rumin-sample",
+      "kind": "economic_variable",
+      "unit": "USD per barrel",
+      "value_kind": "price",
+      "frequency": "daily",
+      "category": "commodity",
+      "country_id": null,
+      "scenario_rules": [
+        {
+          "change_type": "percent_change",
+          "minimum": -100.0,
+          "maximum": 1000.0,
+          "minimum_exclusive": true,
+          "unit_label": "%"
+        },
+        {
+          "change_type": "absolute_change",
+          "minimum": -1000000.0,
+          "maximum": 1000000.0,
+          "minimum_exclusive": false,
+          "unit_label": "USD per barrel"
+        }
+      ]
+    },
+    {
+      "id": "var_india_cpi_inflation",
+      "name": "India CPI inflation",
+      "description": "Year-on-year change in India's all-India Consumer Price Index (Combined), the inflation measure targeted by the RBI's monetary policy framework.",
+      "is_fictional": false,
+      "reference": "National Statistics Office, Ministry of Statistics and Programme Implementation (MoSPI), Consumer Price Index (Combined).",
+      "reference_url": "https://www.mospi.gov.in",
+      "attributes": {},
+      "dataset_id": "rumin-sample",
+      "kind": "economic_variable",
+      "unit": "percent, year-on-year",
+      "value_kind": "rate",
+      "frequency": "monthly",
+      "category": "inflation",
+      "country_id": "cty_in",
+      "scenario_rules": [
+        {
+          "change_type": "absolute_change",
+          "minimum": -25.0,
+          "maximum": 25.0,
+          "minimum_exclusive": false,
+          "unit_label": "percentage points"
+        }
+      ]
+    },
+    {
+      "id": "var_jet_fuel",
+      "name": "Jet fuel price (U.S. Gulf Coast)",
+      "description": "Spot price of kerosene-type jet fuel on the U.S. Gulf Coast. Used in this sample as a proxy for international jet fuel prices.",
+      "is_fictional": false,
+      "reference": "U.S. Energy Information Administration, U.S. Gulf Coast kerosene-type jet fuel spot price FOB (FRED series DJFUELUSGULF).",
+      "reference_url": "https://fred.stlouisfed.org/series/DJFUELUSGULF",
+      "attributes": {},
+      "dataset_id": "rumin-sample",
+      "kind": "economic_variable",
+      "unit": "USD per gallon",
+      "value_kind": "price",
+      "frequency": "daily",
+      "category": "commodity",
+      "country_id": "cty_us",
+      "scenario_rules": [
+        {
+          "change_type": "percent_change",
+          "minimum": -100.0,
+          "maximum": 1000.0,
+          "minimum_exclusive": true,
+          "unit_label": "%"
+        },
+        {
+          "change_type": "absolute_change",
+          "minimum": -1000000.0,
+          "maximum": 1000000.0,
+          "minimum_exclusive": false,
+          "unit_label": "USD per gallon"
+        }
+      ]
+    },
+    {
+      "id": "var_henry_hub_gas",
+      "name": "Natural gas price (Henry Hub)",
+      "description": "Spot price of natural gas at the Henry Hub in Louisiana, the main U.S. natural gas pricing benchmark.",
+      "is_fictional": false,
+      "reference": "U.S. Energy Information Administration, Henry Hub natural gas spot price (FRED series DHHNGSP).",
+      "reference_url": "https://fred.stlouisfed.org/series/DHHNGSP",
+      "attributes": {},
+      "dataset_id": "rumin-sample",
+      "kind": "economic_variable",
+      "unit": "USD per million Btu",
+      "value_kind": "price",
+      "frequency": "daily",
+      "category": "commodity",
+      "country_id": "cty_us",
+      "scenario_rules": [
+        {
+          "change_type": "percent_change",
+          "minimum": -100.0,
+          "maximum": 1000.0,
+          "minimum_exclusive": true,
+          "unit_label": "%"
+        },
+        {
+          "change_type": "absolute_change",
+          "minimum": -1000000.0,
+          "maximum": 1000000.0,
+          "minimum_exclusive": false,
+          "unit_label": "USD per million Btu"
+        }
+      ]
+    },
+    {
+      "id": "var_rbi_repo_rate",
+      "name": "RBI policy repo rate",
+      "description": "The rate at which the Reserve Bank of India provides liquidity to banks; set by its Monetary Policy Committee.",
+      "is_fictional": false,
+      "reference": "Reserve Bank of India, Monetary Policy Committee statements.",
+      "reference_url": "https://www.rbi.org.in",
+      "attributes": {},
+      "dataset_id": "rumin-sample",
+      "kind": "economic_variable",
+      "unit": "percent per annum",
+      "value_kind": "rate",
+      "frequency": "irregular",
+      "category": "monetary_policy",
+      "country_id": "cty_in",
+      "scenario_rules": [
+        {
+          "change_type": "absolute_change",
+          "minimum": -25.0,
+          "maximum": 25.0,
+          "minimum_exclusive": false,
+          "unit_label": "percentage points"
+        }
+      ]
+    },
+    {
+      "id": "var_us_fed_funds",
+      "name": "U.S. effective federal funds rate",
+      "description": "The overnight rate at which U.S. depository institutions lend reserve balances to each other. Its target range is set by the Federal Open Market Committee.",
+      "is_fictional": false,
+      "reference": "Board of Governors of the Federal Reserve System (FRED series FEDFUNDS).",
+      "reference_url": "https://fred.stlouisfed.org/series/FEDFUNDS",
+      "attributes": {},
+      "dataset_id": "rumin-sample",
+      "kind": "economic_variable",
+      "unit": "percent per annum",
+      "value_kind": "rate",
+      "frequency": "monthly",
+      "category": "monetary_policy",
+      "country_id": "cty_us",
+      "scenario_rules": [
+        {
+          "change_type": "absolute_change",
+          "minimum": -25.0,
+          "maximum": 25.0,
+          "minimum_exclusive": false,
+          "unit_label": "percentage points"
+        }
+      ]
+    },
+    {
+      "id": "var_usd_inr",
+      "name": "USD/INR exchange rate",
+      "description": "Indian rupees per U.S. dollar. A higher value means a weaker rupee.",
+      "is_fictional": false,
+      "reference": "Board of Governors of the Federal Reserve System, H.10 release (FRED series DEXINUS).",
+      "reference_url": "https://fred.stlouisfed.org/series/DEXINUS",
+      "attributes": {},
+      "dataset_id": "rumin-sample",
+      "kind": "economic_variable",
+      "unit": "INR per USD",
+      "value_kind": "exchange_rate",
+      "frequency": "daily",
+      "category": "exchange_rate",
+      "country_id": "cty_in",
+      "scenario_rules": [
+        {
+          "change_type": "percent_change",
+          "minimum": -100.0,
+          "maximum": 1000.0,
+          "minimum_exclusive": true,
+          "unit_label": "%"
+        },
+        {
+          "change_type": "absolute_change",
+          "minimum": -1000000.0,
+          "maximum": 1000000.0,
+          "minimum_exclusive": false,
+          "unit_label": "INR per USD"
+        }
+      ]
+    }
+  ],
+  "total": 7,
+  "limit": 500,
+  "offset": 0
+}
