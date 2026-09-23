@@ -121,3 +121,155 @@ class ScenarioStatus(StrEnum):
     resource, so a scenario's configuration and its results are never conflated."""
 
     DRAFT = "draft"
+
+
+# --- Phase 2: financial data infrastructure ------------------------------------------------
+
+
+class DatasetKind(StrEnum):
+    """Where a dataset's records came from.
+
+    * ``curated`` — reference data written for RUMIN and loaded from a file in the
+      repository (the Phase 1 illustrative network).
+    * ``provider`` — data retrieved from an external provider (an API or a file the user
+      is licensed to use), with the provider's licence and attribution.
+    """
+
+    CURATED = "curated"
+    PROVIDER = "provider"
+
+
+class ProviderKind(StrEnum):
+    API = "api"
+    FILE = "file"
+
+
+class ProviderAuth(StrEnum):
+    NONE = "none"
+    API_KEY = "api_key"
+    NOT_APPLICABLE = "not_applicable"
+
+
+class MeasureType(StrEnum):
+    """What a series' numbers are, so they are never read as something else.
+
+    * ``level`` — an amount, price or index level (e.g. GDP in current US$).
+    * ``change`` — a growth rate or percentage change (e.g. annual CPI inflation).
+    * ``rate`` — an interest rate or yield, in percent per annum.
+    * ``ratio`` — a share of another quantity (e.g. exports as % of GDP).
+    * ``exchange_rate`` — units of one currency per unit of another.
+    """
+
+    LEVEL = "level"
+    CHANGE = "change"
+    RATE = "rate"
+    RATIO = "ratio"
+    EXCHANGE_RATE = "exchange_rate"
+
+
+class PriceBasis(StrEnum):
+    """Nominal (current prices) versus real (inflation-adjusted, constant prices)."""
+
+    NOMINAL = "nominal"
+    REAL = "real"
+    NOT_APPLICABLE = "not_applicable"
+
+
+class SeasonalAdjustment(StrEnum):
+    SEASONALLY_ADJUSTED = "seasonally_adjusted"
+    NOT_SEASONALLY_ADJUSTED = "not_seasonally_adjusted"
+    NOT_APPLICABLE = "not_applicable"
+
+
+class ObservationStatus(StrEnum):
+    """``reported`` carries a value; ``missing`` means the provider listed the period
+    without a value. RUMIN records the gap and never fills it in."""
+
+    REPORTED = "reported"
+    MISSING = "missing"
+
+
+class QualityStatus(StrEnum):
+    """Quality of a *stored* record. Rejected records are never stored as data; they are
+    kept as data-quality issues with the raw record and the reason."""
+
+    VALIDATED = "validated"
+    WARNING = "warning"
+
+
+class IssueSeverity(StrEnum):
+    ERROR = "error"
+    WARNING = "warning"
+    INFO = "info"
+
+
+class IssueOutcome(StrEnum):
+    """What happened to the record the issue is about."""
+
+    REJECTED = "rejected"  # not stored
+    FLAGGED = "flagged"  # stored with quality status ``warning``
+    NOTED = "noted"  # stored; informational only
+
+
+class ReviewStatus(StrEnum):
+    """Human review state of an issue. There is no review workflow yet, so every issue
+    stays ``unreviewed``; the column exists so one can be added without a migration."""
+
+    UNREVIEWED = "unreviewed"
+
+
+class JobStatus(StrEnum):
+    """Lifecycle of an ingestion job. The final status always reflects what happened:
+
+    * ``completed`` — every target succeeded; nothing was rejected or flagged.
+    * ``completed_with_warnings`` — every target succeeded, but some records were
+      rejected or flagged, or a target returned no data.
+    * ``partially_failed`` — some targets failed and others succeeded.
+    * ``failed`` — no target succeeded, or the job could not run.
+    * ``cancelled`` — stopped before finishing (e.g. interrupted from the keyboard).
+    """
+
+    PENDING = "pending"
+    RUNNING = "running"
+    COMPLETED = "completed"
+    COMPLETED_WITH_WARNINGS = "completed_with_warnings"
+    PARTIALLY_FAILED = "partially_failed"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+
+
+class JobItemStatus(StrEnum):
+    PENDING = "pending"
+    SUCCEEDED = "succeeded"
+    FAILED = "failed"
+    SKIPPED = "skipped"
+
+
+class JobTrigger(StrEnum):
+    """Who started a job. Phase 2 starts jobs from the command line only."""
+
+    CLI = "cli"
+
+
+class JobTargetKind(StrEnum):
+    ECONOMIC_SERIES = "economic_series"
+    INSTRUMENT = "instrument"
+
+
+class CaptureKind(StrEnum):
+    HTTP_RESPONSE = "http_response"
+    FILE = "file"
+
+
+class InstrumentType(StrEnum):
+    EQUITY = "equity"
+    ETF = "etf"
+    INDEX = "index"
+
+
+class PriceAdjustment(StrEnum):
+    """Whether open/high/low/close are as traded (``unadjusted``) or adjusted for
+    corporate actions by the source (``adjusted``). RUMIN never adjusts prices itself."""
+
+    UNADJUSTED = "unadjusted"
+    ADJUSTED = "adjusted"

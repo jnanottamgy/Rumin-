@@ -19,7 +19,7 @@ import app.models  # noqa: F401 — registers every table on Base.metadata
 from app.core.config import get_settings
 from app.db.base import Base
 from app.db.session import create_db_engine
-from app.db.types import UTCDateTime
+from app.db.types import DECIMAL_PRECISION, DECIMAL_SCALE, ExactDecimal, UTCDateTime
 
 config = context.config
 if config.config_file_name is not None and config.attributes.get("configure_logger", True):
@@ -36,6 +36,12 @@ def _render_item(type_: str, obj: Any, _: AutogenContext) -> str | bool:
     """
     if type_ == "type" and isinstance(obj, UTCDateTime):
         return "sa.DateTime(timezone=True)"
+    if type_ == "type" and isinstance(obj, ExactDecimal):
+        # Exact on both databases: NUMERIC on PostgreSQL, a decimal string on SQLite.
+        return (
+            f"sa.Numeric(precision={DECIMAL_PRECISION}, scale={DECIMAL_SCALE})"
+            '.with_variant(sa.String(length=64), "sqlite")'
+        )
     return False
 
 

@@ -11,7 +11,7 @@ from collections import Counter
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.domain.enums import StructuralLinkType
+from app.domain.enums import DatasetKind, StructuralLinkType
 from app.models import Company, Dataset, EconomicVariable, Entity, Relationship
 from app.schemas.network import (
     DatasetSummary,
@@ -25,7 +25,12 @@ from app.services.reference_data import AnyEntity, list_relationship_types, to_e
 
 
 def current_dataset(session: Session) -> Dataset | None:
-    return session.scalars(select(Dataset).order_by(Dataset.loaded_at.desc())).first()
+    """The curated reference dataset behind the network (provider datasets hold series)."""
+    return session.scalars(
+        select(Dataset)
+        .where(Dataset.kind == DatasetKind.CURATED)
+        .order_by(Dataset.loaded_at.desc())
+    ).first()
 
 
 def structural_links(entities: list[Entity]) -> list[StructuralLinkRead]:

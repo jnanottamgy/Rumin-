@@ -35,6 +35,7 @@ from app.core.config import get_settings
 from app.db.base import utcnow
 from app.db.session import create_db_engine, create_session_factory
 from app.domain.enums import (
+    DatasetKind,
     EntityKind,
     EvidenceLevel,
     Frequency,
@@ -266,7 +267,8 @@ def clear_domain_data(session: Session) -> None:
         EntityKind.COUNTRY,
     ):
         session.execute(delete(Entity).where(Entity.kind == kind))
-    session.execute(delete(Dataset))
+    # Only curated reference datasets: provider datasets and their series are kept.
+    session.execute(delete(Dataset).where(Dataset.kind == DatasetKind.CURATED))
 
 
 def load_dataset(
@@ -291,6 +293,7 @@ def load_dataset(
     session.add(
         Dataset(
             id=meta.id,
+            kind=DatasetKind.CURATED,
             version=meta.version,
             name=meta.name,
             description=meta.description,
