@@ -1,0 +1,125 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.11"
+  NODE_VERSION: "22"
+
+jobs:
+  backend:
+    name: Backend · lint, types, tests (SQLite + PostgreSQL)
+    # Pushes to this repository's branches are tested on push; pull_request runs only for
+    # forks, so a branch with an open pull request is not tested twice.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          # Disposable database inside the CI job; not a secret.
+          POSTGRES_USER: rumin
+          POSTGRES_PASSWORD: rumin-ci-only
+          POSTGRES_DB: rumin_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U rumin -d rumin_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+      - name: Install
+        run: uv sync --frozen --extra dev --extra postgres
+      - name: Lint
+        run: uv run --frozen ruff check .
+      - name: Format
+        run: uv run --frozen ruff format --check .
+      - name: Type-check
+        run: uv run --frozen mypy app tests
+      - name: Sample dataset is valid
+        run: uv run --frozen python -m app.db.seed --validate-only
+      - name: OpenAPI snapshot is up to date
+        run: uv run --frozen python -m app.openapi_export --check
+      - name: Tests (SQLite)
+        run: uv run --frozen pytest
+      - name: Tests (PostgreSQL 16)
+        run: uv run --frozen pytest
+        env:
+          RUMIN_TEST_DATABASE_URL: postgresql+psycopg://rumin:rumin-ci-only@localhost:5432/rumin_test
+
+  frontend:
+    name: Frontend · lint, types, tests, build
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install
+        run: npm ci
+      - name: Lint and format
+        run: npm run lint
+      - name: Type-check
+        run: npm run typecheck
+      - name: Tests
+        run: npm test
+      - name: Build
+        run: npm run build
+      - name: API types match the OpenAPI contract
+        run: |
+          npm run generate:api
+          git diff --exit-code -- src/types/api.generated.ts
+
+  smoke:
+    name: End-to-end smoke test
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install backend
+        run: uv sync --frozen
+        working-directory: backend
+      - name: Install frontend
+        run: npm ci
+        working-directory: frontend
+      - name: Fresh database → live API → frontend integration suite
+        run: scripts/smoke_test.sh

@@ -1,0 +1,31 @@
+# Local PostgreSQL for production-parity development and testing.
+#
+#   docker compose up -d db
+#   RUMIN_DATABASE_URL=postgresql+psycopg://rumin:change-me-local-only@localhost:5432/rumin
+#
+# Credentials come from the repository-root .env (see .env.example); the defaults below
+# are for a local, disposable database only. The API and web client run on the host
+# (see README); containerising them is planned for Phase 10.
+name: rumin
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-rumin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me-local-only}
+      POSTGRES_DB: ${POSTGRES_DB:-rumin}
+    ports:
+      # Bound to localhost only: the database is never exposed on the network.
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - rumin-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  rumin-postgres:
