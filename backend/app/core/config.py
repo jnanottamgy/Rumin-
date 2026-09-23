@@ -41,6 +41,17 @@ class Settings(BaseSettings):
     docs_enabled: bool = True
     max_request_body_bytes: int = Field(default=64 * 1024, ge=1024, le=10 * 1024 * 1024)
 
+    # --- Data ingestion (Phase 2) ---------------------------------------------------------
+    worldbank_base_url: str = "https://api.worldbank.org/v2"
+    # Seconds between consecutive requests to the World Bank (RUMIN's own politeness limit).
+    worldbank_min_interval_seconds: float = Field(default=1.0, ge=0.1, le=60)
+    provider_timeout_seconds: float = Field(default=20.0, ge=1, le=120)
+    # Total attempts per request, including the first (so 4 = at most 3 retries).
+    provider_max_attempts: int = Field(default=4, ge=1, le=6)
+    max_import_file_bytes: int = Field(default=10 * 1024 * 1024, ge=1024, le=100 * 1024 * 1024)
+    # Keep the exact bytes of every response and imported file (gzip-compressed).
+    store_source_bodies: bool = True
+
     @field_validator("cors_origins", mode="before")
     @classmethod
     def _split_comma_separated(cls, value: Any) -> Any:
@@ -59,6 +70,15 @@ class Settings(BaseSettings):
                 raise ValueError(f"CORS origin must start with http:// or https://: {origin!r}")
             cleaned.append(origin.rstrip("/"))
         return cleaned
+
+    @field_validator("worldbank_base_url")
+    @classmethod
+    def _validate_provider_url(cls, url: str) -> str:
+        # Plain http is allowed only for a local test server; real providers use https.
+        local = url.startswith(("http://127.0.0.1", "http://localhost"))
+        if not (url.startswith("https://") or local):
+            raise ValueError("Provider URLs must use https:// (http:// only for localhost).")
+        return url.rstrip("/")
 
     @field_validator("log_level", mode="before")
     @classmethod
