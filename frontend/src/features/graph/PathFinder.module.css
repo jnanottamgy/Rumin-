@@ -1,0 +1,184 @@
+.finder {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  font-size: var(--text-sm);
+}
+
+.form {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.field {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.fieldLabel {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+
+.search {
+  max-width: none;
+}
+
+.picked {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.25rem;
+  padding: 0 var(--space-2) 0 var(--space-3);
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-raised);
+}
+
+.pickedName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 550;
+}
+
+.clear {
+  display: inline-grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 0;
+  border-radius: var(--radius-xs);
+  background: none;
+  color: var(--color-ink-muted);
+}
+
+.clear:hover {
+  color: var(--color-ink);
+  background: var(--color-surface);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.small {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+}
+
+.small select {
+  min-height: 2rem;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--color-field-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font: inherit;
+}
+
+.results {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.summary {
+  color: var(--color-ink-secondary);
+}
+
+.summary strong {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.warning {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-warning-ink);
+  font-size: var(--text-xs);
+}
+
+.path {
+  display: grid;
+  gap: var(--space-1);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-line);
+}
+
+.pathLabel {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+
+.steps {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  display: grid;
+  justify-items: start;
+  gap: 2px;
+}
+
+.stepNode {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-accent-ink);
+  font: inherit;
+  font-weight: 550;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, var(--color-accent-ink) 35%, transparent);
+  text-underline-offset: 0.2em;
+}
+
+.stepNode svg {
+  color: var(--color-ink-muted);
+}
+
+.stepEdge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: 0.3rem;
+  padding: 2px var(--space-2) 2px var(--space-3);
+  border: 0;
+  border-left: 1px solid var(--color-line-strong);
+  background: none;
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+  text-align: left;
+}
+
+.stepEdge:hover {
+  color: var(--color-ink);
+}
+
+.note {
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+  line-height: 1.55;
+}

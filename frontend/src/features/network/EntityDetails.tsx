@@ -2,11 +2,14 @@
  * Everything RUMIN knows about the selected entity — and what it does not know.
  * Relationships are listed with their evidence level; missing data is stated, not hidden.
  */
+
+import { Link } from "react-router";
 import { Badge } from "@/components/Badge";
 import { EpistemicBadge } from "@/components/EpistemicBadge";
 import { Icon } from "@/components/Icon";
+import { graphHref } from "@/features/graph/encoding";
 import { formatFrequency } from "@/lib/format";
-import type { Entity } from "@/types/api";
+import type { Entity, EntityKind } from "@/types/api";
 import styles from "./EntityDetails.module.css";
 import {
   describeEffect,
@@ -18,6 +21,14 @@ import {
 } from "./encoding";
 import { KindGlyph } from "./KindGlyph";
 import type { GraphEdge, GraphModel } from "./model";
+
+/** The knowledge-graph node prefix for each Universe entity kind. */
+const GRAPH_PREFIX: Record<EntityKind, "company" | "industry" | "country" | "variable"> = {
+  company: "company",
+  industry: "industry",
+  country: "country",
+  economic_variable: "variable",
+};
 
 function EntityLink({
   model,
@@ -63,7 +74,7 @@ function Facts({
           <dd className={styles.muted}>
             {entity.is_fictional
               ? "None — fictional company; no figures are stored"
-              : "Not loaded (financial data arrives in Phase 2)"}
+              : "None stored — RUMIN holds no company financial statements"}
           </dd>
         </dl>
       );
@@ -109,7 +120,7 @@ function Facts({
           </dd>
           <dt>Observations</dt>
           <dd>
-            <EpistemicBadge category="observation" suffix="none loaded (Phase 2)" />
+            <EpistemicBadge category="observation" suffix="none stored for the variable itself" />
           </dd>
         </dl>
       );
@@ -196,6 +207,7 @@ export function EntityDetails({
   const { entity } = node;
   const incident = model.incident.get(nodeId) ?? [];
   const economic = incident.filter((edge) => edge.category === "economic");
+  const graphLink = graphHref(GRAPH_PREFIX[node.kind], entity.id);
   const structural = incident.filter((edge) => edge.category === "structural");
 
   return (
@@ -227,6 +239,12 @@ export function EntityDetails({
       </header>
 
       <p className={styles.description}>{entity.description}</p>
+      {graphLink && (
+        <Link className={styles.graphLink} to={graphLink}>
+          Open in the knowledge graph — identifiers, provenance and paths
+          <Icon name="arrowRight" size={12} />
+        </Link>
+      )}
 
       <Facts entity={entity} model={model} onSelect={onSelect} />
 

@@ -129,7 +129,10 @@ export function LandingPage() {
 
         <section className={styles.section} aria-labelledby="modules-title">
           <div className={styles.sectionIntro}>
-            <p className="eyebrow">Phase {CURRENT_PHASE} · Financial data infrastructure</p>
+            <p className="eyebrow">
+              Phase {CURRENT_PHASE} ·{" "}
+              {ROADMAP.find((phase) => phase.phase === CURRENT_PHASE)?.title ?? "In progress"}
+            </p>
             <h2 id="modules-title" className={styles.sectionTitle}>
               What exists today
             </h2>

@@ -179,3 +179,14 @@
   color: var(--color-ink-muted);
   font-size: var(--text-xs);
 }
+
+.graphLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  width: max-content;
+  max-width: 100%;
+  color: var(--color-accent-ink);
+  font-size: var(--text-xs);
+  font-weight: 500;
+}

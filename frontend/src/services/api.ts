@@ -10,6 +10,20 @@ import type {
   EconomicSeriesDetail,
   EconomicSeriesPage,
   EconomicVariablePage,
+  EvidenceStatus,
+  GraphBuildDetail,
+  GraphBuildPage,
+  GraphComponents,
+  GraphDirection,
+  GraphEdgeDetail,
+  GraphEdgeType,
+  GraphNeighborhood,
+  GraphNodeDetail,
+  GraphNodeSearchPage,
+  GraphNodeType,
+  GraphOverview,
+  GraphPaths,
+  GraphTypes,
   HealthResponse,
   IngestionJobDetail,
   IngestionJobPage,
@@ -170,3 +184,113 @@ export const dataApi = {
 
 export type Api = typeof api;
 export type { NetworkResponse };
+
+/** Filters shared by neighbourhood and path queries; empty lists mean "no filter". */
+export interface GraphFilterQuery {
+  edgeTypes?: readonly GraphEdgeType[];
+  nodeTypes?: readonly GraphNodeType[];
+  evidenceStatuses?: readonly EvidenceStatus[];
+  includeIllustrative?: boolean;
+  direction?: GraphDirection;
+}
+
+/** "?a=1&t=x&t=y" — like `toQuery`, but list values become repeated parameters. */
+export function toMultiQuery(params: Record<string, QueryValue | readonly string[]>): string {
+  const search = new URLSearchParams();
+  for (const [name, value] of Object.entries(params)) {
+    if (Array.isArray(value)) {
+      for (const item of value) search.append(name, item);
+    } else if (value !== undefined && value !== null && value !== "") {
+      search.set(name, String(value));
+    }
+  }
+  const text = search.toString();
+  return text ? `?${text}` : "";
+}
+
+function filterParams(filters: GraphFilterQuery) {
+  return {
+    edge_type: filters.edgeTypes ?? [],
+    evidence_status: filters.evidenceStatuses ?? [],
+    include_illustrative: filters.includeIllustrative === false ? false : undefined,
+    direction: filters.direction && filters.direction !== "any" ? filters.direction : undefined,
+  };
+}
+
+export interface GraphSearchQuery {
+  q?: string;
+  types?: readonly GraphNodeType[];
+  relatedTo?: string;
+  sort?: "name" | "-degree";
+  limit?: number;
+}
+
+/** The knowledge graph (read-only; built from the command line). */
+export const graphApi = {
+  overview: (options?: Options) => apiRequest<GraphOverview>("/api/v1/graph/overview", options),
+
+  types: (options?: Options) => apiRequest<GraphTypes>("/api/v1/graph/types", options),
+
+  search: (query: GraphSearchQuery, options?: Options) =>
+    apiRequest<GraphNodeSearchPage>(
+      `/api/v1/graph/nodes${toMultiQuery({
+        q: query.q?.trim() || undefined,
+        type: query.types ?? [],
+        related_to: query.relatedTo,
+        sort: query.sort,
+        limit: query.limit ?? 20,
+      })}`,
+      options,
+    ),
+
+  node: (id: string, options?: Options) =>
+    apiRequest<GraphNodeDetail>(`/api/v1/graph/nodes/${segment(id)}`, options),
+
+  neighborhood: (
+    id: string,
+    depth: number,
+    maxNodes: number,
+    filters: GraphFilterQuery = {},
+    options?: Options,
+  ) =>
+    apiRequest<GraphNeighborhood>(
+      `/api/v1/graph/nodes/${segment(id)}/neighborhood${toMultiQuery({
+        depth,
+        max_nodes: maxNodes,
+        node_type: filters.nodeTypes ?? [],
+        ...filterParams(filters),
+      })}`,
+      options,
+    ),
+
+  edge: (id: string, options?: Options) =>
+    apiRequest<GraphEdgeDetail>(`/api/v1/graph/edges/${segment(id)}`, options),
+
+  paths: (
+    source: string,
+    target: string,
+    maxDepth: number,
+    limit: number,
+    filters: GraphFilterQuery = {},
+    options?: Options,
+  ) =>
+    apiRequest<GraphPaths>(
+      `/api/v1/graph/paths${toMultiQuery({
+        from: source,
+        to: target,
+        max_depth: maxDepth,
+        limit,
+        ...filterParams(filters),
+      })}`,
+      options,
+    ),
+
+  components: (options?: Options) =>
+    apiRequest<GraphComponents>("/api/v1/graph/components", options),
+
+  builds: (options?: Options) =>
+    apiRequest<GraphBuildPage>(`/api/v1/graph/builds${toQuery({ limit: 20 })}`, options),
+
+  build: (id: number, options?: Options) =>
+    apiRequest<GraphBuildDetail>(`/api/v1/graph/builds/${id}`, options),
+};

@@ -39,6 +39,17 @@ export const APP_MODULES: readonly AppModule[] = [
     phase: 1,
   },
   {
+    id: "graph",
+    path: "/graph",
+    navLabel: "Graph",
+    title: "Knowledge Graph",
+    summary:
+      "Explore how RUMIN's records connect: neighbourhoods, paths and the evidence behind every relationship.",
+    status: "available",
+    statusNote: "Read-only explorer · built from the command line",
+    phase: 3,
+  },
+  {
     id: "data",
     path: "/data",
     navLabel: "Data",
@@ -91,7 +102,7 @@ export interface RoadmapPhase {
   title: string;
 }
 
-export const CURRENT_PHASE = 2;
+export const CURRENT_PHASE = 3;
 
 export const ROADMAP: readonly RoadmapPhase[] = [
   { phase: 1, title: "Foundation & system architecture" },

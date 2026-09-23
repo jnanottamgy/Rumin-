@@ -125,8 +125,9 @@ export function ScenarioContext({
           <EpistemicBadge category="observation" />
         </header>
         <p className={styles.muted}>
-          No observations are loaded for these variables yet. Historical series from cited sources
-          arrive with the data infrastructure in Phase 2.
+          RUMIN stores no observations for these variables themselves. Related historical series
+          from cited sources, where they exist, are in the Data Explorer and linked to the variables
+          in the knowledge graph.
         </p>
       </section>
 

@@ -16,6 +16,7 @@ import styles from "@/features/data/DataViews.module.css";
 import { describeValue, ITEM_STATUS, MEASURE } from "@/features/data/labels";
 import { ObservationChart, ObservationTable } from "@/features/data/ObservationViews";
 import { ProvenanceFacts, QualityIssueList } from "@/features/data/Provenance";
+import { graphHref } from "@/features/graph/encoding";
 import { useApiResource } from "@/hooks/useApiResource";
 import { ApiError } from "@/lib/apiClient";
 import { formatExact } from "@/lib/decimal";
@@ -151,6 +152,13 @@ function Source({ series }: { series: EconomicSeriesDetail }) {
         <Fact label="Price basis">{describeValue(series.price_basis)}</Fact>
         <Fact label="Seasonal adjustment">{describeValue(series.seasonal_adjustment)}</Fact>
         {series.currency && <Fact label="Currency">{series.currency}</Fact>}
+        {graphHref("series", series.id) && (
+          <Fact label="Knowledge graph">
+            <Link to={graphHref("series", series.id) ?? "/graph"}>
+              See what this series is linked to
+            </Link>
+          </Fact>
+        )}
         {series.variable_id && (
           <Fact label="Related RUMIN variable">
             <Link to={`/universe?focus=${series.variable_id}`}>{series.variable_id}</Link>

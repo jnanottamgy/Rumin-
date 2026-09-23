@@ -11,6 +11,7 @@ import { describeValue, QUALITY } from "@/features/data/labels";
 import { ChartKey, FlagGlyph } from "@/features/data/ObservationViews";
 import { ProvenanceFacts, QualityIssueList } from "@/features/data/Provenance";
 import { TimeSeriesChart } from "@/features/data/TimeSeriesChart";
+import { graphHref } from "@/features/graph/encoding";
 import { useApiResource } from "@/hooks/useApiResource";
 import { ApiError } from "@/lib/apiClient";
 import { formatExact, formatRounded, toNumber } from "@/lib/decimal";
@@ -238,6 +239,13 @@ function Prices({ instrument, datasetId }: { instrument: InstrumentDetail; datas
             )}
             <Fact label="Type">{describeValue(instrument.instrument_type)}</Fact>
             <Fact label="Currency">{instrument.currency}</Fact>
+            {graphHref("instrument", instrument.id) && (
+              <Fact label="Knowledge graph">
+                <Link to={graphHref("instrument", instrument.id) ?? "/graph"}>
+                  See what this instrument is linked to
+                </Link>
+              </Fact>
+            )}
           </ProvenanceFacts>
         </Panel>
         <Panel

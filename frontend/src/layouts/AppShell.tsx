@@ -1,6 +1,6 @@
 import { useEffect, useId, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router";
-import { APP_MODULES, STATUS_LABEL } from "@/app/modules";
+import { APP_MODULES, CURRENT_PHASE, STATUS_LABEL } from "@/app/modules";
 import { type ThemePreference, useTheme } from "@/app/theme";
 import { Icon, type IconName } from "@/components/Icon";
 import { StatusIndicator } from "@/components/StatusIndicator";
@@ -126,8 +126,9 @@ export function AppShell() {
       </main>
       <footer className={styles.footer}>
         <p>
-          RUMIN · Phase 2. The network's sample data is illustrative (its companies are fictional).
-          Provider data is historical and never live. Nothing here is investment advice.
+          RUMIN · Phase {CURRENT_PHASE}. The network's sample data is illustrative (its companies
+          are fictional). Provider data is historical and never live. Graph relationships are
+          recorded or assumed, not measured. Nothing here is investment advice.
         </p>
       </footer>
     </div>
