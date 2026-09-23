@@ -65,6 +65,18 @@ failed and the Data Explorer explains it; nothing else is affected. To import pr
 file you are licensed to use, see [price files](data/price-files.md); for the pipeline and
 troubleshooting, see [ingestion](data/ingestion.md).
 
+### Knowledge graph (Phase 3)
+
+```bash
+uv run python -m app.graph build     # build (or rebuild) the graph from what is stored
+uv run python -m app.graph status    # the latest build, and whether the sources changed since
+```
+
+The build needs no network: it reads the sample dataset, the series catalogue and any
+imported instruments, and prints a validation report. Run it again after loading or
+changing data; rebuilding unchanged sources changes nothing. The explorer is at
+<http://127.0.0.1:5173/graph>. See [the knowledge graph](graph/README.md).
+
 ## 3. Frontend
 
 ```bash
@@ -129,4 +141,7 @@ See [testing.md](testing.md).
 | The Data Explorer says **"The series catalogue has not been loaded"** | Run `uv run python -m app.ingestion catalog` in `backend/`. |
 | **"The last retrieval failed"** / every series `provider_unavailable` | The machine cannot reach `api.worldbank.org` (firewall, proxy or sandbox). Allow outbound HTTPS to it (`HTTPS_PROXY` is honoured) and run `make ingest` again. More in [ingestion](data/ingestion.md#troubleshooting). |
 | `✗ Database error … run: make migrate` from an ingestion command | The schema is missing or older than the code: `uv run alembic upgrade head`. |
-| Start again from scratch | Stop the API, delete `backend/rumin.db`, then migrate, seed and load the catalogue again. |
+| The Knowledge Graph page says **"The knowledge graph has not been built yet"** | Run `uv run python -m app.graph build` in `backend/` (or `make graph`), then reload the page. |
+| The Knowledge Graph page says **"The graph is older than its sources"** | Data changed after the last build. Rebuild it with `make graph`. On a running API the notice can take up to 30 seconds to appear; it clears as soon as a new build finishes. |
+| `✗ Graph build #n … is still running` | Another build is in progress. Wait for it; a build whose process died is closed automatically after an hour. |
+| Start again from scratch | Stop the API, delete `backend/rumin.db`, then migrate, seed, load the catalogue and build the graph again. |

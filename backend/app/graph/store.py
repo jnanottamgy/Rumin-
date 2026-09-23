@@ -1,7 +1,8 @@
 """Read access to the stored graph: the API uses it, and so will the simulation engine.
 
-``GraphReader`` returns plain, typed records — never ORM objects — each edge with its
-evidence status, so a consumer can decide which relationships it may rely on. The Phase 4
+``GraphReader`` returns nodes, edges and evidence as plain, typed records — never ORM
+objects — each edge with its evidence status, so a consumer can decide which
+relationships it may rely on. The Phase 4
 simulation engine must not treat edges as equations: it can use this interface to find
 entities, paths, edge metadata, evidence and validity periods, and must model and
 validate every simulated relationship itself (see docs/graph/phase-4-integration.md).

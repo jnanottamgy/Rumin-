@@ -2,10 +2,11 @@
 
 | Suite | Tool | Tests | Runs against | Command |
 |---|---|---|---|---|
-| Backend | pytest | 256 | the FastAPI app and the ingestion pipeline with a real, migrated database (SQLite; PostgreSQL optional); providers answered by scripted responses | `uv run pytest` in `backend/` |
-| Frontend unit and pages | Vitest + Testing Library (jsdom) | 142 | the real route table, with `fetch` replaced by a fake API serving recorded responses | `npm test` in `frontend/` |
-| Integration | Vitest (Node) | 26 | a live API: the frontend's real service layer over HTTP | `npm run test:integration` with `RUMIN_API_URL` |
-| End-to-end smoke | `scripts/smoke_test.sh` | — | fresh database → migrate → seed → load the catalogue → import a synthetic price file → start API → integration suite | `make smoke` |
+| Backend | pytest | 450 | the FastAPI app, the ingestion pipeline and the graph build with a real, migrated database (SQLite; PostgreSQL optional); providers answered by scripted responses | `uv run pytest` in `backend/` |
+| Frontend unit and pages | Vitest + Testing Library (jsdom) | 202 | the real route table, with `fetch` replaced by a fake API serving recorded responses | `npm test` in `frontend/` |
+| Integration | Vitest (Node) | 39 | a live API: the frontend's real service layer over HTTP | `npm run test:integration` with `RUMIN_API_URL` |
+| End-to-end smoke | `scripts/smoke_test.sh` | — | fresh database → migrate → seed → load the catalogue → import a synthetic price file → build the knowledge graph, rebuild it and fail if anything changed → start API → integration suite | `make smoke` |
+| Graph benchmark | `backend/scripts/benchmark_graph.py`, `frontend/scripts/measure-graph.mjs` | — | synthetic networks up to 20,000 companies; not part of CI | see [performance](graph/performance.md#how-it-was-measured) |
 
 **No automated test calls a real provider.** Provider behaviour is tested with scripted
 HTTP responses whose structure follows the providers' documentation and whose numbers are
@@ -49,6 +50,17 @@ Phase 2 (financial data):
 | `test_ingestion_cli.py` | 12 | Exit codes (0, 2, 3); the default period range; refusals before anything runs (unknown dataset or series, reversed or future periods, wrong frequency); a second run refused while one is active; price import from the command line; commands that need no database; an unmigrated database explained |
 | `test_data_api.py` | 15 | Providers with their terms; curated and provider datasets labelled apart; series coverage and latest values as decimal strings; filters, search (wildcards escaped), sorting and invalid parameters; series detail with licence and quality counts; observations with period, unit and provenance; revisions on request; missing values `null`, never zero; jobs, captures (no bodies) and issues; published rules; no way to start ingestion over HTTP; prices never blended; system data counts |
 
+Phase 3 (knowledge graph):
+
+| Module | Tests | Covers |
+|---|---|---|
+| `test_graph_algorithms.py` | 91 | BFS by distance with one adjacency call per level; depth and node budgets with what was left out; direction, edge-type and node-type filters; the edges among the outermost nodes; DFS on a 5,000-node chain without recursion; components; every shortest path up to the limit; path bounds and the search budget; degree. **Cross-checks on random graphs**: bidirectional search against plain BFS (500 pairs, two directions), the number of shortest paths against a dynamic-programming count, BFS distances against brute force, components against union–find |
+| `test_graph_construction.py` | 30 | A clean world builds without issues; evidence statuses and illustrative flags follow the rules; the same sources always give the same graph and keys; derived edges record how; one node per currency code; the alpha-3 code attached through the catalogue link, or matched only when unambiguous; conflicting and invalid codes attached to no one; **names flagged, never merged** (identical, same name in two countries, contained names, fiction against fact, instrument against company, common words); unknown ISIC divisions flagged; every structural problem rejects its edge; fiction and fact never connected; duplicates and undirected edges stored once; tallies always add up; validity rules |
+| `test_graph_names.py` | 22 | Name normalisation (case, accents, punctuation, "The", abbreviations, legal forms only at the end), strong, weak and no-match candidates, code formats |
+| `test_graph_build.py` | 9 | The sample network builds with evidence on every edge; **an unchanged rebuild changes nothing**; changes and retirements are recorded and nothing is deleted; the fingerprint notices changed sources; series and instruments join the graph; a failed build changes nothing and leaks no detail; one build at a time; an abandoned build is closed |
+| `test_graph_cli.py` | 6 | The printed validation report; `status` notices changed sources; `builds` and `report`; `validate` writes nothing; an unmigrated database explained; distinct exit codes |
+| `test_graph_api.py` | 36 | The overview before and after a build, matching the graph, noticing changed sources, and the 30-second freshness cache; the vocabulary; search (partial, identifiers first, filters, ambiguous names); node detail with resolution decisions and live data status; neighbourhoods by depth, with the limit reported and filters; edges and why each exists; paths with bounds and direction; components; builds and issues; **every limit and malformed key rejected with 422** (11 cases); read-only (405); the system's graph capabilities |
+
 Run against PostgreSQL (use an empty, disposable database — the suite drops and recreates
 the schema):
 
@@ -87,6 +99,11 @@ catalogue after a World Bank run that failed because the provider was unreachabl
 | `pages/dataExplorer` | 5 | A failed retrieval explained with counts and the command to retry; no bundled prices and how to import; datasets with licence links and attribution; recent runs; stored series with rounded latest values, search, country and "with values" filters |
 | `pages/economicSeries` | 6 | Honest labels (historical, sample, flagged); freshness facts; reading the chart from the keyboard, gaps included; the table shows the published literal (`14.250000`); revision history requested and shown; source, licence, review range as an assumption, quality issues; a failed retrieval explained; a missing series |
 | `pages/instrumentAndJob` | 5 | Imported prices labelled as sample data with the latest trading day and flags; every price in the table; sources never blended (prices requested per dataset); a failed run target by target; stored responses with their hashes |
+| `graph/view` | 11 | The explorer's view model: exactly the answer's nodes and edges; expansions merged without duplicates; never an edge to a node not shown; nodes left out by the limit counted, not dropped silently; pending, failed and skipped expansions reported; shown connections per node; the spanning tree by hops, whatever the edge order; node order; the path view, including "no path" |
+| `graph/layout` | 11 | Radial layout: the focus at the centre and every node on the ring of its hop count; deterministic; a minimum spacing on each ring; subtrees inside their parent's wedge; labels along the radius only on crowded rings; a focus without neighbours. Columns for paths. Animation start positions and interpolation |
+| `graph/encoding` | 15 | A distinct shape for every node type; evidence told apart by line pattern, not colour; nature rings and hollow series; sizes with a ceiling; node keys parsed and validated; explorer links built the way the build forms keys; filters (the last value cannot be turned off; answers cached per request); bounded history |
+| `graph/edgePanel` | 2 | The evidence panel says a catalogued series has no values yet, and that retrieval does not apply to reference data |
+| `pages/graphExplorer` | 21 | The page against fixtures captured from a real backend: the aggregate map labelled as an aggregate, with the build report; picking from the map; server search with ambiguous names flagged; exactly the API's nodes and edges drawn, with evidence and nature; selection and dimming; assumed exposures labelled "direct" or "via the industry", never as measured; expand, collapse, and a failed expansion retried; back, forward and reset; filters sent to the API; why a relationship exists; paths with the causal-chain caveat, and "no path"; the table view; not-built and stale graphs; an unreachable API; a node not in the graph; an invalid focus key; phone labels |
 
 ## Integration (`frontend/tests/integration/`)
 
@@ -110,6 +127,13 @@ smoke test's synthetic price file served exactly (decimal strings) and labelled 
 data, its import recorded as a job with the stored file and no secrets, the system report's
 data counts and capabilities, and no way to start ingestion over HTTP.
 
+Phase 3 adds `graph.integration.test.ts` (13 tests), after the smoke test has built the
+graph: the overview matches the build and says what the graph is not; the vocabulary;
+search; neighbourhoods whose edges all join returned nodes; edges with evidence records
+and caveats; paths whose edges join consecutive nodes, with the causal-chain caveat;
+components described without calling them economic systems; the API is read-only; and
+malformed keys are rejected. Every response is checked against the OpenAPI contract.
+
 It creates and deletes scenarios, so point it only at a disposable database — which is
 what `scripts/smoke_test.sh` provides.
 
@@ -122,8 +146,11 @@ instrument and ingestion-run pages were checked with the failed-run database and
 throwaway database of synthetic data (to see charts), including hover and keyboard reading
 of the chart, the table and revision views, dark mode and phone widths. Interactions were exercised in the
 real browser too: selection and dimming, deep links (`/universe?focus=…`), the portrait
-network on phones, and the scenario save flow. These checks are not automated yet (see
-[known-limitations.md](known-limitations.md)).
+network on phones, and the scenario save flow. For Phase 3, the Knowledge Graph explorer
+was checked at desktop, tablet (820 × 1180) and phone widths in both themes, against the
+sample graph and a 20,000-company synthetic graph, with a scripted walk-through of ten
+interactions ([UI review](graph/explorer.md#ui-quality-review)). These checks are not
+automated yet (see [known-limitations.md](known-limitations.md)).
 
 ## Conventions
 
@@ -132,5 +159,7 @@ network on phones, and the scenario save flow. These checks are not automated ye
 - A bug found in development gets a test first. Phase 1 examples: the layout depended on
   edge order; a heading's accessible name ran two words together. Phase 2 examples:
   decimals such as `5.10…0` were refused as too precise; `1E-18` reached clients in
-  exponent form; skipped series looked "never retrieved".
+  exponent form; skipped series looked "never retrieved". Phase 3 examples: "Try again"
+  after a failed expansion did not refetch; a series never retrieved was described as
+  "not provider data"; names sharing common words made entity resolution quadratic.
 - Never weaken a test to make it pass; never skip one.

@@ -3,9 +3,11 @@
 RUMIN is a web client and a JSON API over a relational database, with a command-line
 ingestion pipeline that fills the database from data providers. Phase 1 built the skeleton;
 Phase 2 added the financial data infrastructure (providers, ingestion, provenance, quality,
-the read API and the Data Explorer — see [the data architecture](data/architecture.md)).
-Later phases — graph analytics (3), the simulation engine (4), the AI analyst (7), the 3D
-universe (8) — extend it without restructuring it.
+the read API and the Data Explorer — see [the data architecture](data/architecture.md));
+Phase 3 added the knowledge graph, built from those records by another command and stored
+in the same database ([the graph architecture](graph/architecture.md)). Later phases — the
+simulation engine (4), the AI analyst (7), the 3D universe (8) — extend it without
+restructuring it.
 
 ```mermaid
 flowchart LR
@@ -25,6 +27,10 @@ flowchart LR
         CLI["python -m app.ingestion"]
         PIPE["Pipelines: fetch → capture →<br/>normalise → quality rules →<br/>revisions → job record"]
     end
+    subgraph GB["Graph build (command line)"]
+        GCLI["python -m app.graph build"]
+        GPIPE["read sources → rules →<br/>entity resolution → validation →<br/>persist (add · change · retire)"]
+    end
     WB(["World Bank<br/>Indicators API"])
     CSV[/"Licensed price file<br/>+ manifest"/]
 
@@ -37,10 +43,14 @@ flowchart LR
     PIPE -- "HTTPS, throttled" --> WB
     CSV --> PIPE
     PIPE --> DB
+    GCLI --> GPIPE
+    DB -- "reference data,<br/>series catalogue, instruments" --> GPIPE
+    GPIPE -- "graph tables" --> DB
 ```
 
-The API never contacts a provider: only the command line does, so no anonymous HTTP client
-can make RUMIN send requests (there is no authentication yet).
+The API never contacts a provider and never writes the graph: only the command line does,
+so no anonymous HTTP client can make RUMIN send requests or change data it did not ask for
+(there is no authentication yet). The graph API is read-only.
 
 ## Backend (`backend/app`)
 
@@ -50,10 +60,11 @@ Layered so that each layer depends only on the ones below it:
 |---|---|---|
 | HTTP | `api/` | Routes, parameters, status codes, OpenAPI descriptions. No SQL, no business rules. |
 | Contract | `schemas/` | Pydantic models for every request and response: validation, serialisation, the OpenAPI schema. |
-| Services | `services/` | Queries and use cases: reference data, the network projection, scenario validation and persistence, system status. |
-| Domain | `domain/` | Pure definitions: enumerations, the relationship-type registry (what each edge type means and may connect), scenario change limits. |
+| Services | `services/` | Queries and use cases: reference data, the network projection, scenario validation and persistence, system status, and the graph's read logic (limits, filters, explanations). |
+| Domain | `domain/` | Pure definitions: enumerations, the relationship-type registry (what each edge type means and may connect), the graph's node, edge and evidence-status registry, scenario change limits. |
 | Persistence | `models/`, `db/` | SQLAlchemy ORM models, session management, portable column types (UTC datetimes, exact decimals), the seed loader. |
 | Ingestion | `ingestion/` | Providers, HTTP with throttling and retries, normalisation, quality rules, persistence with revisions, job tracking, the command line ([details](data/architecture.md)). |
+| Graph | `graph/` | The knowledge graph: construction rules, entity resolution, validation, persistence, the build command, algorithms (BFS, paths, components) and the typed read interface the API and Phase 4 use ([details](graph/architecture.md)). |
 | Cross-cutting | `core/` | Settings, logging, error envelope and handlers, middleware. |
 
 Request lifecycle: the **middleware** assigns a request ID, enforces the body-size limit
@@ -76,6 +87,11 @@ uvicorn.
   server enforces the rules and publishes them on each variable (`scenario_rules`), and
   the Scenario Lab validates with the published values. The integration tests prove that
   browser and server reject the same inputs on the same fields.
+- **Graph vocabulary** — `domain/graph_types.py` defines the 9 node types, 18 edge types
+  (meaning, endpoints, direction, allowed evidence statuses, caveat) and 4 evidence
+  statuses. The build validates against it and the API serves it (`/api/v1/graph/types`,
+  and on every edge). The explorer shows the labels, meanings and caveats the API sends;
+  it only chooses how to draw them, and never decides what a relationship means.
 - **Honesty** — capabilities (`services/system.py`) state what exists and what is planned
   for which phase; the UI reads them rather than hard-coding claims.
 
@@ -88,8 +104,9 @@ pages).
 |---|---|
 | `app/` | Route table, theme and motion preferences, the module registry (names, status, phase of each product area) |
 | `layouts/` | The application shell: header, navigation, live workspace status, footer |
-| `pages/` | One component per route: Landing, Overview, Universe, Data Explorer (with series, instrument and ingestion-run pages), Scenario Lab, AI Analyst, System, not-found and error pages |
+| `pages/` | One component per route: Landing, Overview, Universe, Knowledge Graph, Data Explorer (with series, instrument and ingestion-run pages), Scenario Lab, AI Analyst, System, not-found and error pages |
 | `features/network/` | Everything about the financial network (below) |
+| `features/graph/` | The Knowledge Graph explorer: its state and history, the view model, deterministic layouts, encoding, canvas and panels ([details](graph/explorer.md)) |
 | `features/data/` | The time-series chart and its arithmetic, exact-value tables, provenance, freshness and quality components |
 | `features/scenarios/` | Scenario editor state and rules (pure), the editor and its context panel |
 | `components/` | Shared UI primitives |
@@ -123,6 +140,15 @@ payload and shared by the landing page, the dashboard preview and the Universe. 
 renderer only consumes plain coordinates, so a **Three.js renderer (Phase 8)** can reuse
 the model, the filters, the selection state and the layout (or a 3D extension of it)
 without touching the data layer; the layout can also move to a Web Worker when graphs grow.
+
+### The graph explorer
+
+The explorer (`/graph`) draws only what the graph API returns. Its state is a small
+snapshot (mode, focus, depth, expansions, selection, path query) with a history list;
+server answers are cached by request; the view is derived from the snapshot and the
+answers (`view.ts`), then laid out deterministically (`layout.ts`: a radial tree for
+neighbourhoods, columns for paths). Traversal and filtering happen on the server, so the
+frontend holds no relationship logic. See [the explorer](graph/explorer.md).
 
 ## Contract between the two
 

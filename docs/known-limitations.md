@@ -49,6 +49,30 @@ the API; the Data Explorer shows what data is actually stored.
   formula-generated data whose names say "SYNTHETIC"; none of it is shipped or loaded by
   default.
 
+## Knowledge graph (Phase 3)
+
+The full list, with reasons, is in [`docs/graph/limitations.md`](graph/limitations.md).
+
+- **It connects the records RUMIN holds, not the economy.** 50 nodes and 97 edges from the
+  sample dataset and the series catalogue. All 12 companies are fictional, and 65 edges
+  touch them.
+- **No edge is empirically validated.** 41 edges are model assumptions, 32 were written by
+  a curator, and 24 transcribe a standard or a provider's metadata ("evidence-backed"
+  means a source states it, not that it was verified). None of the curated relationships
+  cites an outside source.
+- **No sizes, correlations or causes.** An assumed effect has no magnitude, timing or
+  certainty, and paths link records, not mechanisms. No correlation is computed.
+- **Duplicates are flagged, not merged**, and there is no review workflow or outside
+  registry lookup. Some partial name matches made only of common words are not searched
+  for.
+- **As of the last build.** Nothing rebuilds automatically. "Stale" can appear up to 30
+  seconds late on a running API. Only membership history is kept, not earlier attribute
+  values.
+- **Measured to about 21,000 nodes and 108,000 edges** on synthetic data. At that size the
+  first overview request after a build or restart takes about 6 s, and an unchanged
+  rebuild about 16 s.
+- **Read-only and unauthenticated.** No write endpoint. Builds run from the command line.
+
 ## Product
 
 - **No simulation.** Scenarios are saved as drafts of inputs only. There is no engine, no
@@ -57,8 +81,10 @@ the API; the Data Explorer shows what data is actually stored.
   modelling assumptions written for demonstration, each with a rationale, none estimated
   or validated. Do not use them to reason about real companies or markets.
 - **No AI analyst.** The page explains the planned feature; no model is connected. Phase 7.
-- **No graph analytics.** No centrality, paths or propagation beyond direct neighbours.
-  Phase 3.
+- **Graph analytics are limited on purpose.** The knowledge graph (Phase 3) offers
+  neighbourhoods, shortest paths in hops, components, degree and density. There is no
+  centrality, no weighted path, no community detection and no propagation of effects:
+  see [below](#knowledge-graph-phase-3).
 - **2D only.** The 3D financial universe is Phase 8.
 - **Small-graph rendering.** SVG and a synchronous layout are right for tens to a few
   hundred nodes; thousands will need a Web Worker layout and canvas/WebGL rendering.
@@ -78,10 +104,13 @@ the API; the Data Explorer shows what data is actually stored.
 ## Verification (general)
 
 - **No automated browser end-to-end, visual-regression or screen-reader tests.** Pages
-  were checked in Chromium at desktop and phone sizes in both themes; behaviour is covered
-  by the jsdom suite and the live integration suite.
+  were checked in Chromium at desktop and phone sizes in both themes (the graph explorer
+  also at tablet size, with a scripted walk-through that is not part of CI); behaviour is
+  covered by the jsdom suite and the live integration suite.
 - **Browsers:** developed and checked in Chromium only.
-- **No load or performance testing** beyond query design, build size and layout time.
+- **No load testing** (concurrent users). The knowledge graph was benchmarked on
+  synthetic data on one machine ([performance](graph/performance.md)); nothing else was
+  measured beyond query design, build size and layout time.
 
 ## Repository
 

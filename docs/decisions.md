@@ -1,7 +1,8 @@
 # Technology decisions
 
-Short records of the choices made in Phases 1 and 2, why, and what would make us revisit
-them. Phase 2 decisions start at [13](#13-world-bank-indicators-as-the-first-provider-fred-rejected).
+Short records of the choices made in Phases 1 to 3, why, and what would make us revisit
+them. Phase 2 decisions start at [13](#13-world-bank-indicators-as-the-first-provider-fred-rejected),
+Phase 3 decisions at [23](#23-the-knowledge-graph-lives-in-the-existing-relational-database).
 
 ## 1. Monorepo with a Python API and a TypeScript web client
 
@@ -175,3 +176,129 @@ review range, links to Phase 1 variables with the difference stated), lives in a
 JSON file under version control — never values.
 **Why.** Describing a series honestly is editorial work that deserves review; the file is
 validated in full before anything is written.
+
+## 23. The knowledge graph lives in the existing relational database
+
+**Decision.** Seven graph tables in the same PostgreSQL (production) / SQLite
+(development) database, with traversal in Python. No Neo4j, no graph extension, no
+second store.
+**Why.** Relational, graph-database and hybrid designs were compared before any code was
+written ([graph architecture](graph/architecture.md)). Every query the product needs is
+bounded — neighbourhoods up to 3 hops and 200 nodes, paths up to 6 hops, whole-graph work
+once per build — and runs in milliseconds on indexed edge tables (measured to 108,000
+edges, [performance](graph/performance.md)). Keeping one database keeps provenance joins,
+migrations, backups and the CI matrix as they are. A graph database would add a service
+to install, secure and back up (Neo4j Community is GPLv3) without making any needed query
+possible.
+**Revisit if** interactive traversals need more than about 4 hops over millions of edges,
+or analysts need ad-hoc pattern queries. The next step would be a hybrid: PostgreSQL stays
+the source of truth, and a graph engine (or Apache AGE) is fed from it.
+
+## 24. The graph is a derived, rebuildable projection
+
+**Decision.** The graph is built from the stored records by a command, never edited by
+hand. Keys are deterministic (`company:co_deltrin_refining`; edges `e-` + 16 hex of
+SHA-256 over type, source and target). Builds compare content hashes and add, change or
+retire rows. Nothing is deleted. Graph tables have no foreign keys into the source tables.
+**Why.** Rebuilding from unchanged sources changes nothing (checked on every CI run), so a
+build is safe to repeat. Every node and edge can be traced to its source records, and the
+graph's membership at any build can be reconstructed. Reloading reference data is never
+blocked by graph rows.
+**Consequence.** Earlier attribute values are overwritten (only membership history is
+kept), and the graph is only as current as its last build. The overview says when it is
+stale.
+
+## 25. Evidence status, not confidence scores
+
+**Decision.** Every edge has one of four evidence statuses — evidence-backed,
+analyst-created, model assumption, unverified — set by the rule that built it and
+restricted per edge type. Illustrative, historical and quality flags are separate
+properties. There is no numeric confidence, and the curated `strength` stays an
+illustrative, ordinal label that is never used as a weight.
+**Why.** A number such as "0.8" would need a defined meaning and a method to estimate it,
+and none exists for these records. A status says truthfully what supports an edge, and
+"evidence-backed" is defined as "a source states it", not "verified".
+**Revisit if** relationships are ever estimated from data. An estimate would then carry its
+own method, sample and uncertainty, not a bare score.
+
+## 26. Entity resolution never merges by name
+
+**Decision.** Records are joined only through identifiers (ISO, ISIC, MIC) and explicit
+links (a series' catalogue link to a country). Similar names are flagged (identical after
+normalisation) or noted (contained or reordered), never merged. Fiction is never matched
+with fact. Every decision is logged.
+**Why.** Names collide constantly in finance: parents and subsidiaries, the same trading
+name in different countries, unrelated firms sharing common words. A wrong merge silently
+joins different legal entities and cannot be undone without the original records. A
+missed merge is visible and fixable.
+**Consequence.** Duplicates stay as separate nodes until a curator fixes the source.
+Candidate pairs are found by blocking (a word shared by more than 100 names is not used),
+so a partial match made only of common words is not searched for. Exact and reordered
+duplicates always are.
+
+## 27. Level-synchronous traversal in Python, always bounded
+
+**Decision.** BFS fetches the edges of a whole level in one query (a `UNION ALL` of two
+partial-index searches). Shortest paths use bidirectional BFS. Every traversal has a hard
+depth, node and path limit, and reports what a limit cut off.
+**Why.** `d + 1` round trips for a depth-*d* neighbourhood, whatever its size. Recursive
+SQL (CTEs) was rejected: SQLite and PostgreSQL differ in cycle handling, and budgets,
+filters and path reconstruction are clearer, and testable against brute force, in
+Python. An `OR` across the two endpoint columns made SQLite scan every edge (517 ms for a
+node's detail at 20,000 companies; 6 ms after the change).
+**Revisit if** traversals need depths or sizes where round trips dominate. See 23.
+
+## 28. A read-only graph API; builds from the command line
+
+**Decision.** Twelve `GET` endpoints. `POST`, `PUT`, `PATCH` and `DELETE` answer 405.
+Builds run only from `python -m app.graph build` (or `make graph`).
+**Why.** RUMIN has no authentication yet (see 12 and 20). A write endpoint would let
+anyone change the relationships others read, and a build endpoint would let anyone start
+expensive work.
+**Revisit** with authentication and roles (Phase 10): curated relationship edits would
+need review, an audit trail and versioning.
+
+## 29. The explorer draws; the server decides
+
+**Decision.** The web explorer receives nodes, edges, labels, meanings and caveats from
+the API and only arranges and draws them. Filters are sent to the server, which does the
+traversal. Layouts are deterministic (a radial tree by hops, columns for paths), with no
+force simulation. The first view is an aggregate map of node types, not the whole graph.
+**Why.** Relationship logic in one place (the backend) cannot drift between clients, and
+the Phase 4 engine and a future 3D view will read the same answers. A deterministic
+layout gives the same picture for the same data, so expansion is stable and distance from
+the centre always means hops. Opening on a map avoids an unreadable picture of every node.
+**Revisit if** views need thousands of nodes: canvas or WebGL rendering and a layout in a
+Web Worker.
+
+## 30. No centrality, weighted paths or community detection yet
+
+**Decision.** Phase 3 computes degree, components, density and provenance coverage only,
+each with a definition, calculation, interpretation and limitations. Degree is labelled
+"data coverage, not importance", and no company ranking is computed.
+**Why.** On a small, partly fictional graph, centrality would mostly measure which records
+were loaded and would be read as importance. Weights would need measured strengths, which
+do not exist. Clusters would reflect how the sample was written.
+**Revisit if** the graph holds enough real, sourced relationships for such measures to
+describe something other than the data's coverage, and a use case needs them.
+
+## 31. Freshness is cached for 30 seconds per API process
+
+**Decision.** The overview's "current or stale" answer, which reads and hashes every
+source record, is kept for 30 seconds per process. A new build invalidates it at once.
+**Why.** The check costs about 6 seconds at 20,000 companies. Paying it on every overview
+request would make the explorer's first view slow. A source change showing as stale up to
+30 seconds late is an acceptable, documented delay.
+**Revisit** with a cheaper change signal (a per-table checksum or change counter written
+when sources change), which would remove both the cost and the delay.
+
+## 32. Still no new dependencies
+
+**Decision.** Phase 3 adds no runtime or development dependency. The graph algorithms,
+layouts and glyphs are written in the project (and tested). Browser checks used a
+Playwright installation outside the project.
+**Why.** As in 21: less supply-chain risk and nothing to keep up to date. The algorithms
+needed are small, and hand-written versions can be tested against brute force.
+**Revisit if** the graph needs algorithms whose correct implementation is substantial
+(for example, community detection on large graphs). NetworkX or igraph would then be
+evaluated like any dependency.

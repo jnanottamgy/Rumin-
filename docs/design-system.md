@@ -135,6 +135,29 @@ legend box — the panel title and the unit label name what is plotted.
   not real", "No value published", "Flagged for review", and the three freshness facts
   (period, retrieval time, provider's last update) kept apart.
 
+## The knowledge graph explorer (Phase 3)
+
+The explorer (`/graph`) shows up to nine node types and four evidence statuses at once, so
+it keeps the network's rules — shape for kind, neutral ink, sky blue only for emphasis —
+and adds line patterns. Full details: [the explorer](graph/explorer.md).
+
+| What | Encoding | Why |
+|---|---|---|
+| Node type | **Shape**, in neutral ink: dot = company, ring = industry, diamond = economic variable, hollow square = country, hexagon = sector, target = currency, pill = data series, triangle = instrument, inverted triangle = market | Nine categories is past the point where colour stays distinguishable; shapes need no colour vision. Company, industry and variable keep their network shapes |
+| Nature | A second ring: dashed for fictional, dotted for sample; none for real records | Fiction and sample data are visible on every node, not only in the panel |
+| Data status (series) | Hollow pill = definition only; filled pill = values stored | Whether RUMIN holds values is visible without opening the node |
+| Evidence status | **Line pattern**: solid = evidence-backed, long dashes = analyst-created, dash–dot = model assumption, dotted with round caps = unverified | The most important property of an edge, readable in greyscale and print |
+| Category | Economic lines 1.6 px, structural 1.1 px, one colour (`--viz-edge-economic`, ≥ 3 : 1) | Assumptions stand out from classification facts without a second colour |
+| Size | Grows with the square root of degree, capped at 64 edges | Hubs are visible but never swamp the view; captioned "data coverage, not importance" |
+| Distance | Rings by hop count around the focus (radial tree) | Distance from the centre always means the same thing |
+| Emphasis | Sky blue for the selection, the hovered item and their connections; everything else dims | The one accent colour keeps its one job |
+| Aggregate map | Type marks with counts, joined by pale bands (`--color-line`) whose width grows with the square root of the edge count, capped | Clearly an aggregate: no individual entity is drawn |
+
+Labels keep a constant on-screen size and are written along the radius on crowded rings.
+On phones only the centre, the selection and the hovered node are labelled. The legend
+lists only the marks in view. As in the network, a table view lists the same nodes and
+relationships.
+
 ## Knowledge labels
 
 The five epistemic categories use one glyph each, everywhere (badges, legend, landing):
@@ -156,12 +179,13 @@ its source), `PageHeader`, `Icon`, `Wordmark`, and the loading, error and empty 
 
 ## Accessibility checklist
 
-- Keyboard: every control is reachable; network nodes are focusable buttons (Enter
-  selects, Escape clears, `+`/`−`/`0` zoom); time-series charts are sliders (arrow keys,
-  Home, End); a skip link leads to the main content.
+- Keyboard: every control is reachable; network and graph nodes are focusable buttons
+  (Enter selects, Escape clears, `+`/`−`/`0` zoom; **E** expands a graph node);
+  time-series charts are sliders (arrow keys, Home, End); a skip link leads to the main
+  content.
 - Screen readers: landmarks and headings on every page; live regions announce counts and
   save results; form errors are listed in a summary that links to each field.
 - Focus is always visible (sky-blue ring, ≥ 3 : 1).
 - Nothing relies on colour alone; contrast as above; reduced motion honoured.
-- Reviewed in Chromium at 1440 × 900, 1280 × 800 and 390 × 844, in both themes; there are
-  no automated visual or screen-reader tests yet.
+- Reviewed in Chromium at 1440 × 900, 1280 × 800 and 390 × 844 (the graph explorer also at
+  820 × 1180), in both themes; there are no automated visual or screen-reader tests yet.

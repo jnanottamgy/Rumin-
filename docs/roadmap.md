@@ -7,8 +7,8 @@ uncertainty are never blurred.
 | Phase | Name | Delivers |
 |---|---|---|
 | **1** | **Foundation & system architecture** | **Done:** API, database and migrations, domain model, illustrative network, 2D network view, Scenario Lab (inputs only), design system, tests, CI, documentation |
-| **2** | **Financial data infrastructure** | **Done in this build:** provider layer (World Bank), licensed price-file import, exact decimals, provenance and revisions, data-quality rules, job tracking, read-only data API, Data Explorer ([report](phases/phase-2-report.md)) |
-| 3 | Financial knowledge graph | Graph analytics: paths, centrality, exposure and propagation queries |
+| **2** | **Financial data infrastructure** | **Done:** provider layer (World Bank), licensed price-file import, exact decimals, provenance and revisions, data-quality rules, job tracking, read-only data API, Data Explorer ([report](phases/phase-2-report.md)) |
+| **3** | **Financial knowledge graph** | **Done in this build:** a graph of every record RUMIN holds (9 node types, 18 edge types) with evidence on every edge, conservative entity resolution, validation and build reports, neighbourhoods, shortest paths, components and metrics, a read-only graph API and the Knowledge Graph explorer ([report](phases/phase-3-report.md)). Centrality and propagation were deliberately left out ([why](decisions.md#30-no-centrality-weighted-paths-or-community-detection-yet)) |
 | 4 | Simulation engine | Running scenarios: propagating shocks through the model, with stated assumptions and uncertainty |
 | 5 | Scenario Lab | Full scenario workflow: runs, comparisons, sensitivity, saved results |
 | 6 | Financial intelligence | Indicators, explanations and reports built on data and simulations |
@@ -21,7 +21,7 @@ The Phase 1 plan named FRED as the first data source. The Phase 2 licence review
 FRED's terms prohibit storing its content in a database, so the World Bank was selected
 instead (see [decisions](decisions.md#13-world-bank-indicators-as-the-first-provider-fred-rejected)).
 
-## Data follow-ups (before or alongside Phase 3)
+## Data follow-ups (before or alongside Phase 4)
 
 1. **Verify a live World Bank run** on a machine with internet access and review the data
    in the Data Explorer (the build environment blocked the provider).
@@ -41,3 +41,18 @@ instead (see [decisions](decisions.md#13-world-bank-indicators-as-the-first-prov
 - Add dependency and secret scanning to CI.
 - Add browser end-to-end tests (Playwright) for the main flows, and run them in CI.
 - Decide the authentication model before any multi-user or hosted use.
+
+## Graph follow-ups (before or alongside Phase 4)
+
+1. **A cheaper freshness check**: a change counter or per-table checksum written when
+   sources change, so the overview no longer reads every record (about 6 s at 20,000
+   companies) and "stale" appears at once.
+2. **Skip unchanged rebuilds** when the source fingerprint matches the latest build, and
+   compute components once per build.
+3. **A review workflow** for entity-resolution candidates and validation issues, shared
+   with the data-quality review (data follow-up 3).
+4. **Real, sourced relationships**: citations for curated relationships, and a policy for
+   adding documented real-company relationships (see data follow-up 6).
+5. **Attribute history** (`graph_node_versions` / `graph_edge_versions`) if earlier
+   descriptions or qualifiers must be reconstructable, not only membership.
+6. **Search at scale**: a trigram or full-text index for node search on PostgreSQL.

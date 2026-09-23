@@ -2,12 +2,18 @@
 
 **Financial intelligence and economic simulation.** RUMIN maps how companies, industries,
 countries and economic variables connect, stores the historical data that describes them,
+connects every record it holds in a knowledge graph that says why each connection exists,
 lets you define scenarios on that network, and labels everything it shows as one of five
 kinds of knowledge: observation, assumption, scenario input, simulated output or
 uncertainty.
 
-> **Status: Phase 2 — financial data infrastructure** (on top of the Phase 1 foundation).
+> **Status: Phase 3 — financial knowledge graph** (on top of the Phase 1 foundation and the
+> Phase 2 data infrastructure).
 >
+> - **The knowledge graph connects the records RUMIN holds, not the economy.** Every edge
+>   has an evidence status (evidence-backed, analyst-created, model assumption or
+>   unverified) and the records that explain it. No edge is a measured effect, a
+>   correlation or a causal finding, and no edge has been empirically validated.
 > - **Historical data, never live.** RUMIN retrieves a curated set of annual World Bank
 >   indicators (World Development Indicators, CC BY 4.0) from the command line, and imports
 >   daily prices only from CSV files **you are licensed to use**. It ships **no price data**
@@ -17,7 +23,8 @@ uncertainty.
 >   ISIC industries and variable definitions are real concepts with references.
 > - There is **no simulation engine** (Phase 4) and **no AI analyst** (Phase 7).
 > - There is **no authentication** yet (Phase 10): run it locally only. For that reason the
->   API is read-only for data, and ingestion starts from the command line.
+>   API is read-only for data and for the graph, and ingestion and graph builds start from
+>   the command line.
 >
 > Nothing in RUMIN is investment advice.
 
@@ -28,6 +35,8 @@ uncertainty.
 | Landing page | Available | What RUMIN is, the five kinds of knowledge, what exists in this build, the roadmap |
 | Overview (dashboard) | Available | Live workspace figures from the API, network preview, recent drafts, system and data status |
 | Financial Universe | Available (2D) | Interactive network: selection, hover details, search, filters, legend, pan/zoom, deep links, keyboard access, table view |
+| **Knowledge Graph** | Available (Phase 3) | The graph of every record RUMIN holds (9 node types, 18 relationship types): aggregate map, search by name or code, neighbourhoods on a radial layout, step-by-step expansion, filters by type and evidence, the evidence behind every edge, shortest paths, history, table view |
+| **Graph build** | Available (command line) | Builds the graph from the stored records with entity resolution (flag, never merge), 26 validation rules and a validation report; rebuilding unchanged sources changes nothing |
 | **Data Explorer** | Available (Phase 2) | Stored series and prices with their source, licence, freshness and quality; exact-value tables; accessible charts; revision history; ingestion runs |
 | **Data ingestion** | Available (command line) | World Bank series (throttled, retried, validated, versioned) and licensed price-file import, each recorded as a job |
 | Scenario Lab | Foundation | Named drafts with variable changes, validated against published limits; **not simulated** |
@@ -47,6 +56,7 @@ make migrate            # create the SQLite database (backend/rumin.db)
 make seed               # load the illustrative sample network
 make catalog            # load the series catalogue (definitions only; nothing is fetched)
 make ingest             # retrieve the World Bank series — needs internet access
+make graph              # build the knowledge graph from what is stored (no network)
 make backend            # terminal 1 → API on http://127.0.0.1:8000 (docs: /docs)
 make frontend           # terminal 2 → web client on http://127.0.0.1:5173
 ```
@@ -65,6 +75,7 @@ uv run alembic upgrade head
 uv run python -m app.db.seed
 uv run python -m app.ingestion catalog
 uv run python -m app.ingestion run worldbank-wdi
+uv run python -m app.graph build
 uv run uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 
 # Frontend — in frontend/
@@ -90,6 +101,10 @@ one origin and no API URL has to be configured.
 | Import a licensed price file | — | `uv run python -m app.ingestion import-prices --manifest M.json --file prices.csv` |
 | Blank price-file manifest | — | `uv run python -m app.ingestion manifest-template` |
 | Recent ingestion runs | `make ingest-jobs` | `uv run python -m app.ingestion jobs`, then `… job <id>` |
+| Build the knowledge graph | `make graph` | `uv run python -m app.graph build` (backend/) |
+| Graph status (current or stale) | `make graph-status` | `uv run python -m app.graph status` |
+| What a build would do (writes nothing) | — | `uv run python -m app.graph validate` |
+| Recent builds, one build's report | — | `uv run python -m app.graph builds`, `… report [BUILD]` |
 | All unit and API tests | `make test` | `uv run pytest` (backend/), `npm test` (frontend/) |
 | End-to-end smoke test | `make smoke` | `scripts/smoke_test.sh` |
 | Lint and format checks | `make lint` | `uv run ruff check . && uv run ruff format --check .`, `npm run lint` |
@@ -103,6 +118,10 @@ one origin and no API URL has to be configured.
 The ingestion commands exit with `0` (completed, possibly with warnings), `1` (failed),
 `3` (partially failed), `130` (cancelled) or `2` (not started: bad input, another run in
 progress, or the database is not migrated).
+
+The graph commands exit with `0` (success, warnings allowed), `1` (the build failed, or
+`validate` found something a build would reject) or `2` (nothing could run: another build
+is running, the database is not migrated, or the requested build does not exist).
 
 If a run fails, `make ingest-jobs` and `… job <id>` show which series failed and why. The
 [troubleshooting table](docs/data/ingestion.md#troubleshooting) lists the usual causes and
@@ -133,7 +152,9 @@ backend/            FastAPI application, SQLAlchemy models, Alembic migrations, 
   app/core/         settings, logging, errors, middleware
   app/data/         the illustrative sample network and the series catalogue (JSON)
   app/db/           engine/session, exact-decimal and UTC column types, seed loader
-  app/domain/       enums, relationship-type registry, scenario rules
+  app/domain/       enums, relationship-type and graph-type registries, scenario rules
+  app/graph/        knowledge graph: construction rules, entity resolution, validation,
+                    persistence, build command, algorithms, read interface
   app/ingestion/    providers, HTTP (throttling, retries), normalisation, quality rules,
                     persistence with revisions, job tracking, command line
   app/models/       ORM models
@@ -143,12 +164,13 @@ backend/            FastAPI application, SQLAlchemy models, Alembic migrations, 
 frontend/           React + TypeScript web client (Vite)
   src/app/          router, theme, module registry
   src/components/   shared UI primitives
-  src/features/     network, scenarios, data (chart, tables, provenance, freshness)
+  src/features/     network, graph (the explorer), scenarios, data (chart, tables,
+                    provenance, freshness)
   src/pages/        one component per route
   tests/            unit and page tests; tests/integration runs against a live API
 docs/               architecture, API, data model, data pipeline, testing, roadmap and more
   api/openapi.json  committed API contract (the frontend's types are generated from it)
-scripts/            smoke_test.sh
+scripts/            smoke_test.sh (backend/scripts and frontend/scripts: graph benchmarks)
 ```
 
 ## Documentation
@@ -161,13 +183,18 @@ scripts/            smoke_test.sh
   [providers and licensing](docs/data/providers.md) ·
   [ingestion pipeline](docs/data/ingestion.md) · [data quality](docs/data/quality.md) ·
   [price files](docs/data/price-files.md)
+- Knowledge graph: [overview](docs/graph/README.md) · [concepts](docs/graph/concepts.md) ·
+  [architecture](docs/graph/architecture.md) · [relationship types](docs/graph/relationship-types.md) ·
+  [provenance](docs/graph/provenance.md) · [limitations](docs/graph/limitations.md) ·
+  [performance](docs/graph/performance.md) · [Phase 4 integration](docs/graph/phase-4-integration.md)
 - [Design system](docs/design-system.md)
 - [Testing](docs/testing.md)
 - [Security](docs/security.md)
 - [Known limitations](docs/known-limitations.md)
 - [Roadmap](docs/roadmap.md)
 - Phase reports: [Phase 1](docs/phases/phase-1-report.md) ·
-  [Phase 2 plan](docs/phases/phase-2-plan.md) · [Phase 2 report](docs/phases/phase-2-report.md)
+  [Phase 2 plan](docs/phases/phase-2-plan.md) · [Phase 2 report](docs/phases/phase-2-report.md) ·
+  [Phase 3 plan](docs/phases/phase-3-plan.md) · [Phase 3 report](docs/phases/phase-3-report.md)
 
 ## Licence
 

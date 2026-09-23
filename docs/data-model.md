@@ -5,9 +5,11 @@ countries, economic variables), **relationships** between entities (modelling
 assumptions) and **scenarios** (user-defined changes to variables). Phase 2 adds the
 **financial data layer**: providers, economic series and their observations, instruments
 and their daily prices, and the records of every ingestion run — the jobs, the exact bytes
-received, and the data-quality issues found ([below](#phase-2-financial-data)). The same
-schema runs on SQLite (development) and PostgreSQL (production), and is created only
-through Alembic migrations.
+received, and the data-quality issues found ([below](#phase-2-financial-data)). Phase 3
+adds the **knowledge graph**: builds, nodes and their identifiers, edges and their
+evidence, entity-resolution decisions and validation issues, all derived from the tables
+above ([below](#phase-3-knowledge-graph)). The same schema runs on SQLite (development)
+and PostgreSQL (production), and is created only through Alembic migrations.
 
 Field-level definitions and the contents of the sample dataset are in the
 [data dictionary](data-dictionary.md).
@@ -260,6 +262,92 @@ by (`instrument_id`, `trade_date`), foreign keys used in filters (dataset, provi
 country, variable, job, series, instrument), job status and creation time, issue rule,
 and capture SHA-256.
 
+## Phase 3: knowledge graph
+
+The graph is a **derived, rebuildable projection** of the Phase 1 and Phase 2 tables,
+written only by `python -m app.graph build`. No graph table has a foreign key into those
+tables: reloading reference data or ingesting a series is never blocked by the graph, and
+evidence names its source by table and record ID instead. See
+[`docs/graph/architecture.md`](graph/architecture.md).
+
+```mermaid
+erDiagram
+    graph_builds ||--o{ graph_nodes : "adds / changes / retires"
+    graph_builds ||--o{ graph_edges : "adds / changes / retires"
+    graph_builds ||--o{ graph_resolution_decisions : "records"
+    graph_builds ||--o{ graph_issues : "found"
+    graph_nodes ||--o{ graph_node_identifiers : "is identified by"
+    graph_nodes ||--o{ graph_edges : "source"
+    graph_nodes ||--o{ graph_edges : "target"
+    graph_edges ||--|{ graph_edge_evidence : "is explained by"
+
+    graph_builds {
+        int id PK
+        string status
+        string rules_version
+        string source_fingerprint
+        json sources
+        json metrics
+    }
+    graph_nodes {
+        string id PK "company:co_deltrin_refining"
+        string node_type
+        string display_name
+        string nature
+        string quality_status
+        json sources
+        int degree
+        int component
+        string content_hash
+        int first_build_id FK
+        int changed_build_id FK
+        int retired_build_id FK
+    }
+    graph_edges {
+        string id PK "e- + 16 hex"
+        string edge_type
+        string source_node_id FK
+        string target_node_id FK
+        string evidence_status
+        bool is_illustrative
+        date valid_from
+        date valid_to
+        string content_hash
+        int retired_build_id FK
+    }
+    graph_edge_evidence {
+        int id PK
+        string edge_id FK
+        string rule_id
+        string source_table
+        string source_record_id
+        string statement
+        string derivation
+    }
+```
+
+| Table | Purpose | Keys and constraints |
+|---|---|---|
+| `graph_builds` | One build: status, trigger, rules version, timing, the SHA-256 fingerprint of every source record, the datasets and versions read, validation counts (processed, valid, flagged, rejected for nodes and edges), changes (added, changed, retired, unchanged), issue counts, metrics and a short, safe error summary | `id` |
+| `graph_nodes` | One entity: deterministic key, type, display name, subtitle, description, nature (`real`, `fictional`, `sample`), quality status, descriptive attributes (never financial values), the source records it came from, search text, degree (total, in, out), component, content hash, and the builds that added, last changed and retired it | `id` is the key (`type:record-id`); build columns reference `graph_builds` with `RESTRICT` |
+| `graph_node_identifiers` | External identifiers of a node (ISO 3166-1 alpha-2 and alpha-3, ISO 4217, ISIC Rev. 4 section and division, provider series key, ISIN, MIC, listing), each with the record that stated it | `UNIQUE (scheme, value)`: an identifier belongs to at most one node. Cascades with its node |
+| `graph_edges` | One relationship: deterministic key, type, category, source and target nodes, direction, description, evidence status, illustrative flag, quality status, validity period, qualifiers (`attributes`), content hash and build columns | `id` (`e-` + 16 hex of SHA-256 over type, source, target); endpoints reference `graph_nodes` with `RESTRICT` |
+| `graph_edge_evidence` | Why an edge exists: rule, source kind, source table and record, dataset and version, statement, transformation, derivation (`direct` or `derived`) and what it was derived from, citation and link, retrieval and recording times | at least one per edge (enforced by validation); cascades with its edge |
+| `graph_resolution_decisions` | Every entity-resolution decision beyond a record's own key: the source record and the values compared, method, outcome, identifier, candidate nodes and the reason | per build; cascades with it |
+| `graph_issues` | Every validation issue of a build: subject (node, edge, identifier, resolution), rule, severity, outcome, message and details | per build; cascades with it |
+
+**Indexes.** Partial indexes on **current** rows (`WHERE retired_build_id IS NULL`) serve
+every read: edges by (`source_node_id`, `edge_type`) and by (`target_node_id`,
+`edge_type`) — the traversal queries use one of each, combined with `UNION ALL` — and nodes
+by `node_type`. Plus: edges by type, evidence by edge and by (`source_table`,
+`source_record_id`), identifiers by node, builds by status, and issues and decisions by
+build and by node.
+
+**History.** Nodes and edges are never deleted. A build that no longer finds a node's
+source sets `retired_build_id`; the graph's membership at build *n* is the rows with
+`first_build_id ≤ n` and `retired_build_id` empty or greater than *n*. Changed content
+overwrites the row and updates `changed_build_id`: earlier attribute values are not kept.
+
 ## Enumerations
 
 Enumerations are stored as `VARCHAR` with a `CHECK` constraint, not native database enum
@@ -295,6 +383,16 @@ migration.
 | Capture kind | `http_response`, `file` |
 | Instrument type | `equity`, `etf`, `index` |
 | Price adjustment | `unadjusted`, `adjusted` |
+| Graph node type | `country`, `currency`, `sector`, `industry`, `company`, `economic_variable`, `data_series`, `instrument`, `market` |
+| Graph edge type | `supplies_to`, `lends_to`, `competes_with`, `affects_costs`, `affects_revenue`, `affects_financing`, `influences`, `in_industry`, `domiciled_in`, `measured_for`, `in_sector`, `has_currency`, `covers`, `related_measure_of`, `expressed_in`, `listed_on`, `quoted_in`, `associated_with` |
+| Relationship category | `economic`, `structural` |
+| Evidence status | `evidence_backed`, `analyst_created`, `model_assumption`, `unverified` |
+| Node nature | `real`, `fictional`, `sample` |
+| Graph build status | `running`, `completed`, `completed_with_warnings`, `failed` |
+| Evidence source kind / derivation | `reference_dataset`, `series_catalogue`, `price_file_manifest`, `classification_standard` / `direct`, `derived` |
+| Identifier scheme | `iso3166_alpha2`, `iso3166_alpha3`, `iso4217`, `isic_rev4_section`, `isic_rev4_division`, `provider_series`, `isin`, `mic`, `listing` |
+| Resolution method / outcome | `identifier`, `explicit_link`, `name_comparison` / `linked`, `identifier_attached`, `candidate_flagged`, `conflict`, `rejected` |
+| Graph issue subject | `node`, `edge`, `identifier`, `resolution` |
 
 ## Conventions
 
@@ -309,7 +407,9 @@ migration.
 
 Alembic, in `backend/migrations/`. `0001_initial_schema` creates the nine Phase 1 tables;
 `0002_financial_data_infrastructure` extends `datasets` and adds the nine Phase 2 tables
-(its downgrade removes provider datasets first, then the tables and columns).
+(its downgrade removes provider datasets first, then the tables and columns);
+`0003_knowledge_graph` adds the seven graph tables and changes no existing table (its
+downgrade drops them, and the graph can be rebuilt from the sources at any time).
 
 - Every schema change is a new revision: edit the models, run
   `uv run alembic revision --autogenerate -m "…"`, **review the generated file**, apply it

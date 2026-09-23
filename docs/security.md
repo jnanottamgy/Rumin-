@@ -88,6 +88,40 @@ those licences when sharing a database or its exports.
 - Licence and terms links shown in the web client come from the validated catalogue or
   manifest (`https://` only) and open with `rel="noopener noreferrer"`.
 
+### Knowledge graph (Phase 3)
+
+- **Read-only API.** The twelve graph endpoints are `GET` only; `POST`, `PUT`, `PATCH` and
+  `DELETE` answer 405 (tested). Nothing over HTTP can create, change or delete a node,
+  an edge or a build. Builds run only from the command line, one at a time; a build left
+  `running` by a dead process is closed after an hour by the next one.
+- **Validated parameters.** Node keys must match
+  `^(country|…|market):[a-z0-9][a-z0-9_.-]{0,95}$` and edge keys `^e-[0-9a-f]{16}$` before
+  the database is queried. Types, statuses, directions and severities are enumerations.
+  Repeated filters are capped (9 node types, 18 edge types, 4 statuses). Search text is 1
+  to 100 characters with control characters refused and LIKE wildcards escaped. Invalid
+  input is rejected with 422, never clamped or passed on (tested with injection-shaped
+  keys such as `Robert'); DROP TABLE graph_nodes;--`).
+- **Bounded work per request.** Depth ≤ 3, ≤ 200 nodes per neighbourhood, paths ≤ 6 hops
+  and ≤ 10 paths, a 5,000-node budget per path search, ≤ 50 components, pagination ≤ 500.
+  Traversal queries touch only the current frontier, in chunks of at most 400 keys.
+  Components, degree and metrics are read from what the last build stored. **One request
+  reads whole tables**: the overview's freshness check reads and hashes every source
+  record, at most once every 30 seconds per API process (about 6 s of work at 20,000
+  companies, [performance](graph/performance.md)). Without rate limiting, this is the
+  graph's largest cost an anonymous client can trigger.
+- **Safe failures.** Errors use the standard envelope. A failed build rolls back its graph
+  changes and stores only "The build failed with an internal error and changed nothing.
+  Details are in the server log."; the stack trace goes to the log.
+- **Validated relationship data.** Relationships are validated when the sample dataset is
+  loaded (Phase 1), and again by the build: an edge of an unknown type, between the wrong
+  kinds of node, pointing the wrong way, without evidence, with a status its type does not
+  allow, or mixing fiction and fact is rejected and recorded as an issue
+  ([construction](graph/construction.md#validation)).
+- **Safe rendering.** The explorer renders text through React (no raw HTML anywhere in the
+  client). A citation becomes a link only if it is an `http(s)` URL, and reference links are
+  validated as `https://` when the dataset is loaded. The `focus`, `from` and `to` address
+  parameters are checked against the node-key pattern before use.
+
 ### Secrets and supply chain
 
 - **No secrets exist yet**, and none are in the repository: `.env` files are git-ignored,
@@ -96,10 +130,11 @@ those licences when sharing a database or its exports.
   disposable databases. Future provider keys belong in the backend environment or a secret
   store (see [environment](environment.md#secrets)).
 - Dependencies are pinned by lock files (`backend/uv.lock`, `frontend/package-lock.json`)
-  and installed with `--frozen` / `npm ci`. **Phase 2 added no dependencies** (HTTP, CSV,
-  gzip and hashing come from the Python standard library; the chart is hand-written SVG).
-  `npm audit` reported no known vulnerabilities when Phase 2 was built; the Python
-  dependencies were not audited with a tool (`pip-audit` was not available).
+  and installed with `--frozen` / `npm ci`. **Phases 2 and 3 added no dependencies**
+  (HTTP, CSV, gzip and hashing come from the Python standard library; the chart, the graph
+  algorithms and the graph layouts are written in the project). When Phase 3 was built
+  (2026-09-23), `npm audit` reported no known vulnerabilities, and `pip-audit` (run once
+  through `uvx`, not a project dependency) found none in the locked Python dependencies.
 - CI runs with read-only repository permissions.
 
 ## Not yet in place
@@ -110,7 +145,7 @@ These are deliberate gaps, listed so nobody assumes otherwise:
 |---|---|
 | Authentication, user accounts, roles, per-user scenarios | Phase 10 |
 | Inbound rate limiting and abuse protection (outbound provider requests are throttled) | Phase 10 (and at the reverse proxy) |
-| An authenticated way to start ingestion | Phase 10 |
+| An authenticated way to start ingestion or a graph build, or to edit relationships (with review and an audit trail) | Phase 10 |
 | A formal security review | Before any hosted or multi-user use |
 | TLS termination, deployment hardening, a Content-Security-Policy for the web client's HTML (it needs a hash for the small inline theme script in `index.html`) | Phase 10, with deployment |
 | Audit log of changes | With authentication |

@@ -227,6 +227,63 @@ the illustrative sample dataset. For tables, keys and constraints see
 | `observation_id`, `price_bar_id` | The stored value a flag or note is about. |
 | `review_status` | `unreviewed` (no review workflow yet). |
 
+## Knowledge graph
+
+The graph's fields are defined in full in [`docs/graph/nodes.md`](graph/nodes.md),
+[`docs/graph/edges.md`](graph/edges.md) and [`docs/graph/provenance.md`](graph/provenance.md).
+The graph is derived from the records above: it adds no data of its own beyond codes those
+records name (currencies, ISIC sections, markets) and the links between them.
+
+### Graph node
+
+| Field | Meaning |
+|---|---|
+| `id` | Deterministic key, `type:record-id` (`company:co_deltrin_refining`, `currency:inr`, `sector:isic4-c`). Stable across builds. |
+| `type` | `country`, `currency`, `sector`, `industry`, `company`, `economic_variable`, `data_series`, `instrument` or `market`. |
+| `name`, `subtitle` | The source record's name, and words that tell similar names apart. |
+| `nature` | `real`, `fictional` or `sample`, taken from the source records, never from names. |
+| `quality_status` | `validated`, or `warning` when a validation rule flagged it. |
+| `identifiers` | External identifiers (scheme, value, the record that stated it). One identifier belongs to at most one node. |
+| `sources` | The source records it was built from: table, record ID, dataset, version, fields used. |
+| `degree`, `in_degree`, `out_degree` | Current edges touching it. Data coverage, not importance. |
+| `component` | Its connected component in the latest build (1 = largest). |
+| `data_status` | Series and instruments: `values_stored` or `definition_only`, read live. Others: `not_applicable`. |
+
+### Graph edge
+
+| Field | Meaning |
+|---|---|
+| `id` | `e-` + 16 hex characters of SHA-256 over (type, source key, target key). |
+| `type`, `category` | One of the 18 [relationship types](graph/relationship-types.md); `economic` or `structural`. |
+| `source`, `target`, `directed` | Node keys and whether direction matters (not for `competes_with`). |
+| `evidence_status` | `evidence_backed`, `analyst_created`, `model_assumption` or `unverified`. |
+| `is_illustrative` | True when it touches fictional or sample data. |
+| `valid_from`, `valid_to`, `historical` | The validity period, only if a source states one; `historical` when it has ended. |
+| `qualifiers` | What the source states: assumed `polarity`, illustrative `strength`, `evidence_level`, `rationale`, `stated_difference`. No confidence score. |
+
+### Edge evidence
+
+| Field | Meaning |
+|---|---|
+| `rule` | The construction rule (`R01`–`R12`) that made the edge. |
+| `source_kind` | `reference_dataset`, `series_catalogue`, `price_file_manifest` or `classification_standard`. |
+| `source_table`, `source_record_id`, `dataset_id`, `dataset_version` | The record the edge came from. |
+| `statement`, `transformation` | What the source says, and how the rule turned it into the edge. |
+| `derivation`, `derived_from` | `direct`, or `derived` with what it was derived from. |
+| `citation`, `citation_url` | The outside source the record cites, if any. |
+| `retrieved_at`, `recorded_at` | When a provider delivered the data (provider data only); when RUMIN loaded the record. |
+
+### Graph build
+
+| Field | Meaning |
+|---|---|
+| `status` | `running`, `completed`, `completed_with_warnings` or `failed`. |
+| `rules_version`, `source_fingerprint` | The construction rules' version and a SHA-256 over every source record, used to tell whether the graph is current. |
+| `sources` | The datasets and versions read. |
+| `nodes`, `edges` | Processed, valid, flagged and rejected counts, from the run itself. |
+| `node_changes`, `edge_changes` | Added, changed, retired and unchanged. |
+| `metrics` | Node and edge counts, components, degree, density and provenance coverage, each defined in [algorithms](graph/algorithms.md#graph-metrics). |
+
 ## Sample dataset catalogue
 
 `rumin-sample` v1.0.0 — `backend/app/data/sample_dataset.json`. Relationship rationales are

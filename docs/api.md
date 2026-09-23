@@ -20,7 +20,7 @@ Regenerate after changing an endpoint or schema: `make api-types` (or
 | Versioning | Application endpoints live under `/api/v1`. Breaking changes will get a new prefix (`/api/v2`); additive changes (new fields, new endpoints) do not. Health probes are unversioned, as infrastructure expects. |
 | Format | Requests and responses are JSON (`application/json`). Request bodies with any other content type are rejected. |
 | Unknown fields | Request bodies with fields the contract does not define are rejected (422), so typos never pass silently. |
-| IDs | Reference-data IDs are readable slugs with a kind prefix: `co_…`, `ind_…`, `cty_…`, `var_…`, `rel_…` (pattern `^[a-z]{2,4}_[a-z0-9_]{2,59}$`). Datasets, series and instruments have lowercase slugs (`worldbank-wdi`, `wb-ind-fp-cpi-totl-zg`, `xnse-reliance`). Scenario and ingestion-job IDs are UUIDs. Path and query IDs are validated against their pattern (422 otherwise). |
+| IDs | Reference-data IDs are readable slugs with a kind prefix: `co_…`, `ind_…`, `cty_…`, `var_…`, `rel_…` (pattern `^[a-z]{2,4}_[a-z0-9_]{2,59}$`). Datasets, series and instruments have lowercase slugs (`worldbank-wdi`, `wb-ind-fp-cpi-totl-zg`, `xnse-reliance`). Scenario and ingestion-job IDs are UUIDs. Knowledge-graph keys are `type:record-id` for nodes and `e-` plus 16 hex characters for edges ([below](#knowledge-graph)). Path and query IDs are validated against their pattern (422 otherwise). |
 | Data values | Observation values, prices and review ranges are **exact decimal strings in plain notation** (`"5.649"`, `"0.000000000000000001"`), never JSON numbers, so no digit is lost to floating point. A missing value is `null`, never `0`. |
 | Dates | Calendar dates (periods, trade dates, the provider's last update) are `YYYY-MM-DD`; they have no time zone. |
 | Pagination | List endpoints take `limit` (1–500, default 100) and `offset` (default 0) and return `{items, total, limit, offset}`. |
@@ -83,6 +83,101 @@ contains **structural links** (`category: "structural"`) derived at query time f
 fields — `in_industry` (company → its industry), `domiciled_in` (company → its country) and
 `measured_for` (variable → its country). They are facts about how the sample records are
 classified, not economic assumptions, and have no polarity, strength or evidence level.
+
+`/api/v1/network` is the Phase 1 view of the sample network, used by the Financial
+Universe page. The knowledge graph below is the Phase 3 graph of every record RUMIN holds,
+with provenance on every edge.
+
+## Knowledge graph
+
+Read-only endpoints under `/api/v1/graph` (Phase 3). The graph is built from the command
+line (`make graph`); the API has **no write endpoint**, and `POST`, `PUT`, `PATCH` and
+`DELETE` answer 405. Concepts, node and edge models and algorithms are documented in
+[`docs/graph/`](graph/README.md).
+
+| Method and path | Purpose | Success |
+|---|---|---|
+| `GET /api/v1/graph/overview` | The latest build (validation counts, changes), whether it is **current** or **stale** against its sources, the metrics with their definitions and limitations, a type-level map (node counts per type, edge counts between types) and notes on what the graph is not. `build` is `null` and `freshness.status` is `not_built` before the first build. | 200 |
+| `GET /api/v1/graph/types` | The vocabulary: node types, edge types (meaning, endpoints, direction, allowed evidence statuses, caveat), evidence-status definitions, identifier schemes, construction rules and validation rules. | 200 |
+| `GET /api/v1/graph/nodes` | Search. `q` (1–100 characters) matches names, subtitles and identifiers, case-insensitively; an exact identifier comes first. Filters: `type` (repeatable), `nature`, `related_to` (nodes with an edge to this node); `sort`: `name` or `-degree`. Each result says how it matched and whether its name is `ambiguous` (shared by several nodes). | 200 |
+| `GET /api/v1/graph/nodes/{node_id}` | One node: identifiers with the record that stated each, source records, relationships by type and direction, entity-resolution decisions, quality issues, live data status for series and instruments, and for companies and industries the variables linked by assumed-effect edges (`direct` or `via_industry`). | 200 / 404 |
+| `GET /api/v1/graph/nodes/{node_id}/neighborhood` | The nodes within `depth` hops and every edge among them. `depth` 1–3 (default 1), `max_nodes` 2–200 (default 60), `edge_type`, `node_type`, `evidence_status` (all repeatable), `direction` (`any`, `out`, `in`), `include_illustrative`. Reports `truncated`, `unexplored_count`, `unexplored_by_type` and `queries`. | 200 / 404 |
+| `GET /api/v1/graph/edges` | Current edges. Filters: `type`, `evidence_status` (repeatable), `node` (either end), `illustrative`. Paginated. | 200 |
+| `GET /api/v1/graph/edges/{edge_id}` | One edge and **why it exists**: an `explanation` paragraph, every evidence record, the status's definition, the type's meaning and its `caveat` (what it does not mean). | 200 / 404 |
+| `GET /api/v1/graph/paths` | Shortest paths in hops between `from` and `to`: `max_depth` 1–6 (default 4), `limit` 1–10 (default 3), `direction`, `edge_type`, `evidence_status`, `include_illustrative`. Reports `found`, `length`, `nodes_explored`, `budget_exhausted` (the 5,000-node search budget ran out) and a `note` that a path is not a causal chain. | 200 / 404 |
+| `GET /api/v1/graph/components` | Connected components (direction ignored), largest first, with their composition and a small sample of nodes. `limit` 1–50 (default 10). | 200 / 404 |
+| `GET /api/v1/graph/builds` | Every build, newest first, with validation counts and changes. Paginated. | 200 |
+| `GET /api/v1/graph/builds/{build_id}` | One build's report: counts, changes, the datasets and versions read, metrics, issue counts by rule, resolution decisions by outcome, and a safe error summary if it failed. | 200 / 404 |
+| `GET /api/v1/graph/issues` | Validation issues of a build (default: the latest), including entity-resolution candidates flagged for review. Filters: `build_id`, `rule`, `severity`, `node`. Paginated. | 200 |
+
+**Keys.** Node keys are `type-prefix:record-id`, lower-case:
+`^(country|currency|sector|industry|company|variable|series|instrument|market):[a-z0-9][a-z0-9_.-]{0,95}$`
+(for example `company:co_deltrin_refining`, `currency:inr`, `sector:isic4-c`). URL-encode
+the colon in paths if your client needs it. Edge keys are `e-` plus 16 hexadecimal
+characters. Anything else is rejected with 422 before the database is queried.
+
+**Limits.** Every traversal is bounded, and anything out of range is rejected with 422
+rather than clamped: depth ≤ 3, ≤ 200 nodes per neighbourhood, paths ≤ 6 hops, ≤ 10
+paths, at most 9 node types, 18 edge types and 4 evidence statuses per filter. A path
+search also stops after visiting 5,000 nodes and says so (`budget_exhausted: true`), which
+is different from "no path".
+
+**Before the first build**, the endpoints that need a graph (a node, a neighbourhood, an
+edge, paths, components) answer 404 with the message "No knowledge graph has been built
+yet. Run: make graph". The overview answers 200 with `freshness.status: "not_built"`.
+
+Example: why does an edge exist?
+
+```http
+GET /api/v1/graph/edges/e-dff724fccf21ee64
+```
+
+```json
+{
+  "id": "e-dff724fccf21ee64",
+  "type": "affects_costs",
+  "category": "economic",
+  "source": "variable:var_usd_inr",
+  "target": "company:co_deltrin_refining",
+  "directed": true,
+  "label": "affects costs of",
+  "evidence_status": "model_assumption",
+  "is_illustrative": true,
+  "valid_from": null,
+  "valid_to": null,
+  "historical": false,
+  "qualifiers": {
+    "polarity": "positive",
+    "strength": "strong",
+    "evidence_level": "illustrative",
+    "rationale": "Deltrin (fictional) imports crude oil priced in U.S. dollars, so a weaker rupee raises its input costs in rupees."
+  },
+  "explanation": "USD/INR exchange rate — affects costs of → Deltrin Refining. Rule R01 curated_relationship built it from relationships/rel_usd_inr_costs_deltrin (dataset rumin-sample, 1.0.0): … Evidence status: Model assumption. … Illustrative: it involves the fictional sample network or sample data, so it says nothing about the real world.",
+  "evidence": [
+    {
+      "rule": "R01 curated_relationship",
+      "source_kind": "reference_dataset",
+      "source_table": "relationships",
+      "source_record_id": "rel_usd_inr_costs_deltrin",
+      "dataset_id": "rumin-sample",
+      "dataset_version": "1.0.0",
+      "statement": "Curated relationship rel_usd_inr_costs_deltrin: var_usd_inr affects_costs co_deltrin_refining, evidence level 'illustrative'. …",
+      "transformation": "Copied as an edge of the same type; the description, rationale, assumed polarity and illustrative strength are kept unchanged.",
+      "derivation": "direct",
+      "citation": null,
+      "retrieved_at": null,
+      "recorded_at": "2026-09-23T14:38:11.984881Z",
+      "…": "…"
+    }
+  ],
+  "evidence_status_label": "Model assumption",
+  "caveat": "An assumed effect, not a measured one: it says nothing about size or timing, and entities of the same kind can be affected very differently. A connection is not evidence of causation.",
+  "…": "…"
+}
+```
+
+(Abridged: `source_node`, `target_node`, the status definition, the type's description and
+the build IDs are omitted. Deltrin Refining is a fictional company.)
 
 ## Scenarios
 
