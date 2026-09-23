@@ -3,8 +3,8 @@
  *
  * Components reference SEMANTIC tokens only (--color-*, --viz-*), never primitives
  * or raw hex values. Each theme re-maps the semantic layer; nothing else changes.
- * Contrast of every text token was checked against bg/surface/raised (WCAG AA ≥ 4.5:1;
- * marks and focus rings ≥ 3:1). See docs/design-system.md.
+ * Contrast was checked against every surface token in both themes: text ≥ 4.5:1 (WCAG AA);
+ * data marks, focus rings and text-field borders ≥ 3:1. See docs/design-system.md.
  */
 
 :root {
@@ -105,6 +105,8 @@
   --color-ink-inverse: var(--bone-50);
   --color-line: var(--bone-300);
   --color-line-strong: var(--bone-400);
+  /* Borders that alone identify a control (text fields): ≥ 3:1 against every surface. */
+  --color-field-border: #858176;
 
   --color-accent: var(--sky-500);
   --color-accent-ink: var(--sky-600);
@@ -155,6 +157,7 @@
   --color-ink-inverse: var(--charcoal-900);
   --color-line: var(--charcoal-750);
   --color-line-strong: var(--charcoal-700);
+  --color-field-border: #6d7178;
 
   --color-accent: var(--sky-400);
   --color-accent-ink: var(--sky-300);
