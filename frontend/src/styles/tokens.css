@@ -134,7 +134,7 @@
   --viz-series: #3a87cc;
   --viz-flag: #b07a00;
   /* Simulation baseline: the grey context beside --viz-series (the scenario). Checked with
-     the palette validator as a pair: CVD ΔE 18.0, normal 19.0, ≥ 3:1 on the surface. */
+     the palette validator as a pair: CVD ΔE 18.0, normal 19.0, ≥ 3:1 on every surface. */
   --viz-baseline: #5f5d57;
 
   /* A subtle brushed-metal hairline, used only for key dividers. */
@@ -188,7 +188,8 @@
   --viz-grid: #202328;
   --viz-series: #4a93d6;
   --viz-flag: #c98500;
-  --viz-baseline: #666a71;
+  /* CVD ΔE 14.8, normal 15.7 against --viz-series; ≥ 3:1 on every surface (3.08 raised). */
+  --viz-baseline: #6a6e75;
 
   --metal-hairline: linear-gradient(
     90deg,

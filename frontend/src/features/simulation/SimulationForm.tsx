@@ -240,7 +240,18 @@ export function SimulationForm({
               {errors.map((issue) => (
                 <li key={`${issue.field}-${issue.code}-${issue.message}`}>
                   {issue.field && form[issue.field] ? (
-                    <a href={`#${fieldId(issue.field)}`}>{issue.message}</a>
+                    <a
+                      href={`#${fieldId(issue.field)}`}
+                      onClick={(event) => {
+                        const target = document.getElementById(fieldId(issue.field ?? ""));
+                        if (!target) return;
+                        event.preventDefault();
+                        target.focus();
+                        target.scrollIntoView?.({ block: "center" });
+                      }}
+                    >
+                      {issue.message}
+                    </a>
                   ) : (
                     issue.message
                   )}

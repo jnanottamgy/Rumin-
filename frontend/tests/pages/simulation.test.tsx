@@ -92,6 +92,8 @@ describe("Simulation preview", () => {
     expect(within(summary).getByText("2 inputs need attention")).toBeInTheDocument();
     const link = within(summary).getByRole("link", { name: "Hedge ratio must be at most 100 %." });
     expect(link).toHaveAttribute("href", "#simulation-input-hedge_ratio");
+    await user.click(link);
+    expect(screen.getByLabelText("Hedge ratio")).toHaveFocus();
     expect(screen.getByLabelText("Hedge ratio")).toHaveAttribute("aria-invalid", "true");
     expect(screen.getByLabelText("Annual revenue")).toHaveAttribute("aria-invalid", "true");
 

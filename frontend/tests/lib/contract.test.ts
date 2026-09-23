@@ -6,6 +6,7 @@ import {
   systemFixture,
   variablesFixture,
 } from "../fixtures";
+import { simulationFixtures } from "../fixtures/simulation";
 import { contractViolations } from "../integration/contract";
 
 describe("the unit-test fixtures follow the committed OpenAPI contract", () => {
@@ -17,6 +18,31 @@ describe("the unit-test fixtures follow the committed OpenAPI contract", () => {
     ["ScenarioPage", scenarioPageFixture([scenarioFixture()])],
   ])("%s", (schema, fixture) => {
     expect(contractViolations(schema, fixture)).toEqual([]);
+  });
+});
+
+describe("the simulation fixtures follow the committed OpenAPI contract", () => {
+  it.each([
+    ["SimulationModelDetail", simulationFixtures.model()],
+    ["ValidationReport", simulationFixtures.validateValid()],
+    ["ValidationReport", simulationFixtures.validateInvalid()],
+    ["SimulationRunRead", simulationFixtures.run()],
+    ["ExplanationRead", simulationFixtures.explanation()],
+    ["ProvenanceRead", simulationFixtures.provenance()],
+    ["VerificationRead", simulationFixtures.verify()],
+    ["SensitivityAnalysisRead", simulationFixtures.sensitivity()],
+    ["Page_SimulationRunSummary_", simulationFixtures.runs()],
+    ["Page_NodeSearchResult_", simulationFixtures.airlines()],
+  ])("%s", (schema, fixture) => {
+    expect(contractViolations(schema, fixture)).toEqual([]);
+  });
+
+  it("SimulationModelSummary (the model list)", () => {
+    const models = simulationFixtures.models();
+    expect(models.length).toBeGreaterThan(0);
+    for (const model of models) {
+      expect(contractViolations("SimulationModelSummary", model)).toEqual([]);
+    }
   });
 });
 
