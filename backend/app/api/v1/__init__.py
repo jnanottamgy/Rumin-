@@ -3,7 +3,16 @@
 from fastapi import APIRouter
 
 from app.api.deps import ERRORS
-from app.api.v1 import data, graph, ingestion, network, reference_data, scenarios, system
+from app.api.v1 import (
+    data,
+    graph,
+    ingestion,
+    network,
+    reference_data,
+    scenarios,
+    simulations,
+    system,
+)
 
 router = APIRouter(responses=ERRORS)
 router.include_router(reference_data.router)
@@ -12,4 +21,6 @@ router.include_router(scenarios.router)
 router.include_router(data.router)
 router.include_router(ingestion.router)
 router.include_router(graph.router)
+router.include_router(simulations.models_router)
+router.include_router(simulations.router)
 router.include_router(system.router)

@@ -26,7 +26,26 @@ def test_errors_are_documented_with_the_shared_envelope() -> None:
     assert "HTTPValidationError" not in document["components"]["schemas"]
 
 
-def test_there_is_no_simulation_endpoint_yet() -> None:
+def test_scenario_drafts_still_have_no_run_endpoint() -> None:
     paths = build_openapi()["paths"]
 
-    assert not any("run" in path or "simulat" in path for path in paths)
+    assert not any(path.startswith("/api/v1/scenarios") and "run" in path for path in paths)
+
+
+def test_simulation_runs_are_append_only() -> None:
+    paths = build_openapi()["paths"]
+    simulation = {path: set(methods) for path, methods in paths.items() if "/simulation" in path}
+
+    assert "post" in simulation["/api/v1/simulations"]
+    assert "post" in simulation["/api/v1/simulations/validate"]
+    assert "post" in simulation["/api/v1/simulations/{run_id}/sensitivity"]
+    for methods in simulation.values():
+        assert not methods & {"put", "patch", "delete"}
+
+
+def test_schema_names_are_unique_across_modules() -> None:
+    """Two schemas with one name get module-qualified names, renaming existing contract
+    types for every client: give each schema a unique name instead."""
+    names = build_openapi()["components"]["schemas"]
+
+    assert not [name for name in names if name.startswith("app__")]

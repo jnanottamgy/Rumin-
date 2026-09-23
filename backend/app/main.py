@@ -30,7 +30,8 @@ logger = logging.getLogger(__name__)
 API_DESCRIPTION = """
 RUMIN is an interactive financial intelligence and economic simulation platform.
 This API covers the **Phase 1 foundation**, the **Phase 2 financial data
-infrastructure** and the **Phase 3 knowledge graph**.
+infrastructure**, the **Phase 3 knowledge graph** and the **Phase 4 simulation engine**
+(one model, in preview).
 
 ### Five kinds of knowledge
 RUMIN never blurs these categories; responses label them with `epistemic_category`.
@@ -40,7 +41,7 @@ RUMIN never blurs these categories; responses label them with `epistemic_categor
 | `observation` | Historical data from a cited source | World Bank series; licensed price files |
 | `assumption` | Rules, parameters and relationships defined by the model | Relationships, ranges |
 | `scenario_input` | Values changed by a user | Scenario shocks |
-| `simulated_output` | Results computed by a simulation engine | None: no engine yet (Phase 4) |
+| `simulated_output` | Results computed by a simulation engine | Simulation runs |
 | `uncertainty` | Limitations and ranges | Documented qualitatively |
 
 ### Data
@@ -61,6 +62,18 @@ RUMIN never blurs these categories; responses label them with `epistemic_categor
 * A connection is not evidence of causation. A path shows how records are connected; it
   is not an influence chain, and a shorter path is not a stronger relationship.
 
+### Simulation
+* Models are defined in code, **versioned** and stored with a definition hash; a changed
+  equation is a new version. Runs are **deterministic** and **append-only**: identical
+  inputs give an identical result hash, and `POST /simulations/{id}/verify` re-executes a
+  stored run from its snapshot.
+* Every input is labelled as historical data, a user input, an assumption, a scenario
+  change or a setting. Nothing missing is invented and no unit is converted silently.
+* A shock travels only along relationships a model rule accepts **and** the latest graph
+  build confirms as validated; other graph edges are listed, never followed.
+* Results are calculations under stated assumptions — **not forecasts and not investment
+  advice**.
+
 ### Errors
 Every error response uses one envelope:
 `{"error": {"code", "message", "details", "request_id"}}`.
@@ -70,7 +83,10 @@ OPENAPI_TAGS = [
     {"name": "health", "description": "Liveness and readiness probes."},
     {"name": "reference data", "description": "Entities, relationships and their types."},
     {"name": "network", "description": "Graph projection for visualisation."},
-    {"name": "scenarios", "description": "Draft scenario inputs. Nothing is simulated."},
+    {
+        "name": "scenarios",
+        "description": "Draft scenario inputs. Drafts are not run yet (Phase 5 Scenario Lab).",
+    },
     {
         "name": "providers and datasets",
         "description": "Who publishes the data, on what terms, and what is loaded.",
@@ -83,6 +99,12 @@ OPENAPI_TAGS = [
         "name": "knowledge graph",
         "description": "Entities, relationships and evidence: search, neighbourhoods, "
         "provenance, paths, components, builds and validation issues (read-only, bounded).",
+    },
+    {
+        "name": "simulation",
+        "description": "Versioned models, input validation, deterministic runs with "
+        "explanations and provenance, re-execution checks and one-at-a-time sensitivity "
+        "analysis. Runs are append-only.",
     },
     {"name": "system", "description": "Runtime status and capabilities."},
 ]

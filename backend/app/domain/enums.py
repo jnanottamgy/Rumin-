@@ -411,3 +411,18 @@ class IdentifierScheme(StrEnum):
     ISIN = "isin"
     MIC = "mic"
     LISTING = "listing"
+
+
+# --- Simulation (Phase 4) ---------------------------------------------------------------------
+
+
+class SimulationModelStatus(StrEnum):
+    PREVIEW = "preview"  # usable; its equations and assumptions may still change
+    ACTIVE = "active"
+    DEPRECATED = "deprecated"  # kept so earlier runs stay explainable; not offered for new runs
+
+
+class SimulationRunStatus(StrEnum):
+    """Runs are stored only once they have completed; validation failures are not runs."""
+
+    COMPLETED = "completed"

@@ -1,4 +1,5 @@
-"""Scenario workspace endpoints. Drafts only — there is intentionally no "run" endpoint."""
+"""Scenario workspace endpoints. Drafts only — a scenario has no "run" endpoint; model runs
+are the separate ``/simulations`` resource."""
 
 from __future__ import annotations
 
@@ -24,7 +25,7 @@ def list_scenarios(session: SessionDep, page: PaginationDep) -> ScenarioPage:
     status_code=status.HTTP_201_CREATED,
     summary="Create a draft scenario",
     description="Stores scenario *inputs*. Nothing is simulated: `latest_run` stays null "
-    "until the Phase 4 simulation engine exists.",
+    "until drafts are connected to the simulation engine (Phase 5 Scenario Lab).",
 )
 def create_scenario(
     session: SessionDep, payload: ScenarioInput, response: Response

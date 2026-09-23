@@ -355,4 +355,3 @@ def test_system_reports_the_graph_capabilities(client: TestClient) -> None:
     }
     assert capabilities["knowledge_graph"]["available"] is True
     assert capabilities["graph_analytics"]["available"] is True
-    assert capabilities["simulation_engine"]["available"] is False

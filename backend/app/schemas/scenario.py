@@ -55,8 +55,10 @@ class ScenarioRead(ApiModel):
     shocks: list[ShockRead]
     latest_run: None = Field(
         default=None,
-        description="Simulation results. Always null in Phase 1: no simulation engine exists "
-        "yet, and RUMIN never shows results that were not computed.",
+        description="Simulation results for this scenario. Always null: drafts are not yet "
+        "connected to the simulation engine (that is the Phase 5 Scenario Lab), and RUMIN "
+        "never shows results that were not computed. Model runs are a separate resource: "
+        "`/api/v1/simulations`.",
     )
     created_at: datetime
     updated_at: datetime

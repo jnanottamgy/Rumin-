@@ -17,6 +17,12 @@ from app.models.provider import DataProvider
 from app.models.relationship import Relationship
 from app.models.scenario import Scenario, ScenarioShock
 from app.models.series import EconomicObservation, EconomicSeries
+from app.models.simulation import (
+    SimulationModelVersion,
+    SimulationRun,
+    SimulationRunStep,
+    SimulationSensitivityAnalysis,
+)
 
 __all__ = [
     "Company",
@@ -43,5 +49,9 @@ __all__ = [
     "Relationship",
     "Scenario",
     "ScenarioShock",
+    "SimulationModelVersion",
+    "SimulationRun",
+    "SimulationRunStep",
+    "SimulationSensitivityAnalysis",
     "SourceCapture",
 ]

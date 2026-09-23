@@ -3,7 +3,7 @@
   "info": {
     "title": "RUMIN API",
     "summary": "Financial intelligence and economic simulation platform.",
-    "description": "\nRUMIN is an interactive financial intelligence and economic simulation platform.\nThis API covers the **Phase 1 foundation**, the **Phase 2 financial data\ninfrastructure** and the **Phase 3 knowledge graph**.\n\n### Five kinds of knowledge\nRUMIN never blurs these categories; responses label them with `epistemic_category`.\n\n| Category | Meaning | In this build |\n|---|---|---|\n| `observation` | Historical data from a cited source | World Bank series; licensed price files |\n| `assumption` | Rules, parameters and relationships defined by the model | Relationships, ranges |\n| `scenario_input` | Values changed by a user | Scenario shocks |\n| `simulated_output` | Results computed by a simulation engine | None: no engine yet (Phase 4) |\n| `uncertainty` | Limitations and ranges | Documented qualitatively |\n\n### Data\n* The curated **network** dataset is **illustrative**: companies are fictional; countries,\n  ISIC Rev. 4 industries and variable definitions are real concepts with references.\n* **Provider data** is historical, stored exactly as published and never live. Every value\n  carries its period, when RUMIN retrieved it, the stored response it came from and the\n  dataset's licence and attribution. Revisions are kept, not overwritten.\n* **Numbers are decimal strings** (`\"5.649\"`) so no digit is lost to floating point.\n* Ingestion is started from the command line only; these endpoints are read-only.\n\n### Knowledge graph\n* Built from the stored data by `python -m app.graph build`; the graph endpoints are\n  read-only and every traversal is bounded (depth, nodes, path length, number of paths).\n* Every edge carries an **evidence status** (`evidence_backed`, `analyst_created`,\n  `model_assumption`, `unverified`), says whether it is **illustrative**, and lists the\n  evidence records that explain why it exists.\n* A connection is not evidence of causation. A path shows how records are connected; it\n  is not an influence chain, and a shorter path is not a stronger relationship.\n\n### Errors\nEvery error response uses one envelope:\n`{\"error\": {\"code\", \"message\", \"details\", \"request_id\"}}`.\n",
+    "description": "\nRUMIN is an interactive financial intelligence and economic simulation platform.\nThis API covers the **Phase 1 foundation**, the **Phase 2 financial data\ninfrastructure**, the **Phase 3 knowledge graph** and the **Phase 4 simulation engine**\n(one model, in preview).\n\n### Five kinds of knowledge\nRUMIN never blurs these categories; responses label them with `epistemic_category`.\n\n| Category | Meaning | In this build |\n|---|---|---|\n| `observation` | Historical data from a cited source | World Bank series; licensed price files |\n| `assumption` | Rules, parameters and relationships defined by the model | Relationships, ranges |\n| `scenario_input` | Values changed by a user | Scenario shocks |\n| `simulated_output` | Results computed by a simulation engine | Simulation runs |\n| `uncertainty` | Limitations and ranges | Documented qualitatively |\n\n### Data\n* The curated **network** dataset is **illustrative**: companies are fictional; countries,\n  ISIC Rev. 4 industries and variable definitions are real concepts with references.\n* **Provider data** is historical, stored exactly as published and never live. Every value\n  carries its period, when RUMIN retrieved it, the stored response it came from and the\n  dataset's licence and attribution. Revisions are kept, not overwritten.\n* **Numbers are decimal strings** (`\"5.649\"`) so no digit is lost to floating point.\n* Ingestion is started from the command line only; these endpoints are read-only.\n\n### Knowledge graph\n* Built from the stored data by `python -m app.graph build`; the graph endpoints are\n  read-only and every traversal is bounded (depth, nodes, path length, number of paths).\n* Every edge carries an **evidence status** (`evidence_backed`, `analyst_created`,\n  `model_assumption`, `unverified`), says whether it is **illustrative**, and lists the\n  evidence records that explain why it exists.\n* A connection is not evidence of causation. A path shows how records are connected; it\n  is not an influence chain, and a shorter path is not a stronger relationship.\n\n### Simulation\n* Models are defined in code, **versioned** and stored with a definition hash; a changed\n  equation is a new version. Runs are **deterministic** and **append-only**: identical\n  inputs give an identical result hash, and `POST /simulations/{id}/verify` re-executes a\n  stored run from its snapshot.\n* Every input is labelled as historical data, a user input, an assumption, a scenario\n  change or a setting. Nothing missing is invented and no unit is converted silently.\n* A shock travels only along relationships a model rule accepts **and** the latest graph\n  build confirms as validated; other graph edges are listed, never followed.\n* Results are calculations under stated assumptions — **not forecasts and not investment\n  advice**.\n\n### Errors\nEvery error response uses one envelope:\n`{\"error\": {\"code\", \"message\", \"details\", \"request_id\"}}`.\n",
     "version": "0.1.0"
   },
   "paths": {
@@ -655,7 +655,7 @@
           "scenarios"
         ],
         "summary": "Create a draft scenario",
-        "description": "Stores scenario *inputs*. Nothing is simulated: `latest_run` stays null until the Phase 4 simulation engine exists.",
+        "description": "Stores scenario *inputs*. Nothing is simulated: `latest_run` stays null until drafts are connected to the simulation engine (Phase 5 Scenario Lab).",
         "operationId": "create_scenario",
         "requestBody": {
           "required": true,
@@ -3576,6 +3576,818 @@
         }
       }
     },
+    "/api/v1/simulation-models": {
+      "get": {
+        "tags": [
+          "simulation"
+        ],
+        "summary": "List simulation models",
+        "description": "The latest version of every registered model, with its status and the number of stored runs. Models are defined in code and versioned: a changed equation is a new version, never an edit of an old one.",
+        "operationId": "list_simulation_models",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SimulationModelSummary"
+                  },
+                  "type": "array",
+                  "title": "Response List Simulation Models"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/simulation-models/{model_id}": {
+      "get": {
+        "tags": [
+          "simulation"
+        ],
+        "summary": "Get a simulation model",
+        "description": "The full definition: inputs (units, ranges, defaults and any stored series an input can be read from), equations, outputs, transmission rules with the knowledge-graph relationship that confirms each, assumptions, limitations and validation rules.",
+        "operationId": "get_simulation_model",
+        "parameters": [
+          {
+            "name": "model_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^[a-z][a-z0-9_]{2,63}$",
+              "examples": [
+                "airline_fuel_cost"
+              ],
+              "title": "Model Id"
+            }
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 32,
+                  "pattern": "^\\d+\\.\\d+\\.\\d+$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Default: the latest.",
+              "title": "Version"
+            },
+            "description": "Default: the latest."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulationModelDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/simulations/validate": {
+      "post": {
+        "tags": [
+          "simulation"
+        ],
+        "summary": "Validate simulation inputs",
+        "description": "Checks the inputs without running or storing anything: types, units, currencies, ranges and decimal places, the model's consistency rules and whether the knowledge graph confirms every relationship a shock would travel along. Always 200: `valid` says whether a run would be accepted; `errors` and `warnings` say why.",
+        "operationId": "validate_simulation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimulationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationReport"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/simulations": {
+      "post": {
+        "tags": [
+          "simulation"
+        ],
+        "summary": "Run a simulation",
+        "description": "Validates the inputs, executes the model deterministically and stores the run with its input snapshot, graph snapshot, every calculation step and the result hash. Invalid inputs are refused (422) with one detail per problem; nothing is stored. Identical inputs give an identical result hash.",
+        "operationId": "create_simulation_run",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimulationRunRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulationRunRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The model version's code no longer matches its stored definition.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "simulation"
+        ],
+        "summary": "List simulation runs",
+        "description": "Stored runs, newest first, with their headline results.",
+        "operationId": "list_simulation_runs",
+        "parameters": [
+          {
+            "name": "model_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 64,
+                  "pattern": "^[a-z][a-z0-9_]{2,63}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only this model.",
+              "title": "Model Id"
+            },
+            "description": "Only this model."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "description": "Maximum number of items to return.",
+              "default": 100,
+              "title": "Limit"
+            },
+            "description": "Maximum number of items to return."
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0,
+              "description": "Items to skip.",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Items to skip."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_SimulationRunSummary_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/simulations/{run_id}": {
+      "get": {
+        "tags": [
+          "simulation"
+        ],
+        "summary": "Get a simulation run",
+        "description": "Inputs (each labelled as historical data, a user input, an assumption, a scenario change or a setting), outputs, monthly series, contributions, the accounting bridge, warnings and limitations.",
+        "operationId": "get_simulation_run",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulationRunRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/simulations/{run_id}/explanation": {
+      "get": {
+        "tags": [
+          "simulation"
+        ],
+        "summary": "Explain a simulation run",
+        "description": "The equations the run evaluated, every calculation step in order, the input-to-output pathway with the knowledge-graph relationships it used, the contribution of each change to each output, the assumptions with the values used, limitations and warnings. Built from what the run stored.",
+        "operationId": "get_simulation_explanation",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExplanationRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/simulations/{run_id}/provenance": {
+      "get": {
+        "tags": [
+          "simulation"
+        ],
+        "summary": "Get a simulation run's provenance",
+        "description": "The model version and definition hash, engine version, hashes, timestamps, every input with its source, the stored observations used (with licence and attribution), the graph snapshot and every transmission path.",
+        "operationId": "get_simulation_provenance",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProvenanceRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/simulations/{run_id}/verify": {
+      "post": {
+        "tags": [
+          "simulation"
+        ],
+        "summary": "Re-execute a run and compare",
+        "description": "Re-executes the run from its stored snapshot (never from current data) and compares the hashes. Stores nothing.",
+        "operationId": "verify_simulation_run",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerificationRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/simulations/{run_id}/sensitivity": {
+      "post": {
+        "tags": [
+          "simulation"
+        ],
+        "summary": "Run a sensitivity analysis",
+        "description": "Moves one input at a time — low and high around the run's value, relative steps or listed values — while every other input keeps the run's value, and reports each result against the run. Points outside an input's allowed range are skipped and reported, never clipped. With no inputs listed, the model's default set is used. Bounded: at most 8 inputs, 7 points each and 60 evaluations.",
+        "operationId": "create_sensitivity_analysis",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SensitivityRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SensitivityAnalysisRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The model version's code no longer matches its stored definition.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "simulation"
+        ],
+        "summary": "List a run's sensitivity analyses",
+        "operationId": "list_sensitivity_analyses",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Run Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SensitivityAnalysisList"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/simulations/{run_id}/sensitivity/{analysis_id}": {
+      "get": {
+        "tags": [
+          "simulation"
+        ],
+        "summary": "Get a sensitivity analysis",
+        "operationId": "get_sensitivity_analysis",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Run Id"
+            }
+          },
+          {
+            "name": "analysis_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Analysis Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SensitivityAnalysisRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/system": {
       "get": {
         "tags": [
@@ -3621,6 +4433,105 @@
   },
   "components": {
     "schemas": {
+      "BridgeItemRead": {
+        "properties": {
+          "output": {
+            "type": "string",
+            "title": "Output"
+          },
+          "sign": {
+            "type": "integer",
+            "title": "Sign"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "output",
+          "sign",
+          "label"
+        ],
+        "title": "BridgeItemRead"
+      },
+      "BridgeRead": {
+        "properties": {
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/BridgeStepRead"
+            },
+            "type": "array",
+            "title": "Steps"
+          },
+          "total": {
+            "$ref": "#/components/schemas/BridgeTotalRead"
+          }
+        },
+        "type": "object",
+        "required": [
+          "steps",
+          "total"
+        ],
+        "title": "BridgeRead"
+      },
+      "BridgeStepRead": {
+        "properties": {
+          "output": {
+            "type": "string",
+            "title": "Output"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "sign": {
+            "type": "integer",
+            "title": "Sign"
+          },
+          "value": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Value",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "output",
+          "label",
+          "sign",
+          "value"
+        ],
+        "title": "BridgeStepRead"
+      },
+      "BridgeTotalRead": {
+        "properties": {
+          "output": {
+            "type": "string",
+            "title": "Output"
+          },
+          "value": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Value",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "output",
+          "value"
+        ],
+        "title": "BridgeTotalRead"
+      },
       "BuildChanges": {
         "properties": {
           "added": {
@@ -4083,6 +4994,60 @@
           "description"
         ],
         "title": "ConstructionRuleRead"
+      },
+      "ContributionItemRead": {
+        "properties": {
+          "input": {
+            "type": "string",
+            "title": "Input"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "value": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Value",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "input",
+          "label",
+          "value"
+        ],
+        "title": "ContributionItemRead"
+      },
+      "ContributionRead": {
+        "properties": {
+          "output": {
+            "type": "string",
+            "title": "Output"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ContributionItemRead"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "output",
+          "label",
+          "items"
+        ],
+        "title": "ContributionRead"
       },
       "CountryRead": {
         "properties": {
@@ -5118,6 +6083,162 @@
         "title": "EntityPage",
         "description": "A page of entities."
       },
+      "EntityRead": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "nature": {
+            "type": "string",
+            "title": "Nature"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "name",
+          "nature"
+        ],
+        "title": "EntityRead"
+      },
+      "EquationRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "formula": {
+            "type": "string",
+            "title": "Formula"
+          },
+          "output": {
+            "$ref": "#/components/schemas/TermRead"
+          },
+          "terms": {
+            "items": {
+              "$ref": "#/components/schemas/TermRead"
+            },
+            "type": "array",
+            "title": "Terms"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation"
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "annual",
+              "monthly",
+              "horizon",
+              "steady_state"
+            ],
+            "title": "Scope"
+          },
+          "assumptions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Assumptions"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "formula",
+          "output",
+          "terms",
+          "explanation",
+          "scope",
+          "assumptions",
+          "limitations"
+        ],
+        "title": "EquationRead"
+      },
+      "EquationUseRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "formula": {
+            "type": "string",
+            "title": "Formula"
+          },
+          "output": {
+            "$ref": "#/components/schemas/TermRead"
+          },
+          "terms": {
+            "items": {
+              "$ref": "#/components/schemas/TermRead"
+            },
+            "type": "array",
+            "title": "Terms"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation"
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope"
+          },
+          "used": {
+            "type": "boolean",
+            "title": "Used"
+          },
+          "assumptions": {
+            "items": {
+              "$ref": "#/components/schemas/StatementRead"
+            },
+            "type": "array",
+            "title": "Assumptions"
+          },
+          "limitations": {
+            "items": {
+              "$ref": "#/components/schemas/StatementRead"
+            },
+            "type": "array",
+            "title": "Limitations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "formula",
+          "output",
+          "terms",
+          "explanation",
+          "scope",
+          "used",
+          "assumptions",
+          "limitations"
+        ],
+        "title": "EquationUseRead"
+      },
       "ErrorBody": {
         "properties": {
           "code": {
@@ -5421,6 +6542,99 @@
           "definition"
         ],
         "title": "EvidenceStatusRead"
+      },
+      "ExplanationRead": {
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Run Id"
+          },
+          "equations": {
+            "items": {
+              "$ref": "#/components/schemas/EquationUseRead"
+            },
+            "type": "array",
+            "title": "Equations"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/StepRead"
+            },
+            "type": "array",
+            "title": "Steps"
+          },
+          "pathway": {
+            "$ref": "#/components/schemas/PathwayRead"
+          },
+          "contributions": {
+            "items": {
+              "$ref": "#/components/schemas/ContributionRead"
+            },
+            "type": "array",
+            "title": "Contributions"
+          },
+          "bridge": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BridgeRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "parameters": {
+            "items": {
+              "$ref": "#/components/schemas/ParameterRead"
+            },
+            "type": "array",
+            "title": "Parameters"
+          },
+          "assumptions": {
+            "items": {
+              "$ref": "#/components/schemas/StatementRead"
+            },
+            "type": "array",
+            "title": "Assumptions"
+          },
+          "limitations": {
+            "items": {
+              "$ref": "#/components/schemas/StatementRead"
+            },
+            "type": "array",
+            "title": "Limitations"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/SimulationIssueRead"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "method": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Method"
+          }
+        },
+        "type": "object",
+        "required": [
+          "run_id",
+          "equations",
+          "steps",
+          "pathway",
+          "contributions",
+          "bridge",
+          "parameters",
+          "assumptions",
+          "limitations",
+          "warnings",
+          "method"
+        ],
+        "title": "ExplanationRead"
       },
       "ExposureRead": {
         "properties": {
@@ -5910,6 +7124,63 @@
           "changed_build_id"
         ],
         "title": "GraphEdgeDetail"
+      },
+      "GraphEdgeRead": {
+        "properties": {
+          "rule": {
+            "type": "string",
+            "title": "Rule"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "transmission",
+              "supporting"
+            ],
+            "title": "Role"
+          },
+          "edge_key": {
+            "type": "string",
+            "title": "Edge Key"
+          },
+          "edge_type": {
+            "type": "string",
+            "title": "Edge Type"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "target": {
+            "type": "string",
+            "title": "Target"
+          },
+          "evidence_status": {
+            "type": "string",
+            "title": "Evidence Status"
+          },
+          "is_illustrative": {
+            "type": "boolean",
+            "title": "Is Illustrative"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rule",
+          "role",
+          "edge_key",
+          "edge_type",
+          "source",
+          "target",
+          "evidence_status",
+          "is_illustrative",
+          "description"
+        ],
+        "title": "GraphEdgeRead"
       },
       "GraphEdgeSummary": {
         "properties": {
@@ -6442,6 +7713,118 @@
         ],
         "title": "GraphOverview"
       },
+      "GraphSnapshotRead": {
+        "properties": {
+          "build_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Build Id"
+          },
+          "build_finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Build Finished At"
+          },
+          "source_fingerprint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Fingerprint"
+          },
+          "freshness": {
+            "type": "string",
+            "title": "Freshness"
+          },
+          "transmission": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/GraphEdgeRead"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Transmission"
+          },
+          "supporting": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/GraphEdgeRead"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Supporting"
+          },
+          "entity": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EntityRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "unused": {
+            "items": {
+              "$ref": "#/components/schemas/UnusedEdgeRead"
+            },
+            "type": "array",
+            "title": "Unused",
+            "description": "Graph relationships around the model's variables that no rule accepts: listed, never followed."
+          },
+          "unused_total": {
+            "type": "integer",
+            "title": "Unused Total"
+          },
+          "names": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Names"
+          }
+        },
+        "type": "object",
+        "required": [
+          "build_id",
+          "build_finished_at",
+          "source_fingerprint",
+          "freshness",
+          "transmission",
+          "supporting",
+          "entity",
+          "unused",
+          "unused_total",
+          "names"
+        ],
+        "title": "GraphSnapshotRead"
+      },
       "GraphTypesResponse": {
         "properties": {
           "node_types": {
@@ -6714,6 +8097,206 @@
           "classification_code"
         ],
         "title": "IndustryRead"
+      },
+      "InputDefinitionRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "scenario_input",
+              "market_baseline",
+              "company_input",
+              "assumption",
+              "setting"
+            ],
+            "title": "Category"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "decimal",
+              "integer",
+              "quantity",
+              "currency",
+              "graph_node"
+            ],
+            "title": "Kind"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "unit_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Label"
+          },
+          "units": {
+            "items": {
+              "$ref": "#/components/schemas/UnitChoice"
+            },
+            "type": "array",
+            "title": "Units"
+          },
+          "minimum": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "description": "An exact decimal in plain notation (never floating point).",
+                "examples": [
+                  "5.649"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Minimum"
+          },
+          "maximum": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "description": "An exact decimal in plain notation (never floating point).",
+                "examples": [
+                  "5.649"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Maximum"
+          },
+          "minimum_exclusive": {
+            "type": "boolean",
+            "title": "Minimum Exclusive"
+          },
+          "maximum_exclusive": {
+            "type": "boolean",
+            "title": "Maximum Exclusive"
+          },
+          "max_decimals": {
+            "type": "integer",
+            "title": "Max Decimals"
+          },
+          "required": {
+            "type": "boolean",
+            "title": "Required"
+          },
+          "default": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default"
+          },
+          "rationale": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rationale"
+          },
+          "variable": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Variable"
+          },
+          "variable_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Variable Name"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/ObservationSourceRead"
+            },
+            "type": "array",
+            "title": "Sources"
+          },
+          "sensitivity": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SensitivitySpecRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "category",
+          "kind",
+          "description",
+          "unit",
+          "unit_label",
+          "units",
+          "minimum",
+          "maximum",
+          "minimum_exclusive",
+          "maximum_exclusive",
+          "max_decimals",
+          "required",
+          "default",
+          "rationale",
+          "variable",
+          "variable_name",
+          "sources",
+          "sensitivity"
+        ],
+        "title": "InputDefinitionRead"
       },
       "InstrumentDetail": {
         "properties": {
@@ -7898,6 +9481,95 @@
         ],
         "title": "MetricDefinitionRead"
       },
+      "ModelVersionRead": {
+        "properties": {
+          "model_id": {
+            "type": "string",
+            "title": "Model Id"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "definition_hash": {
+            "type": "string",
+            "title": "Definition Hash"
+          },
+          "registered_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Registered At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "model_id",
+          "version",
+          "name",
+          "status",
+          "definition_hash",
+          "registered_at"
+        ],
+        "title": "ModelVersionRead"
+      },
+      "MonthlySeriesRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "derived",
+              "simulated"
+            ],
+            "title": "Kind"
+          },
+          "equation": {
+            "type": "string",
+            "title": "Equation"
+          },
+          "values": {
+            "items": {
+              "type": "string",
+              "pattern": "^-?\\d+(\\.\\d+)?$",
+              "description": "An exact decimal in plain notation (never floating point).",
+              "examples": [
+                "5.649"
+              ]
+            },
+            "type": "array",
+            "title": "Values"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "unit",
+          "kind",
+          "equation",
+          "values"
+        ],
+        "title": "MonthlySeriesRead"
+      },
       "NeighborNode": {
         "properties": {
           "id": {
@@ -8549,6 +10221,90 @@
         ],
         "title": "ObservationRead"
       },
+      "ObservationSourceRead": {
+        "properties": {
+          "series_id": {
+            "type": "string",
+            "title": "Series Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "currency_pair": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Currency Pair"
+          },
+          "caveat": {
+            "type": "string",
+            "title": "Caveat"
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available",
+            "description": "Whether RUMIN stores a value of this series now."
+          },
+          "latest_period": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Period"
+          },
+          "latest_value": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "description": "An exact decimal in plain notation (never floating point).",
+                "examples": [
+                  "5.649"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Value"
+          },
+          "last_confirmed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Confirmed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "series_id",
+          "label",
+          "unit",
+          "currency_pair",
+          "caveat",
+          "available",
+          "latest_period",
+          "latest_value",
+          "last_confirmed_at"
+        ],
+        "title": "ObservationSourceRead"
+      },
       "ObservationStatus": {
         "type": "string",
         "enum": [
@@ -8557,6 +10313,105 @@
         ],
         "title": "ObservationStatus",
         "description": "``reported`` carries a value; ``missing`` means the provider listed the period\nwithout a value. RUMIN records the gap and never fills it in."
+      },
+      "OutputDefinitionRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "derived",
+              "simulated"
+            ],
+            "title": "Kind"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "equation": {
+            "type": "string",
+            "title": "Equation"
+          },
+          "attributable": {
+            "type": "boolean",
+            "title": "Attributable"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "unit",
+          "kind",
+          "description",
+          "equation",
+          "attributable"
+        ],
+        "title": "OutputDefinitionRead"
+      },
+      "OutputRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "value": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Value",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "derived",
+              "simulated"
+            ],
+            "title": "Kind"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "equation": {
+            "type": "string",
+            "title": "Equation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "value",
+          "unit",
+          "kind",
+          "description",
+          "equation"
+        ],
+        "title": "OutputRead"
       },
       "Page_GraphBuildSummary_": {
         "properties": {
@@ -8698,6 +10553,110 @@
         ],
         "title": "Page[NodeSearchResult]"
       },
+      "Page_SimulationRunSummary_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SimulationRunSummary"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total",
+            "description": "Total number of items matching the query."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "Page[SimulationRunSummary]"
+      },
+      "ParameterRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "default": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "changed_from_default": {
+            "type": "boolean",
+            "title": "Changed From Default"
+          },
+          "rationale": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rationale"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "value",
+          "unit",
+          "default",
+          "source",
+          "changed_from_default",
+          "rationale"
+        ],
+        "title": "ParameterRead"
+      },
       "PathRead": {
         "properties": {
           "nodes": {
@@ -8809,6 +10768,208 @@
           "note"
         ],
         "title": "PathsResponse"
+      },
+      "PathwayEdgeRead": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "target": {
+            "type": "string",
+            "title": "Target"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "equations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Equations"
+          },
+          "rule": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rule"
+          },
+          "edge": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GraphEdgeRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "coefficient": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coefficient"
+          },
+          "lag_months": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lag Months"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source",
+          "target",
+          "label",
+          "equations",
+          "rule",
+          "edge",
+          "coefficient",
+          "lag_months"
+        ],
+        "title": "PathwayEdgeRead"
+      },
+      "PathwayLinkRead": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "target": {
+            "type": "string",
+            "title": "Target"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "equations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Equations"
+          },
+          "rule": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rule"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source",
+          "target",
+          "label",
+          "equations",
+          "rule"
+        ],
+        "title": "PathwayLinkRead"
+      },
+      "PathwayNodeRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "input",
+              "variable",
+              "output"
+            ],
+            "title": "Kind"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "knowledge": {
+            "type": "string",
+            "title": "Knowledge"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "label",
+          "value",
+          "unit",
+          "knowledge"
+        ],
+        "title": "PathwayNodeRead"
+      },
+      "PathwayRead": {
+        "properties": {
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/PathwayNodeRead"
+            },
+            "type": "array",
+            "title": "Nodes"
+          },
+          "links": {
+            "items": {
+              "$ref": "#/components/schemas/PathwayEdgeRead"
+            },
+            "type": "array",
+            "title": "Links"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nodes",
+          "links"
+        ],
+        "title": "PathwayRead"
       },
       "Polarity": {
         "type": "string",
@@ -9050,6 +11211,102 @@
         ],
         "title": "PriceBasis",
         "description": "Nominal (current prices) versus real (inflation-adjusted, constant prices)."
+      },
+      "ProvenanceRead": {
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Run Id"
+          },
+          "model": {
+            "$ref": "#/components/schemas/ModelVersionRead"
+          },
+          "engine_version": {
+            "type": "string",
+            "title": "Engine Version"
+          },
+          "inputs_hash": {
+            "type": "string",
+            "title": "Inputs Hash"
+          },
+          "result_hash": {
+            "type": "string",
+            "title": "Result Hash"
+          },
+          "random_seed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Random Seed"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Started At"
+          },
+          "finished_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Finished At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "inputs": {
+            "items": {
+              "$ref": "#/components/schemas/ResolvedInputRead"
+            },
+            "type": "array",
+            "title": "Inputs"
+          },
+          "observations": {
+            "items": {
+              "$ref": "#/components/schemas/SimulationObservationRead"
+            },
+            "type": "array",
+            "title": "Observations"
+          },
+          "graph": {
+            "$ref": "#/components/schemas/GraphSnapshotRead"
+          },
+          "transmission": {
+            "items": {
+              "$ref": "#/components/schemas/TransmissionPathRead"
+            },
+            "type": "array",
+            "title": "Transmission"
+          },
+          "reproducibility": {
+            "type": "string",
+            "title": "Reproducibility"
+          }
+        },
+        "type": "object",
+        "required": [
+          "run_id",
+          "model",
+          "engine_version",
+          "inputs_hash",
+          "result_hash",
+          "random_seed",
+          "started_at",
+          "finished_at",
+          "created_at",
+          "inputs",
+          "observations",
+          "graph",
+          "transmission",
+          "reproducibility"
+        ],
+        "title": "ProvenanceRead"
       },
       "ProviderAuth": {
         "type": "string",
@@ -9551,6 +11808,127 @@
         "title": "ResolutionOutcome",
         "description": "What entity resolution decided.\n\n* ``linked`` — the record was linked to the node by an identifier or explicit link.\n* ``identifier_attached`` — an identifier stated by another record was added.\n* ``candidate_flagged`` — the names suggest the same entity; nothing was merged,\n  the pair awaits review.\n* ``conflict`` — an identifier was claimed for more than one node; it was attached\n  to none.\n* ``rejected`` — a possible match was ruled out by a rule (e.g. fictional vs real)."
       },
+      "ResolvedInputRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "knowledge": {
+            "type": "string",
+            "enum": [
+              "scenario_input",
+              "historical_data",
+              "user_input",
+              "assumption",
+              "setting"
+            ],
+            "title": "Knowledge"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "user",
+              "default",
+              "stored_observation"
+            ],
+            "title": "Source"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "unit_label": {
+            "type": "string",
+            "title": "Unit Label"
+          },
+          "default": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default"
+          },
+          "rationale": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rationale"
+          },
+          "variable": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Variable"
+          },
+          "observation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SimulationObservationRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "category",
+          "knowledge",
+          "source",
+          "value",
+          "unit",
+          "unit_label",
+          "default",
+          "rationale",
+          "variable",
+          "observation"
+        ],
+        "title": "ResolvedInputRead"
+      },
       "ReviewStatus": {
         "type": "string",
         "enum": [
@@ -9717,7 +12095,7 @@
           "latest_run": {
             "type": "null",
             "title": "Latest Run",
-            "description": "Simulation results. Always null in Phase 1: no simulation engine exists yet, and RUMIN never shows results that were not computed."
+            "description": "Simulation results for this scenario. Always null: drafts are not yet connected to the simulation engine (that is the Phase 5 Scenario Lab), and RUMIN never shows results that were not computed. Model runs are a separate resource: `/api/v1/simulations`."
           },
           "created_at": {
             "type": "string",
@@ -9758,6 +12136,439 @@
           "not_applicable"
         ],
         "title": "SeasonalAdjustment"
+      },
+      "SensitivityAnalysisList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SensitivityAnalysisRead"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "SensitivityAnalysisList"
+      },
+      "SensitivityAnalysisRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "run_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Run Id"
+          },
+          "metric": {
+            "type": "string",
+            "title": "Metric"
+          },
+          "metric_label": {
+            "type": "string",
+            "title": "Metric Label"
+          },
+          "base": {
+            "additionalProperties": {
+              "type": "string",
+              "pattern": "^-?\\d+(\\.\\d+)?$",
+              "description": "An exact decimal in plain notation (never floating point).",
+              "examples": [
+                "5.649"
+              ]
+            },
+            "type": "object",
+            "title": "Base"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SensitivityItemRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "ranking": {
+            "items": {
+              "$ref": "#/components/schemas/SensitivityRankRead"
+            },
+            "type": "array",
+            "title": "Ranking"
+          },
+          "evaluations": {
+            "type": "integer",
+            "title": "Evaluations"
+          },
+          "duration_ms": {
+            "type": "integer",
+            "title": "Duration Ms"
+          },
+          "result_hash": {
+            "type": "string",
+            "title": "Result Hash"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "run_id",
+          "metric",
+          "metric_label",
+          "base",
+          "items",
+          "ranking",
+          "evaluations",
+          "duration_ms",
+          "result_hash",
+          "created_at",
+          "note"
+        ],
+        "title": "SensitivityAnalysisRead"
+      },
+      "SensitivityInputRequest": {
+        "properties": {
+          "input": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{1,63}$",
+            "title": "Input"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "default",
+              "absolute",
+              "relative",
+              "values"
+            ],
+            "title": "Mode",
+            "description": "`default`: the model's own low/high variation. `absolute`: base ± step (in the input's unit). `relative`: base × (1 ± step %). `values`: the listed values.",
+            "default": "default"
+          },
+          "step": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Step"
+          },
+          "values": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            },
+            "type": "array",
+            "maxItems": 7,
+            "title": "Values"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "input"
+        ],
+        "title": "SensitivityInputRequest"
+      },
+      "SensitivityItemRead": {
+        "properties": {
+          "input": {
+            "type": "string",
+            "title": "Input"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "base_value": {
+            "type": "string",
+            "title": "Base Value"
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode"
+          },
+          "step": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Step"
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/SensitivityPointRead"
+            },
+            "type": "array",
+            "title": "Points"
+          },
+          "range": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SensitivityRangeRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "input",
+          "label",
+          "category",
+          "unit",
+          "base_value",
+          "mode",
+          "step",
+          "points",
+          "range"
+        ],
+        "title": "SensitivityItemRead"
+      },
+      "SensitivityPointRead": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          },
+          "outputs": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string",
+                  "pattern": "^-?\\d+(\\.\\d+)?$",
+                  "description": "An exact decimal in plain notation (never floating point).",
+                  "examples": [
+                    "5.649"
+                  ]
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outputs"
+          },
+          "deltas": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string",
+                  "pattern": "^-?\\d+(\\.\\d+)?$",
+                  "description": "An exact decimal in plain notation (never floating point).",
+                  "examples": [
+                    "5.649"
+                  ]
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deltas"
+          },
+          "skipped": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Skipped"
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "value",
+          "outputs",
+          "deltas",
+          "skipped"
+        ],
+        "title": "SensitivityPointRead"
+      },
+      "SensitivityRangeRead": {
+        "properties": {
+          "low": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Low",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "high": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "High",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "spread": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Spread",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "low",
+          "high",
+          "spread"
+        ],
+        "title": "SensitivityRangeRead"
+      },
+      "SensitivityRankRead": {
+        "properties": {
+          "input": {
+            "type": "string",
+            "title": "Input"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "spread": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Spread",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "input",
+          "label",
+          "spread"
+        ],
+        "title": "SensitivityRankRead"
+      },
+      "SensitivityRequest": {
+        "properties": {
+          "inputs": {
+            "items": {
+              "$ref": "#/components/schemas/SensitivityInputRequest"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Inputs",
+            "description": "Inputs to vary; empty means the model's default selection."
+          },
+          "metric": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{1,63}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metric",
+            "description": "The output to rank inputs by."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "SensitivityRequest"
+      },
+      "SensitivitySpecRead": {
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "absolute",
+              "relative"
+            ],
+            "title": "Mode"
+          },
+          "step": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Step",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "mode",
+          "step"
+        ],
+        "title": "SensitivitySpecRead"
       },
       "SeriesDetail": {
         "properties": {
@@ -10484,6 +13295,912 @@
         ],
         "title": "ShockRead"
       },
+      "SimulationInputValue": {
+        "properties": {
+          "value": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value",
+            "description": "The value: an exact decimal string (\"2.35\") or a JSON number; a code or node key for text inputs. Omit it to take the model's default (optional inputs) or to use a stored observation.",
+            "examples": [
+              "30"
+            ]
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-z_]{1,32}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit",
+            "description": "For quantities: one of the listed units."
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "user",
+                  "stored_observation"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source",
+            "description": "`stored_observation` takes the latest stored value of a series the model lists for this input."
+          },
+          "series_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 96,
+                "pattern": "^[a-z0-9][a-z0-9-]{0,95}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Series Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "SimulationInputValue"
+      },
+      "SimulationIssueRead": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message",
+          "field"
+        ],
+        "title": "SimulationIssueRead"
+      },
+      "SimulationModelDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "domain": {
+            "type": "string",
+            "title": "Domain"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "preview",
+              "active",
+              "deprecated"
+            ],
+            "title": "Status"
+          },
+          "definition_hash": {
+            "type": "string",
+            "title": "Definition Hash"
+          },
+          "versions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Versions"
+          },
+          "runs": {
+            "type": "integer",
+            "title": "Runs",
+            "description": "Stored runs of this model (all versions)."
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "inputs": {
+            "items": {
+              "$ref": "#/components/schemas/InputDefinitionRead"
+            },
+            "type": "array",
+            "title": "Inputs"
+          },
+          "equations": {
+            "items": {
+              "$ref": "#/components/schemas/EquationRead"
+            },
+            "type": "array",
+            "title": "Equations"
+          },
+          "outputs": {
+            "items": {
+              "$ref": "#/components/schemas/OutputDefinitionRead"
+            },
+            "type": "array",
+            "title": "Outputs"
+          },
+          "monthly_outputs": {
+            "items": {
+              "$ref": "#/components/schemas/OutputDefinitionRead"
+            },
+            "type": "array",
+            "title": "Monthly Outputs"
+          },
+          "transmission_rules": {
+            "items": {
+              "$ref": "#/components/schemas/TransmissionRuleRead"
+            },
+            "type": "array",
+            "title": "Transmission Rules"
+          },
+          "supporting_relationships": {
+            "items": {
+              "$ref": "#/components/schemas/SupportingRelationshipRead"
+            },
+            "type": "array",
+            "title": "Supporting Relationships"
+          },
+          "assumptions": {
+            "items": {
+              "$ref": "#/components/schemas/StatementRead"
+            },
+            "type": "array",
+            "title": "Assumptions"
+          },
+          "limitations": {
+            "items": {
+              "$ref": "#/components/schemas/StatementRead"
+            },
+            "type": "array",
+            "title": "Limitations"
+          },
+          "validation_rules": {
+            "items": {
+              "$ref": "#/components/schemas/SimulationValidationRuleRead"
+            },
+            "type": "array",
+            "title": "Validation Rules"
+          },
+          "references": {
+            "items": {
+              "$ref": "#/components/schemas/StatementRead"
+            },
+            "type": "array",
+            "title": "References"
+          },
+          "pathway": {
+            "items": {
+              "$ref": "#/components/schemas/PathwayLinkRead"
+            },
+            "type": "array",
+            "title": "Pathway"
+          },
+          "bridge": {
+            "items": {
+              "$ref": "#/components/schemas/BridgeItemRead"
+            },
+            "type": "array",
+            "title": "Bridge"
+          },
+          "bridge_total": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bridge Total"
+          },
+          "headline_outputs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Headline Outputs",
+            "description": "The outputs a summary of a run leads with."
+          },
+          "sensitivity_defaults": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sensitivity Defaults"
+          },
+          "sensitivity_metric": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sensitivity Metric"
+          },
+          "time_step": {
+            "type": "string",
+            "title": "Time Step"
+          },
+          "max_horizon_months": {
+            "type": "integer",
+            "title": "Max Horizon Months"
+          },
+          "max_propagation_depth": {
+            "type": "integer",
+            "title": "Max Propagation Depth"
+          },
+          "graph_build_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Graph Build Id"
+          },
+          "graph_freshness": {
+            "type": "string",
+            "enum": [
+              "current",
+              "stale",
+              "not_built"
+            ],
+            "title": "Graph Freshness"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "version",
+          "name",
+          "summary",
+          "domain",
+          "status",
+          "definition_hash",
+          "versions",
+          "runs",
+          "description",
+          "inputs",
+          "equations",
+          "outputs",
+          "monthly_outputs",
+          "transmission_rules",
+          "supporting_relationships",
+          "assumptions",
+          "limitations",
+          "validation_rules",
+          "references",
+          "pathway",
+          "bridge",
+          "bridge_total",
+          "headline_outputs",
+          "sensitivity_defaults",
+          "sensitivity_metric",
+          "time_step",
+          "max_horizon_months",
+          "max_propagation_depth",
+          "graph_build_id",
+          "graph_freshness"
+        ],
+        "title": "SimulationModelDetail"
+      },
+      "SimulationModelSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "domain": {
+            "type": "string",
+            "title": "Domain"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "preview",
+              "active",
+              "deprecated"
+            ],
+            "title": "Status"
+          },
+          "definition_hash": {
+            "type": "string",
+            "title": "Definition Hash"
+          },
+          "versions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Versions"
+          },
+          "runs": {
+            "type": "integer",
+            "title": "Runs",
+            "description": "Stored runs of this model (all versions)."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "version",
+          "name",
+          "summary",
+          "domain",
+          "status",
+          "definition_hash",
+          "versions",
+          "runs"
+        ],
+        "title": "SimulationModelSummary"
+      },
+      "SimulationObservationRead": {
+        "properties": {
+          "series_id": {
+            "type": "string",
+            "title": "Series Id"
+          },
+          "series_name": {
+            "type": "string",
+            "title": "Series Name"
+          },
+          "series_unit": {
+            "type": "string",
+            "title": "Series Unit"
+          },
+          "frequency": {
+            "type": "string",
+            "title": "Frequency"
+          },
+          "period_label": {
+            "type": "string",
+            "title": "Period Label"
+          },
+          "period_start": {
+            "type": "string",
+            "title": "Period Start"
+          },
+          "value": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Value",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "raw_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Raw Value"
+          },
+          "quality_status": {
+            "type": "string",
+            "title": "Quality Status"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "last_confirmed_at": {
+            "type": "string",
+            "title": "Last Confirmed At"
+          },
+          "capture_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Capture Id"
+          },
+          "job_id": {
+            "type": "string",
+            "title": "Job Id"
+          },
+          "dataset_id": {
+            "type": "string",
+            "title": "Dataset Id"
+          },
+          "dataset_version": {
+            "type": "string",
+            "title": "Dataset Version"
+          },
+          "license": {
+            "type": "string",
+            "title": "License"
+          },
+          "attribution": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attribution"
+          }
+        },
+        "type": "object",
+        "required": [
+          "series_id",
+          "series_name",
+          "series_unit",
+          "frequency",
+          "period_label",
+          "period_start",
+          "value",
+          "raw_value",
+          "quality_status",
+          "revision",
+          "last_confirmed_at",
+          "capture_id",
+          "job_id",
+          "dataset_id",
+          "dataset_version",
+          "license",
+          "attribution"
+        ],
+        "title": "SimulationObservationRead"
+      },
+      "SimulationRequest": {
+        "properties": {
+          "model_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{2,63}$",
+            "title": "Model Id",
+            "examples": [
+              "airline_fuel_cost"
+            ]
+          },
+          "model_version": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d+\\.\\d+\\.\\d+$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Version",
+            "description": "Defaults to the latest runnable version."
+          },
+          "inputs": {
+            "patternProperties": {
+              "^[a-z][a-z0-9_]{1,63}$": {
+                "$ref": "#/components/schemas/SimulationInputValue"
+              }
+            },
+            "type": "object",
+            "maxProperties": 40,
+            "title": "Inputs",
+            "description": "Input values by input id."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "model_id"
+        ],
+        "title": "SimulationRequest"
+      },
+      "SimulationRunRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "model_id": {
+            "type": "string",
+            "title": "Model Id"
+          },
+          "model_name": {
+            "type": "string",
+            "title": "Model Name"
+          },
+          "model_version": {
+            "type": "string",
+            "title": "Model Version"
+          },
+          "definition_hash": {
+            "type": "string",
+            "title": "Definition Hash"
+          },
+          "status": {
+            "type": "string",
+            "const": "completed",
+            "title": "Status"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "entity": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EntityRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "horizon_months": {
+            "type": "integer",
+            "title": "Horizon Months"
+          },
+          "inputs": {
+            "items": {
+              "$ref": "#/components/schemas/ResolvedInputRead"
+            },
+            "type": "array",
+            "title": "Inputs"
+          },
+          "outputs": {
+            "items": {
+              "$ref": "#/components/schemas/OutputRead"
+            },
+            "type": "array",
+            "title": "Outputs"
+          },
+          "monthly": {
+            "items": {
+              "$ref": "#/components/schemas/MonthlySeriesRead"
+            },
+            "type": "array",
+            "title": "Monthly"
+          },
+          "contributions": {
+            "items": {
+              "$ref": "#/components/schemas/ContributionRead"
+            },
+            "type": "array",
+            "title": "Contributions"
+          },
+          "bridge": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BridgeRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/SimulationIssueRead"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "limitations": {
+            "items": {
+              "$ref": "#/components/schemas/StatementRead"
+            },
+            "type": "array",
+            "title": "Limitations"
+          },
+          "inputs_hash": {
+            "type": "string",
+            "title": "Inputs Hash"
+          },
+          "result_hash": {
+            "type": "string",
+            "title": "Result Hash"
+          },
+          "engine_version": {
+            "type": "string",
+            "title": "Engine Version"
+          },
+          "random_seed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Random Seed"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Started At"
+          },
+          "finished_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Finished At"
+          },
+          "duration_ms": {
+            "type": "integer",
+            "title": "Duration Ms"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "sensitivity_analyses": {
+            "type": "integer",
+            "title": "Sensitivity Analyses"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "description": "What the numbers are, and are not, in one sentence."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "model_id",
+          "model_name",
+          "model_version",
+          "definition_hash",
+          "status",
+          "label",
+          "entity",
+          "horizon_months",
+          "inputs",
+          "outputs",
+          "monthly",
+          "contributions",
+          "bridge",
+          "warnings",
+          "limitations",
+          "inputs_hash",
+          "result_hash",
+          "engine_version",
+          "random_seed",
+          "started_at",
+          "finished_at",
+          "duration_ms",
+          "created_at",
+          "sensitivity_analyses",
+          "note"
+        ],
+        "title": "SimulationRunRead"
+      },
+      "SimulationRunRequest": {
+        "properties": {
+          "model_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{2,63}$",
+            "title": "Model Id",
+            "examples": [
+              "airline_fuel_cost"
+            ]
+          },
+          "model_version": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d+\\.\\d+\\.\\d+$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Version",
+            "description": "Defaults to the latest runnable version."
+          },
+          "inputs": {
+            "patternProperties": {
+              "^[a-z][a-z0-9_]{1,63}$": {
+                "$ref": "#/components/schemas/SimulationInputValue"
+              }
+            },
+            "type": "object",
+            "maxProperties": 40,
+            "title": "Inputs",
+            "description": "Input values by input id."
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label",
+            "description": "An optional name for the run."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "model_id"
+        ],
+        "title": "SimulationRunRequest"
+      },
+      "SimulationRunSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "model_id": {
+            "type": "string",
+            "title": "Model Id"
+          },
+          "model_version": {
+            "type": "string",
+            "title": "Model Version"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "entity": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EntityRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "horizon_months": {
+            "type": "integer",
+            "title": "Horizon Months"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "headline": {
+            "items": {
+              "$ref": "#/components/schemas/OutputRead"
+            },
+            "type": "array",
+            "title": "Headline"
+          },
+          "result_hash": {
+            "type": "string",
+            "title": "Result Hash"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "model_id",
+          "model_version",
+          "label",
+          "entity",
+          "horizon_months",
+          "created_at",
+          "headline",
+          "result_hash"
+        ],
+        "title": "SimulationRunSummary"
+      },
+      "SimulationValidationRuleRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "error",
+              "warning"
+            ],
+            "title": "Severity"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "description",
+          "severity"
+        ],
+        "title": "SimulationValidationRuleRead"
+      },
       "SourceRecordRead": {
         "properties": {
           "table": {
@@ -10530,6 +14247,99 @@
           "record_id"
         ],
         "title": "SourceRecordRead"
+      },
+      "StatementRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "text"
+        ],
+        "title": "StatementRead"
+      },
+      "StepRead": {
+        "properties": {
+          "sequence": {
+            "type": "integer",
+            "title": "Sequence"
+          },
+          "equation": {
+            "type": "string",
+            "title": "Equation"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "month": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Month"
+          },
+          "output": {
+            "$ref": "#/components/schemas/StepValueRead"
+          },
+          "inputs": {
+            "items": {
+              "$ref": "#/components/schemas/StepValueRead"
+            },
+            "type": "array",
+            "title": "Inputs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sequence",
+          "equation",
+          "label",
+          "month",
+          "output",
+          "inputs"
+        ],
+        "title": "StepRead"
+      },
+      "StepValueRead": {
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "title": "Symbol"
+          },
+          "value": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Value",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "symbol",
+          "value",
+          "unit"
+        ],
+        "title": "StepValueRead"
       },
       "Strength": {
         "type": "string",
@@ -10603,6 +14413,44 @@
         "title": "StructuralLinkType",
         "description": "Links derived from entity attributes (never stored as relationship rows)."
       },
+      "SupportingRelationshipRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "edge_type": {
+            "type": "string",
+            "title": "Edge Type"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "target": {
+            "type": "string",
+            "title": "Target"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "required_with_entity": {
+            "type": "boolean",
+            "title": "Required With Entity"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "edge_type",
+          "source",
+          "target",
+          "role",
+          "required_with_entity"
+        ],
+        "title": "SupportingRelationshipRead"
+      },
       "SystemStatus": {
         "properties": {
           "service": {
@@ -10656,6 +14504,194 @@
           "capabilities"
         ],
         "title": "SystemStatus"
+      },
+      "TermRead": {
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "title": "Symbol"
+          },
+          "meaning": {
+            "type": "string",
+            "title": "Meaning"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "symbol",
+          "meaning",
+          "unit"
+        ],
+        "title": "TermRead"
+      },
+      "TransmissionPathRead": {
+        "properties": {
+          "input": {
+            "type": "string",
+            "title": "Input"
+          },
+          "nodes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Nodes"
+          },
+          "rules": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Rules"
+          },
+          "edge_keys": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Edge Keys"
+          },
+          "coefficient": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Coefficient",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "lag": {
+            "type": "integer",
+            "title": "Lag"
+          },
+          "first_month": {
+            "type": "integer",
+            "title": "First Month"
+          },
+          "log_change": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Log Change",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "input",
+          "nodes",
+          "rules",
+          "edge_keys",
+          "coefficient",
+          "lag",
+          "first_month",
+          "log_change"
+        ],
+        "title": "TransmissionPathRead"
+      },
+      "TransmissionRuleRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "edge_type": {
+            "type": "string",
+            "title": "Edge Type"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "source_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Name"
+          },
+          "target": {
+            "type": "string",
+            "title": "Target"
+          },
+          "target_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Name"
+          },
+          "coefficient_input": {
+            "type": "string",
+            "title": "Coefficient Input"
+          },
+          "lag_input": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lag Input"
+          },
+          "form": {
+            "type": "string",
+            "title": "Form"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "graph_edge": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GraphEdgeRead"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The confirming edge in the latest graph build, or null if the graph does not state it (then a shock needing it cannot run)."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "edge_type",
+          "source",
+          "source_name",
+          "target",
+          "target_name",
+          "coefficient_input",
+          "lag_input",
+          "form",
+          "description",
+          "graph_edge"
+        ],
+        "title": "TransmissionRuleRead"
       },
       "TraversalLimits": {
         "properties": {
@@ -10732,6 +14768,126 @@
         ],
         "title": "TypeMapNode"
       },
+      "UnitChoice": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label"
+        ],
+        "title": "UnitChoice"
+      },
+      "UnusedEdgeRead": {
+        "properties": {
+          "edge_key": {
+            "type": "string",
+            "title": "Edge Key"
+          },
+          "edge_type": {
+            "type": "string",
+            "title": "Edge Type"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "target": {
+            "type": "string",
+            "title": "Target"
+          },
+          "evidence_status": {
+            "type": "string",
+            "title": "Evidence Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "edge_key",
+          "edge_type",
+          "source",
+          "target",
+          "evidence_status"
+        ],
+        "title": "UnusedEdgeRead"
+      },
+      "ValidationReport": {
+        "properties": {
+          "valid": {
+            "type": "boolean",
+            "title": "Valid"
+          },
+          "model_id": {
+            "type": "string",
+            "title": "Model Id"
+          },
+          "model_version": {
+            "type": "string",
+            "title": "Model Version"
+          },
+          "definition_hash": {
+            "type": "string",
+            "title": "Definition Hash"
+          },
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/SimulationIssueRead"
+            },
+            "type": "array",
+            "title": "Errors"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/SimulationIssueRead"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "inputs": {
+            "items": {
+              "$ref": "#/components/schemas/ResolvedInputRead"
+            },
+            "type": "array",
+            "title": "Inputs"
+          },
+          "graph": {
+            "$ref": "#/components/schemas/GraphSnapshotRead"
+          },
+          "inputs_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inputs Hash",
+            "description": "What the run's inputs hash will be (null while the inputs are invalid)."
+          }
+        },
+        "type": "object",
+        "required": [
+          "valid",
+          "model_id",
+          "model_version",
+          "definition_hash",
+          "errors",
+          "warnings",
+          "inputs",
+          "graph",
+          "inputs_hash"
+        ],
+        "title": "ValidationReport"
+      },
       "ValidationRuleRead": {
         "properties": {
           "code": {
@@ -10782,6 +14938,77 @@
           "inflation"
         ],
         "title": "VariableCategory"
+      },
+      "VerificationRead": {
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Run Id"
+          },
+          "reproduced": {
+            "type": "boolean",
+            "title": "Reproduced"
+          },
+          "inputs_hash_matches": {
+            "type": "boolean",
+            "title": "Inputs Hash Matches"
+          },
+          "result_hash_matches": {
+            "type": "boolean",
+            "title": "Result Hash Matches"
+          },
+          "stored_result_hash": {
+            "type": "string",
+            "title": "Stored Result Hash"
+          },
+          "recomputed_result_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recomputed Result Hash"
+          },
+          "model_registered": {
+            "type": "boolean",
+            "title": "Model Registered"
+          },
+          "definition_matches": {
+            "type": "boolean",
+            "title": "Definition Matches"
+          },
+          "graph_edges": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Graph Edges",
+            "description": "Whether each graph edge the run used is still current in the latest build (informational: verification re-uses the stored snapshot)."
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "run_id",
+          "reproduced",
+          "inputs_hash_matches",
+          "result_hash_matches",
+          "stored_result_hash",
+          "recomputed_result_hash",
+          "model_registered",
+          "definition_matches",
+          "graph_edges",
+          "message"
+        ],
+        "title": "VerificationRead"
       }
     }
   },
@@ -10800,7 +15027,7 @@
     },
     {
       "name": "scenarios",
-      "description": "Draft scenario inputs. Nothing is simulated."
+      "description": "Draft scenario inputs. Drafts are not run yet (Phase 5 Scenario Lab)."
     },
     {
       "name": "providers and datasets",
@@ -10825,6 +15052,10 @@
     {
       "name": "knowledge graph",
       "description": "Entities, relationships and evidence: search, neighbourhoods, provenance, paths, components, builds and validation issues (read-only, bounded)."
+    },
+    {
+      "name": "simulation",
+      "description": "Versioned models, input validation, deterministic runs with explanations and provenance, re-execution checks and one-at-a-time sensitivity analysis. Runs are append-only."
     },
     {
       "name": "system",

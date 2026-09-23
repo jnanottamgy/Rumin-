@@ -1,7 +1,8 @@
 """Scenario workspace: create, read, update and delete *draft* scenarios.
 
-There is deliberately no "run" operation. The simulation engine arrives in Phase 4 as a
-separate resource; until then no endpoint pretends to compute effects.
+There is deliberately no "run" operation on a scenario. Simulation runs are a separate,
+append-only resource (``/api/v1/simulations``, Phase 4); connecting drafts to runs is the
+Scenario Lab (Phase 5).
 """
 
 from __future__ import annotations

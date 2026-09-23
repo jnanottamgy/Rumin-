@@ -63,7 +63,8 @@ CAPABILITIES: tuple[Capability, ...] = (
         label="Scenario drafts",
         available=True,
         planned_phase=1,
-        note="Scenario inputs can be created and edited. Nothing is simulated.",
+        note="Scenario inputs can be created and edited. Drafts are not run yet: connecting "
+        "them to the simulation engine is the Scenario Lab (Phase 5).",
     ),
     Capability(
         id="historical_observations",
@@ -117,9 +118,20 @@ CAPABILITIES: tuple[Capability, ...] = (
     Capability(
         id="simulation_engine",
         label="Simulation engine",
-        available=False,
+        available=True,
         planned_phase=4,
-        note="No simulation engine exists; scenarios cannot be run and no results exist.",
+        note="One model in preview: an airline fuel-cost shock, calculated month by month "
+        "from stated inputs and assumptions, with one-at-a-time sensitivity. Every run stores "
+        "its inputs, graph snapshot and calculation steps. Results are calculations, not "
+        "forecasts.",
+    ),
+    Capability(
+        id="probabilistic_simulation",
+        label="Probabilistic simulation",
+        available=False,
+        planned_phase=9,
+        note="Not implemented: runs are deterministic and no probabilities are estimated. "
+        "Sensitivity analysis shows how results move with each input, not how likely they are.",
     ),
     Capability(
         id="ai_analyst",

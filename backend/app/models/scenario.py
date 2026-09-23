@@ -12,8 +12,8 @@ from app.domain.enums import ChangeType, ScenarioStatus
 class Scenario(TimestampMixin, Base):
     """A user-defined "what if" configuration. It holds *inputs only*.
 
-    Simulation results will live in a separate ``simulation_runs`` table (Phase 4), so
-    a scenario's inputs can never be mistaken for, or overwritten by, its outputs.
+    Simulation results live in a separate ``simulation_runs`` table (Phase 4), so a
+    scenario's inputs can never be mistaken for, or overwritten by, its outputs.
     """
 
     __tablename__ = "scenarios"

@@ -70,6 +70,15 @@ class NotFoundError(AppError):
     default_message = "The requested resource was not found."
 
 
+class ConflictError(AppError):
+    """The request conflicts with stored state (e.g. a model version whose stored
+    definition differs from the code)."""
+
+    status_code = 409
+    code = "conflict"
+    default_message = "The request conflicts with stored data."
+
+
 class DomainValidationError(AppError):
     """Input is well-formed but violates a domain rule (e.g. unknown variable)."""
 
