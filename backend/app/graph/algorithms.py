@@ -19,7 +19,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from collections.abc import Callable, Collection, Iterable, Iterator, Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from enum import StrEnum
 from typing import Protocol
 
@@ -49,6 +49,8 @@ class Incidence:
     source: str
     target: str
     directed: bool
+    evidence_status: str | None = None
+    illustrative: bool = False
 
     def other(self, node: str) -> str:
         return self.target if node == self.source else self.source
@@ -84,10 +86,23 @@ class EdgeFilter:
     direction: Direction = Direction.ANY
     # Node keys start with their type ("company:…"), so a node filter needs no lookup.
     node_filter: Callable[[str], bool] | None = None
+    evidence_statuses: frozenset[str] | None = None
+    include_illustrative: bool = True
+
+    def admits(self, edge: Incidence) -> bool:
+        """Whether the edge itself is allowed (type, evidence status, illustrative data)."""
+        if self.edge_types is not None and edge.edge_type not in self.edge_types:
+            return False
+        if (
+            self.evidence_statuses is not None
+            and edge.evidence_status not in self.evidence_statuses
+        ):
+            return False
+        return self.include_illustrative or not edge.illustrative
 
     def follows(self, edge: Incidence, from_node: str) -> str | None:
         """The neighbour reached from ``from_node`` over ``edge``, or None if not allowed."""
-        if self.edge_types is not None and edge.edge_type not in self.edge_types:
+        if not self.admits(edge):
             return None
         if edge.directed and self.direction is not Direction.ANY:
             if self.direction is Direction.OUT and edge.source != from_node:
@@ -100,7 +115,7 @@ class EdgeFilter:
         return neighbour
 
     def reversed(self) -> EdgeFilter:
-        return EdgeFilter(self.edge_types, self.direction.reversed(), self.node_filter)
+        return replace(self, direction=self.direction.reversed())
 
 
 def _ordered(edges: Iterable[Incidence], node: str) -> list[Incidence]:
@@ -157,7 +172,7 @@ def bfs(
         next_frontier: list[str] = []
         for node in frontier:
             for edge in _ordered(incident.get(node, ()), node):
-                if rules.edge_types is not None and edge.edge_type not in rules.edge_types:
+                if not rules.admits(edge):
                     continue
                 if edge.other(node) in result.depth:
                     result.edges.setdefault(edge.edge_key, edge)
@@ -199,9 +214,7 @@ def neighborhood(
         result.levels_fetched += 1
         for node in outer:
             for edge in incident.get(node, ()):
-                if rules.edge_types is not None and edge.edge_type not in rules.edge_types:
-                    continue
-                if edge.other(node) in result.depth:
+                if rules.admits(edge) and edge.other(node) in result.depth:
                     result.edges.setdefault(edge.edge_key, edge)
     return result
 

@@ -69,14 +69,18 @@ class SqlAdjacency:
                     GraphEdge.source_node_id,
                     GraphEdge.target_node_id,
                     GraphEdge.directed,
+                    GraphEdge.evidence_status,
+                    GraphEdge.is_illustrative,
                 ).where(
                     GraphEdge.retired_build_id.is_(None),
                     or_(GraphEdge.source_node_id.in_(chunk), GraphEdge.target_node_id.in_(chunk)),
                 )
             ).all()
             self.queries += 1
-            for edge_id, edge_type, source, target, directed in rows:
-                edge = Incidence(edge_id, edge_type.value, source, target, directed)
+            for edge_id, edge_type, source, target, directed, status, illustrative in rows:
+                edge = Incidence(
+                    edge_id, edge_type.value, source, target, directed, status.value, illustrative
+                )
                 # An edge between two keys of different chunks is fetched twice; keep one.
                 for end in {source, target} & wanted:
                     if edge not in result[end]:
@@ -178,7 +182,7 @@ class Exposure:
     via: NodeRecord | None
 
 
-def _node(row: GraphNode) -> NodeRecord:
+def node_record(row: GraphNode) -> NodeRecord:
     return NodeRecord(
         key=row.id,
         node_type=row.node_type,
@@ -198,7 +202,7 @@ def _node(row: GraphNode) -> NodeRecord:
     )
 
 
-def _edge(row: GraphEdge) -> EdgeRecord:
+def edge_record(row: GraphEdge) -> EdgeRecord:
     return EdgeRecord(
         key=row.id,
         edge_type=row.edge_type,
@@ -248,7 +252,7 @@ class GraphReader:
 
     def node(self, key: str) -> NodeRecord | None:
         row = self.session.get(GraphNode, key)
-        return _node(row) if row is not None and row.retired_build_id is None else None
+        return node_record(row) if row is not None and row.retired_build_id is None else None
 
     def nodes(self, keys: Iterable[str]) -> dict[str, NodeRecord]:
         found: dict[str, NodeRecord] = {}
@@ -258,12 +262,12 @@ class GraphReader:
                     GraphNode.id.in_(chunk), GraphNode.retired_build_id.is_(None)
                 )
             ):
-                found[row.id] = _node(row)
+                found[row.id] = node_record(row)
         return found
 
     def edge(self, key: str) -> EdgeRecord | None:
         row = self.session.get(GraphEdge, key)
-        return _edge(row) if row is not None and row.retired_build_id is None else None
+        return edge_record(row) if row is not None and row.retired_build_id is None else None
 
     def edges(self, keys: Iterable[str]) -> dict[str, EdgeRecord]:
         found: dict[str, EdgeRecord] = {}
@@ -273,7 +277,7 @@ class GraphReader:
                     GraphEdge.id.in_(chunk), GraphEdge.retired_build_id.is_(None)
                 )
             ):
-                found[row.id] = _edge(row)
+                found[row.id] = edge_record(row)
         return found
 
     def identifiers(self, key: str) -> list[tuple[str, str, str]]:

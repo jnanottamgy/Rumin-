@@ -219,7 +219,8 @@ _PHASE1: dict[RelationshipType | StructuralLinkType, tuple[str, frozenset[Eviden
         frozenset({EvidenceStatus.MODEL_ASSUMPTION, EvidenceStatus.EVIDENCE_BACKED}),
     ),
     RelationshipType.INFLUENCES: (
-        "Assumed transmission between two variables, not a statistical or causal estimate.",
+        "Assumed transmission between two variables, not a statistical or causal estimate. "
+        "A connection is not evidence of causation.",
         frozenset({EvidenceStatus.MODEL_ASSUMPTION}),
     ),
     StructuralLinkType.IN_INDUSTRY: (

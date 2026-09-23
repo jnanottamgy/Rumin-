@@ -506,6 +506,246 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/graph/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Graph overview
+         * @description The latest build, whether it is up to date with its sources, graph metrics (with definitions and limitations), and a type-level map: node counts per type and edge counts between types. The map is an aggregate — its links count relationships between *kinds* of node, not between individual entities.
+         */
+        get: operations["get_graph_overview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/graph/types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Graph vocabulary
+         * @description Node types, edge types (meaning, endpoints, direction, allowed evidence statuses and what each does not mean), evidence-status definitions, identifier schemes, construction rules and validation rules.
+         */
+        get: operations["get_graph_types"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/graph/nodes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search nodes
+         * @description Case-insensitive, partial search over names, subtitles and identifiers (ISO codes, ISIC codes, ISIN, MIC, provider series keys). An exact identifier match comes first. `ambiguous` marks names shared by more than one node.
+         */
+        get: operations["search_graph_nodes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/graph/nodes/{node_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a node
+         * @description Identifiers, the source records it was built from, how entity resolution treated it, its relationships by type, quality issues, live data availability (series and instruments) and — for companies and industries — the variables linked to it by assumed-effect edges, direct or via its industry.
+         */
+        get: operations["get_graph_node"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/graph/nodes/{node_id}/neighborhood": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * A node's neighbourhood
+         * @description The nodes within `depth` hops (at most 3) and every edge among them, found by breadth-first search with one database query per level. At most `max_nodes` nodes (up to 200); `truncated` and `unexplored_by_type` say what the limit left out.
+         */
+        get: operations["get_graph_neighborhood"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/graph/edges": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List edges
+         * @description Current edges, filtered by type, evidence status, a node they touch, or whether they are illustrative.
+         */
+        get: operations["list_graph_edges"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/graph/edges/{edge_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get an edge and its provenance
+         * @description Why the connection exists: every evidence record (source record, dataset and version, what the source says, the rule and transformation that made the edge, retrieval and recording times), its evidence status with a definition, and what this kind of edge does not mean.
+         */
+        get: operations["get_graph_edge"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/graph/paths": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Shortest paths between two nodes
+         * @description Up to `limit` (at most 10) shortest paths, counted in hops, of at most `max_depth` hops (at most 6), found by bidirectional breadth-first search. A path shows how records are connected; it is not an influence or causal chain, and a shorter path is not a stronger relationship.
+         */
+        get: operations["find_graph_paths"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/graph/components": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Connected components
+         * @description Groups of nodes linked by edges (direction ignored), largest first, with their composition. A component is not an economically integrated system.
+         */
+        get: operations["get_graph_components"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/graph/builds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List graph builds
+         * @description Every build, newest first, with its validation counts and changes.
+         */
+        get: operations["list_graph_builds"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/graph/builds/{build_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a graph build
+         * @description A build's validation report, changes, sources (datasets and versions), metrics, issue counts by rule and entity-resolution decisions by outcome.
+         */
+        get: operations["get_graph_build"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/graph/issues": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List graph validation issues
+         * @description Issues found by a build (default: the latest), including entity-resolution candidates flagged for review.
+         */
+        get: operations["list_graph_issues"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/system": {
         parameters: {
             query?: never;
@@ -530,6 +770,28 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** BuildChanges */
+        BuildChanges: {
+            /** Added */
+            added: number;
+            /** Changed */
+            changed: number;
+            /** Retired */
+            retired: number;
+            /** Unchanged */
+            unchanged: number;
+        };
+        /** BuildCounts */
+        BuildCounts: {
+            /** Processed */
+            processed: number;
+            /** Valid */
+            valid: number;
+            /** Flagged */
+            flagged: number;
+            /** Rejected */
+            rejected: number;
+        };
         /** Capability */
         Capability: {
             /** Id */
@@ -656,6 +918,44 @@ export interface components {
             industry_id: string;
             /** Country Id */
             country_id: string;
+        };
+        /** ComponentRead */
+        ComponentRead: {
+            /** Number */
+            number: number;
+            /** Size */
+            size: number;
+            /** Nodes By Type */
+            nodes_by_type: {
+                [key: string]: number;
+            };
+            /** Sample */
+            sample: components["schemas"]["GraphNodeSummary"][];
+        };
+        /** ComponentsResponse */
+        ComponentsResponse: {
+            /** Count */
+            count: number;
+            /** Isolated Nodes */
+            isolated_nodes: number;
+            /** Components */
+            components: components["schemas"]["ComponentRead"][];
+            /** Note */
+            note: string;
+        };
+        /** ConstructionRuleRead */
+        ConstructionRuleRead: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Reads */
+            reads: string;
+            /** Produces */
+            produces: string;
+            evidence_status: components["schemas"]["EvidenceStatus"] | null;
+            /** Description */
+            description: string;
         };
         /** CountryRead */
         CountryRead: {
@@ -894,6 +1194,30 @@ export interface components {
              */
             loaded_at: string;
         };
+        /** DecisionCount */
+        DecisionCount: {
+            method: components["schemas"]["ResolutionMethod"];
+            outcome: components["schemas"]["ResolutionOutcome"];
+            /** Count */
+            count: number;
+        };
+        /**
+         * Derivation
+         * @description ``direct``: one field of the source record states the relationship.
+         *     ``derived``: the relationship follows from a record plus a documented standard.
+         * @enum {string}
+         */
+        Derivation: "direct" | "derived";
+        /**
+         * Direction
+         * @description Which way edges may be followed.
+         *
+         *     * ``any`` — ignore direction (the graph as undirected).
+         *     * ``out`` — from source to target only (undirected edges both ways).
+         *     * ``in`` — from target to source only (undirected edges both ways).
+         * @enum {string}
+         */
+        Direction: "any" | "out" | "in";
         /**
          * EconomicVariablePage
          * @description A page of economic variables.
@@ -960,6 +1284,56 @@ export interface components {
              * @description Which scenario changes this variable accepts, and the enforced limits.
              */
             readonly scenario_rules: components["schemas"]["ChangeRuleRead"][];
+        };
+        /**
+         * EdgeQualifiers
+         * @description Type-specific qualifiers, each with the meaning Phase 1 or the catalogue gave it.
+         */
+        EdgeQualifiers: {
+            /**
+             * Polarity
+             * @description Assumed direction of effect.
+             */
+            polarity?: string | null;
+            /**
+             * Strength
+             * @description Ordinal and illustrative, not measured.
+             */
+            strength?: string | null;
+            /**
+             * Evidence Level
+             * @description Phase 1 evidence level.
+             */
+            evidence_level?: string | null;
+            /** Rationale */
+            rationale?: string | null;
+            /**
+             * Stated Difference
+             * @description How a related measure differs from the variable.
+             */
+            stated_difference?: string | null;
+        };
+        /** EdgeTypeRead */
+        EdgeTypeRead: {
+            type: components["schemas"]["GraphEdgeType"];
+            category: components["schemas"]["RelationshipCategory"];
+            /** Label */
+            label: string;
+            /** Description */
+            description: string;
+            /** Caveat */
+            caveat: string;
+            /** Directed */
+            directed: boolean;
+            /** Endpoints */
+            endpoints: components["schemas"]["EndpointPair"][];
+            /** Evidence Statuses */
+            evidence_statuses: components["schemas"]["EvidenceStatus"][];
+        };
+        /** EndpointPair */
+        EndpointPair: {
+            source: components["schemas"]["GraphNodeType"];
+            target: components["schemas"]["GraphNodeType"];
         };
         /**
          * EntityKind
@@ -1048,11 +1422,458 @@ export interface components {
          * @enum {string}
          */
         EvidenceLevel: "illustrative" | "documented" | "estimated" | "validated";
+        /** EvidenceRead */
+        EvidenceRead: {
+            /**
+             * Rule
+             * @example R02 company_industry
+             */
+            rule: string;
+            /** Rule Description */
+            rule_description: string;
+            source_kind: components["schemas"]["EvidenceSourceKind"];
+            /** Source Table */
+            source_table: string;
+            /** Source Record Id */
+            source_record_id: string;
+            /** Dataset Id */
+            dataset_id: string | null;
+            /** Dataset Version */
+            dataset_version: string | null;
+            /**
+             * Statement
+             * @description What the source says.
+             */
+            statement: string;
+            /**
+             * Transformation
+             * @description How the rule turned it into this edge.
+             */
+            transformation: string;
+            derivation: components["schemas"]["Derivation"];
+            /** Derived From */
+            derived_from: string[];
+            /** Citation */
+            citation: string | null;
+            /** Citation Url */
+            citation_url: string | null;
+            /**
+             * Retrieved At
+             * @description When a provider last delivered the source (series only).
+             */
+            retrieved_at: string | null;
+            /**
+             * Recorded At
+             * @description When the source record entered RUMIN.
+             */
+            recorded_at: string | null;
+        };
+        /**
+         * EvidenceSourceKind
+         * @description Where the statement behind an edge comes from.
+         * @enum {string}
+         */
+        EvidenceSourceKind: "reference_dataset" | "series_catalogue" | "price_file_manifest" | "classification_standard";
+        /**
+         * EvidenceStatus
+         * @description What supports an edge's existence (definitions in ``app.domain.graph_types``).
+         * @enum {string}
+         */
+        EvidenceStatus: "evidence_backed" | "analyst_created" | "model_assumption" | "unverified";
+        /** EvidenceStatusRead */
+        EvidenceStatusRead: {
+            status: components["schemas"]["EvidenceStatus"];
+            /** Label */
+            label: string;
+            /** Definition */
+            definition: string;
+        };
+        /** ExposureRead */
+        ExposureRead: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "direct" | "via_industry";
+            variable: components["schemas"]["GraphNodeSummary"];
+            edge: components["schemas"]["GraphEdgeSummary"];
+            via: components["schemas"]["GraphNodeSummary"] | null;
+            /** Explanation */
+            explanation: string;
+        };
         /**
          * Frequency
          * @enum {string}
          */
         Frequency: "daily" | "weekly" | "monthly" | "quarterly" | "annual" | "irregular";
+        /** Freshness */
+        Freshness: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "current" | "stale" | "not_built";
+            /** Message */
+            message: string;
+        };
+        /** GraphBuildDetail */
+        GraphBuildDetail: {
+            /** Id */
+            id: number;
+            status: components["schemas"]["GraphBuildStatus"];
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /** Finished At */
+            finished_at: string | null;
+            /** Duration Ms */
+            duration_ms: number | null;
+            /** Rules Version */
+            rules_version: string;
+            /** Node Count */
+            node_count: number;
+            /** Edge Count */
+            edge_count: number;
+            nodes: components["schemas"]["BuildCounts"];
+            edges: components["schemas"]["BuildCounts"];
+            node_changes: components["schemas"]["BuildChanges"];
+            edge_changes: components["schemas"]["BuildChanges"];
+            /** Error Count */
+            error_count: number;
+            /** Warning Count */
+            warning_count: number;
+            /** Info Count */
+            info_count: number;
+            /** Error Summary */
+            error_summary: string | null;
+            /** Source Fingerprint */
+            source_fingerprint: string | null;
+            /** Sources */
+            sources: {
+                [key: string]: unknown;
+            };
+            /** Metrics */
+            metrics: {
+                [key: string]: unknown;
+            };
+            /** Issues By Rule */
+            issues_by_rule: components["schemas"]["RuleCount"][];
+            /** Decisions */
+            decisions: components["schemas"]["DecisionCount"][];
+        };
+        /**
+         * GraphBuildStatus
+         * @description Lifecycle of a graph build. ``completed_with_warnings`` means the graph was built
+         *     but some records were rejected or flagged; ``failed`` means nothing was changed.
+         * @enum {string}
+         */
+        GraphBuildStatus: "running" | "completed" | "completed_with_warnings" | "failed";
+        /** GraphBuildSummary */
+        GraphBuildSummary: {
+            /** Id */
+            id: number;
+            status: components["schemas"]["GraphBuildStatus"];
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /** Finished At */
+            finished_at: string | null;
+            /** Duration Ms */
+            duration_ms: number | null;
+            /** Rules Version */
+            rules_version: string;
+            /** Node Count */
+            node_count: number;
+            /** Edge Count */
+            edge_count: number;
+            nodes: components["schemas"]["BuildCounts"];
+            edges: components["schemas"]["BuildCounts"];
+            node_changes: components["schemas"]["BuildChanges"];
+            edge_changes: components["schemas"]["BuildChanges"];
+            /** Error Count */
+            error_count: number;
+            /** Warning Count */
+            warning_count: number;
+            /** Info Count */
+            info_count: number;
+            /** Error Summary */
+            error_summary: string | null;
+        };
+        /** GraphEdgeDetail */
+        GraphEdgeDetail: {
+            /**
+             * Id
+             * @example e-3f0c9a2b7d1e4f56
+             */
+            id: string;
+            type: components["schemas"]["GraphEdgeType"];
+            category: components["schemas"]["RelationshipCategory"];
+            /** Source */
+            source: string;
+            /** Target */
+            target: string;
+            /** Directed */
+            directed: boolean;
+            /**
+             * Label
+             * @description How the edge reads: '<source> <label> <target>'.
+             */
+            label: string;
+            /** Description */
+            description: string;
+            evidence_status: components["schemas"]["EvidenceStatus"];
+            /** Is Illustrative */
+            is_illustrative: boolean;
+            quality_status: components["schemas"]["QualityStatus"];
+            /** Valid From */
+            valid_from?: string | null;
+            /** Valid To */
+            valid_to?: string | null;
+            /**
+             * Historical
+             * @description The stated validity period has ended.
+             */
+            historical: boolean;
+            qualifiers: components["schemas"]["EdgeQualifiers"];
+            source_node: components["schemas"]["GraphNodeSummary"];
+            target_node: components["schemas"]["GraphNodeSummary"];
+            /**
+             * Explanation
+             * @description Why this connection exists, in one paragraph.
+             */
+            explanation: string;
+            /** Evidence */
+            evidence: components["schemas"]["EvidenceRead"][];
+            /** Evidence Status Label */
+            evidence_status_label: string;
+            /** Evidence Status Definition */
+            evidence_status_definition: string;
+            /** Type Description */
+            type_description: string;
+            /**
+             * Caveat
+             * @description What this kind of edge does not mean.
+             */
+            caveat: string;
+            /** First Build Id */
+            first_build_id: number;
+            /** Changed Build Id */
+            changed_build_id: number;
+        };
+        /** GraphEdgeSummary */
+        GraphEdgeSummary: {
+            /**
+             * Id
+             * @example e-3f0c9a2b7d1e4f56
+             */
+            id: string;
+            type: components["schemas"]["GraphEdgeType"];
+            category: components["schemas"]["RelationshipCategory"];
+            /** Source */
+            source: string;
+            /** Target */
+            target: string;
+            /** Directed */
+            directed: boolean;
+            /**
+             * Label
+             * @description How the edge reads: '<source> <label> <target>'.
+             */
+            label: string;
+            /** Description */
+            description: string;
+            evidence_status: components["schemas"]["EvidenceStatus"];
+            /** Is Illustrative */
+            is_illustrative: boolean;
+            quality_status: components["schemas"]["QualityStatus"];
+            /** Valid From */
+            valid_from?: string | null;
+            /** Valid To */
+            valid_to?: string | null;
+            /**
+             * Historical
+             * @description The stated validity period has ended.
+             */
+            historical: boolean;
+            qualifiers: components["schemas"]["EdgeQualifiers"];
+        };
+        /**
+         * GraphEdgeType
+         * @description Kinds of edge. The first seven are Phase 1's curated economic relationships; the
+         *     rest are structural links stated by a field of a source record.
+         * @enum {string}
+         */
+        GraphEdgeType: "supplies_to" | "lends_to" | "competes_with" | "affects_costs" | "affects_revenue" | "affects_financing" | "influences" | "in_industry" | "domiciled_in" | "measured_for" | "in_sector" | "has_currency" | "covers" | "related_measure_of" | "expressed_in" | "listed_on" | "quoted_in" | "associated_with";
+        /** GraphIssueRead */
+        GraphIssueRead: {
+            /** Id */
+            id: number;
+            /** Build Id */
+            build_id: number;
+            subject_kind: components["schemas"]["GraphIssueSubject"];
+            /** Subject Ref */
+            subject_ref: string;
+            /** Node Id */
+            node_id: string | null;
+            /** Edge Id */
+            edge_id: string | null;
+            /** Rule */
+            rule: string;
+            severity: components["schemas"]["IssueSeverity"];
+            outcome: components["schemas"]["IssueOutcome"];
+            /** Message */
+            message: string;
+            /** Details */
+            details: {
+                [key: string]: unknown;
+            };
+        };
+        /**
+         * GraphIssueSubject
+         * @enum {string}
+         */
+        GraphIssueSubject: "node" | "edge" | "identifier" | "resolution";
+        /** GraphNodeDetail */
+        GraphNodeDetail: {
+            /**
+             * Id
+             * @description Stable node key, e.g. `country:cty_in`.
+             * @example country:cty_in
+             */
+            id: string;
+            type: components["schemas"]["GraphNodeType"];
+            /** Name */
+            name: string;
+            /**
+             * Subtitle
+             * @description Tells apart nodes with similar names.
+             */
+            subtitle: string;
+            /** @description `real`, `fictional` (sample network) or `sample` data. */
+            nature: components["schemas"]["NodeNature"];
+            quality_status: components["schemas"]["QualityStatus"];
+            /**
+             * Degree
+             * @description Edges touching the node (data coverage, not importance).
+             */
+            degree: number;
+            primary_identifier?: components["schemas"]["IdentifierRead"] | null;
+            /**
+             * Data Status
+             * @description For series and instruments: whether values are stored or only the definition exists.
+             * @enum {string}
+             */
+            data_status: "values_stored" | "definition_only" | "not_applicable";
+            /** Description */
+            description: string;
+            /** Attributes */
+            attributes: {
+                [key: string]: unknown;
+            };
+            /** Identifiers */
+            identifiers: components["schemas"]["IdentifierRead"][];
+            /** Sources */
+            sources: components["schemas"]["SourceRecordRead"][];
+            /** In Degree */
+            in_degree: number;
+            /** Out Degree */
+            out_degree: number;
+            /** Component */
+            component: number | null;
+            /** Relationships */
+            relationships: components["schemas"]["RelationshipCount"][];
+            /** Resolution */
+            resolution: components["schemas"]["ResolutionDecisionRead"][];
+            /** Issues */
+            issues: components["schemas"]["GraphIssueRead"][];
+            /**
+             * Exposures
+             * @description Companies and industries only: variables linked by assumed-effect edges.
+             */
+            exposures?: components["schemas"]["ExposureRead"][] | null;
+            data?: components["schemas"]["NodeDataRead"] | null;
+            /** First Build Id */
+            first_build_id: number;
+            /** Changed Build Id */
+            changed_build_id: number;
+        };
+        /** GraphNodeSummary */
+        GraphNodeSummary: {
+            /**
+             * Id
+             * @description Stable node key, e.g. `country:cty_in`.
+             * @example country:cty_in
+             */
+            id: string;
+            type: components["schemas"]["GraphNodeType"];
+            /** Name */
+            name: string;
+            /**
+             * Subtitle
+             * @description Tells apart nodes with similar names.
+             */
+            subtitle: string;
+            /** @description `real`, `fictional` (sample network) or `sample` data. */
+            nature: components["schemas"]["NodeNature"];
+            quality_status: components["schemas"]["QualityStatus"];
+            /**
+             * Degree
+             * @description Edges touching the node (data coverage, not importance).
+             */
+            degree: number;
+            primary_identifier?: components["schemas"]["IdentifierRead"] | null;
+            /**
+             * Data Status
+             * @description For series and instruments: whether values are stored or only the definition exists.
+             * @enum {string}
+             */
+            data_status: "values_stored" | "definition_only" | "not_applicable";
+        };
+        /**
+         * GraphNodeType
+         * @description Kinds of node in the knowledge graph. Only kinds the stored data supports exist.
+         * @enum {string}
+         */
+        GraphNodeType: "country" | "currency" | "sector" | "industry" | "company" | "economic_variable" | "data_series" | "instrument" | "market";
+        /** GraphOverview */
+        GraphOverview: {
+            build: components["schemas"]["GraphBuildSummary"] | null;
+            freshness: components["schemas"]["Freshness"];
+            /**
+             * Metrics
+             * @description Computed by the build (see metric_definitions).
+             */
+            metrics: {
+                [key: string]: unknown;
+            };
+            /** Type Map */
+            type_map: components["schemas"]["TypeMapNode"][];
+            /** Type Links */
+            type_links: components["schemas"]["TypeMapLink"][];
+            /** Metric Definitions */
+            metric_definitions: components["schemas"]["MetricDefinitionRead"][];
+            /** Notes */
+            notes: string[];
+        };
+        /** GraphTypesResponse */
+        GraphTypesResponse: {
+            /** Node Types */
+            node_types: components["schemas"]["NodeTypeRead"][];
+            /** Edge Types */
+            edge_types: components["schemas"]["EdgeTypeRead"][];
+            /** Evidence Statuses */
+            evidence_statuses: components["schemas"]["EvidenceStatusRead"][];
+            /** Identifier Schemes */
+            identifier_schemes: components["schemas"]["IdentifierSchemeRead"][];
+            /** Construction Rules */
+            construction_rules: components["schemas"]["ConstructionRuleRead"][];
+            /** Validation Rules */
+            validation_rules: components["schemas"]["ValidationRuleRead"][];
+        };
         /** HealthResponse */
         HealthResponse: {
             /**
@@ -1064,6 +1885,30 @@ export interface components {
             service: string;
             /** Version */
             version: string;
+        };
+        /** IdentifierRead */
+        IdentifierRead: {
+            /** Scheme */
+            scheme: string;
+            /**
+             * Label
+             * @description The scheme's name, e.g. 'ISO 4217'.
+             */
+            label: string;
+            /** Value */
+            value: string;
+            /**
+             * Source
+             * @description The record that stated it.
+             */
+            source?: string | null;
+        };
+        /** IdentifierSchemeRead */
+        IdentifierSchemeRead: {
+            /** Scheme */
+            scheme: string;
+            /** Label */
+            label: string;
         };
         /**
          * IndustryPage
@@ -1575,6 +2420,85 @@ export interface components {
          * @enum {string}
          */
         MeasureType: "level" | "change" | "rate" | "ratio" | "exchange_rate";
+        /** MetricDefinitionRead */
+        MetricDefinitionRead: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Definition */
+            definition: string;
+            /** Calculation */
+            calculation: string;
+            /** Interpretation */
+            interpretation: string;
+            /** Limitations */
+            limitations: string;
+        };
+        /** NeighborNode */
+        NeighborNode: {
+            /**
+             * Id
+             * @description Stable node key, e.g. `country:cty_in`.
+             * @example country:cty_in
+             */
+            id: string;
+            type: components["schemas"]["GraphNodeType"];
+            /** Name */
+            name: string;
+            /**
+             * Subtitle
+             * @description Tells apart nodes with similar names.
+             */
+            subtitle: string;
+            /** @description `real`, `fictional` (sample network) or `sample` data. */
+            nature: components["schemas"]["NodeNature"];
+            quality_status: components["schemas"]["QualityStatus"];
+            /**
+             * Degree
+             * @description Edges touching the node (data coverage, not importance).
+             */
+            degree: number;
+            primary_identifier?: components["schemas"]["IdentifierRead"] | null;
+            /**
+             * Data Status
+             * @description For series and instruments: whether values are stored or only the definition exists.
+             * @enum {string}
+             */
+            data_status: "values_stored" | "definition_only" | "not_applicable";
+            /**
+             * Depth
+             * @description Hops from the centre (shortest).
+             */
+            depth: number;
+        };
+        /** NeighborhoodResponse */
+        NeighborhoodResponse: {
+            center: components["schemas"]["GraphNodeSummary"];
+            /** Depth */
+            depth: number;
+            /** Nodes */
+            nodes: components["schemas"]["NeighborNode"][];
+            /** Edges */
+            edges: components["schemas"]["GraphEdgeSummary"][];
+            /**
+             * Truncated
+             * @description Some reachable nodes were left out (node limit).
+             */
+            truncated: boolean;
+            /** Unexplored Count */
+            unexplored_count: number;
+            /** Unexplored By Type */
+            unexplored_by_type: {
+                [key: string]: number;
+            };
+            limits: components["schemas"]["TraversalLimits"];
+            /**
+             * Queries
+             * @description Database round trips used (one per level, plus one).
+             */
+            queries: number;
+        };
         /** NetworkNode */
         NetworkNode: {
             /** Id */
@@ -1609,6 +2533,91 @@ export interface components {
             economic_edge_count: number;
             /** Structural Edge Count */
             structural_edge_count: number;
+        };
+        /**
+         * NodeDataRead
+         * @description Live data availability for series and instruments (read from the Phase 2 tables).
+         */
+        NodeDataRead: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "series" | "instrument";
+            /** Record Id */
+            record_id: string;
+            /** Value Count */
+            value_count: number;
+            /** First */
+            first: string | null;
+            /** Last */
+            last: string | null;
+            /** Last Retrieved At */
+            last_retrieved_at?: string | null;
+        };
+        /**
+         * NodeNature
+         * @description Whether a node describes the real world.
+         *
+         *     * ``real`` — a real-world entity, classification or published series.
+         *     * ``fictional`` — invented for the illustrative sample network (its companies).
+         *     * ``sample`` — from a file marked as sample data (e.g. a synthetic price file).
+         * @enum {string}
+         */
+        NodeNature: "real" | "fictional" | "sample";
+        /** NodeSearchResult */
+        NodeSearchResult: {
+            /**
+             * Id
+             * @description Stable node key, e.g. `country:cty_in`.
+             * @example country:cty_in
+             */
+            id: string;
+            type: components["schemas"]["GraphNodeType"];
+            /** Name */
+            name: string;
+            /**
+             * Subtitle
+             * @description Tells apart nodes with similar names.
+             */
+            subtitle: string;
+            /** @description `real`, `fictional` (sample network) or `sample` data. */
+            nature: components["schemas"]["NodeNature"];
+            quality_status: components["schemas"]["QualityStatus"];
+            /**
+             * Degree
+             * @description Edges touching the node (data coverage, not importance).
+             */
+            degree: number;
+            primary_identifier?: components["schemas"]["IdentifierRead"] | null;
+            /**
+             * Data Status
+             * @description For series and instruments: whether values are stored or only the definition exists.
+             * @enum {string}
+             */
+            data_status: "values_stored" | "definition_only" | "not_applicable";
+            /**
+             * Match
+             * @description Why the node matched: 'name', 'identifier' or 'details'.
+             */
+            match: string;
+            /**
+             * Ambiguous
+             * @description True when another node has the same name: check the subtitle and identifiers before choosing.
+             */
+            ambiguous: boolean;
+        };
+        /** NodeTypeRead */
+        NodeTypeRead: {
+            type: components["schemas"]["GraphNodeType"];
+            /** Label */
+            label: string;
+            /** Plural */
+            plural: string;
+            /** Description */
+            description: string;
+            /** Primary Identifier */
+            primary_identifier: string | null;
         };
         /** ObservationPage */
         ObservationPage: {
@@ -1692,6 +2701,101 @@ export interface components {
          * @enum {string}
          */
         ObservationStatus: "reported" | "missing";
+        /** Page[GraphBuildSummary] */
+        Page_GraphBuildSummary_: {
+            /** Items */
+            items: components["schemas"]["GraphBuildSummary"][];
+            /**
+             * Total
+             * @description Total number of items matching the query.
+             */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
+        /** Page[GraphEdgeSummary] */
+        Page_GraphEdgeSummary_: {
+            /** Items */
+            items: components["schemas"]["GraphEdgeSummary"][];
+            /**
+             * Total
+             * @description Total number of items matching the query.
+             */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
+        /** Page[GraphIssueRead] */
+        Page_GraphIssueRead_: {
+            /** Items */
+            items: components["schemas"]["GraphIssueRead"][];
+            /**
+             * Total
+             * @description Total number of items matching the query.
+             */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
+        /** Page[NodeSearchResult] */
+        Page_NodeSearchResult_: {
+            /** Items */
+            items: components["schemas"]["NodeSearchResult"][];
+            /**
+             * Total
+             * @description Total number of items matching the query.
+             */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
+        /** PathRead */
+        PathRead: {
+            /** Nodes */
+            nodes: string[];
+            /** Edges */
+            edges: string[];
+            /** Length */
+            length: number;
+        };
+        /** PathsResponse */
+        PathsResponse: {
+            source: components["schemas"]["GraphNodeSummary"];
+            target: components["schemas"]["GraphNodeSummary"];
+            /** Found */
+            found: boolean;
+            /**
+             * Length
+             * @description Hops on the shortest path; null when none found.
+             */
+            length: number | null;
+            /** Paths */
+            paths: components["schemas"]["PathRead"][];
+            /** Nodes */
+            nodes: components["schemas"]["GraphNodeSummary"][];
+            /** Edges */
+            edges: components["schemas"]["GraphEdgeSummary"][];
+            direction: components["schemas"]["Direction"];
+            /** Max Depth */
+            max_depth: number;
+            /**
+             * Budget Exhausted
+             * @description The search stopped at its node budget.
+             */
+            budget_exhausted: boolean;
+            /** Nodes Explored */
+            nodes_explored: number;
+            /** Note */
+            note: string;
+        };
         /**
          * Polarity
          * @description Assumed direction of effect: does an *increase* in the source raise the target?
@@ -1888,6 +2992,19 @@ export interface components {
          * @enum {string}
          */
         RelationshipCategory: "economic" | "structural";
+        /** RelationshipCount */
+        RelationshipCount: {
+            type: components["schemas"]["GraphEdgeType"];
+            /** Label */
+            label: string;
+            /**
+             * Direction
+             * @enum {string}
+             */
+            direction: "outgoing" | "incoming" | "undirected";
+            /** Count */
+            count: number;
+        };
         /**
          * RelationshipPage
          * @description A page of relationships.
@@ -1976,6 +3093,39 @@ export interface components {
             /** Allowed Pairs */
             allowed_pairs: components["schemas"]["EntityKindPair"][];
         };
+        /** ResolutionDecisionRead */
+        ResolutionDecisionRead: {
+            method: components["schemas"]["ResolutionMethod"];
+            outcome: components["schemas"]["ResolutionOutcome"];
+            /** Source */
+            source: string;
+            /** Identifier */
+            identifier: string | null;
+            /** Candidates */
+            candidates: string[];
+            /** Rationale */
+            rationale: string;
+        };
+        /**
+         * ResolutionMethod
+         * @description How entity resolution related a source record to a node.
+         * @enum {string}
+         */
+        ResolutionMethod: "identifier" | "explicit_link" | "name_comparison";
+        /**
+         * ResolutionOutcome
+         * @description What entity resolution decided.
+         *
+         *     * ``linked`` — the record was linked to the node by an identifier or explicit link.
+         *     * ``identifier_attached`` — an identifier stated by another record was added.
+         *     * ``candidate_flagged`` — the names suggest the same entity; nothing was merged,
+         *       the pair awaits review.
+         *     * ``conflict`` — an identifier was claimed for more than one node; it was attached
+         *       to none.
+         *     * ``rejected`` — a possible match was ruled out by a rule (e.g. fictional vs real).
+         * @enum {string}
+         */
+        ResolutionOutcome: "linked" | "identifier_attached" | "candidate_flagged" | "conflict" | "rejected";
         /**
          * ReviewStatus
          * @description Human review state of an issue. There is no review workflow yet, so every issue
@@ -1983,6 +3133,14 @@ export interface components {
          * @enum {string}
          */
         ReviewStatus: "unreviewed";
+        /** RuleCount */
+        RuleCount: {
+            /** Rule */
+            rule: string;
+            outcome: components["schemas"]["IssueOutcome"];
+            /** Count */
+            count: number;
+        };
         /** RuleRead */
         RuleRead: {
             /** Code */
@@ -2320,6 +3478,19 @@ export interface components {
              */
             epistemic_category: "scenario_input";
         };
+        /** SourceRecordRead */
+        SourceRecordRead: {
+            /** Table */
+            table: string;
+            /** Record Id */
+            record_id: string;
+            /** Dataset Id */
+            dataset_id?: string | null;
+            /** Dataset Version */
+            dataset_version?: string | null;
+            /** Fields */
+            fields?: string[];
+        };
         /**
          * Strength
          * @description Ordinal, illustrative strength. Deliberately not a precise-looking number.
@@ -2382,6 +3553,43 @@ export interface components {
             data: components["schemas"]["DataStatus"];
             /** Capabilities */
             capabilities: components["schemas"]["Capability"][];
+        };
+        /** TraversalLimits */
+        TraversalLimits: {
+            /** Max Depth */
+            max_depth: number;
+            /** Max Nodes */
+            max_nodes: number;
+        };
+        /** TypeMapLink */
+        TypeMapLink: {
+            source_type: components["schemas"]["GraphNodeType"];
+            target_type: components["schemas"]["GraphNodeType"];
+            edge_type: components["schemas"]["GraphEdgeType"];
+            /** Label */
+            label: string;
+            /** Count */
+            count: number;
+        };
+        /** TypeMapNode */
+        TypeMapNode: {
+            type: components["schemas"]["GraphNodeType"];
+            /** Label */
+            label: string;
+            /** Plural */
+            plural: string;
+            /** Count */
+            count: number;
+        };
+        /** ValidationRuleRead */
+        ValidationRuleRead: {
+            /** Code */
+            code: string;
+            subject: components["schemas"]["GraphIssueSubject"];
+            severity: components["schemas"]["IssueSeverity"];
+            outcome: components["schemas"]["IssueOutcome"];
+            /** Description */
+            description: string;
         };
         /**
          * ValueKind
@@ -3704,6 +4912,585 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RuleRead"][];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_graph_overview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GraphOverview"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_graph_types: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GraphTypesResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    search_graph_nodes: {
+        parameters: {
+            query?: {
+                /** @description Search text. */
+                q?: string | null;
+                /** @description Repeatable. */
+                type?: components["schemas"]["GraphNodeType"][];
+                /** @description Only nodes with an edge to this node, e.g. companies in an industry. */
+                related_to?: string | null;
+                /** @description real, fictional or sample. */
+                nature?: components["schemas"]["NodeNature"] | null;
+                /** @description `name`, or `-degree` (most edges first). */
+                sort?: "name" | "-degree";
+                /** @description Maximum number of items to return. */
+                limit?: number;
+                /** @description Items to skip. */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_NodeSearchResult_"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_graph_node: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                node_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GraphNodeDetail"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_graph_neighborhood: {
+        parameters: {
+            query?: {
+                depth?: number;
+                max_nodes?: number;
+                /** @description Repeatable. */
+                edge_type?: components["schemas"]["GraphEdgeType"][];
+                /** @description Repeatable. */
+                node_type?: components["schemas"]["GraphNodeType"][];
+                /** @description `any` ignores direction; `out` follows edges from source to target; `in` the reverse. Undirected edges are followed both ways. */
+                direction?: components["schemas"]["Direction"];
+                /** @description Repeatable. */
+                evidence_status?: components["schemas"]["EvidenceStatus"][];
+                /** @description Include edges that touch fictional or sample data (most of the sample network). */
+                include_illustrative?: boolean;
+            };
+            header?: never;
+            path: {
+                node_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NeighborhoodResponse"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_graph_edges: {
+        parameters: {
+            query?: {
+                /** @description Repeatable. */
+                type?: components["schemas"]["GraphEdgeType"][];
+                /** @description Repeatable. */
+                evidence_status?: components["schemas"]["EvidenceStatus"][];
+                /** @description A node key. */
+                node?: string | null;
+                illustrative?: boolean | null;
+                /** @description Maximum number of items to return. */
+                limit?: number;
+                /** @description Items to skip. */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_GraphEdgeSummary_"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_graph_edge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                edge_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GraphEdgeDetail"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    find_graph_paths: {
+        parameters: {
+            query: {
+                from: string;
+                to: string;
+                max_depth?: number;
+                limit?: number;
+                /** @description `any` ignores direction; `out` follows edges from source to target; `in` the reverse. Undirected edges are followed both ways. */
+                direction?: components["schemas"]["Direction"];
+                /** @description Repeatable. */
+                edge_type?: components["schemas"]["GraphEdgeType"][];
+                /** @description Repeatable. */
+                evidence_status?: components["schemas"]["EvidenceStatus"][];
+                /** @description Include edges that touch fictional or sample data (most of the sample network). */
+                include_illustrative?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PathsResponse"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_graph_components: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComponentsResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_graph_builds: {
+        parameters: {
+            query?: {
+                /** @description Maximum number of items to return. */
+                limit?: number;
+                /** @description Items to skip. */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_GraphBuildSummary_"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_graph_build: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                build_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GraphBuildDetail"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_graph_issues: {
+        parameters: {
+            query?: {
+                build_id?: number | null;
+                rule?: string | null;
+                severity?: components["schemas"]["IssueSeverity"] | null;
+                /** @description A node key. */
+                node?: string | null;
+                /** @description Maximum number of items to return. */
+                limit?: number;
+                /** @description Items to skip. */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_GraphIssueRead_"];
                 };
             };
             /** @description The request contains invalid values. */

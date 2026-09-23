@@ -29,8 +29,8 @@ logger = logging.getLogger(__name__)
 
 API_DESCRIPTION = """
 RUMIN is an interactive financial intelligence and economic simulation platform.
-This API covers the **Phase 1 foundation** and the **Phase 2 financial data
-infrastructure**.
+This API covers the **Phase 1 foundation**, the **Phase 2 financial data
+infrastructure** and the **Phase 3 knowledge graph**.
 
 ### Five kinds of knowledge
 RUMIN never blurs these categories; responses label them with `epistemic_category`.
@@ -52,6 +52,15 @@ RUMIN never blurs these categories; responses label them with `epistemic_categor
 * **Numbers are decimal strings** (`"5.649"`) so no digit is lost to floating point.
 * Ingestion is started from the command line only; these endpoints are read-only.
 
+### Knowledge graph
+* Built from the stored data by `python -m app.graph build`; the graph endpoints are
+  read-only and every traversal is bounded (depth, nodes, path length, number of paths).
+* Every edge carries an **evidence status** (`evidence_backed`, `analyst_created`,
+  `model_assumption`, `unverified`), says whether it is **illustrative**, and lists the
+  evidence records that explain why it exists.
+* A connection is not evidence of causation. A path shows how records are connected; it
+  is not an influence chain, and a shorter path is not a stronger relationship.
+
 ### Errors
 Every error response uses one envelope:
 `{"error": {"code", "message", "details", "request_id"}}`.
@@ -70,6 +79,11 @@ OPENAPI_TAGS = [
     {"name": "market data", "description": "Instruments and prices from licensed files."},
     {"name": "ingestion", "description": "What each retrieval or import did (read-only)."},
     {"name": "data quality", "description": "Rules, rejected records and flagged values."},
+    {
+        "name": "knowledge graph",
+        "description": "Entities, relationships and evidence: search, neighbourhoods, "
+        "provenance, paths, components, builds and validation issues (read-only, bounded).",
+    },
     {"name": "system", "description": "Runtime status and capabilities."},
 ]
 

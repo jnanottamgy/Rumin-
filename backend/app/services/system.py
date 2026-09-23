@@ -99,11 +99,20 @@ CAPABILITIES: tuple[Capability, ...] = (
         "authentication exists.",
     ),
     Capability(
-        id="graph_analytics",
-        label="Knowledge-graph analytics",
-        available=False,
+        id="knowledge_graph",
+        label="Knowledge graph",
+        available=True,
         planned_phase=3,
-        note="Traversal, centrality and path analysis are planned.",
+        note="Entities, relationships and evidence built from the stored data, with entity "
+        "resolution, validation and provenance on every edge. Built from the command line.",
+    ),
+    Capability(
+        id="graph_analytics",
+        label="Graph analytics",
+        available=True,
+        planned_phase=3,
+        note="Bounded neighbourhoods, shortest paths (in hops), connected components and "
+        "degree. Paths show how records connect; they are not influence or causal chains.",
     ),
     Capability(
         id="simulation_engine",

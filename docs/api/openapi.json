@@ -3,7 +3,7 @@
   "info": {
     "title": "RUMIN API",
     "summary": "Financial intelligence and economic simulation platform.",
-    "description": "\nRUMIN is an interactive financial intelligence and economic simulation platform.\nThis API covers the **Phase 1 foundation** and the **Phase 2 financial data\ninfrastructure**.\n\n### Five kinds of knowledge\nRUMIN never blurs these categories; responses label them with `epistemic_category`.\n\n| Category | Meaning | In this build |\n|---|---|---|\n| `observation` | Historical data from a cited source | World Bank series; licensed price files |\n| `assumption` | Rules, parameters and relationships defined by the model | Relationships, ranges |\n| `scenario_input` | Values changed by a user | Scenario shocks |\n| `simulated_output` | Results computed by a simulation engine | None: no engine yet (Phase 4) |\n| `uncertainty` | Limitations and ranges | Documented qualitatively |\n\n### Data\n* The curated **network** dataset is **illustrative**: companies are fictional; countries,\n  ISIC Rev. 4 industries and variable definitions are real concepts with references.\n* **Provider data** is historical, stored exactly as published and never live. Every value\n  carries its period, when RUMIN retrieved it, the stored response it came from and the\n  dataset's licence and attribution. Revisions are kept, not overwritten.\n* **Numbers are decimal strings** (`\"5.649\"`) so no digit is lost to floating point.\n* Ingestion is started from the command line only; these endpoints are read-only.\n\n### Errors\nEvery error response uses one envelope:\n`{\"error\": {\"code\", \"message\", \"details\", \"request_id\"}}`.\n",
+    "description": "\nRUMIN is an interactive financial intelligence and economic simulation platform.\nThis API covers the **Phase 1 foundation**, the **Phase 2 financial data\ninfrastructure** and the **Phase 3 knowledge graph**.\n\n### Five kinds of knowledge\nRUMIN never blurs these categories; responses label them with `epistemic_category`.\n\n| Category | Meaning | In this build |\n|---|---|---|\n| `observation` | Historical data from a cited source | World Bank series; licensed price files |\n| `assumption` | Rules, parameters and relationships defined by the model | Relationships, ranges |\n| `scenario_input` | Values changed by a user | Scenario shocks |\n| `simulated_output` | Results computed by a simulation engine | None: no engine yet (Phase 4) |\n| `uncertainty` | Limitations and ranges | Documented qualitatively |\n\n### Data\n* The curated **network** dataset is **illustrative**: companies are fictional; countries,\n  ISIC Rev. 4 industries and variable definitions are real concepts with references.\n* **Provider data** is historical, stored exactly as published and never live. Every value\n  carries its period, when RUMIN retrieved it, the stored response it came from and the\n  dataset's licence and attribution. Revisions are kept, not overwritten.\n* **Numbers are decimal strings** (`\"5.649\"`) so no digit is lost to floating point.\n* Ingestion is started from the command line only; these endpoints are read-only.\n\n### Knowledge graph\n* Built from the stored data by `python -m app.graph build`; the graph endpoints are\n  read-only and every traversal is bounded (depth, nodes, path length, number of paths).\n* Every edge carries an **evidence status** (`evidence_backed`, `analyst_created`,\n  `model_assumption`, `unverified`), says whether it is **illustrative**, and lists the\n  evidence records that explain why it exists.\n* A connection is not evidence of causation. A path shows how records are connected; it\n  is not an influence chain, and a shorter path is not a stronger relationship.\n\n### Errors\nEvery error response uses one envelope:\n`{\"error\": {\"code\", \"message\", \"details\", \"request_id\"}}`.\n",
     "version": "0.1.0"
   },
   "paths": {
@@ -2404,6 +2404,1178 @@
         }
       }
     },
+    "/api/v1/graph/overview": {
+      "get": {
+        "tags": [
+          "knowledge graph"
+        ],
+        "summary": "Graph overview",
+        "description": "The latest build, whether it is up to date with its sources, graph metrics (with definitions and limitations), and a type-level map: node counts per type and edge counts between types. The map is an aggregate — its links count relationships between *kinds* of node, not between individual entities.",
+        "operationId": "get_graph_overview",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphOverview"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/graph/types": {
+      "get": {
+        "tags": [
+          "knowledge graph"
+        ],
+        "summary": "Graph vocabulary",
+        "description": "Node types, edge types (meaning, endpoints, direction, allowed evidence statuses and what each does not mean), evidence-status definitions, identifier schemes, construction rules and validation rules.",
+        "operationId": "get_graph_types",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphTypesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/graph/nodes": {
+      "get": {
+        "tags": [
+          "knowledge graph"
+        ],
+        "summary": "Search nodes",
+        "description": "Case-insensitive, partial search over names, subtitles and identifiers (ISO codes, ISIC codes, ISIN, MIC, provider series keys). An exact identifier match comes first. `ambiguous` marks names shared by more than one node.",
+        "operationId": "search_graph_nodes",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search text.",
+              "title": "Q"
+            },
+            "description": "Search text."
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/GraphNodeType"
+              },
+              "maxItems": 9,
+              "description": "Repeatable.",
+              "default": [],
+              "title": "Type"
+            },
+            "description": "Repeatable."
+          },
+          {
+            "name": "related_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 128,
+                  "pattern": "^(country|currency|sector|industry|company|variable|series|instrument|market):[a-z0-9][a-z0-9_.-]{0,95}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only nodes with an edge to this node, e.g. companies in an industry.",
+              "title": "Related To"
+            },
+            "description": "Only nodes with an edge to this node, e.g. companies in an industry."
+          },
+          {
+            "name": "nature",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/NodeNature"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "real, fictional or sample.",
+              "title": "Nature"
+            },
+            "description": "real, fictional or sample."
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "name",
+                "-degree"
+              ],
+              "type": "string",
+              "description": "`name`, or `-degree` (most edges first).",
+              "default": "name",
+              "title": "Sort"
+            },
+            "description": "`name`, or `-degree` (most edges first)."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "description": "Maximum number of items to return.",
+              "default": 100,
+              "title": "Limit"
+            },
+            "description": "Maximum number of items to return."
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0,
+              "description": "Items to skip.",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Items to skip."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_NodeSearchResult_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/graph/nodes/{node_id}": {
+      "get": {
+        "tags": [
+          "knowledge graph"
+        ],
+        "summary": "Get a node",
+        "description": "Identifiers, the source records it was built from, how entity resolution treated it, its relationships by type, quality issues, live data availability (series and instruments) and — for companies and industries — the variables linked to it by assumed-effect edges, direct or via its industry.",
+        "operationId": "get_graph_node",
+        "parameters": [
+          {
+            "name": "node_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 128,
+              "pattern": "^(country|currency|sector|industry|company|variable|series|instrument|market):[a-z0-9][a-z0-9_.-]{0,95}$",
+              "examples": [
+                "country:cty_in"
+              ],
+              "title": "Node Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphNodeDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/graph/nodes/{node_id}/neighborhood": {
+      "get": {
+        "tags": [
+          "knowledge graph"
+        ],
+        "summary": "A node's neighbourhood",
+        "description": "The nodes within `depth` hops (at most 3) and every edge among them, found by breadth-first search with one database query per level. At most `max_nodes` nodes (up to 200); `truncated` and `unexplored_by_type` say what the limit left out.",
+        "operationId": "get_graph_neighborhood",
+        "parameters": [
+          {
+            "name": "node_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 128,
+              "pattern": "^(country|currency|sector|industry|company|variable|series|instrument|market):[a-z0-9][a-z0-9_.-]{0,95}$",
+              "examples": [
+                "country:cty_in"
+              ],
+              "title": "Node Id"
+            }
+          },
+          {
+            "name": "depth",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 3,
+              "minimum": 1,
+              "default": 1,
+              "title": "Depth"
+            }
+          },
+          {
+            "name": "max_nodes",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 2,
+              "default": 60,
+              "title": "Max Nodes"
+            }
+          },
+          {
+            "name": "edge_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/GraphEdgeType"
+              },
+              "maxItems": 18,
+              "description": "Repeatable.",
+              "default": [],
+              "title": "Edge Type"
+            },
+            "description": "Repeatable."
+          },
+          {
+            "name": "node_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/GraphNodeType"
+              },
+              "maxItems": 9,
+              "description": "Repeatable.",
+              "default": [],
+              "title": "Node Type"
+            },
+            "description": "Repeatable."
+          },
+          {
+            "name": "direction",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/Direction",
+              "description": "`any` ignores direction; `out` follows edges from source to target; `in` the reverse. Undirected edges are followed both ways.",
+              "default": "any"
+            },
+            "description": "`any` ignores direction; `out` follows edges from source to target; `in` the reverse. Undirected edges are followed both ways."
+          },
+          {
+            "name": "evidence_status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/EvidenceStatus"
+              },
+              "maxItems": 4,
+              "description": "Repeatable.",
+              "default": [],
+              "title": "Evidence Status"
+            },
+            "description": "Repeatable."
+          },
+          {
+            "name": "include_illustrative",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Include edges that touch fictional or sample data (most of the sample network).",
+              "default": true,
+              "title": "Include Illustrative"
+            },
+            "description": "Include edges that touch fictional or sample data (most of the sample network)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NeighborhoodResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/graph/edges": {
+      "get": {
+        "tags": [
+          "knowledge graph"
+        ],
+        "summary": "List edges",
+        "description": "Current edges, filtered by type, evidence status, a node they touch, or whether they are illustrative.",
+        "operationId": "list_graph_edges",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/GraphEdgeType"
+              },
+              "maxItems": 18,
+              "description": "Repeatable.",
+              "default": [],
+              "title": "Type"
+            },
+            "description": "Repeatable."
+          },
+          {
+            "name": "evidence_status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/EvidenceStatus"
+              },
+              "maxItems": 4,
+              "description": "Repeatable.",
+              "default": [],
+              "title": "Evidence Status"
+            },
+            "description": "Repeatable."
+          },
+          {
+            "name": "node",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 128,
+                  "pattern": "^(country|currency|sector|industry|company|variable|series|instrument|market):[a-z0-9][a-z0-9_.-]{0,95}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "A node key.",
+              "title": "Node"
+            },
+            "description": "A node key."
+          },
+          {
+            "name": "illustrative",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Illustrative"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "description": "Maximum number of items to return.",
+              "default": 100,
+              "title": "Limit"
+            },
+            "description": "Maximum number of items to return."
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0,
+              "description": "Items to skip.",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Items to skip."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_GraphEdgeSummary_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/graph/edges/{edge_id}": {
+      "get": {
+        "tags": [
+          "knowledge graph"
+        ],
+        "summary": "Get an edge and its provenance",
+        "description": "Why the connection exists: every evidence record (source record, dataset and version, what the source says, the rule and transformation that made the edge, retrieval and recording times), its evidence status with a definition, and what this kind of edge does not mean.",
+        "operationId": "get_graph_edge",
+        "parameters": [
+          {
+            "name": "edge_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^e-[0-9a-f]{16}$",
+              "title": "Edge Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphEdgeDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/graph/paths": {
+      "get": {
+        "tags": [
+          "knowledge graph"
+        ],
+        "summary": "Shortest paths between two nodes",
+        "description": "Up to `limit` (at most 10) shortest paths, counted in hops, of at most `max_depth` hops (at most 6), found by bidirectional breadth-first search. A path shows how records are connected; it is not an influence or causal chain, and a shorter path is not a stronger relationship.",
+        "operationId": "find_graph_paths",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 128,
+              "pattern": "^(country|currency|sector|industry|company|variable|series|instrument|market):[a-z0-9][a-z0-9_.-]{0,95}$",
+              "title": "From"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 128,
+              "pattern": "^(country|currency|sector|industry|company|variable|series|instrument|market):[a-z0-9][a-z0-9_.-]{0,95}$",
+              "title": "To"
+            }
+          },
+          {
+            "name": "max_depth",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 6,
+              "minimum": 1,
+              "default": 4,
+              "title": "Max Depth"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 10,
+              "minimum": 1,
+              "default": 3,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "direction",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/Direction",
+              "description": "`any` ignores direction; `out` follows edges from source to target; `in` the reverse. Undirected edges are followed both ways.",
+              "default": "any"
+            },
+            "description": "`any` ignores direction; `out` follows edges from source to target; `in` the reverse. Undirected edges are followed both ways."
+          },
+          {
+            "name": "edge_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/GraphEdgeType"
+              },
+              "maxItems": 18,
+              "description": "Repeatable.",
+              "default": [],
+              "title": "Edge Type"
+            },
+            "description": "Repeatable."
+          },
+          {
+            "name": "evidence_status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/EvidenceStatus"
+              },
+              "maxItems": 4,
+              "description": "Repeatable.",
+              "default": [],
+              "title": "Evidence Status"
+            },
+            "description": "Repeatable."
+          },
+          {
+            "name": "include_illustrative",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Include edges that touch fictional or sample data (most of the sample network).",
+              "default": true,
+              "title": "Include Illustrative"
+            },
+            "description": "Include edges that touch fictional or sample data (most of the sample network)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PathsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/graph/components": {
+      "get": {
+        "tags": [
+          "knowledge graph"
+        ],
+        "summary": "Connected components",
+        "description": "Groups of nodes linked by edges (direction ignored), largest first, with their composition. A component is not an economically integrated system.",
+        "operationId": "get_graph_components",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 10,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComponentsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/graph/builds": {
+      "get": {
+        "tags": [
+          "knowledge graph"
+        ],
+        "summary": "List graph builds",
+        "description": "Every build, newest first, with its validation counts and changes.",
+        "operationId": "list_graph_builds",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "description": "Maximum number of items to return.",
+              "default": 100,
+              "title": "Limit"
+            },
+            "description": "Maximum number of items to return."
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0,
+              "description": "Items to skip.",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Items to skip."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_GraphBuildSummary_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/graph/builds/{build_id}": {
+      "get": {
+        "tags": [
+          "knowledge graph"
+        ],
+        "summary": "Get a graph build",
+        "description": "A build's validation report, changes, sources (datasets and versions), metrics, issue counts by rule and entity-resolution decisions by outcome.",
+        "operationId": "get_graph_build",
+        "parameters": [
+          {
+            "name": "build_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 2147483647,
+              "minimum": 1,
+              "title": "Build Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphBuildDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/graph/issues": {
+      "get": {
+        "tags": [
+          "knowledge graph"
+        ],
+        "summary": "List graph validation issues",
+        "description": "Issues found by a build (default: the latest), including entity-resolution candidates flagged for review.",
+        "operationId": "list_graph_issues",
+        "parameters": [
+          {
+            "name": "build_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 2147483647,
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Build Id"
+            }
+          },
+          {
+            "name": "rule",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[a-z_]{3,64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Rule"
+            }
+          },
+          {
+            "name": "severity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/IssueSeverity"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Severity"
+            }
+          },
+          {
+            "name": "node",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 128,
+                  "pattern": "^(country|currency|sector|industry|company|variable|series|instrument|market):[a-z0-9][a-z0-9_.-]{0,95}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "A node key.",
+              "title": "Node"
+            },
+            "description": "A node key."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "description": "Maximum number of items to return.",
+              "default": 100,
+              "title": "Limit"
+            },
+            "description": "Maximum number of items to return."
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0,
+              "description": "Items to skip.",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Items to skip."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_GraphIssueRead_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/system": {
       "get": {
         "tags": [
@@ -2449,6 +3621,62 @@
   },
   "components": {
     "schemas": {
+      "BuildChanges": {
+        "properties": {
+          "added": {
+            "type": "integer",
+            "title": "Added"
+          },
+          "changed": {
+            "type": "integer",
+            "title": "Changed"
+          },
+          "retired": {
+            "type": "integer",
+            "title": "Retired"
+          },
+          "unchanged": {
+            "type": "integer",
+            "title": "Unchanged"
+          }
+        },
+        "type": "object",
+        "required": [
+          "added",
+          "changed",
+          "retired",
+          "unchanged"
+        ],
+        "title": "BuildChanges"
+      },
+      "BuildCounts": {
+        "properties": {
+          "processed": {
+            "type": "integer",
+            "title": "Processed"
+          },
+          "valid": {
+            "type": "integer",
+            "title": "Valid"
+          },
+          "flagged": {
+            "type": "integer",
+            "title": "Flagged"
+          },
+          "rejected": {
+            "type": "integer",
+            "title": "Rejected"
+          }
+        },
+        "type": "object",
+        "required": [
+          "processed",
+          "valid",
+          "flagged",
+          "rejected"
+        ],
+        "title": "BuildCounts"
+      },
       "Capability": {
         "properties": {
           "id": {
@@ -2746,6 +3974,115 @@
           "country_id"
         ],
         "title": "CompanyRead"
+      },
+      "ComponentRead": {
+        "properties": {
+          "number": {
+            "type": "integer",
+            "title": "Number"
+          },
+          "size": {
+            "type": "integer",
+            "title": "Size"
+          },
+          "nodes_by_type": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Nodes By Type"
+          },
+          "sample": {
+            "items": {
+              "$ref": "#/components/schemas/GraphNodeSummary"
+            },
+            "type": "array",
+            "title": "Sample"
+          }
+        },
+        "type": "object",
+        "required": [
+          "number",
+          "size",
+          "nodes_by_type",
+          "sample"
+        ],
+        "title": "ComponentRead"
+      },
+      "ComponentsResponse": {
+        "properties": {
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "isolated_nodes": {
+            "type": "integer",
+            "title": "Isolated Nodes"
+          },
+          "components": {
+            "items": {
+              "$ref": "#/components/schemas/ComponentRead"
+            },
+            "type": "array",
+            "title": "Components"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "count",
+          "isolated_nodes",
+          "components",
+          "note"
+        ],
+        "title": "ComponentsResponse"
+      },
+      "ConstructionRuleRead": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "reads": {
+            "type": "string",
+            "title": "Reads"
+          },
+          "produces": {
+            "type": "string",
+            "title": "Produces"
+          },
+          "evidence_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EvidenceStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "name",
+          "reads",
+          "produces",
+          "evidence_status",
+          "description"
+        ],
+        "title": "ConstructionRuleRead"
       },
       "CountryRead": {
         "properties": {
@@ -3360,6 +4697,46 @@
         ],
         "title": "DatasetSummary"
       },
+      "DecisionCount": {
+        "properties": {
+          "method": {
+            "$ref": "#/components/schemas/ResolutionMethod"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/ResolutionOutcome"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "method",
+          "outcome",
+          "count"
+        ],
+        "title": "DecisionCount"
+      },
+      "Derivation": {
+        "type": "string",
+        "enum": [
+          "direct",
+          "derived"
+        ],
+        "title": "Derivation",
+        "description": "``direct``: one field of the source record states the relationship.\n``derived``: the relationship follows from a record plus a documented standard."
+      },
+      "Direction": {
+        "type": "string",
+        "enum": [
+          "any",
+          "out",
+          "in"
+        ],
+        "title": "Direction",
+        "description": "Which way edges may be followed.\n\n* ``any`` — ignore direction (the graph as undirected).\n* ``out`` — from source to target only (undirected edges both ways).\n* ``in`` — from target to source only (undirected edges both ways)."
+      },
       "EconomicVariablePage": {
         "properties": {
           "items": {
@@ -3522,6 +4899,140 @@
           "scenario_rules"
         ],
         "title": "EconomicVariableRead"
+      },
+      "EdgeQualifiers": {
+        "properties": {
+          "polarity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Polarity",
+            "description": "Assumed direction of effect."
+          },
+          "strength": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Strength",
+            "description": "Ordinal and illustrative, not measured."
+          },
+          "evidence_level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Level",
+            "description": "Phase 1 evidence level."
+          },
+          "rationale": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rationale"
+          },
+          "stated_difference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stated Difference",
+            "description": "How a related measure differs from the variable."
+          }
+        },
+        "type": "object",
+        "title": "EdgeQualifiers",
+        "description": "Type-specific qualifiers, each with the meaning Phase 1 or the catalogue gave it."
+      },
+      "EdgeTypeRead": {
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/GraphEdgeType"
+          },
+          "category": {
+            "$ref": "#/components/schemas/RelationshipCategory"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "caveat": {
+            "type": "string",
+            "title": "Caveat"
+          },
+          "directed": {
+            "type": "boolean",
+            "title": "Directed"
+          },
+          "endpoints": {
+            "items": {
+              "$ref": "#/components/schemas/EndpointPair"
+            },
+            "type": "array",
+            "title": "Endpoints"
+          },
+          "evidence_statuses": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceStatus"
+            },
+            "type": "array",
+            "title": "Evidence Statuses"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "category",
+          "label",
+          "description",
+          "caveat",
+          "directed",
+          "endpoints",
+          "evidence_statuses"
+        ],
+        "title": "EdgeTypeRead"
+      },
+      "EndpointPair": {
+        "properties": {
+          "source": {
+            "$ref": "#/components/schemas/GraphNodeType"
+          },
+          "target": {
+            "$ref": "#/components/schemas/GraphNodeType"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source",
+          "target"
+        ],
+        "title": "EndpointPair"
       },
       "EntityKind": {
         "type": "string",
@@ -3732,6 +5243,226 @@
         "title": "EvidenceLevel",
         "description": "How well a relationship is supported. Phase 1 data is entirely ``illustrative``.\n\n* ``illustrative`` — constructed to demonstrate the model; not evidence-based.\n* ``documented`` — qualitatively supported by a cited public source.\n* ``estimated`` — quantified by a documented statistical estimate.\n* ``validated`` — an estimate that has also been validated out of sample."
       },
+      "EvidenceRead": {
+        "properties": {
+          "rule": {
+            "type": "string",
+            "title": "Rule",
+            "examples": [
+              "R02 company_industry"
+            ]
+          },
+          "rule_description": {
+            "type": "string",
+            "title": "Rule Description"
+          },
+          "source_kind": {
+            "$ref": "#/components/schemas/EvidenceSourceKind"
+          },
+          "source_table": {
+            "type": "string",
+            "title": "Source Table"
+          },
+          "source_record_id": {
+            "type": "string",
+            "title": "Source Record Id"
+          },
+          "dataset_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataset Id"
+          },
+          "dataset_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataset Version"
+          },
+          "statement": {
+            "type": "string",
+            "title": "Statement",
+            "description": "What the source says."
+          },
+          "transformation": {
+            "type": "string",
+            "title": "Transformation",
+            "description": "How the rule turned it into this edge."
+          },
+          "derivation": {
+            "$ref": "#/components/schemas/Derivation"
+          },
+          "derived_from": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Derived From"
+          },
+          "citation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Citation"
+          },
+          "citation_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Citation Url"
+          },
+          "retrieved_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retrieved At",
+            "description": "When a provider last delivered the source (series only)."
+          },
+          "recorded_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recorded At",
+            "description": "When the source record entered RUMIN."
+          }
+        },
+        "type": "object",
+        "required": [
+          "rule",
+          "rule_description",
+          "source_kind",
+          "source_table",
+          "source_record_id",
+          "dataset_id",
+          "dataset_version",
+          "statement",
+          "transformation",
+          "derivation",
+          "derived_from",
+          "citation",
+          "citation_url",
+          "retrieved_at",
+          "recorded_at"
+        ],
+        "title": "EvidenceRead"
+      },
+      "EvidenceSourceKind": {
+        "type": "string",
+        "enum": [
+          "reference_dataset",
+          "series_catalogue",
+          "price_file_manifest",
+          "classification_standard"
+        ],
+        "title": "EvidenceSourceKind",
+        "description": "Where the statement behind an edge comes from."
+      },
+      "EvidenceStatus": {
+        "type": "string",
+        "enum": [
+          "evidence_backed",
+          "analyst_created",
+          "model_assumption",
+          "unverified"
+        ],
+        "title": "EvidenceStatus",
+        "description": "What supports an edge's existence (definitions in ``app.domain.graph_types``)."
+      },
+      "EvidenceStatusRead": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/EvidenceStatus"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "definition": {
+            "type": "string",
+            "title": "Definition"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "label",
+          "definition"
+        ],
+        "title": "EvidenceStatusRead"
+      },
+      "ExposureRead": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "direct",
+              "via_industry"
+            ],
+            "title": "Kind"
+          },
+          "variable": {
+            "$ref": "#/components/schemas/GraphNodeSummary"
+          },
+          "edge": {
+            "$ref": "#/components/schemas/GraphEdgeSummary"
+          },
+          "via": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GraphNodeSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "variable",
+          "edge",
+          "via",
+          "explanation"
+        ],
+        "title": "ExposureRead"
+      },
       "Frequency": {
         "type": "string",
         "enum": [
@@ -3743,6 +5474,1029 @@
           "irregular"
         ],
         "title": "Frequency"
+      },
+      "Freshness": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "current",
+              "stale",
+              "not_built"
+            ],
+            "title": "Status"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "message"
+        ],
+        "title": "Freshness"
+      },
+      "GraphBuildDetail": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/GraphBuildStatus"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Started At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "duration_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Ms"
+          },
+          "rules_version": {
+            "type": "string",
+            "title": "Rules Version"
+          },
+          "node_count": {
+            "type": "integer",
+            "title": "Node Count"
+          },
+          "edge_count": {
+            "type": "integer",
+            "title": "Edge Count"
+          },
+          "nodes": {
+            "$ref": "#/components/schemas/BuildCounts"
+          },
+          "edges": {
+            "$ref": "#/components/schemas/BuildCounts"
+          },
+          "node_changes": {
+            "$ref": "#/components/schemas/BuildChanges"
+          },
+          "edge_changes": {
+            "$ref": "#/components/schemas/BuildChanges"
+          },
+          "error_count": {
+            "type": "integer",
+            "title": "Error Count"
+          },
+          "warning_count": {
+            "type": "integer",
+            "title": "Warning Count"
+          },
+          "info_count": {
+            "type": "integer",
+            "title": "Info Count"
+          },
+          "error_summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Summary"
+          },
+          "source_fingerprint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Fingerprint"
+          },
+          "sources": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Sources"
+          },
+          "metrics": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metrics"
+          },
+          "issues_by_rule": {
+            "items": {
+              "$ref": "#/components/schemas/RuleCount"
+            },
+            "type": "array",
+            "title": "Issues By Rule"
+          },
+          "decisions": {
+            "items": {
+              "$ref": "#/components/schemas/DecisionCount"
+            },
+            "type": "array",
+            "title": "Decisions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "started_at",
+          "finished_at",
+          "duration_ms",
+          "rules_version",
+          "node_count",
+          "edge_count",
+          "nodes",
+          "edges",
+          "node_changes",
+          "edge_changes",
+          "error_count",
+          "warning_count",
+          "info_count",
+          "error_summary",
+          "source_fingerprint",
+          "sources",
+          "metrics",
+          "issues_by_rule",
+          "decisions"
+        ],
+        "title": "GraphBuildDetail"
+      },
+      "GraphBuildStatus": {
+        "type": "string",
+        "enum": [
+          "running",
+          "completed",
+          "completed_with_warnings",
+          "failed"
+        ],
+        "title": "GraphBuildStatus",
+        "description": "Lifecycle of a graph build. ``completed_with_warnings`` means the graph was built\nbut some records were rejected or flagged; ``failed`` means nothing was changed."
+      },
+      "GraphBuildSummary": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/GraphBuildStatus"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Started At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "duration_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Ms"
+          },
+          "rules_version": {
+            "type": "string",
+            "title": "Rules Version"
+          },
+          "node_count": {
+            "type": "integer",
+            "title": "Node Count"
+          },
+          "edge_count": {
+            "type": "integer",
+            "title": "Edge Count"
+          },
+          "nodes": {
+            "$ref": "#/components/schemas/BuildCounts"
+          },
+          "edges": {
+            "$ref": "#/components/schemas/BuildCounts"
+          },
+          "node_changes": {
+            "$ref": "#/components/schemas/BuildChanges"
+          },
+          "edge_changes": {
+            "$ref": "#/components/schemas/BuildChanges"
+          },
+          "error_count": {
+            "type": "integer",
+            "title": "Error Count"
+          },
+          "warning_count": {
+            "type": "integer",
+            "title": "Warning Count"
+          },
+          "info_count": {
+            "type": "integer",
+            "title": "Info Count"
+          },
+          "error_summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Summary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "started_at",
+          "finished_at",
+          "duration_ms",
+          "rules_version",
+          "node_count",
+          "edge_count",
+          "nodes",
+          "edges",
+          "node_changes",
+          "edge_changes",
+          "error_count",
+          "warning_count",
+          "info_count",
+          "error_summary"
+        ],
+        "title": "GraphBuildSummary"
+      },
+      "GraphEdgeDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "examples": [
+              "e-3f0c9a2b7d1e4f56"
+            ]
+          },
+          "type": {
+            "$ref": "#/components/schemas/GraphEdgeType"
+          },
+          "category": {
+            "$ref": "#/components/schemas/RelationshipCategory"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "target": {
+            "type": "string",
+            "title": "Target"
+          },
+          "directed": {
+            "type": "boolean",
+            "title": "Directed"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "description": "How the edge reads: '<source> <label> <target>'."
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "evidence_status": {
+            "$ref": "#/components/schemas/EvidenceStatus"
+          },
+          "is_illustrative": {
+            "type": "boolean",
+            "title": "Is Illustrative"
+          },
+          "quality_status": {
+            "$ref": "#/components/schemas/QualityStatus"
+          },
+          "valid_from": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valid From"
+          },
+          "valid_to": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valid To"
+          },
+          "historical": {
+            "type": "boolean",
+            "title": "Historical",
+            "description": "The stated validity period has ended."
+          },
+          "qualifiers": {
+            "$ref": "#/components/schemas/EdgeQualifiers"
+          },
+          "source_node": {
+            "$ref": "#/components/schemas/GraphNodeSummary"
+          },
+          "target_node": {
+            "$ref": "#/components/schemas/GraphNodeSummary"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation",
+            "description": "Why this connection exists, in one paragraph."
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRead"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "evidence_status_label": {
+            "type": "string",
+            "title": "Evidence Status Label"
+          },
+          "evidence_status_definition": {
+            "type": "string",
+            "title": "Evidence Status Definition"
+          },
+          "type_description": {
+            "type": "string",
+            "title": "Type Description"
+          },
+          "caveat": {
+            "type": "string",
+            "title": "Caveat",
+            "description": "What this kind of edge does not mean."
+          },
+          "first_build_id": {
+            "type": "integer",
+            "title": "First Build Id"
+          },
+          "changed_build_id": {
+            "type": "integer",
+            "title": "Changed Build Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "category",
+          "source",
+          "target",
+          "directed",
+          "label",
+          "description",
+          "evidence_status",
+          "is_illustrative",
+          "quality_status",
+          "historical",
+          "qualifiers",
+          "source_node",
+          "target_node",
+          "explanation",
+          "evidence",
+          "evidence_status_label",
+          "evidence_status_definition",
+          "type_description",
+          "caveat",
+          "first_build_id",
+          "changed_build_id"
+        ],
+        "title": "GraphEdgeDetail"
+      },
+      "GraphEdgeSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "examples": [
+              "e-3f0c9a2b7d1e4f56"
+            ]
+          },
+          "type": {
+            "$ref": "#/components/schemas/GraphEdgeType"
+          },
+          "category": {
+            "$ref": "#/components/schemas/RelationshipCategory"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "target": {
+            "type": "string",
+            "title": "Target"
+          },
+          "directed": {
+            "type": "boolean",
+            "title": "Directed"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "description": "How the edge reads: '<source> <label> <target>'."
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "evidence_status": {
+            "$ref": "#/components/schemas/EvidenceStatus"
+          },
+          "is_illustrative": {
+            "type": "boolean",
+            "title": "Is Illustrative"
+          },
+          "quality_status": {
+            "$ref": "#/components/schemas/QualityStatus"
+          },
+          "valid_from": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valid From"
+          },
+          "valid_to": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valid To"
+          },
+          "historical": {
+            "type": "boolean",
+            "title": "Historical",
+            "description": "The stated validity period has ended."
+          },
+          "qualifiers": {
+            "$ref": "#/components/schemas/EdgeQualifiers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "category",
+          "source",
+          "target",
+          "directed",
+          "label",
+          "description",
+          "evidence_status",
+          "is_illustrative",
+          "quality_status",
+          "historical",
+          "qualifiers"
+        ],
+        "title": "GraphEdgeSummary"
+      },
+      "GraphEdgeType": {
+        "type": "string",
+        "enum": [
+          "supplies_to",
+          "lends_to",
+          "competes_with",
+          "affects_costs",
+          "affects_revenue",
+          "affects_financing",
+          "influences",
+          "in_industry",
+          "domiciled_in",
+          "measured_for",
+          "in_sector",
+          "has_currency",
+          "covers",
+          "related_measure_of",
+          "expressed_in",
+          "listed_on",
+          "quoted_in",
+          "associated_with"
+        ],
+        "title": "GraphEdgeType",
+        "description": "Kinds of edge. The first seven are Phase 1's curated economic relationships; the\nrest are structural links stated by a field of a source record."
+      },
+      "GraphIssueRead": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "build_id": {
+            "type": "integer",
+            "title": "Build Id"
+          },
+          "subject_kind": {
+            "$ref": "#/components/schemas/GraphIssueSubject"
+          },
+          "subject_ref": {
+            "type": "string",
+            "title": "Subject Ref"
+          },
+          "node_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Node Id"
+          },
+          "edge_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Edge Id"
+          },
+          "rule": {
+            "type": "string",
+            "title": "Rule"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/IssueSeverity"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/IssueOutcome"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "build_id",
+          "subject_kind",
+          "subject_ref",
+          "node_id",
+          "edge_id",
+          "rule",
+          "severity",
+          "outcome",
+          "message",
+          "details"
+        ],
+        "title": "GraphIssueRead"
+      },
+      "GraphIssueSubject": {
+        "type": "string",
+        "enum": [
+          "node",
+          "edge",
+          "identifier",
+          "resolution"
+        ],
+        "title": "GraphIssueSubject"
+      },
+      "GraphNodeDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Stable node key, e.g. `country:cty_in`.",
+            "examples": [
+              "country:cty_in"
+            ]
+          },
+          "type": {
+            "$ref": "#/components/schemas/GraphNodeType"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "subtitle": {
+            "type": "string",
+            "title": "Subtitle",
+            "description": "Tells apart nodes with similar names."
+          },
+          "nature": {
+            "$ref": "#/components/schemas/NodeNature",
+            "description": "`real`, `fictional` (sample network) or `sample` data."
+          },
+          "quality_status": {
+            "$ref": "#/components/schemas/QualityStatus"
+          },
+          "degree": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Degree",
+            "description": "Edges touching the node (data coverage, not importance)."
+          },
+          "primary_identifier": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IdentifierRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "data_status": {
+            "type": "string",
+            "enum": [
+              "values_stored",
+              "definition_only",
+              "not_applicable"
+            ],
+            "title": "Data Status",
+            "description": "For series and instruments: whether values are stored or only the definition exists."
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "attributes": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Attributes"
+          },
+          "identifiers": {
+            "items": {
+              "$ref": "#/components/schemas/IdentifierRead"
+            },
+            "type": "array",
+            "title": "Identifiers"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/SourceRecordRead"
+            },
+            "type": "array",
+            "title": "Sources"
+          },
+          "in_degree": {
+            "type": "integer",
+            "title": "In Degree"
+          },
+          "out_degree": {
+            "type": "integer",
+            "title": "Out Degree"
+          },
+          "component": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Component"
+          },
+          "relationships": {
+            "items": {
+              "$ref": "#/components/schemas/RelationshipCount"
+            },
+            "type": "array",
+            "title": "Relationships"
+          },
+          "resolution": {
+            "items": {
+              "$ref": "#/components/schemas/ResolutionDecisionRead"
+            },
+            "type": "array",
+            "title": "Resolution"
+          },
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/GraphIssueRead"
+            },
+            "type": "array",
+            "title": "Issues"
+          },
+          "exposures": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ExposureRead"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exposures",
+            "description": "Companies and industries only: variables linked by assumed-effect edges."
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NodeDataRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "first_build_id": {
+            "type": "integer",
+            "title": "First Build Id"
+          },
+          "changed_build_id": {
+            "type": "integer",
+            "title": "Changed Build Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "name",
+          "subtitle",
+          "nature",
+          "quality_status",
+          "degree",
+          "data_status",
+          "description",
+          "attributes",
+          "identifiers",
+          "sources",
+          "in_degree",
+          "out_degree",
+          "component",
+          "relationships",
+          "resolution",
+          "issues",
+          "first_build_id",
+          "changed_build_id"
+        ],
+        "title": "GraphNodeDetail"
+      },
+      "GraphNodeSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Stable node key, e.g. `country:cty_in`.",
+            "examples": [
+              "country:cty_in"
+            ]
+          },
+          "type": {
+            "$ref": "#/components/schemas/GraphNodeType"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "subtitle": {
+            "type": "string",
+            "title": "Subtitle",
+            "description": "Tells apart nodes with similar names."
+          },
+          "nature": {
+            "$ref": "#/components/schemas/NodeNature",
+            "description": "`real`, `fictional` (sample network) or `sample` data."
+          },
+          "quality_status": {
+            "$ref": "#/components/schemas/QualityStatus"
+          },
+          "degree": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Degree",
+            "description": "Edges touching the node (data coverage, not importance)."
+          },
+          "primary_identifier": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IdentifierRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "data_status": {
+            "type": "string",
+            "enum": [
+              "values_stored",
+              "definition_only",
+              "not_applicable"
+            ],
+            "title": "Data Status",
+            "description": "For series and instruments: whether values are stored or only the definition exists."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "name",
+          "subtitle",
+          "nature",
+          "quality_status",
+          "degree",
+          "data_status"
+        ],
+        "title": "GraphNodeSummary"
+      },
+      "GraphNodeType": {
+        "type": "string",
+        "enum": [
+          "country",
+          "currency",
+          "sector",
+          "industry",
+          "company",
+          "economic_variable",
+          "data_series",
+          "instrument",
+          "market"
+        ],
+        "title": "GraphNodeType",
+        "description": "Kinds of node in the knowledge graph. Only kinds the stored data supports exist."
+      },
+      "GraphOverview": {
+        "properties": {
+          "build": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GraphBuildSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "freshness": {
+            "$ref": "#/components/schemas/Freshness"
+          },
+          "metrics": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metrics",
+            "description": "Computed by the build (see metric_definitions)."
+          },
+          "type_map": {
+            "items": {
+              "$ref": "#/components/schemas/TypeMapNode"
+            },
+            "type": "array",
+            "title": "Type Map"
+          },
+          "type_links": {
+            "items": {
+              "$ref": "#/components/schemas/TypeMapLink"
+            },
+            "type": "array",
+            "title": "Type Links"
+          },
+          "metric_definitions": {
+            "items": {
+              "$ref": "#/components/schemas/MetricDefinitionRead"
+            },
+            "type": "array",
+            "title": "Metric Definitions"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "build",
+          "freshness",
+          "metrics",
+          "type_map",
+          "type_links",
+          "metric_definitions",
+          "notes"
+        ],
+        "title": "GraphOverview"
+      },
+      "GraphTypesResponse": {
+        "properties": {
+          "node_types": {
+            "items": {
+              "$ref": "#/components/schemas/NodeTypeRead"
+            },
+            "type": "array",
+            "title": "Node Types"
+          },
+          "edge_types": {
+            "items": {
+              "$ref": "#/components/schemas/EdgeTypeRead"
+            },
+            "type": "array",
+            "title": "Edge Types"
+          },
+          "evidence_statuses": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceStatusRead"
+            },
+            "type": "array",
+            "title": "Evidence Statuses"
+          },
+          "identifier_schemes": {
+            "items": {
+              "$ref": "#/components/schemas/IdentifierSchemeRead"
+            },
+            "type": "array",
+            "title": "Identifier Schemes"
+          },
+          "construction_rules": {
+            "items": {
+              "$ref": "#/components/schemas/ConstructionRuleRead"
+            },
+            "type": "array",
+            "title": "Construction Rules"
+          },
+          "validation_rules": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationRuleRead"
+            },
+            "type": "array",
+            "title": "Validation Rules"
+          }
+        },
+        "type": "object",
+        "required": [
+          "node_types",
+          "edge_types",
+          "evidence_statuses",
+          "identifier_schemes",
+          "construction_rules",
+          "validation_rules"
+        ],
+        "title": "GraphTypesResponse"
       },
       "HealthResponse": {
         "properties": {
@@ -3767,6 +6521,60 @@
           "version"
         ],
         "title": "HealthResponse"
+      },
+      "IdentifierRead": {
+        "properties": {
+          "scheme": {
+            "type": "string",
+            "title": "Scheme"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "description": "The scheme's name, e.g. 'ISO 4217'."
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source",
+            "description": "The record that stated it."
+          }
+        },
+        "type": "object",
+        "required": [
+          "scheme",
+          "label",
+          "value"
+        ],
+        "title": "IdentifierRead"
+      },
+      "IdentifierSchemeRead": {
+        "properties": {
+          "scheme": {
+            "type": "string",
+            "title": "Scheme"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scheme",
+          "label"
+        ],
+        "title": "IdentifierSchemeRead"
       },
       "IndustryPage": {
         "properties": {
@@ -5052,6 +7860,182 @@
         "title": "MeasureType",
         "description": "What a series' numbers are, so they are never read as something else.\n\n* ``level`` — an amount, price or index level (e.g. GDP in current US$).\n* ``change`` — a growth rate or percentage change (e.g. annual CPI inflation).\n* ``rate`` — an interest rate or yield, in percent per annum.\n* ``ratio`` — a share of another quantity (e.g. exports as % of GDP).\n* ``exchange_rate`` — units of one currency per unit of another."
       },
+      "MetricDefinitionRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "definition": {
+            "type": "string",
+            "title": "Definition"
+          },
+          "calculation": {
+            "type": "string",
+            "title": "Calculation"
+          },
+          "interpretation": {
+            "type": "string",
+            "title": "Interpretation"
+          },
+          "limitations": {
+            "type": "string",
+            "title": "Limitations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "definition",
+          "calculation",
+          "interpretation",
+          "limitations"
+        ],
+        "title": "MetricDefinitionRead"
+      },
+      "NeighborNode": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Stable node key, e.g. `country:cty_in`.",
+            "examples": [
+              "country:cty_in"
+            ]
+          },
+          "type": {
+            "$ref": "#/components/schemas/GraphNodeType"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "subtitle": {
+            "type": "string",
+            "title": "Subtitle",
+            "description": "Tells apart nodes with similar names."
+          },
+          "nature": {
+            "$ref": "#/components/schemas/NodeNature",
+            "description": "`real`, `fictional` (sample network) or `sample` data."
+          },
+          "quality_status": {
+            "$ref": "#/components/schemas/QualityStatus"
+          },
+          "degree": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Degree",
+            "description": "Edges touching the node (data coverage, not importance)."
+          },
+          "primary_identifier": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IdentifierRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "data_status": {
+            "type": "string",
+            "enum": [
+              "values_stored",
+              "definition_only",
+              "not_applicable"
+            ],
+            "title": "Data Status",
+            "description": "For series and instruments: whether values are stored or only the definition exists."
+          },
+          "depth": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Depth",
+            "description": "Hops from the centre (shortest)."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "name",
+          "subtitle",
+          "nature",
+          "quality_status",
+          "degree",
+          "data_status",
+          "depth"
+        ],
+        "title": "NeighborNode"
+      },
+      "NeighborhoodResponse": {
+        "properties": {
+          "center": {
+            "$ref": "#/components/schemas/GraphNodeSummary"
+          },
+          "depth": {
+            "type": "integer",
+            "title": "Depth"
+          },
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/NeighborNode"
+            },
+            "type": "array",
+            "title": "Nodes"
+          },
+          "edges": {
+            "items": {
+              "$ref": "#/components/schemas/GraphEdgeSummary"
+            },
+            "type": "array",
+            "title": "Edges"
+          },
+          "truncated": {
+            "type": "boolean",
+            "title": "Truncated",
+            "description": "Some reachable nodes were left out (node limit)."
+          },
+          "unexplored_count": {
+            "type": "integer",
+            "title": "Unexplored Count"
+          },
+          "unexplored_by_type": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Unexplored By Type"
+          },
+          "limits": {
+            "$ref": "#/components/schemas/TraversalLimits"
+          },
+          "queries": {
+            "type": "integer",
+            "title": "Queries",
+            "description": "Database round trips used (one per level, plus one)."
+          }
+        },
+        "type": "object",
+        "required": [
+          "center",
+          "depth",
+          "nodes",
+          "edges",
+          "truncated",
+          "unexplored_count",
+          "unexplored_by_type",
+          "limits",
+          "queries"
+        ],
+        "title": "NeighborhoodResponse"
+      },
       "NetworkNode": {
         "properties": {
           "id": {
@@ -5188,6 +8172,202 @@
           "structural_edge_count"
         ],
         "title": "NetworkStats"
+      },
+      "NodeDataRead": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "series",
+              "instrument"
+            ],
+            "title": "Kind"
+          },
+          "record_id": {
+            "type": "string",
+            "title": "Record Id"
+          },
+          "value_count": {
+            "type": "integer",
+            "title": "Value Count"
+          },
+          "first": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First"
+          },
+          "last": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last"
+          },
+          "last_retrieved_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Retrieved At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "record_id",
+          "value_count",
+          "first",
+          "last"
+        ],
+        "title": "NodeDataRead",
+        "description": "Live data availability for series and instruments (read from the Phase 2 tables)."
+      },
+      "NodeNature": {
+        "type": "string",
+        "enum": [
+          "real",
+          "fictional",
+          "sample"
+        ],
+        "title": "NodeNature",
+        "description": "Whether a node describes the real world.\n\n* ``real`` — a real-world entity, classification or published series.\n* ``fictional`` — invented for the illustrative sample network (its companies).\n* ``sample`` — from a file marked as sample data (e.g. a synthetic price file)."
+      },
+      "NodeSearchResult": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Stable node key, e.g. `country:cty_in`.",
+            "examples": [
+              "country:cty_in"
+            ]
+          },
+          "type": {
+            "$ref": "#/components/schemas/GraphNodeType"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "subtitle": {
+            "type": "string",
+            "title": "Subtitle",
+            "description": "Tells apart nodes with similar names."
+          },
+          "nature": {
+            "$ref": "#/components/schemas/NodeNature",
+            "description": "`real`, `fictional` (sample network) or `sample` data."
+          },
+          "quality_status": {
+            "$ref": "#/components/schemas/QualityStatus"
+          },
+          "degree": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Degree",
+            "description": "Edges touching the node (data coverage, not importance)."
+          },
+          "primary_identifier": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IdentifierRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "data_status": {
+            "type": "string",
+            "enum": [
+              "values_stored",
+              "definition_only",
+              "not_applicable"
+            ],
+            "title": "Data Status",
+            "description": "For series and instruments: whether values are stored or only the definition exists."
+          },
+          "match": {
+            "type": "string",
+            "title": "Match",
+            "description": "Why the node matched: 'name', 'identifier' or 'details'."
+          },
+          "ambiguous": {
+            "type": "boolean",
+            "title": "Ambiguous",
+            "description": "True when another node has the same name: check the subtitle and identifiers before choosing."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "name",
+          "subtitle",
+          "nature",
+          "quality_status",
+          "degree",
+          "data_status",
+          "match",
+          "ambiguous"
+        ],
+        "title": "NodeSearchResult"
+      },
+      "NodeTypeRead": {
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/GraphNodeType"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "plural": {
+            "type": "string",
+            "title": "Plural"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "primary_identifier": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Identifier"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "label",
+          "plural",
+          "description",
+          "primary_identifier"
+        ],
+        "title": "NodeTypeRead"
       },
       "ObservationPage": {
         "properties": {
@@ -5377,6 +8557,258 @@
         ],
         "title": "ObservationStatus",
         "description": "``reported`` carries a value; ``missing`` means the provider listed the period\nwithout a value. RUMIN records the gap and never fills it in."
+      },
+      "Page_GraphBuildSummary_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/GraphBuildSummary"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total",
+            "description": "Total number of items matching the query."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "Page[GraphBuildSummary]"
+      },
+      "Page_GraphEdgeSummary_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/GraphEdgeSummary"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total",
+            "description": "Total number of items matching the query."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "Page[GraphEdgeSummary]"
+      },
+      "Page_GraphIssueRead_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/GraphIssueRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total",
+            "description": "Total number of items matching the query."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "Page[GraphIssueRead]"
+      },
+      "Page_NodeSearchResult_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/NodeSearchResult"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total",
+            "description": "Total number of items matching the query."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "Page[NodeSearchResult]"
+      },
+      "PathRead": {
+        "properties": {
+          "nodes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Nodes"
+          },
+          "edges": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Edges"
+          },
+          "length": {
+            "type": "integer",
+            "title": "Length"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nodes",
+          "edges",
+          "length"
+        ],
+        "title": "PathRead"
+      },
+      "PathsResponse": {
+        "properties": {
+          "source": {
+            "$ref": "#/components/schemas/GraphNodeSummary"
+          },
+          "target": {
+            "$ref": "#/components/schemas/GraphNodeSummary"
+          },
+          "found": {
+            "type": "boolean",
+            "title": "Found"
+          },
+          "length": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Length",
+            "description": "Hops on the shortest path; null when none found."
+          },
+          "paths": {
+            "items": {
+              "$ref": "#/components/schemas/PathRead"
+            },
+            "type": "array",
+            "title": "Paths"
+          },
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/GraphNodeSummary"
+            },
+            "type": "array",
+            "title": "Nodes"
+          },
+          "edges": {
+            "items": {
+              "$ref": "#/components/schemas/GraphEdgeSummary"
+            },
+            "type": "array",
+            "title": "Edges"
+          },
+          "direction": {
+            "$ref": "#/components/schemas/Direction"
+          },
+          "max_depth": {
+            "type": "integer",
+            "title": "Max Depth"
+          },
+          "budget_exhausted": {
+            "type": "boolean",
+            "title": "Budget Exhausted",
+            "description": "The search stopped at its node budget."
+          },
+          "nodes_explored": {
+            "type": "integer",
+            "title": "Nodes Explored"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source",
+          "target",
+          "found",
+          "length",
+          "paths",
+          "nodes",
+          "edges",
+          "direction",
+          "max_depth",
+          "budget_exhausted",
+          "nodes_explored",
+          "note"
+        ],
+        "title": "PathsResponse"
       },
       "Polarity": {
         "type": "string",
@@ -5826,6 +9258,38 @@
         ],
         "title": "RelationshipCategory"
       },
+      "RelationshipCount": {
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/GraphEdgeType"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "outgoing",
+              "incoming",
+              "undirected"
+            ],
+            "title": "Direction"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "label",
+          "direction",
+          "count"
+        ],
+        "title": "RelationshipCount"
+      },
       "RelationshipPage": {
         "properties": {
           "items": {
@@ -6019,6 +9483,74 @@
         ],
         "title": "RelationshipTypeRead"
       },
+      "ResolutionDecisionRead": {
+        "properties": {
+          "method": {
+            "$ref": "#/components/schemas/ResolutionMethod"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/ResolutionOutcome"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "identifier": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Identifier"
+          },
+          "candidates": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Candidates"
+          },
+          "rationale": {
+            "type": "string",
+            "title": "Rationale"
+          }
+        },
+        "type": "object",
+        "required": [
+          "method",
+          "outcome",
+          "source",
+          "identifier",
+          "candidates",
+          "rationale"
+        ],
+        "title": "ResolutionDecisionRead"
+      },
+      "ResolutionMethod": {
+        "type": "string",
+        "enum": [
+          "identifier",
+          "explicit_link",
+          "name_comparison"
+        ],
+        "title": "ResolutionMethod",
+        "description": "How entity resolution related a source record to a node."
+      },
+      "ResolutionOutcome": {
+        "type": "string",
+        "enum": [
+          "linked",
+          "identifier_attached",
+          "candidate_flagged",
+          "conflict",
+          "rejected"
+        ],
+        "title": "ResolutionOutcome",
+        "description": "What entity resolution decided.\n\n* ``linked`` — the record was linked to the node by an identifier or explicit link.\n* ``identifier_attached`` — an identifier stated by another record was added.\n* ``candidate_flagged`` — the names suggest the same entity; nothing was merged,\n  the pair awaits review.\n* ``conflict`` — an identifier was claimed for more than one node; it was attached\n  to none.\n* ``rejected`` — a possible match was ruled out by a rule (e.g. fictional vs real)."
+      },
       "ReviewStatus": {
         "type": "string",
         "enum": [
@@ -6026,6 +9558,28 @@
         ],
         "title": "ReviewStatus",
         "description": "Human review state of an issue. There is no review workflow yet, so every issue\nstays ``unreviewed``; the column exists so one can be added without a migration."
+      },
+      "RuleCount": {
+        "properties": {
+          "rule": {
+            "type": "string",
+            "title": "Rule"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/IssueOutcome"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rule",
+          "outcome",
+          "count"
+        ],
+        "title": "RuleCount"
       },
       "RuleRead": {
         "properties": {
@@ -6930,6 +10484,53 @@
         ],
         "title": "ShockRead"
       },
+      "SourceRecordRead": {
+        "properties": {
+          "table": {
+            "type": "string",
+            "title": "Table"
+          },
+          "record_id": {
+            "type": "string",
+            "title": "Record Id"
+          },
+          "dataset_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataset Id"
+          },
+          "dataset_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataset Version"
+          },
+          "fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Fields"
+          }
+        },
+        "type": "object",
+        "required": [
+          "table",
+          "record_id"
+        ],
+        "title": "SourceRecordRead"
+      },
       "Strength": {
         "type": "string",
         "enum": [
@@ -7056,6 +10657,111 @@
         ],
         "title": "SystemStatus"
       },
+      "TraversalLimits": {
+        "properties": {
+          "max_depth": {
+            "type": "integer",
+            "title": "Max Depth"
+          },
+          "max_nodes": {
+            "type": "integer",
+            "title": "Max Nodes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "max_depth",
+          "max_nodes"
+        ],
+        "title": "TraversalLimits"
+      },
+      "TypeMapLink": {
+        "properties": {
+          "source_type": {
+            "$ref": "#/components/schemas/GraphNodeType"
+          },
+          "target_type": {
+            "$ref": "#/components/schemas/GraphNodeType"
+          },
+          "edge_type": {
+            "$ref": "#/components/schemas/GraphEdgeType"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_type",
+          "target_type",
+          "edge_type",
+          "label",
+          "count"
+        ],
+        "title": "TypeMapLink"
+      },
+      "TypeMapNode": {
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/GraphNodeType"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "plural": {
+            "type": "string",
+            "title": "Plural"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "label",
+          "plural",
+          "count"
+        ],
+        "title": "TypeMapNode"
+      },
+      "ValidationRuleRead": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "subject": {
+            "$ref": "#/components/schemas/GraphIssueSubject"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/IssueSeverity"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/IssueOutcome"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "subject",
+          "severity",
+          "outcome",
+          "description"
+        ],
+        "title": "ValidationRuleRead"
+      },
       "ValueKind": {
         "type": "string",
         "enum": [
@@ -7115,6 +10821,10 @@
     {
       "name": "data quality",
       "description": "Rules, rejected records and flagged values."
+    },
+    {
+      "name": "knowledge graph",
+      "description": "Entities, relationships and evidence: search, neighbourhoods, provenance, paths, components, builds and validation issues (read-only, bounded)."
     },
     {
       "name": "system",
