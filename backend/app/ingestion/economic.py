@@ -294,6 +294,9 @@ def run_economic_ingestion(
         cancelled = True
         jobs.cancel_items(items, clock())
 
+    for entry, item in zip(series, items, strict=True):
+        if item.status is JobItemStatus.SKIPPED:
+            _record_series_outcome(entry, job, item, clock())
     if last_updated is not None:
         dataset.provider_last_updated = last_updated
     progress()

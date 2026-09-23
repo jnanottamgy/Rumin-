@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 from datetime import date, timedelta
 from decimal import Decimal
 from itertools import pairwise
-from typing import Any
+from typing import Any, Literal
 
 from app.domain.enums import (
     Frequency,
@@ -46,7 +46,7 @@ REJECTED, FLAGGED, NOTED = IssueOutcome.REJECTED, IssueOutcome.FLAGGED, IssueOut
 @dataclass(frozen=True)
 class Rule:
     code: str
-    applies_to: str  # "economic", "price" or "both"
+    applies_to: Literal["economic", "price", "both"]
     severity: IssueSeverity
     outcome: IssueOutcome
     description: str

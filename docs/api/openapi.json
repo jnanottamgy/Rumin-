@@ -3,7 +3,7 @@
   "info": {
     "title": "RUMIN API",
     "summary": "Financial intelligence and economic simulation platform.",
-    "description": "\nRUMIN is an interactive financial intelligence and economic simulation platform.\nThis is the **Phase 1 foundation** of its API.\n\n### Five kinds of knowledge\nRUMIN never blurs these categories; responses label them with `epistemic_category`.\n\n| Category | Meaning | In this build |\n|---|---|---|\n| `observation` | Historical data from a cited source | None stored yet (Phase 2) |\n| `assumption` | Rules, parameters and relationships defined by the model | Every relationship |\n| `scenario_input` | Values changed by a user | Scenario shocks |\n| `simulated_output` | Results computed by a simulation engine | None: no engine yet (Phase 4) |\n| `uncertainty` | Limitations and ranges | Documented qualitatively |\n\n### Sample data\nThe loaded dataset is **illustrative**. Companies are fictional; countries, ISIC Rev. 4\nindustries and economic-variable definitions are real concepts with references. The\ndataset contains no prices, financial figures or time series.\n\n### Errors\nEvery error response uses one envelope:\n`{\"error\": {\"code\", \"message\", \"details\", \"request_id\"}}`.\n",
+    "description": "\nRUMIN is an interactive financial intelligence and economic simulation platform.\nThis API covers the **Phase 1 foundation** and the **Phase 2 financial data\ninfrastructure**.\n\n### Five kinds of knowledge\nRUMIN never blurs these categories; responses label them with `epistemic_category`.\n\n| Category | Meaning | In this build |\n|---|---|---|\n| `observation` | Historical data from a cited source | World Bank series; licensed price files |\n| `assumption` | Rules, parameters and relationships defined by the model | Relationships, ranges |\n| `scenario_input` | Values changed by a user | Scenario shocks |\n| `simulated_output` | Results computed by a simulation engine | None: no engine yet (Phase 4) |\n| `uncertainty` | Limitations and ranges | Documented qualitatively |\n\n### Data\n* The curated **network** dataset is **illustrative**: companies are fictional; countries,\n  ISIC Rev. 4 industries and variable definitions are real concepts with references.\n* **Provider data** is historical, stored exactly as published and never live. Every value\n  carries its period, when RUMIN retrieved it, the stored response it came from and the\n  dataset's licence and attribution. Revisions are kept, not overwritten.\n* **Numbers are decimal strings** (`\"5.649\"`) so no digit is lost to floating point.\n* Ingestion is started from the command line only; these endpoints are read-only.\n\n### Errors\nEvery error response uses one envelope:\n`{\"error\": {\"code\", \"message\", \"details\", \"request_id\"}}`.\n",
     "version": "0.1.0"
   },
   "paths": {
@@ -889,6 +889,1521 @@
         }
       }
     },
+    "/api/v1/providers": {
+      "get": {
+        "tags": [
+          "providers and datasets"
+        ],
+        "summary": "List data providers",
+        "description": "Who publishes the data RUMIN stores, with licensing, commercial-use and rate-limit notes taken from each provider's documentation.",
+        "operationId": "list_providers",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProviderRead"
+                  },
+                  "type": "array",
+                  "title": "Response List Providers"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/providers/{provider_id}": {
+      "get": {
+        "tags": [
+          "providers and datasets"
+        ],
+        "summary": "Get a data provider",
+        "operationId": "get_provider",
+        "parameters": [
+          {
+            "name": "provider_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9-]{1,63}$",
+              "examples": [
+                "worldbank"
+              ],
+              "title": "Provider Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/datasets": {
+      "get": {
+        "tags": [
+          "providers and datasets"
+        ],
+        "summary": "List datasets",
+        "description": "Every dataset loaded into RUMIN — the illustrative curated network and provider data — with its licence, attribution and latest ingestion job.",
+        "operationId": "list_datasets",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/DatasetKind"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only this kind.",
+              "title": "Kind"
+            },
+            "description": "Only this kind."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "description": "Maximum number of items to return.",
+              "default": 100,
+              "title": "Limit"
+            },
+            "description": "Maximum number of items to return."
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0,
+              "description": "Items to skip.",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Items to skip."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatasetPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/datasets/{dataset_id}": {
+      "get": {
+        "tags": [
+          "providers and datasets"
+        ],
+        "summary": "Get a dataset",
+        "operationId": "get_dataset",
+        "parameters": [
+          {
+            "name": "dataset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9_-]{1,63}$",
+              "examples": [
+                "worldbank-wdi"
+              ],
+              "title": "Dataset Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatasetRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/economic-series": {
+      "get": {
+        "tags": [
+          "economic series"
+        ],
+        "summary": "List economic series",
+        "description": "Series RUMIN retrieves from providers, with coverage, the latest reported value and the outcome of the last retrieval. Historical data only — nothing is live.",
+        "operationId": "list_series",
+        "parameters": [
+          {
+            "name": "dataset_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[a-z0-9][a-z0-9_-]{1,63}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only items from this dataset.",
+              "title": "Dataset Id"
+            },
+            "description": "Only items from this dataset."
+          },
+          {
+            "name": "country_iso3",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ISO 3166-1 alpha-3 code.",
+              "title": "Country Iso3"
+            },
+            "description": "ISO 3166-1 alpha-3 code."
+          },
+          {
+            "name": "measure_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/MeasureType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Measure Type"
+            }
+          },
+          {
+            "name": "frequency",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Frequency"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Frequency"
+            }
+          },
+          {
+            "name": "has_data",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only series with (true) or without (false) values.",
+              "title": "Has Data"
+            },
+            "description": "Only series with (true) or without (false) values."
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search names and provider codes.",
+              "title": "Q"
+            },
+            "description": "Search names and provider codes."
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "name",
+                "-name",
+                "last_period",
+                "-last_period",
+                "provider_code"
+              ],
+              "type": "string",
+              "description": "Order; '-' means descending.",
+              "default": "name",
+              "title": "Sort"
+            },
+            "description": "Order; '-' means descending."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "description": "Maximum number of items to return.",
+              "default": 100,
+              "title": "Limit"
+            },
+            "description": "Maximum number of items to return."
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0,
+              "description": "Items to skip.",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Items to skip."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeriesPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/economic-series/{series_id}": {
+      "get": {
+        "tags": [
+          "economic series"
+        ],
+        "summary": "Get an economic series",
+        "operationId": "get_series",
+        "parameters": [
+          {
+            "name": "series_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9-]{2,95}$",
+              "examples": [
+                "wb-ind-fp-cpi-totl-zg"
+              ],
+              "title": "Series Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeriesDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/economic-series/{series_id}/observations": {
+      "get": {
+        "tags": [
+          "economic series"
+        ],
+        "summary": "List a series' observations",
+        "description": "Values in period order, exactly as published. Periods the provider listed without a value are included with `value: null` (never filled in). Each value records when it was retrieved and the stored response it came from.",
+        "operationId": "list_observations",
+        "parameters": [
+          {
+            "name": "series_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9-]{2,95}$",
+              "examples": [
+                "wb-ind-fp-cpi-totl-zg"
+              ],
+              "title": "Series Id"
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "First date to include (YYYY-MM-DD).",
+              "title": "Start"
+            },
+            "description": "First date to include (YYYY-MM-DD)."
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Last date to include (YYYY-MM-DD).",
+              "title": "End"
+            },
+            "description": "Last date to include (YYYY-MM-DD)."
+          },
+          {
+            "name": "include_missing",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Include periods without a value.",
+              "default": true,
+              "title": "Include Missing"
+            },
+            "description": "Include periods without a value."
+          },
+          {
+            "name": "include_revisions",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Also return superseded revisions (the full history of what was received).",
+              "default": false,
+              "title": "Include Revisions"
+            },
+            "description": "Also return superseded revisions (the full history of what was received)."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "description": "Maximum number of items to return.",
+              "default": 100,
+              "title": "Limit"
+            },
+            "description": "Maximum number of items to return."
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0,
+              "description": "Items to skip.",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Items to skip."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObservationPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/instruments": {
+      "get": {
+        "tags": [
+          "market data"
+        ],
+        "summary": "List instruments",
+        "description": "Listed instruments declared by imported price files. RUMIN ships none.",
+        "operationId": "list_instruments",
+        "parameters": [
+          {
+            "name": "exchange_mic",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[A-Z0-9]{4}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "E.g. XNSE or XBOM.",
+              "title": "Exchange Mic"
+            },
+            "description": "E.g. XNSE or XBOM."
+          },
+          {
+            "name": "instrument_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/InstrumentType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Instrument Type"
+            }
+          },
+          {
+            "name": "dataset_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[a-z0-9][a-z0-9_-]{1,63}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only items from this dataset.",
+              "title": "Dataset Id"
+            },
+            "description": "Only items from this dataset."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "description": "Maximum number of items to return.",
+              "default": 100,
+              "title": "Limit"
+            },
+            "description": "Maximum number of items to return."
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0,
+              "description": "Items to skip.",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Items to skip."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InstrumentPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/instruments/{instrument_id}": {
+      "get": {
+        "tags": [
+          "market data"
+        ],
+        "summary": "Get an instrument",
+        "operationId": "get_instrument",
+        "parameters": [
+          {
+            "name": "instrument_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9-]{2,95}$",
+              "examples": [
+                "xnse-reliance"
+              ],
+              "title": "Instrument Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InstrumentDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/instruments/{instrument_id}/prices": {
+      "get": {
+        "tags": [
+          "market data"
+        ],
+        "summary": "List an instrument's daily prices",
+        "description": "End-of-day prices from one dataset (an imported file), in date order. When prices come from several datasets, `dataset_id` is required: sources are never blended.",
+        "operationId": "list_prices",
+        "parameters": [
+          {
+            "name": "instrument_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9-]{2,95}$",
+              "examples": [
+                "xnse-reliance"
+              ],
+              "title": "Instrument Id"
+            }
+          },
+          {
+            "name": "dataset_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[a-z0-9][a-z0-9_-]{1,63}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only items from this dataset.",
+              "title": "Dataset Id"
+            },
+            "description": "Only items from this dataset."
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "First date to include (YYYY-MM-DD).",
+              "title": "Start"
+            },
+            "description": "First date to include (YYYY-MM-DD)."
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Last date to include (YYYY-MM-DD).",
+              "title": "End"
+            },
+            "description": "Last date to include (YYYY-MM-DD)."
+          },
+          {
+            "name": "include_revisions",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Also return superseded revisions (the full history of what was received).",
+              "default": false,
+              "title": "Include Revisions"
+            },
+            "description": "Also return superseded revisions (the full history of what was received)."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "description": "Maximum number of items to return.",
+              "default": 100,
+              "title": "Limit"
+            },
+            "description": "Maximum number of items to return."
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0,
+              "description": "Items to skip.",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Items to skip."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceBarPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ingestion-jobs": {
+      "get": {
+        "tags": [
+          "ingestion"
+        ],
+        "summary": "List ingestion jobs",
+        "description": "Every retrieval or import, newest first, with what it did. A job's status is derived from its targets: one that only partly succeeded is `partially_failed`.",
+        "operationId": "list_jobs",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/JobStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "dataset_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[a-z0-9][a-z0-9_-]{1,63}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Dataset Id"
+            }
+          },
+          {
+            "name": "provider_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[a-z0-9][a-z0-9-]{1,63}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Provider Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "description": "Maximum number of items to return.",
+              "default": 100,
+              "title": "Limit"
+            },
+            "description": "Maximum number of items to return."
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0,
+              "description": "Items to skip.",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Items to skip."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ingestion-jobs/{job_id}": {
+      "get": {
+        "tags": [
+          "ingestion"
+        ],
+        "summary": "Get an ingestion job",
+        "description": "The job with each target's outcome, issue counts by rule, and the responses or files it stored.",
+        "operationId": "get_job",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/source-captures/{capture_id}": {
+      "get": {
+        "tags": [
+          "ingestion"
+        ],
+        "summary": "Get a stored source capture",
+        "description": "Metadata of a stored response or file: where it came from, when, its size and SHA-256. The stored bytes are not served by the API.",
+        "operationId": "get_capture",
+        "parameters": [
+          {
+            "name": "capture_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 4611686018427387904,
+              "minimum": 1,
+              "title": "Capture Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptureRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/data-quality/issues": {
+      "get": {
+        "tags": [
+          "data quality"
+        ],
+        "summary": "List data-quality issues",
+        "description": "Rejected records (with what the source sent), flagged values and notes, newest first. Issues are recorded per job.",
+        "operationId": "list_issues",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Job Id"
+            }
+          },
+          {
+            "name": "series_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[a-z0-9][a-z0-9-]{2,95}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Series Id"
+            }
+          },
+          {
+            "name": "instrument_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[a-z0-9][a-z0-9-]{2,95}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Instrument Id"
+            }
+          },
+          {
+            "name": "rule",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[a-z_]{2,64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Rule"
+            }
+          },
+          {
+            "name": "severity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/IssueSeverity"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Severity"
+            }
+          },
+          {
+            "name": "outcome",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/IssueOutcome"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Outcome"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "description": "Maximum number of items to return.",
+              "default": 100,
+              "title": "Limit"
+            },
+            "description": "Maximum number of items to return."
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0,
+              "description": "Items to skip.",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Items to skip."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssuePage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/data-quality/rules": {
+      "get": {
+        "tags": [
+          "data quality"
+        ],
+        "summary": "List data-quality rules",
+        "description": "Every rule applied during ingestion, what it checks and what happens to a record that fails it.",
+        "operationId": "list_rules",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RuleRead"
+                  },
+                  "type": "array",
+                  "title": "Response List Rules"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/system": {
       "get": {
         "tags": [
@@ -974,6 +2489,120 @@
           "note"
         ],
         "title": "Capability"
+      },
+      "CaptureKind": {
+        "type": "string",
+        "enum": [
+          "http_response",
+          "file"
+        ],
+        "title": "CaptureKind"
+      },
+      "CaptureRead": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "job_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Job Id"
+          },
+          "provider_id": {
+            "type": "string",
+            "title": "Provider Id"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/CaptureKind"
+          },
+          "locator": {
+            "type": "string",
+            "title": "Locator",
+            "description": "Sanitised URL, or the imported file's name."
+          },
+          "request_params": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Params"
+          },
+          "http_status": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Http Status"
+          },
+          "received_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Received At"
+          },
+          "content_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Type"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          },
+          "body_stored": {
+            "type": "boolean",
+            "title": "Body Stored"
+          },
+          "provider_last_updated": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider Last Updated"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "job_id",
+          "provider_id",
+          "kind",
+          "locator",
+          "request_params",
+          "http_status",
+          "received_at",
+          "content_type",
+          "size_bytes",
+          "sha256",
+          "body_stored",
+          "provider_last_updated"
+        ],
+        "title": "CaptureRead",
+        "description": "Metadata of bytes RUMIN received. The body itself is not served by the API."
       },
       "ChangeRuleRead": {
         "properties": {
@@ -1215,6 +2844,65 @@
         ],
         "title": "CountryRead"
       },
+      "DataStatus": {
+        "properties": {
+          "provider_datasets": {
+            "type": "integer",
+            "title": "Provider Datasets"
+          },
+          "series_total": {
+            "type": "integer",
+            "title": "Series Total"
+          },
+          "series_with_data": {
+            "type": "integer",
+            "title": "Series With Data",
+            "description": "Series with at least one reported value."
+          },
+          "observations": {
+            "type": "integer",
+            "title": "Observations",
+            "description": "Current observations with a reported value."
+          },
+          "instruments": {
+            "type": "integer",
+            "title": "Instruments"
+          },
+          "price_bars": {
+            "type": "integer",
+            "title": "Price Bars",
+            "description": "Current daily price rows."
+          },
+          "flagged_values": {
+            "type": "integer",
+            "title": "Flagged Values",
+            "description": "Current values flagged for review."
+          },
+          "last_job": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JobRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "provider_datasets",
+          "series_total",
+          "series_with_data",
+          "observations",
+          "instruments",
+          "price_bars",
+          "flagged_values",
+          "last_job"
+        ],
+        "title": "DataStatus",
+        "description": "What provider data is stored — counted from the database, never assumed."
+      },
       "DatabaseStatus": {
         "properties": {
           "backend": {
@@ -1265,6 +2953,321 @@
           "schema_up_to_date"
         ],
         "title": "DatabaseStatus"
+      },
+      "DatasetKind": {
+        "type": "string",
+        "enum": [
+          "curated",
+          "provider"
+        ],
+        "title": "DatasetKind",
+        "description": "Where a dataset's records came from.\n\n* ``curated`` — reference data written for RUMIN and loaded from a file in the\n  repository (the Phase 1 illustrative network).\n* ``provider`` — data retrieved from an external provider (an API or a file the user\n  is licensed to use), with the provider's licence and attribution."
+      },
+      "DatasetPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DatasetRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total",
+            "description": "Total number of items matching the query."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "DatasetPage",
+        "description": "A page of datasets."
+      },
+      "DatasetRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/DatasetKind"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "is_illustrative": {
+            "type": "boolean",
+            "title": "Is Illustrative",
+            "description": "True for sample data that is not real."
+          },
+          "provenance_note": {
+            "type": "string",
+            "title": "Provenance Note"
+          },
+          "license": {
+            "type": "string",
+            "title": "License"
+          },
+          "license_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "License Url"
+          },
+          "terms_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Terms Url"
+          },
+          "homepage_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Homepage Url"
+          },
+          "attribution": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attribution",
+            "description": "Attribution the licence requires."
+          },
+          "update_frequency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Update Frequency"
+          },
+          "provider_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider Id"
+          },
+          "provider_dataset_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider Dataset Code"
+          },
+          "provider_last_updated": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider Last Updated",
+            "description": "When the provider last updated the dataset, as the provider reports it."
+          },
+          "checksum_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checksum Sha256"
+          },
+          "loaded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Loaded At"
+          },
+          "series_count": {
+            "type": "integer",
+            "title": "Series Count"
+          },
+          "instrument_count": {
+            "type": "integer",
+            "title": "Instrument Count"
+          },
+          "last_job": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JobRef"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The most recent ingestion job, if any."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "version",
+          "name",
+          "description",
+          "is_illustrative",
+          "provenance_note",
+          "license",
+          "license_url",
+          "terms_url",
+          "homepage_url",
+          "attribution",
+          "update_frequency",
+          "provider_id",
+          "provider_dataset_code",
+          "provider_last_updated",
+          "checksum_sha256",
+          "loaded_at",
+          "series_count",
+          "instrument_count",
+          "last_job"
+        ],
+        "title": "DatasetRead",
+        "description": "A provenance anchor. ``curated`` datasets are written for RUMIN (the illustrative\nPhase 1 network); ``provider`` datasets hold data retrieved from a provider or imported\nfrom a licensed file."
+      },
+      "DatasetRef": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/DatasetKind"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "is_illustrative": {
+            "type": "boolean",
+            "title": "Is Illustrative"
+          },
+          "license": {
+            "type": "string",
+            "title": "License"
+          },
+          "license_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "License Url"
+          },
+          "attribution": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attribution"
+          },
+          "provider_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider Id"
+          },
+          "provider_last_updated": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider Last Updated"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "name",
+          "is_illustrative",
+          "license",
+          "license_url",
+          "attribution",
+          "provider_id",
+          "provider_last_updated"
+        ],
+        "title": "DatasetRef",
+        "description": "What must accompany any value shown from a dataset."
       },
       "DatasetStatus": {
         "properties": {
@@ -1904,6 +3907,1151 @@
         ],
         "title": "IndustryRead"
       },
+      "InstrumentDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "instrument_type": {
+            "$ref": "#/components/schemas/InstrumentType"
+          },
+          "isin": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Isin"
+          },
+          "exchange_mic": {
+            "type": "string",
+            "title": "Exchange Mic",
+            "description": "ISO 10383 market identifier code, e.g. XNSE."
+          },
+          "symbol": {
+            "type": "string",
+            "title": "Symbol"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency"
+          },
+          "country_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country Id"
+          },
+          "dataset_id": {
+            "type": "string",
+            "title": "Dataset Id",
+            "description": "Dataset the instrument was declared in."
+          },
+          "first_trade_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Trade Date"
+          },
+          "last_trade_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Trade Date"
+          },
+          "bar_count": {
+            "type": "integer",
+            "title": "Bar Count"
+          },
+          "price_datasets": {
+            "items": {
+              "$ref": "#/components/schemas/DatasetRef"
+            },
+            "type": "array",
+            "title": "Price Datasets",
+            "description": "Datasets holding prices for the instrument. Prices from different datasets are kept apart, never blended."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "instrument_type",
+          "isin",
+          "exchange_mic",
+          "symbol",
+          "currency",
+          "country_id",
+          "dataset_id",
+          "first_trade_date",
+          "last_trade_date",
+          "bar_count",
+          "price_datasets"
+        ],
+        "title": "InstrumentDetail"
+      },
+      "InstrumentPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/InstrumentRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total",
+            "description": "Total number of items matching the query."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "InstrumentPage",
+        "description": "A page of instruments."
+      },
+      "InstrumentRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "instrument_type": {
+            "$ref": "#/components/schemas/InstrumentType"
+          },
+          "isin": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Isin"
+          },
+          "exchange_mic": {
+            "type": "string",
+            "title": "Exchange Mic",
+            "description": "ISO 10383 market identifier code, e.g. XNSE."
+          },
+          "symbol": {
+            "type": "string",
+            "title": "Symbol"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency"
+          },
+          "country_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country Id"
+          },
+          "dataset_id": {
+            "type": "string",
+            "title": "Dataset Id",
+            "description": "Dataset the instrument was declared in."
+          },
+          "first_trade_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Trade Date"
+          },
+          "last_trade_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Trade Date"
+          },
+          "bar_count": {
+            "type": "integer",
+            "title": "Bar Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "instrument_type",
+          "isin",
+          "exchange_mic",
+          "symbol",
+          "currency",
+          "country_id",
+          "dataset_id",
+          "first_trade_date",
+          "last_trade_date",
+          "bar_count"
+        ],
+        "title": "InstrumentRead"
+      },
+      "InstrumentRef": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "exchange_mic": {
+            "type": "string",
+            "title": "Exchange Mic"
+          },
+          "symbol": {
+            "type": "string",
+            "title": "Symbol"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "exchange_mic",
+          "symbol",
+          "currency"
+        ],
+        "title": "InstrumentRef"
+      },
+      "InstrumentType": {
+        "type": "string",
+        "enum": [
+          "equity",
+          "etf",
+          "index"
+        ],
+        "title": "InstrumentType"
+      },
+      "IssueCount": {
+        "properties": {
+          "rule": {
+            "type": "string",
+            "title": "Rule"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/IssueSeverity"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/IssueOutcome"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rule",
+          "severity",
+          "outcome",
+          "count"
+        ],
+        "title": "IssueCount"
+      },
+      "IssueOutcome": {
+        "type": "string",
+        "enum": [
+          "rejected",
+          "flagged",
+          "noted"
+        ],
+        "title": "IssueOutcome",
+        "description": "What happened to the record the issue is about."
+      },
+      "IssuePage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/IssueRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total",
+            "description": "Total number of items matching the query."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "IssuePage",
+        "description": "A page of data-quality issues, newest first."
+      },
+      "IssueRead": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "job_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Job Id"
+          },
+          "series_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Series Id"
+          },
+          "instrument_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instrument Id"
+          },
+          "observation_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observation Id"
+          },
+          "price_bar_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Bar Id"
+          },
+          "rule": {
+            "type": "string",
+            "title": "Rule"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/IssueSeverity"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/IssueOutcome",
+            "description": "rejected: not stored as data (the raw record is kept here); flagged: stored with quality status 'warning'; noted: informational."
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "record_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Record Key",
+            "description": "The period or trade date concerned."
+          },
+          "raw_record": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Raw Record",
+            "description": "What the source sent."
+          },
+          "detected_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Detected At"
+          },
+          "review_status": {
+            "$ref": "#/components/schemas/ReviewStatus"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "job_id",
+          "series_id",
+          "instrument_id",
+          "observation_id",
+          "price_bar_id",
+          "rule",
+          "severity",
+          "outcome",
+          "message",
+          "record_key",
+          "raw_record",
+          "detected_at",
+          "review_status"
+        ],
+        "title": "IssueRead"
+      },
+      "IssueSeverity": {
+        "type": "string",
+        "enum": [
+          "error",
+          "warning",
+          "info"
+        ],
+        "title": "IssueSeverity"
+      },
+      "JobDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "provider_id": {
+            "type": "string",
+            "title": "Provider Id"
+          },
+          "dataset_id": {
+            "type": "string",
+            "title": "Dataset Id"
+          },
+          "trigger": {
+            "$ref": "#/components/schemas/JobTrigger"
+          },
+          "parameters": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Parameters",
+            "description": "What was requested. Never holds secrets."
+          },
+          "status": {
+            "$ref": "#/components/schemas/JobStatus"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "heartbeat_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Heartbeat At"
+          },
+          "items_total": {
+            "type": "integer",
+            "title": "Items Total"
+          },
+          "items_succeeded": {
+            "type": "integer",
+            "title": "Items Succeeded"
+          },
+          "items_failed": {
+            "type": "integer",
+            "title": "Items Failed"
+          },
+          "items_skipped": {
+            "type": "integer",
+            "title": "Items Skipped"
+          },
+          "records_received": {
+            "type": "integer",
+            "title": "Records Received"
+          },
+          "records_new": {
+            "type": "integer",
+            "title": "Records New"
+          },
+          "records_revised": {
+            "type": "integer",
+            "title": "Records Revised"
+          },
+          "records_unchanged": {
+            "type": "integer",
+            "title": "Records Unchanged"
+          },
+          "records_missing": {
+            "type": "integer",
+            "title": "Records Missing",
+            "description": "Accepted records without a value (a subset)."
+          },
+          "records_rejected": {
+            "type": "integer",
+            "title": "Records Rejected"
+          },
+          "warning_count": {
+            "type": "integer",
+            "title": "Warning Count"
+          },
+          "error_count": {
+            "type": "integer",
+            "title": "Error Count"
+          },
+          "request_count": {
+            "type": "integer",
+            "title": "Request Count"
+          },
+          "bytes_received": {
+            "type": "integer",
+            "title": "Bytes Received"
+          },
+          "error_summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Summary"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/JobItemRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "issue_counts": {
+            "items": {
+              "$ref": "#/components/schemas/IssueCount"
+            },
+            "type": "array",
+            "title": "Issue Counts"
+          },
+          "captures": {
+            "items": {
+              "$ref": "#/components/schemas/CaptureRead"
+            },
+            "type": "array",
+            "title": "Captures"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "provider_id",
+          "dataset_id",
+          "trigger",
+          "parameters",
+          "status",
+          "created_at",
+          "started_at",
+          "finished_at",
+          "heartbeat_at",
+          "items_total",
+          "items_succeeded",
+          "items_failed",
+          "items_skipped",
+          "records_received",
+          "records_new",
+          "records_revised",
+          "records_unchanged",
+          "records_missing",
+          "records_rejected",
+          "warning_count",
+          "error_count",
+          "request_count",
+          "bytes_received",
+          "error_summary",
+          "items",
+          "issue_counts",
+          "captures"
+        ],
+        "title": "JobDetail"
+      },
+      "JobItemRead": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "target_kind": {
+            "$ref": "#/components/schemas/JobTargetKind"
+          },
+          "series_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Series Id"
+          },
+          "instrument_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instrument Id"
+          },
+          "target_label": {
+            "type": "string",
+            "title": "Target Label"
+          },
+          "status": {
+            "$ref": "#/components/schemas/JobItemStatus"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "records_received": {
+            "type": "integer",
+            "title": "Records Received"
+          },
+          "records_new": {
+            "type": "integer",
+            "title": "Records New"
+          },
+          "records_revised": {
+            "type": "integer",
+            "title": "Records Revised"
+          },
+          "records_unchanged": {
+            "type": "integer",
+            "title": "Records Unchanged"
+          },
+          "records_missing": {
+            "type": "integer",
+            "title": "Records Missing"
+          },
+          "records_rejected": {
+            "type": "integer",
+            "title": "Records Rejected"
+          },
+          "warning_count": {
+            "type": "integer",
+            "title": "Warning Count"
+          },
+          "error_count": {
+            "type": "integer",
+            "title": "Error Count"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "target_kind",
+          "series_id",
+          "instrument_id",
+          "target_label",
+          "status",
+          "started_at",
+          "finished_at",
+          "records_received",
+          "records_new",
+          "records_revised",
+          "records_unchanged",
+          "records_missing",
+          "records_rejected",
+          "warning_count",
+          "error_count",
+          "error_code",
+          "error_message"
+        ],
+        "title": "JobItemRead"
+      },
+      "JobItemStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "succeeded",
+          "failed",
+          "skipped"
+        ],
+        "title": "JobItemStatus"
+      },
+      "JobPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/JobRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total",
+            "description": "Total number of items matching the query."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "JobPage",
+        "description": "A page of ingestion jobs, newest first."
+      },
+      "JobRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "provider_id": {
+            "type": "string",
+            "title": "Provider Id"
+          },
+          "dataset_id": {
+            "type": "string",
+            "title": "Dataset Id"
+          },
+          "trigger": {
+            "$ref": "#/components/schemas/JobTrigger"
+          },
+          "parameters": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Parameters",
+            "description": "What was requested. Never holds secrets."
+          },
+          "status": {
+            "$ref": "#/components/schemas/JobStatus"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "heartbeat_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Heartbeat At"
+          },
+          "items_total": {
+            "type": "integer",
+            "title": "Items Total"
+          },
+          "items_succeeded": {
+            "type": "integer",
+            "title": "Items Succeeded"
+          },
+          "items_failed": {
+            "type": "integer",
+            "title": "Items Failed"
+          },
+          "items_skipped": {
+            "type": "integer",
+            "title": "Items Skipped"
+          },
+          "records_received": {
+            "type": "integer",
+            "title": "Records Received"
+          },
+          "records_new": {
+            "type": "integer",
+            "title": "Records New"
+          },
+          "records_revised": {
+            "type": "integer",
+            "title": "Records Revised"
+          },
+          "records_unchanged": {
+            "type": "integer",
+            "title": "Records Unchanged"
+          },
+          "records_missing": {
+            "type": "integer",
+            "title": "Records Missing",
+            "description": "Accepted records without a value (a subset)."
+          },
+          "records_rejected": {
+            "type": "integer",
+            "title": "Records Rejected"
+          },
+          "warning_count": {
+            "type": "integer",
+            "title": "Warning Count"
+          },
+          "error_count": {
+            "type": "integer",
+            "title": "Error Count"
+          },
+          "request_count": {
+            "type": "integer",
+            "title": "Request Count"
+          },
+          "bytes_received": {
+            "type": "integer",
+            "title": "Bytes Received"
+          },
+          "error_summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Summary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "provider_id",
+          "dataset_id",
+          "trigger",
+          "parameters",
+          "status",
+          "created_at",
+          "started_at",
+          "finished_at",
+          "heartbeat_at",
+          "items_total",
+          "items_succeeded",
+          "items_failed",
+          "items_skipped",
+          "records_received",
+          "records_new",
+          "records_revised",
+          "records_unchanged",
+          "records_missing",
+          "records_rejected",
+          "warning_count",
+          "error_count",
+          "request_count",
+          "bytes_received",
+          "error_summary"
+        ],
+        "title": "JobRead"
+      },
+      "JobRef": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/JobStatus"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "created_at",
+          "finished_at"
+        ],
+        "title": "JobRef"
+      },
+      "JobStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "running",
+          "completed",
+          "completed_with_warnings",
+          "partially_failed",
+          "failed",
+          "cancelled"
+        ],
+        "title": "JobStatus",
+        "description": "Lifecycle of an ingestion job. The final status always reflects what happened:\n\n* ``completed`` — every target succeeded; nothing was rejected or flagged.\n* ``completed_with_warnings`` — every target succeeded, but some records were\n  rejected or flagged, or a target returned no data.\n* ``partially_failed`` — some targets failed and others succeeded.\n* ``failed`` — no target succeeded, or the job could not run.\n* ``cancelled`` — stopped before finishing (e.g. interrupted from the keyboard)."
+      },
+      "JobTargetKind": {
+        "type": "string",
+        "enum": [
+          "economic_series",
+          "instrument"
+        ],
+        "title": "JobTargetKind"
+      },
+      "JobTrigger": {
+        "type": "string",
+        "enum": [
+          "cli"
+        ],
+        "title": "JobTrigger",
+        "description": "Who started a job. Phase 2 starts jobs from the command line only."
+      },
+      "LatestObservation": {
+        "properties": {
+          "period_label": {
+            "type": "string",
+            "title": "Period Label"
+          },
+          "period_start": {
+            "type": "string",
+            "format": "date",
+            "title": "Period Start"
+          },
+          "value": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Value",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "quality_status": {
+            "$ref": "#/components/schemas/QualityStatus"
+          }
+        },
+        "type": "object",
+        "required": [
+          "period_label",
+          "period_start",
+          "value",
+          "quality_status"
+        ],
+        "title": "LatestObservation"
+      },
+      "MeasureType": {
+        "type": "string",
+        "enum": [
+          "level",
+          "change",
+          "rate",
+          "ratio",
+          "exchange_rate"
+        ],
+        "title": "MeasureType",
+        "description": "What a series' numbers are, so they are never read as something else.\n\n* ``level`` — an amount, price or index level (e.g. GDP in current US$).\n* ``change`` — a growth rate or percentage change (e.g. annual CPI inflation).\n* ``rate`` — an interest rate or yield, in percent per annum.\n* ``ratio`` — a share of another quantity (e.g. exports as % of GDP).\n* ``exchange_rate`` — units of one currency per unit of another."
+      },
       "NetworkNode": {
         "properties": {
           "id": {
@@ -2041,6 +5189,195 @@
         ],
         "title": "NetworkStats"
       },
+      "ObservationPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ObservationRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total",
+            "description": "Total number of items matching the query."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Offset"
+          },
+          "series": {
+            "$ref": "#/components/schemas/SeriesRef"
+          },
+          "dataset": {
+            "$ref": "#/components/schemas/DatasetRef"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset",
+          "series",
+          "dataset"
+        ],
+        "title": "ObservationPage"
+      },
+      "ObservationRead": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "period_label": {
+            "type": "string",
+            "title": "Period Label"
+          },
+          "period_start": {
+            "type": "string",
+            "format": "date",
+            "title": "Period Start"
+          },
+          "period_end": {
+            "type": "string",
+            "format": "date",
+            "title": "Period End"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "description": "An exact decimal in plain notation (never floating point).",
+                "examples": [
+                  "5.649"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value",
+            "description": "Null when the provider listed no value."
+          },
+          "raw_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Raw Value",
+            "description": "The value exactly as the provider sent it."
+          },
+          "status": {
+            "$ref": "#/components/schemas/ObservationStatus"
+          },
+          "quality_status": {
+            "$ref": "#/components/schemas/QualityStatus"
+          },
+          "provider_flags": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider Flags"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "is_current": {
+            "type": "boolean",
+            "title": "Is Current"
+          },
+          "superseded_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Superseded At"
+          },
+          "retrieved_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Retrieved At",
+            "description": "When RUMIN first received this value."
+          },
+          "last_confirmed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Confirmed At",
+            "description": "When a retrieval last returned it."
+          },
+          "retrieved_by_job_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Retrieved By Job Id"
+          },
+          "capture_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Capture Id",
+            "description": "The stored response the value came from."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "period_label",
+          "period_start",
+          "period_end",
+          "value",
+          "raw_value",
+          "status",
+          "quality_status",
+          "provider_flags",
+          "revision",
+          "is_current",
+          "superseded_at",
+          "retrieved_at",
+          "last_confirmed_at",
+          "retrieved_by_job_id",
+          "capture_id"
+        ],
+        "title": "ObservationRead"
+      },
+      "ObservationStatus": {
+        "type": "string",
+        "enum": [
+          "reported",
+          "missing"
+        ],
+        "title": "ObservationStatus",
+        "description": "``reported`` carries a value; ``missing`` means the provider listed the period\nwithout a value. RUMIN records the gap and never fills it in."
+      },
       "Polarity": {
         "type": "string",
         "enum": [
@@ -2051,6 +5388,376 @@
         ],
         "title": "Polarity",
         "description": "Assumed direction of effect: does an *increase* in the source raise the target?"
+      },
+      "PriceAdjustment": {
+        "type": "string",
+        "enum": [
+          "unadjusted",
+          "adjusted"
+        ],
+        "title": "PriceAdjustment",
+        "description": "Whether open/high/low/close are as traded (``unadjusted``) or adjusted for\ncorporate actions by the source (``adjusted``). RUMIN never adjusts prices itself."
+      },
+      "PriceBarPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PriceBarRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total",
+            "description": "Total number of items matching the query."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Offset"
+          },
+          "instrument": {
+            "$ref": "#/components/schemas/InstrumentRef"
+          },
+          "dataset": {
+            "$ref": "#/components/schemas/DatasetRef"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset",
+          "instrument",
+          "dataset"
+        ],
+        "title": "PriceBarPage"
+      },
+      "PriceBarRead": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "dataset_id": {
+            "type": "string",
+            "title": "Dataset Id"
+          },
+          "trade_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Trade Date"
+          },
+          "open": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Open",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "high": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "High",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "low": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Low",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "close": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Close",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "adjusted_close": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "description": "An exact decimal in plain notation (never floating point).",
+                "examples": [
+                  "5.649"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adjusted Close",
+            "description": "Only when the file supplied one. RUMIN never computes adjustments."
+          },
+          "volume": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Volume"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency"
+          },
+          "adjustment": {
+            "$ref": "#/components/schemas/PriceAdjustment"
+          },
+          "quality_status": {
+            "$ref": "#/components/schemas/QualityStatus"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "is_current": {
+            "type": "boolean",
+            "title": "Is Current"
+          },
+          "superseded_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Superseded At"
+          },
+          "retrieved_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Retrieved At",
+            "description": "When the row was imported."
+          },
+          "last_confirmed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Confirmed At"
+          },
+          "source_row": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Row",
+            "description": "Line in the imported file (1 = header)."
+          },
+          "capture_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Capture Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "dataset_id",
+          "trade_date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "adjusted_close",
+          "volume",
+          "currency",
+          "adjustment",
+          "quality_status",
+          "revision",
+          "is_current",
+          "superseded_at",
+          "retrieved_at",
+          "last_confirmed_at",
+          "source_row",
+          "capture_id"
+        ],
+        "title": "PriceBarRead"
+      },
+      "PriceBasis": {
+        "type": "string",
+        "enum": [
+          "nominal",
+          "real",
+          "not_applicable"
+        ],
+        "title": "PriceBasis",
+        "description": "Nominal (current prices) versus real (inflation-adjusted, constant prices)."
+      },
+      "ProviderAuth": {
+        "type": "string",
+        "enum": [
+          "none",
+          "api_key",
+          "not_applicable"
+        ],
+        "title": "ProviderAuth"
+      },
+      "ProviderKind": {
+        "type": "string",
+        "enum": [
+          "api",
+          "file"
+        ],
+        "title": "ProviderKind"
+      },
+      "ProviderRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/ProviderKind"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "homepage_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Homepage Url"
+          },
+          "documentation_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Documentation Url"
+          },
+          "terms_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Terms Url"
+          },
+          "authentication": {
+            "$ref": "#/components/schemas/ProviderAuth"
+          },
+          "data_categories": {
+            "type": "string",
+            "title": "Data Categories"
+          },
+          "coverage": {
+            "type": "string",
+            "title": "Coverage"
+          },
+          "update_frequency": {
+            "type": "string",
+            "title": "Update Frequency"
+          },
+          "rate_limit_policy": {
+            "type": "string",
+            "title": "Rate Limit Policy"
+          },
+          "licensing": {
+            "type": "string",
+            "title": "Licensing"
+          },
+          "commercial_use": {
+            "type": "string",
+            "title": "Commercial Use",
+            "description": "What the licence allows commercially, as understood from the provider's terms. Not legal advice: re-read the terms before commercial use."
+          },
+          "reliability": {
+            "type": "string",
+            "title": "Reliability"
+          },
+          "known_limitations": {
+            "type": "string",
+            "title": "Known Limitations"
+          },
+          "dataset_count": {
+            "type": "integer",
+            "title": "Dataset Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "description",
+          "homepage_url",
+          "documentation_url",
+          "terms_url",
+          "authentication",
+          "data_categories",
+          "coverage",
+          "update_frequency",
+          "rate_limit_policy",
+          "licensing",
+          "commercial_use",
+          "reliability",
+          "known_limitations",
+          "dataset_count"
+        ],
+        "title": "ProviderRead",
+        "description": "Who publishes the data, and on what terms (from the provider's own documentation)."
+      },
+      "QualityStatus": {
+        "type": "string",
+        "enum": [
+          "validated",
+          "warning"
+        ],
+        "title": "QualityStatus",
+        "description": "Quality of a *stored* record. Rejected records are never stored as data; they are\nkept as data-quality issues with the raw record and the reason."
       },
       "ReadinessChecks": {
         "properties": {
@@ -2312,6 +6019,50 @@
         ],
         "title": "RelationshipTypeRead"
       },
+      "ReviewStatus": {
+        "type": "string",
+        "enum": [
+          "unreviewed"
+        ],
+        "title": "ReviewStatus",
+        "description": "Human review state of an issue. There is no review workflow yet, so every issue\nstays ``unreviewed``; the column exists so one can be added without a migration."
+      },
+      "RuleRead": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "applies_to": {
+            "type": "string",
+            "enum": [
+              "economic",
+              "price",
+              "both"
+            ],
+            "title": "Applies To"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/IssueSeverity"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/IssueOutcome"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "applies_to",
+          "severity",
+          "outcome",
+          "description"
+        ],
+        "title": "RuleRead"
+      },
       "ScenarioInput": {
         "properties": {
           "name": {
@@ -2444,6 +6195,669 @@
         ],
         "title": "ScenarioStatus",
         "description": "Phase 1 only supports drafts. Simulation runs arrive in Phase 4 as a separate\nresource, so a scenario's configuration and its results are never conflated."
+      },
+      "SeasonalAdjustment": {
+        "type": "string",
+        "enum": [
+          "seasonally_adjusted",
+          "not_seasonally_adjusted",
+          "not_applicable"
+        ],
+        "title": "SeasonalAdjustment"
+      },
+      "SeriesDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "dataset_id": {
+            "type": "string",
+            "title": "Dataset Id"
+          },
+          "provider_code": {
+            "type": "string",
+            "title": "Provider Code"
+          },
+          "provider_series_key": {
+            "type": "string",
+            "title": "Provider Series Key"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "source_organization": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Organization",
+            "description": "Who originally produced the statistic, as the provider reports it."
+          },
+          "measure_type": {
+            "$ref": "#/components/schemas/MeasureType"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "frequency": {
+            "$ref": "#/components/schemas/Frequency"
+          },
+          "aggregation": {
+            "type": "string",
+            "title": "Aggregation"
+          },
+          "price_basis": {
+            "$ref": "#/components/schemas/PriceBasis"
+          },
+          "seasonal_adjustment": {
+            "$ref": "#/components/schemas/SeasonalAdjustment"
+          },
+          "country_iso3": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country Iso3"
+          },
+          "country_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country Id"
+          },
+          "variable_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Variable Id"
+          },
+          "variable_relation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Variable Relation",
+            "description": "How the series differs from the linked Phase 1 variable."
+          },
+          "plausible_min": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "description": "An exact decimal in plain notation (never floating point).",
+                "examples": [
+                  "5.649"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plausible Min",
+            "description": "RUMIN's review threshold (an assumption, not a fact): values outside [plausible_min, plausible_max] are stored as reported and flagged for review."
+          },
+          "plausible_max": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "description": "An exact decimal in plain notation (never floating point).",
+                "examples": [
+                  "5.649"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plausible Max"
+          },
+          "first_period": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Period",
+            "description": "First period with a reported value."
+          },
+          "last_period": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Period",
+            "description": "Latest period with a reported value."
+          },
+          "observation_count": {
+            "type": "integer",
+            "title": "Observation Count",
+            "description": "Current periods with a reported value."
+          },
+          "missing_count": {
+            "type": "integer",
+            "title": "Missing Count",
+            "description": "Current periods the provider listed without a value."
+          },
+          "last_ingestion_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JobItemStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "last_ingestion_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Ingestion At"
+          },
+          "last_successful_ingestion_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Successful Ingestion At",
+            "description": "When RUMIN last retrieved the series successfully."
+          },
+          "latest": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LatestObservation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "epistemic_category": {
+            "type": "string",
+            "const": "observation",
+            "title": "Epistemic Category",
+            "default": "observation"
+          },
+          "dataset": {
+            "$ref": "#/components/schemas/DatasetRef"
+          },
+          "provider_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider Name"
+          },
+          "flagged_count": {
+            "type": "integer",
+            "title": "Flagged Count",
+            "description": "Current values flagged for review."
+          },
+          "revised_period_count": {
+            "type": "integer",
+            "title": "Revised Period Count",
+            "description": "Periods the provider has revised."
+          },
+          "last_job": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JobRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "dataset_id",
+          "provider_code",
+          "provider_series_key",
+          "name",
+          "description",
+          "source_organization",
+          "measure_type",
+          "unit",
+          "currency",
+          "frequency",
+          "aggregation",
+          "price_basis",
+          "seasonal_adjustment",
+          "country_iso3",
+          "country_id",
+          "variable_id",
+          "variable_relation",
+          "plausible_min",
+          "plausible_max",
+          "first_period",
+          "last_period",
+          "observation_count",
+          "missing_count",
+          "last_ingestion_status",
+          "last_ingestion_at",
+          "last_successful_ingestion_at",
+          "latest",
+          "dataset",
+          "provider_name",
+          "flagged_count",
+          "revised_period_count",
+          "last_job"
+        ],
+        "title": "SeriesDetail"
+      },
+      "SeriesPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SeriesRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total",
+            "description": "Total number of items matching the query."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "SeriesPage",
+        "description": "A page of economic series."
+      },
+      "SeriesRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "dataset_id": {
+            "type": "string",
+            "title": "Dataset Id"
+          },
+          "provider_code": {
+            "type": "string",
+            "title": "Provider Code"
+          },
+          "provider_series_key": {
+            "type": "string",
+            "title": "Provider Series Key"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "source_organization": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Organization",
+            "description": "Who originally produced the statistic, as the provider reports it."
+          },
+          "measure_type": {
+            "$ref": "#/components/schemas/MeasureType"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "frequency": {
+            "$ref": "#/components/schemas/Frequency"
+          },
+          "aggregation": {
+            "type": "string",
+            "title": "Aggregation"
+          },
+          "price_basis": {
+            "$ref": "#/components/schemas/PriceBasis"
+          },
+          "seasonal_adjustment": {
+            "$ref": "#/components/schemas/SeasonalAdjustment"
+          },
+          "country_iso3": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country Iso3"
+          },
+          "country_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country Id"
+          },
+          "variable_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Variable Id"
+          },
+          "variable_relation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Variable Relation",
+            "description": "How the series differs from the linked Phase 1 variable."
+          },
+          "plausible_min": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "description": "An exact decimal in plain notation (never floating point).",
+                "examples": [
+                  "5.649"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plausible Min",
+            "description": "RUMIN's review threshold (an assumption, not a fact): values outside [plausible_min, plausible_max] are stored as reported and flagged for review."
+          },
+          "plausible_max": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "description": "An exact decimal in plain notation (never floating point).",
+                "examples": [
+                  "5.649"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plausible Max"
+          },
+          "first_period": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Period",
+            "description": "First period with a reported value."
+          },
+          "last_period": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Period",
+            "description": "Latest period with a reported value."
+          },
+          "observation_count": {
+            "type": "integer",
+            "title": "Observation Count",
+            "description": "Current periods with a reported value."
+          },
+          "missing_count": {
+            "type": "integer",
+            "title": "Missing Count",
+            "description": "Current periods the provider listed without a value."
+          },
+          "last_ingestion_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JobItemStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "last_ingestion_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Ingestion At"
+          },
+          "last_successful_ingestion_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Successful Ingestion At",
+            "description": "When RUMIN last retrieved the series successfully."
+          },
+          "latest": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LatestObservation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "epistemic_category": {
+            "type": "string",
+            "const": "observation",
+            "title": "Epistemic Category",
+            "default": "observation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "dataset_id",
+          "provider_code",
+          "provider_series_key",
+          "name",
+          "description",
+          "source_organization",
+          "measure_type",
+          "unit",
+          "currency",
+          "frequency",
+          "aggregation",
+          "price_basis",
+          "seasonal_adjustment",
+          "country_iso3",
+          "country_id",
+          "variable_id",
+          "variable_relation",
+          "plausible_min",
+          "plausible_max",
+          "first_period",
+          "last_period",
+          "observation_count",
+          "missing_count",
+          "last_ingestion_status",
+          "last_ingestion_at",
+          "last_successful_ingestion_at",
+          "latest"
+        ],
+        "title": "SeriesRead"
+      },
+      "SeriesRef": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "frequency": {
+            "$ref": "#/components/schemas/Frequency"
+          },
+          "measure_type": {
+            "$ref": "#/components/schemas/MeasureType"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "unit",
+          "currency",
+          "frequency",
+          "measure_type"
+        ],
+        "title": "SeriesRef"
       },
       "ShockInput": {
         "properties": {
@@ -2617,6 +7031,9 @@
           "dataset": {
             "$ref": "#/components/schemas/DatasetStatus"
           },
+          "data": {
+            "$ref": "#/components/schemas/DataStatus"
+          },
           "capabilities": {
             "items": {
               "$ref": "#/components/schemas/Capability"
@@ -2634,6 +7051,7 @@
           "server_time",
           "database",
           "dataset",
+          "data",
           "capabilities"
         ],
         "title": "SystemStatus"
@@ -2677,6 +7095,26 @@
     {
       "name": "scenarios",
       "description": "Draft scenario inputs. Nothing is simulated."
+    },
+    {
+      "name": "providers and datasets",
+      "description": "Who publishes the data, on what terms, and what is loaded."
+    },
+    {
+      "name": "economic series",
+      "description": "Historical series and their observations."
+    },
+    {
+      "name": "market data",
+      "description": "Instruments and prices from licensed files."
+    },
+    {
+      "name": "ingestion",
+      "description": "What each retrieval or import did (read-only)."
+    },
+    {
+      "name": "data quality",
+      "description": "Rules, rejected records and flagged values."
     },
     {
       "name": "system",

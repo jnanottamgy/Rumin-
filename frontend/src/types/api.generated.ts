@@ -218,6 +218,294 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List data providers
+         * @description Who publishes the data RUMIN stores, with licensing, commercial-use and rate-limit notes taken from each provider's documentation.
+         */
+        get: operations["list_providers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/providers/{provider_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a data provider */
+        get: operations["get_provider"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/datasets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List datasets
+         * @description Every dataset loaded into RUMIN — the illustrative curated network and provider data — with its licence, attribution and latest ingestion job.
+         */
+        get: operations["list_datasets"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/datasets/{dataset_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a dataset */
+        get: operations["get_dataset"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/economic-series": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List economic series
+         * @description Series RUMIN retrieves from providers, with coverage, the latest reported value and the outcome of the last retrieval. Historical data only — nothing is live.
+         */
+        get: operations["list_series"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/economic-series/{series_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get an economic series */
+        get: operations["get_series"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/economic-series/{series_id}/observations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List a series' observations
+         * @description Values in period order, exactly as published. Periods the provider listed without a value are included with `value: null` (never filled in). Each value records when it was retrieved and the stored response it came from.
+         */
+        get: operations["list_observations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/instruments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List instruments
+         * @description Listed instruments declared by imported price files. RUMIN ships none.
+         */
+        get: operations["list_instruments"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/instruments/{instrument_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get an instrument */
+        get: operations["get_instrument"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/instruments/{instrument_id}/prices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List an instrument's daily prices
+         * @description End-of-day prices from one dataset (an imported file), in date order. When prices come from several datasets, `dataset_id` is required: sources are never blended.
+         */
+        get: operations["list_prices"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion-jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List ingestion jobs
+         * @description Every retrieval or import, newest first, with what it did. A job's status is derived from its targets: one that only partly succeeded is `partially_failed`.
+         */
+        get: operations["list_jobs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion-jobs/{job_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get an ingestion job
+         * @description The job with each target's outcome, issue counts by rule, and the responses or files it stored.
+         */
+        get: operations["get_job"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/source-captures/{capture_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a stored source capture
+         * @description Metadata of a stored response or file: where it came from, when, its size and SHA-256. The stored bytes are not served by the API.
+         */
+        get: operations["get_capture"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/data-quality/issues": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List data-quality issues
+         * @description Rejected records (with what the source sent), flagged values and notes, newest first. Issues are recorded per job.
+         */
+        get: operations["list_issues"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/data-quality/rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List data-quality rules
+         * @description Every rule applied during ingestion, what it checks and what happens to a record that fails it.
+         */
+        get: operations["list_rules"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/system": {
         parameters: {
             query?: never;
@@ -257,6 +545,53 @@ export interface components {
             planned_phase: number | null;
             /** Note */
             note: string;
+        };
+        /**
+         * CaptureKind
+         * @enum {string}
+         */
+        CaptureKind: "http_response" | "file";
+        /**
+         * CaptureRead
+         * @description Metadata of bytes RUMIN received. The body itself is not served by the API.
+         */
+        CaptureRead: {
+            /** Id */
+            id: number;
+            /**
+             * Job Id
+             * Format: uuid
+             */
+            job_id: string;
+            /** Provider Id */
+            provider_id: string;
+            kind: components["schemas"]["CaptureKind"];
+            /**
+             * Locator
+             * @description Sanitised URL, or the imported file's name.
+             */
+            locator: string;
+            /** Request Params */
+            request_params: {
+                [key: string]: unknown;
+            } | null;
+            /** Http Status */
+            http_status: number | null;
+            /**
+             * Received At
+             * Format: date-time
+             */
+            received_at: string;
+            /** Content Type */
+            content_type: string | null;
+            /** Size Bytes */
+            size_bytes: number;
+            /** Sha256 */
+            sha256: string;
+            /** Body Stored */
+            body_stored: boolean;
+            /** Provider Last Updated */
+            provider_last_updated: string | null;
         };
         /**
          * ChangeRuleRead
@@ -361,6 +696,39 @@ export interface components {
             /** Currency Code */
             currency_code: string;
         };
+        /**
+         * DataStatus
+         * @description What provider data is stored — counted from the database, never assumed.
+         */
+        DataStatus: {
+            /** Provider Datasets */
+            provider_datasets: number;
+            /** Series Total */
+            series_total: number;
+            /**
+             * Series With Data
+             * @description Series with at least one reported value.
+             */
+            series_with_data: number;
+            /**
+             * Observations
+             * @description Current observations with a reported value.
+             */
+            observations: number;
+            /** Instruments */
+            instruments: number;
+            /**
+             * Price Bars
+             * @description Current daily price rows.
+             */
+            price_bars: number;
+            /**
+             * Flagged Values
+             * @description Current values flagged for review.
+             */
+            flagged_values: number;
+            last_job: components["schemas"]["JobRef"] | null;
+        };
         /** DatabaseStatus */
         DatabaseStatus: {
             /**
@@ -377,6 +745,118 @@ export interface components {
             migration_head: string | null;
             /** Schema Up To Date */
             schema_up_to_date: boolean;
+        };
+        /**
+         * DatasetKind
+         * @description Where a dataset's records came from.
+         *
+         *     * ``curated`` — reference data written for RUMIN and loaded from a file in the
+         *       repository (the Phase 1 illustrative network).
+         *     * ``provider`` — data retrieved from an external provider (an API or a file the user
+         *       is licensed to use), with the provider's licence and attribution.
+         * @enum {string}
+         */
+        DatasetKind: "curated" | "provider";
+        /**
+         * DatasetPage
+         * @description A page of datasets.
+         */
+        DatasetPage: {
+            /** Items */
+            items: components["schemas"]["DatasetRead"][];
+            /**
+             * Total
+             * @description Total number of items matching the query.
+             */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
+        /**
+         * DatasetRead
+         * @description A provenance anchor. ``curated`` datasets are written for RUMIN (the illustrative
+         *     Phase 1 network); ``provider`` datasets hold data retrieved from a provider or imported
+         *     from a licensed file.
+         */
+        DatasetRead: {
+            /** Id */
+            id: string;
+            kind: components["schemas"]["DatasetKind"];
+            /** Version */
+            version: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /**
+             * Is Illustrative
+             * @description True for sample data that is not real.
+             */
+            is_illustrative: boolean;
+            /** Provenance Note */
+            provenance_note: string;
+            /** License */
+            license: string;
+            /** License Url */
+            license_url: string | null;
+            /** Terms Url */
+            terms_url: string | null;
+            /** Homepage Url */
+            homepage_url: string | null;
+            /**
+             * Attribution
+             * @description Attribution the licence requires.
+             */
+            attribution: string | null;
+            /** Update Frequency */
+            update_frequency: string | null;
+            /** Provider Id */
+            provider_id: string | null;
+            /** Provider Dataset Code */
+            provider_dataset_code: string | null;
+            /**
+             * Provider Last Updated
+             * @description When the provider last updated the dataset, as the provider reports it.
+             */
+            provider_last_updated: string | null;
+            /** Checksum Sha256 */
+            checksum_sha256: string | null;
+            /**
+             * Loaded At
+             * Format: date-time
+             */
+            loaded_at: string;
+            /** Series Count */
+            series_count: number;
+            /** Instrument Count */
+            instrument_count: number;
+            /** @description The most recent ingestion job, if any. */
+            last_job: components["schemas"]["JobRef"] | null;
+        };
+        /**
+         * DatasetRef
+         * @description What must accompany any value shown from a dataset.
+         */
+        DatasetRef: {
+            /** Id */
+            id: string;
+            kind: components["schemas"]["DatasetKind"];
+            /** Name */
+            name: string;
+            /** Is Illustrative */
+            is_illustrative: boolean;
+            /** License */
+            license: string;
+            /** License Url */
+            license_url: string | null;
+            /** Attribution */
+            attribution: string | null;
+            /** Provider Id */
+            provider_id: string | null;
+            /** Provider Last Updated */
+            provider_last_updated: string | null;
         };
         /** DatasetStatus */
         DatasetStatus: {
@@ -647,6 +1127,454 @@ export interface components {
              */
             classification_code: string;
         };
+        /** InstrumentDetail */
+        InstrumentDetail: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            instrument_type: components["schemas"]["InstrumentType"];
+            /** Isin */
+            isin: string | null;
+            /**
+             * Exchange Mic
+             * @description ISO 10383 market identifier code, e.g. XNSE.
+             */
+            exchange_mic: string;
+            /** Symbol */
+            symbol: string;
+            /** Currency */
+            currency: string;
+            /** Country Id */
+            country_id: string | null;
+            /**
+             * Dataset Id
+             * @description Dataset the instrument was declared in.
+             */
+            dataset_id: string;
+            /** First Trade Date */
+            first_trade_date: string | null;
+            /** Last Trade Date */
+            last_trade_date: string | null;
+            /** Bar Count */
+            bar_count: number;
+            /**
+             * Price Datasets
+             * @description Datasets holding prices for the instrument. Prices from different datasets are kept apart, never blended.
+             */
+            price_datasets: components["schemas"]["DatasetRef"][];
+        };
+        /**
+         * InstrumentPage
+         * @description A page of instruments.
+         */
+        InstrumentPage: {
+            /** Items */
+            items: components["schemas"]["InstrumentRead"][];
+            /**
+             * Total
+             * @description Total number of items matching the query.
+             */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
+        /** InstrumentRead */
+        InstrumentRead: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            instrument_type: components["schemas"]["InstrumentType"];
+            /** Isin */
+            isin: string | null;
+            /**
+             * Exchange Mic
+             * @description ISO 10383 market identifier code, e.g. XNSE.
+             */
+            exchange_mic: string;
+            /** Symbol */
+            symbol: string;
+            /** Currency */
+            currency: string;
+            /** Country Id */
+            country_id: string | null;
+            /**
+             * Dataset Id
+             * @description Dataset the instrument was declared in.
+             */
+            dataset_id: string;
+            /** First Trade Date */
+            first_trade_date: string | null;
+            /** Last Trade Date */
+            last_trade_date: string | null;
+            /** Bar Count */
+            bar_count: number;
+        };
+        /** InstrumentRef */
+        InstrumentRef: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Exchange Mic */
+            exchange_mic: string;
+            /** Symbol */
+            symbol: string;
+            /** Currency */
+            currency: string;
+        };
+        /**
+         * InstrumentType
+         * @enum {string}
+         */
+        InstrumentType: "equity" | "etf" | "index";
+        /** IssueCount */
+        IssueCount: {
+            /** Rule */
+            rule: string;
+            severity: components["schemas"]["IssueSeverity"];
+            outcome: components["schemas"]["IssueOutcome"];
+            /** Count */
+            count: number;
+        };
+        /**
+         * IssueOutcome
+         * @description What happened to the record the issue is about.
+         * @enum {string}
+         */
+        IssueOutcome: "rejected" | "flagged" | "noted";
+        /**
+         * IssuePage
+         * @description A page of data-quality issues, newest first.
+         */
+        IssuePage: {
+            /** Items */
+            items: components["schemas"]["IssueRead"][];
+            /**
+             * Total
+             * @description Total number of items matching the query.
+             */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
+        /** IssueRead */
+        IssueRead: {
+            /** Id */
+            id: number;
+            /**
+             * Job Id
+             * Format: uuid
+             */
+            job_id: string;
+            /** Series Id */
+            series_id: string | null;
+            /** Instrument Id */
+            instrument_id: string | null;
+            /** Observation Id */
+            observation_id: number | null;
+            /** Price Bar Id */
+            price_bar_id: number | null;
+            /** Rule */
+            rule: string;
+            severity: components["schemas"]["IssueSeverity"];
+            /** @description rejected: not stored as data (the raw record is kept here); flagged: stored with quality status 'warning'; noted: informational. */
+            outcome: components["schemas"]["IssueOutcome"];
+            /** Message */
+            message: string;
+            /**
+             * Record Key
+             * @description The period or trade date concerned.
+             */
+            record_key: string | null;
+            /**
+             * Raw Record
+             * @description What the source sent.
+             */
+            raw_record: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Detected At
+             * Format: date-time
+             */
+            detected_at: string;
+            review_status: components["schemas"]["ReviewStatus"];
+        };
+        /**
+         * IssueSeverity
+         * @enum {string}
+         */
+        IssueSeverity: "error" | "warning" | "info";
+        /** JobDetail */
+        JobDetail: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Provider Id */
+            provider_id: string;
+            /** Dataset Id */
+            dataset_id: string;
+            trigger: components["schemas"]["JobTrigger"];
+            /**
+             * Parameters
+             * @description What was requested. Never holds secrets.
+             */
+            parameters: {
+                [key: string]: unknown;
+            };
+            status: components["schemas"]["JobStatus"];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Started At */
+            started_at: string | null;
+            /** Finished At */
+            finished_at: string | null;
+            /** Heartbeat At */
+            heartbeat_at: string | null;
+            /** Items Total */
+            items_total: number;
+            /** Items Succeeded */
+            items_succeeded: number;
+            /** Items Failed */
+            items_failed: number;
+            /** Items Skipped */
+            items_skipped: number;
+            /** Records Received */
+            records_received: number;
+            /** Records New */
+            records_new: number;
+            /** Records Revised */
+            records_revised: number;
+            /** Records Unchanged */
+            records_unchanged: number;
+            /**
+             * Records Missing
+             * @description Accepted records without a value (a subset).
+             */
+            records_missing: number;
+            /** Records Rejected */
+            records_rejected: number;
+            /** Warning Count */
+            warning_count: number;
+            /** Error Count */
+            error_count: number;
+            /** Request Count */
+            request_count: number;
+            /** Bytes Received */
+            bytes_received: number;
+            /** Error Summary */
+            error_summary: string | null;
+            /** Items */
+            items: components["schemas"]["JobItemRead"][];
+            /** Issue Counts */
+            issue_counts: components["schemas"]["IssueCount"][];
+            /** Captures */
+            captures: components["schemas"]["CaptureRead"][];
+        };
+        /** JobItemRead */
+        JobItemRead: {
+            /** Id */
+            id: number;
+            target_kind: components["schemas"]["JobTargetKind"];
+            /** Series Id */
+            series_id: string | null;
+            /** Instrument Id */
+            instrument_id: string | null;
+            /** Target Label */
+            target_label: string;
+            status: components["schemas"]["JobItemStatus"];
+            /** Started At */
+            started_at: string | null;
+            /** Finished At */
+            finished_at: string | null;
+            /** Records Received */
+            records_received: number;
+            /** Records New */
+            records_new: number;
+            /** Records Revised */
+            records_revised: number;
+            /** Records Unchanged */
+            records_unchanged: number;
+            /** Records Missing */
+            records_missing: number;
+            /** Records Rejected */
+            records_rejected: number;
+            /** Warning Count */
+            warning_count: number;
+            /** Error Count */
+            error_count: number;
+            /** Error Code */
+            error_code: string | null;
+            /** Error Message */
+            error_message: string | null;
+        };
+        /**
+         * JobItemStatus
+         * @enum {string}
+         */
+        JobItemStatus: "pending" | "succeeded" | "failed" | "skipped";
+        /**
+         * JobPage
+         * @description A page of ingestion jobs, newest first.
+         */
+        JobPage: {
+            /** Items */
+            items: components["schemas"]["JobRead"][];
+            /**
+             * Total
+             * @description Total number of items matching the query.
+             */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
+        /** JobRead */
+        JobRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Provider Id */
+            provider_id: string;
+            /** Dataset Id */
+            dataset_id: string;
+            trigger: components["schemas"]["JobTrigger"];
+            /**
+             * Parameters
+             * @description What was requested. Never holds secrets.
+             */
+            parameters: {
+                [key: string]: unknown;
+            };
+            status: components["schemas"]["JobStatus"];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Started At */
+            started_at: string | null;
+            /** Finished At */
+            finished_at: string | null;
+            /** Heartbeat At */
+            heartbeat_at: string | null;
+            /** Items Total */
+            items_total: number;
+            /** Items Succeeded */
+            items_succeeded: number;
+            /** Items Failed */
+            items_failed: number;
+            /** Items Skipped */
+            items_skipped: number;
+            /** Records Received */
+            records_received: number;
+            /** Records New */
+            records_new: number;
+            /** Records Revised */
+            records_revised: number;
+            /** Records Unchanged */
+            records_unchanged: number;
+            /**
+             * Records Missing
+             * @description Accepted records without a value (a subset).
+             */
+            records_missing: number;
+            /** Records Rejected */
+            records_rejected: number;
+            /** Warning Count */
+            warning_count: number;
+            /** Error Count */
+            error_count: number;
+            /** Request Count */
+            request_count: number;
+            /** Bytes Received */
+            bytes_received: number;
+            /** Error Summary */
+            error_summary: string | null;
+        };
+        /** JobRef */
+        JobRef: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            status: components["schemas"]["JobStatus"];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Finished At */
+            finished_at: string | null;
+        };
+        /**
+         * JobStatus
+         * @description Lifecycle of an ingestion job. The final status always reflects what happened:
+         *
+         *     * ``completed`` — every target succeeded; nothing was rejected or flagged.
+         *     * ``completed_with_warnings`` — every target succeeded, but some records were
+         *       rejected or flagged, or a target returned no data.
+         *     * ``partially_failed`` — some targets failed and others succeeded.
+         *     * ``failed`` — no target succeeded, or the job could not run.
+         *     * ``cancelled`` — stopped before finishing (e.g. interrupted from the keyboard).
+         * @enum {string}
+         */
+        JobStatus: "pending" | "running" | "completed" | "completed_with_warnings" | "partially_failed" | "failed" | "cancelled";
+        /**
+         * JobTargetKind
+         * @enum {string}
+         */
+        JobTargetKind: "economic_series" | "instrument";
+        /**
+         * JobTrigger
+         * @description Who started a job. Phase 2 starts jobs from the command line only.
+         * @enum {string}
+         */
+        JobTrigger: "cli";
+        /** LatestObservation */
+        LatestObservation: {
+            /** Period Label */
+            period_label: string;
+            /**
+             * Period Start
+             * Format: date
+             */
+            period_start: string;
+            /**
+             * Value
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            value: string;
+            quality_status: components["schemas"]["QualityStatus"];
+        };
+        /**
+         * MeasureType
+         * @description What a series' numbers are, so they are never read as something else.
+         *
+         *     * ``level`` — an amount, price or index level (e.g. GDP in current US$).
+         *     * ``change`` — a growth rate or percentage change (e.g. annual CPI inflation).
+         *     * ``rate`` — an interest rate or yield, in percent per annum.
+         *     * ``ratio`` — a share of another quantity (e.g. exports as % of GDP).
+         *     * ``exchange_rate`` — units of one currency per unit of another.
+         * @enum {string}
+         */
+        MeasureType: "level" | "change" | "rate" | "ratio" | "exchange_rate";
         /** NetworkNode */
         NetworkNode: {
             /** Id */
@@ -682,12 +1610,252 @@ export interface components {
             /** Structural Edge Count */
             structural_edge_count: number;
         };
+        /** ObservationPage */
+        ObservationPage: {
+            /** Items */
+            items: components["schemas"]["ObservationRead"][];
+            /**
+             * Total
+             * @description Total number of items matching the query.
+             */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+            series: components["schemas"]["SeriesRef"];
+            dataset: components["schemas"]["DatasetRef"];
+        };
+        /** ObservationRead */
+        ObservationRead: {
+            /** Id */
+            id: number;
+            /** Period Label */
+            period_label: string;
+            /**
+             * Period Start
+             * Format: date
+             */
+            period_start: string;
+            /**
+             * Period End
+             * Format: date
+             */
+            period_end: string;
+            /**
+             * Value
+             * @description Null when the provider listed no value.
+             */
+            value: string | null;
+            /**
+             * Raw Value
+             * @description The value exactly as the provider sent it.
+             */
+            raw_value: string | null;
+            status: components["schemas"]["ObservationStatus"];
+            quality_status: components["schemas"]["QualityStatus"];
+            /** Provider Flags */
+            provider_flags: string | null;
+            /** Revision */
+            revision: number;
+            /** Is Current */
+            is_current: boolean;
+            /** Superseded At */
+            superseded_at: string | null;
+            /**
+             * Retrieved At
+             * Format: date-time
+             * @description When RUMIN first received this value.
+             */
+            retrieved_at: string;
+            /**
+             * Last Confirmed At
+             * Format: date-time
+             * @description When a retrieval last returned it.
+             */
+            last_confirmed_at: string;
+            /**
+             * Retrieved By Job Id
+             * Format: uuid
+             */
+            retrieved_by_job_id: string;
+            /**
+             * Capture Id
+             * @description The stored response the value came from.
+             */
+            capture_id: number | null;
+        };
+        /**
+         * ObservationStatus
+         * @description ``reported`` carries a value; ``missing`` means the provider listed the period
+         *     without a value. RUMIN records the gap and never fills it in.
+         * @enum {string}
+         */
+        ObservationStatus: "reported" | "missing";
         /**
          * Polarity
          * @description Assumed direction of effect: does an *increase* in the source raise the target?
          * @enum {string}
          */
         Polarity: "positive" | "negative" | "mixed" | "not_applicable";
+        /**
+         * PriceAdjustment
+         * @description Whether open/high/low/close are as traded (``unadjusted``) or adjusted for
+         *     corporate actions by the source (``adjusted``). RUMIN never adjusts prices itself.
+         * @enum {string}
+         */
+        PriceAdjustment: "unadjusted" | "adjusted";
+        /** PriceBarPage */
+        PriceBarPage: {
+            /** Items */
+            items: components["schemas"]["PriceBarRead"][];
+            /**
+             * Total
+             * @description Total number of items matching the query.
+             */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+            instrument: components["schemas"]["InstrumentRef"];
+            dataset: components["schemas"]["DatasetRef"];
+        };
+        /** PriceBarRead */
+        PriceBarRead: {
+            /** Id */
+            id: number;
+            /** Dataset Id */
+            dataset_id: string;
+            /**
+             * Trade Date
+             * Format: date
+             */
+            trade_date: string;
+            /**
+             * Open
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            open: string;
+            /**
+             * High
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            high: string;
+            /**
+             * Low
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            low: string;
+            /**
+             * Close
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            close: string;
+            /**
+             * Adjusted Close
+             * @description Only when the file supplied one. RUMIN never computes adjustments.
+             */
+            adjusted_close: string | null;
+            /** Volume */
+            volume: number | null;
+            /** Currency */
+            currency: string;
+            adjustment: components["schemas"]["PriceAdjustment"];
+            quality_status: components["schemas"]["QualityStatus"];
+            /** Revision */
+            revision: number;
+            /** Is Current */
+            is_current: boolean;
+            /** Superseded At */
+            superseded_at: string | null;
+            /**
+             * Retrieved At
+             * Format: date-time
+             * @description When the row was imported.
+             */
+            retrieved_at: string;
+            /**
+             * Last Confirmed At
+             * Format: date-time
+             */
+            last_confirmed_at: string;
+            /**
+             * Source Row
+             * @description Line in the imported file (1 = header).
+             */
+            source_row: number | null;
+            /** Capture Id */
+            capture_id: number | null;
+        };
+        /**
+         * PriceBasis
+         * @description Nominal (current prices) versus real (inflation-adjusted, constant prices).
+         * @enum {string}
+         */
+        PriceBasis: "nominal" | "real" | "not_applicable";
+        /**
+         * ProviderAuth
+         * @enum {string}
+         */
+        ProviderAuth: "none" | "api_key" | "not_applicable";
+        /**
+         * ProviderKind
+         * @enum {string}
+         */
+        ProviderKind: "api" | "file";
+        /**
+         * ProviderRead
+         * @description Who publishes the data, and on what terms (from the provider's own documentation).
+         */
+        ProviderRead: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            kind: components["schemas"]["ProviderKind"];
+            /** Description */
+            description: string;
+            /** Homepage Url */
+            homepage_url: string | null;
+            /** Documentation Url */
+            documentation_url: string | null;
+            /** Terms Url */
+            terms_url: string | null;
+            authentication: components["schemas"]["ProviderAuth"];
+            /** Data Categories */
+            data_categories: string;
+            /** Coverage */
+            coverage: string;
+            /** Update Frequency */
+            update_frequency: string;
+            /** Rate Limit Policy */
+            rate_limit_policy: string;
+            /** Licensing */
+            licensing: string;
+            /**
+             * Commercial Use
+             * @description What the licence allows commercially, as understood from the provider's terms. Not legal advice: re-read the terms before commercial use.
+             */
+            commercial_use: string;
+            /** Reliability */
+            reliability: string;
+            /** Known Limitations */
+            known_limitations: string;
+            /** Dataset Count */
+            dataset_count: number;
+        };
+        /**
+         * QualityStatus
+         * @description Quality of a *stored* record. Rejected records are never stored as data; they are
+         *     kept as data-quality issues with the raw record and the reason.
+         * @enum {string}
+         */
+        QualityStatus: "validated" | "warning";
         /** ReadinessChecks */
         ReadinessChecks: {
             /**
@@ -809,6 +1977,27 @@ export interface components {
             allowed_pairs: components["schemas"]["EntityKindPair"][];
         };
         /**
+         * ReviewStatus
+         * @description Human review state of an issue. There is no review workflow yet, so every issue
+         *     stays ``unreviewed``; the column exists so one can be added without a migration.
+         * @enum {string}
+         */
+        ReviewStatus: "unreviewed";
+        /** RuleRead */
+        RuleRead: {
+            /** Code */
+            code: string;
+            /**
+             * Applies To
+             * @enum {string}
+             */
+            applies_to: "economic" | "price" | "both";
+            severity: components["schemas"]["IssueSeverity"];
+            outcome: components["schemas"]["IssueOutcome"];
+            /** Description */
+            description: string;
+        };
+        /**
          * ScenarioInput
          * @description Body for creating a scenario, or replacing one with PUT.
          */
@@ -880,6 +2069,221 @@ export interface components {
          * @enum {string}
          */
         ScenarioStatus: "draft";
+        /**
+         * SeasonalAdjustment
+         * @enum {string}
+         */
+        SeasonalAdjustment: "seasonally_adjusted" | "not_seasonally_adjusted" | "not_applicable";
+        /** SeriesDetail */
+        SeriesDetail: {
+            /** Id */
+            id: string;
+            /** Dataset Id */
+            dataset_id: string;
+            /** Provider Code */
+            provider_code: string;
+            /** Provider Series Key */
+            provider_series_key: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /**
+             * Source Organization
+             * @description Who originally produced the statistic, as the provider reports it.
+             */
+            source_organization: string | null;
+            measure_type: components["schemas"]["MeasureType"];
+            /** Unit */
+            unit: string;
+            /** Currency */
+            currency: string | null;
+            frequency: components["schemas"]["Frequency"];
+            /** Aggregation */
+            aggregation: string;
+            price_basis: components["schemas"]["PriceBasis"];
+            seasonal_adjustment: components["schemas"]["SeasonalAdjustment"];
+            /** Country Iso3 */
+            country_iso3: string | null;
+            /** Country Id */
+            country_id: string | null;
+            /** Variable Id */
+            variable_id: string | null;
+            /**
+             * Variable Relation
+             * @description How the series differs from the linked Phase 1 variable.
+             */
+            variable_relation: string | null;
+            /**
+             * Plausible Min
+             * @description RUMIN's review threshold (an assumption, not a fact): values outside [plausible_min, plausible_max] are stored as reported and flagged for review.
+             */
+            plausible_min: string | null;
+            /** Plausible Max */
+            plausible_max: string | null;
+            /**
+             * First Period
+             * @description First period with a reported value.
+             */
+            first_period: string | null;
+            /**
+             * Last Period
+             * @description Latest period with a reported value.
+             */
+            last_period: string | null;
+            /**
+             * Observation Count
+             * @description Current periods with a reported value.
+             */
+            observation_count: number;
+            /**
+             * Missing Count
+             * @description Current periods the provider listed without a value.
+             */
+            missing_count: number;
+            last_ingestion_status: components["schemas"]["JobItemStatus"] | null;
+            /** Last Ingestion At */
+            last_ingestion_at: string | null;
+            /**
+             * Last Successful Ingestion At
+             * @description When RUMIN last retrieved the series successfully.
+             */
+            last_successful_ingestion_at: string | null;
+            latest: components["schemas"]["LatestObservation"] | null;
+            /**
+             * Epistemic Category
+             * @default observation
+             * @constant
+             */
+            epistemic_category: "observation";
+            dataset: components["schemas"]["DatasetRef"];
+            /** Provider Name */
+            provider_name: string | null;
+            /**
+             * Flagged Count
+             * @description Current values flagged for review.
+             */
+            flagged_count: number;
+            /**
+             * Revised Period Count
+             * @description Periods the provider has revised.
+             */
+            revised_period_count: number;
+            last_job: components["schemas"]["JobRef"] | null;
+        };
+        /**
+         * SeriesPage
+         * @description A page of economic series.
+         */
+        SeriesPage: {
+            /** Items */
+            items: components["schemas"]["SeriesRead"][];
+            /**
+             * Total
+             * @description Total number of items matching the query.
+             */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
+        /** SeriesRead */
+        SeriesRead: {
+            /** Id */
+            id: string;
+            /** Dataset Id */
+            dataset_id: string;
+            /** Provider Code */
+            provider_code: string;
+            /** Provider Series Key */
+            provider_series_key: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /**
+             * Source Organization
+             * @description Who originally produced the statistic, as the provider reports it.
+             */
+            source_organization: string | null;
+            measure_type: components["schemas"]["MeasureType"];
+            /** Unit */
+            unit: string;
+            /** Currency */
+            currency: string | null;
+            frequency: components["schemas"]["Frequency"];
+            /** Aggregation */
+            aggregation: string;
+            price_basis: components["schemas"]["PriceBasis"];
+            seasonal_adjustment: components["schemas"]["SeasonalAdjustment"];
+            /** Country Iso3 */
+            country_iso3: string | null;
+            /** Country Id */
+            country_id: string | null;
+            /** Variable Id */
+            variable_id: string | null;
+            /**
+             * Variable Relation
+             * @description How the series differs from the linked Phase 1 variable.
+             */
+            variable_relation: string | null;
+            /**
+             * Plausible Min
+             * @description RUMIN's review threshold (an assumption, not a fact): values outside [plausible_min, plausible_max] are stored as reported and flagged for review.
+             */
+            plausible_min: string | null;
+            /** Plausible Max */
+            plausible_max: string | null;
+            /**
+             * First Period
+             * @description First period with a reported value.
+             */
+            first_period: string | null;
+            /**
+             * Last Period
+             * @description Latest period with a reported value.
+             */
+            last_period: string | null;
+            /**
+             * Observation Count
+             * @description Current periods with a reported value.
+             */
+            observation_count: number;
+            /**
+             * Missing Count
+             * @description Current periods the provider listed without a value.
+             */
+            missing_count: number;
+            last_ingestion_status: components["schemas"]["JobItemStatus"] | null;
+            /** Last Ingestion At */
+            last_ingestion_at: string | null;
+            /**
+             * Last Successful Ingestion At
+             * @description When RUMIN last retrieved the series successfully.
+             */
+            last_successful_ingestion_at: string | null;
+            latest: components["schemas"]["LatestObservation"] | null;
+            /**
+             * Epistemic Category
+             * @default observation
+             * @constant
+             */
+            epistemic_category: "observation";
+        };
+        /** SeriesRef */
+        SeriesRef: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Unit */
+            unit: string;
+            /** Currency */
+            currency: string | null;
+            frequency: components["schemas"]["Frequency"];
+            measure_type: components["schemas"]["MeasureType"];
+        };
         /** ShockInput */
         ShockInput: {
             /**
@@ -975,6 +2379,7 @@ export interface components {
             server_time: string;
             database: components["schemas"]["DatabaseStatus"];
             dataset: components["schemas"]["DatasetStatus"];
+            data: components["schemas"]["DataStatus"];
             /** Capabilities */
             capabilities: components["schemas"]["Capability"][];
         };
@@ -1562,6 +2967,743 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_providers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderRead"][];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_provider: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_datasets: {
+        parameters: {
+            query?: {
+                /** @description Only this kind. */
+                kind?: components["schemas"]["DatasetKind"] | null;
+                /** @description Maximum number of items to return. */
+                limit?: number;
+                /** @description Items to skip. */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DatasetPage"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_dataset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DatasetRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_series: {
+        parameters: {
+            query?: {
+                /** @description Only items from this dataset. */
+                dataset_id?: string | null;
+                /** @description ISO 3166-1 alpha-3 code. */
+                country_iso3?: string | null;
+                measure_type?: components["schemas"]["MeasureType"] | null;
+                frequency?: components["schemas"]["Frequency"] | null;
+                /** @description Only series with (true) or without (false) values. */
+                has_data?: boolean | null;
+                /** @description Search names and provider codes. */
+                q?: string | null;
+                /** @description Order; '-' means descending. */
+                sort?: "name" | "-name" | "last_period" | "-last_period" | "provider_code";
+                /** @description Maximum number of items to return. */
+                limit?: number;
+                /** @description Items to skip. */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SeriesPage"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_series: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                series_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SeriesDetail"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_observations: {
+        parameters: {
+            query?: {
+                /** @description First date to include (YYYY-MM-DD). */
+                start?: string | null;
+                /** @description Last date to include (YYYY-MM-DD). */
+                end?: string | null;
+                /** @description Include periods without a value. */
+                include_missing?: boolean;
+                /** @description Also return superseded revisions (the full history of what was received). */
+                include_revisions?: boolean;
+                /** @description Maximum number of items to return. */
+                limit?: number;
+                /** @description Items to skip. */
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                series_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ObservationPage"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_instruments: {
+        parameters: {
+            query?: {
+                /** @description E.g. XNSE or XBOM. */
+                exchange_mic?: string | null;
+                instrument_type?: components["schemas"]["InstrumentType"] | null;
+                /** @description Only items from this dataset. */
+                dataset_id?: string | null;
+                /** @description Maximum number of items to return. */
+                limit?: number;
+                /** @description Items to skip. */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InstrumentPage"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_instrument: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                instrument_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InstrumentDetail"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_prices: {
+        parameters: {
+            query?: {
+                /** @description Only items from this dataset. */
+                dataset_id?: string | null;
+                /** @description First date to include (YYYY-MM-DD). */
+                start?: string | null;
+                /** @description Last date to include (YYYY-MM-DD). */
+                end?: string | null;
+                /** @description Also return superseded revisions (the full history of what was received). */
+                include_revisions?: boolean;
+                /** @description Maximum number of items to return. */
+                limit?: number;
+                /** @description Items to skip. */
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                instrument_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PriceBarPage"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_jobs: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["JobStatus"] | null;
+                dataset_id?: string | null;
+                provider_id?: string | null;
+                /** @description Maximum number of items to return. */
+                limit?: number;
+                /** @description Items to skip. */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobPage"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_job: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobDetail"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_capture: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                capture_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptureRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_issues: {
+        parameters: {
+            query?: {
+                job_id?: string | null;
+                series_id?: string | null;
+                instrument_id?: string | null;
+                rule?: string | null;
+                severity?: components["schemas"]["IssueSeverity"] | null;
+                outcome?: components["schemas"]["IssueOutcome"] | null;
+                /** @description Maximum number of items to return. */
+                limit?: number;
+                /** @description Items to skip. */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IssuePage"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_rules: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuleRead"][];
                 };
             };
             /** @description The request contains invalid values. */

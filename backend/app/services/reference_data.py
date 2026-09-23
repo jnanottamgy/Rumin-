@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
-from typing import Any, TypeVar
+from typing import Any
 
 from pydantic import TypeAdapter
-from sqlalchemy import Select, func, or_, select
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session, with_polymorphic
 
 from app.core.errors import NotFoundError
@@ -27,21 +26,12 @@ from app.schemas.relationship import (
     RelationshipRead,
     RelationshipTypeRead,
 )
+from app.services.common import paginate
 
 ENTITY_ADAPTER: TypeAdapter[EntityRead] = TypeAdapter(EntityRead)
 
 # Loads every subtype's columns in one query (LEFT OUTER JOINs), avoiding N+1 lazy loads.
 AnyEntity = with_polymorphic(Entity, [Company, Industry, Country, EconomicVariable])
-
-RowT = TypeVar("RowT")
-
-
-def _paginate(
-    session: Session, statement: Select[tuple[RowT]], limit: int, offset: int
-) -> tuple[Sequence[RowT], int]:
-    total = session.scalar(select(func.count()).select_from(statement.subquery())) or 0
-    rows = session.scalars(statement.limit(limit).offset(offset)).all()
-    return rows, total
 
 
 def to_entity_read(entity: Entity) -> EntityRead:
@@ -54,7 +44,7 @@ def list_entities(
     statement = select(AnyEntity).order_by(AnyEntity.name, AnyEntity.id)
     if kind is not None:
         statement = statement.where(AnyEntity.kind == kind)
-    rows, total = _paginate(session, statement, limit, offset)
+    rows, total = paginate(session, statement, limit, offset)
     return EntityPage(
         items=[to_entity_read(e) for e in rows], total=total, limit=limit, offset=offset
     )
@@ -69,14 +59,14 @@ def get_entity(session: Session, entity_id: str) -> EntityRead:
 
 def list_industries(session: Session, *, limit: int, offset: int) -> IndustryPage:
     statement = select(Industry).order_by(Industry.name, Industry.id)
-    rows, total = _paginate(session, statement, limit, offset)
+    rows, total = paginate(session, statement, limit, offset)
     items = [IndustryRead.model_validate(row) for row in rows]
     return IndustryPage(items=items, total=total, limit=limit, offset=offset)
 
 
 def list_variables(session: Session, *, limit: int, offset: int) -> EconomicVariablePage:
     statement = select(EconomicVariable).order_by(EconomicVariable.name, EconomicVariable.id)
-    rows, total = _paginate(session, statement, limit, offset)
+    rows, total = paginate(session, statement, limit, offset)
     items = [EconomicVariableRead.model_validate(row) for row in rows]
     return EconomicVariablePage(items=items, total=total, limit=limit, offset=offset)
 
@@ -96,7 +86,7 @@ def list_relationships(
         statement = statement.where(
             or_(Relationship.source_id == entity_id, Relationship.target_id == entity_id)
         )
-    rows, total = _paginate(session, statement, limit, offset)
+    rows, total = paginate(session, statement, limit, offset)
     items = [RelationshipRead.model_validate(row) for row in rows]
     return RelationshipPage(items=items, total=total, limit=limit, offset=offset)
 

@@ -8,18 +8,30 @@ from functools import lru_cache
 from alembic.config import Config as AlembicConfig
 from alembic.runtime.migration import MigrationContext
 from alembic.script import ScriptDirectory
-from sqlalchemy import func, select, text
+from sqlalchemy import Select, func, select, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app import API_VERSION, __version__
 from app.core.config import BACKEND_DIR, MIGRATIONS_DIR, Settings
-from app.models import Entity, Relationship
+from app.domain.enums import DatasetKind, ObservationStatus, QualityStatus
+from app.models import (
+    Dataset,
+    EconomicObservation,
+    EconomicSeries,
+    Entity,
+    IngestionJob,
+    Instrument,
+    PriceBar,
+    Relationship,
+)
+from app.schemas.data import JobRef
 from app.schemas.network import DatasetSummary
 from app.schemas.system import (
     Capability,
     DatabaseStatus,
     DatasetStatus,
+    DataStatus,
     ReadinessChecks,
     ReadinessResponse,
     SystemStatus,
@@ -56,9 +68,35 @@ CAPABILITIES: tuple[Capability, ...] = (
     Capability(
         id="historical_observations",
         label="Historical observations",
-        available=False,
+        available=True,
         planned_phase=2,
-        note="No time series are stored yet. Ingestion from cited sources is planned.",
+        note="Annual World Bank (WDI) series, retrieved with the ingestion command line "
+        "and stored exactly as published, with every revision kept. Historical only: nothing "
+        "is real-time.",
+    ),
+    Capability(
+        id="price_file_import",
+        label="Licensed price files",
+        available=True,
+        planned_phase=2,
+        note="Daily prices from CSV files you are licensed to use, imported from the command "
+        "line with a manifest stating the licence. RUMIN ships no price data.",
+    ),
+    Capability(
+        id="data_quality",
+        label="Data-quality checks",
+        available=True,
+        planned_phase=2,
+        note="Every record is validated: structural problems are rejected (and kept for "
+        "review), unusual values are stored as reported and flagged. Nothing is corrected.",
+    ),
+    Capability(
+        id="ingestion_from_web",
+        label="Ingestion from the web app",
+        available=False,
+        planned_phase=10,
+        note="Retrievals and imports run from the command line; the API is read-only until "
+        "authentication exists.",
     ),
     Capability(
         id="graph_analytics",
@@ -132,6 +170,64 @@ def _dataset_status(session: Session) -> DatasetStatus:
     )
 
 
+EMPTY_DATA = DataStatus(
+    provider_datasets=0,
+    series_total=0,
+    series_with_data=0,
+    observations=0,
+    instruments=0,
+    price_bars=0,
+    flagged_values=0,
+    last_job=None,
+)
+
+
+def _count(session: Session, statement: Select[tuple[int]]) -> int:
+    return session.scalar(statement) or 0
+
+
+def _data_status(session: Session) -> DataStatus:
+    current_obs = EconomicObservation.superseded_at.is_(None)
+    current_bars = PriceBar.superseded_at.is_(None)
+    last_job = session.scalars(
+        select(IngestionJob).order_by(IngestionJob.created_at.desc()).limit(1)
+    ).first()
+    return DataStatus(
+        provider_datasets=_count(
+            session,
+            select(func.count()).select_from(Dataset).where(Dataset.kind == DatasetKind.PROVIDER),
+        ),
+        series_total=_count(session, select(func.count()).select_from(EconomicSeries)),
+        series_with_data=_count(
+            session,
+            select(func.count())
+            .select_from(EconomicSeries)
+            .where(EconomicSeries.observation_count > 0),
+        ),
+        observations=_count(
+            session,
+            select(func.count()).where(
+                current_obs, EconomicObservation.status == ObservationStatus.REPORTED
+            ),
+        ),
+        instruments=_count(session, select(func.count()).select_from(Instrument)),
+        price_bars=_count(session, select(func.count()).where(current_bars)),
+        flagged_values=_count(
+            session,
+            select(func.count()).where(
+                current_obs, EconomicObservation.quality_status == QualityStatus.WARNING
+            ),
+        )
+        + _count(
+            session,
+            select(func.count()).where(
+                current_bars, PriceBar.quality_status == QualityStatus.WARNING
+            ),
+        ),
+        last_job=JobRef.model_validate(last_job) if last_job is not None else None,
+    )
+
+
 def check_readiness(session: Session) -> ReadinessResponse:
     reachable, revision = _database_revision(session)
     if not reachable:
@@ -176,5 +272,6 @@ def get_system_status(session: Session, settings: Settings) -> SystemStatus:
             schema_up_to_date=up_to_date,
         ),
         dataset=dataset,
+        data=_data_status(session) if up_to_date else EMPTY_DATA,
         capabilities=list(CAPABILITIES),
     )

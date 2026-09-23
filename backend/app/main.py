@@ -29,23 +29,28 @@ logger = logging.getLogger(__name__)
 
 API_DESCRIPTION = """
 RUMIN is an interactive financial intelligence and economic simulation platform.
-This is the **Phase 1 foundation** of its API.
+This API covers the **Phase 1 foundation** and the **Phase 2 financial data
+infrastructure**.
 
 ### Five kinds of knowledge
 RUMIN never blurs these categories; responses label them with `epistemic_category`.
 
 | Category | Meaning | In this build |
 |---|---|---|
-| `observation` | Historical data from a cited source | None stored yet (Phase 2) |
-| `assumption` | Rules, parameters and relationships defined by the model | Every relationship |
+| `observation` | Historical data from a cited source | World Bank series; licensed price files |
+| `assumption` | Rules, parameters and relationships defined by the model | Relationships, ranges |
 | `scenario_input` | Values changed by a user | Scenario shocks |
 | `simulated_output` | Results computed by a simulation engine | None: no engine yet (Phase 4) |
 | `uncertainty` | Limitations and ranges | Documented qualitatively |
 
-### Sample data
-The loaded dataset is **illustrative**. Companies are fictional; countries, ISIC Rev. 4
-industries and economic-variable definitions are real concepts with references. The
-dataset contains no prices, financial figures or time series.
+### Data
+* The curated **network** dataset is **illustrative**: companies are fictional; countries,
+  ISIC Rev. 4 industries and variable definitions are real concepts with references.
+* **Provider data** is historical, stored exactly as published and never live. Every value
+  carries its period, when RUMIN retrieved it, the stored response it came from and the
+  dataset's licence and attribution. Revisions are kept, not overwritten.
+* **Numbers are decimal strings** (`"5.649"`) so no digit is lost to floating point.
+* Ingestion is started from the command line only; these endpoints are read-only.
 
 ### Errors
 Every error response uses one envelope:
@@ -57,6 +62,14 @@ OPENAPI_TAGS = [
     {"name": "reference data", "description": "Entities, relationships and their types."},
     {"name": "network", "description": "Graph projection for visualisation."},
     {"name": "scenarios", "description": "Draft scenario inputs. Nothing is simulated."},
+    {
+        "name": "providers and datasets",
+        "description": "Who publishes the data, on what terms, and what is loaded.",
+    },
+    {"name": "economic series", "description": "Historical series and their observations."},
+    {"name": "market data", "description": "Instruments and prices from licensed files."},
+    {"name": "ingestion", "description": "What each retrieval or import did (read-only)."},
+    {"name": "data quality", "description": "Rules, rejected records and flagged values."},
     {"name": "system", "description": "Runtime status and capabilities."},
 ]
 

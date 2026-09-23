@@ -102,7 +102,9 @@ def print_job(session: Session, job: IngestionJob, *, issues: int = 0) -> None:
             )
         else:
             detail = ""
-        if item.error_code:
+        if item.status is JobItemStatus.SKIPPED:
+            detail = f"skipped ({item.error_code})"  # the reason is in the job summary
+        elif item.error_code:
             detail = f"{detail} · " if detail else ""
             detail += f"{item.error_code}: {item.error_message}"
         print(f"  {mark} {item.target_label}")

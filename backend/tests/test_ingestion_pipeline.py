@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import gzip
 import hashlib
+import itertools
 from collections.abc import Sequence
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
@@ -115,6 +116,7 @@ def synthetic_catalog(*series_ids: str) -> Catalog:
 
 
 SERIES = ("s-cpi", "s-gdp", "s-lend", "s-exp")
+_RUNS = itertools.count(1)  # each run starts a minute after the previous one
 
 
 def page(
@@ -139,7 +141,7 @@ def run(
     session.commit()
     transport = ScriptedTransport(steps)
     client, sleeps = make_client(transport, **policy)
-    clock = Clock()
+    clock = Clock(START + timedelta(minutes=next(_RUNS)))
     source = source or WorldBankProvider(client, clock=clock)
     series = [session.get_one(EconomicSeries, series_id) for series_id in series_ids]
     job = run_economic_ingestion(
@@ -413,6 +415,9 @@ def test_repeated_outages_stop_the_run_instead_of_hammering_the_provider(
     assert job.status is JobStatus.FAILED
     assert job.error_summary is not None
     assert job.error_summary.startswith("Stopped after 3 consecutive")
+    skipped = session.get_one(EconomicSeries, "s-exp")
+    assert skipped.last_ingestion_status is JobItemStatus.SKIPPED
+    assert skipped.last_successful_ingestion_at is None
 
 
 def test_a_rate_limited_request_is_retried_then_succeeds(ingestion_session: Session) -> None:

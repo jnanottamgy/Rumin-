@@ -3,9 +3,20 @@
 from __future__ import annotations
 
 import re
+from decimal import Decimal
 from typing import Annotated, Generic, Literal, TypeVar
 
-from pydantic import AfterValidator, BaseModel, ConfigDict, Field, StringConstraints
+from pydantic import (
+    AfterValidator,
+    BaseModel,
+    ConfigDict,
+    Field,
+    PlainSerializer,
+    StringConstraints,
+    WithJsonSchema,
+)
+
+from app.db.types import canonical_decimal
 
 # --- Reusable field types ------------------------------------------------------
 
@@ -27,6 +38,26 @@ def _reject_control_characters(value: str) -> str:
 
 
 SafeText = Annotated[str, AfterValidator(_reject_control_characters)]
+
+
+def _plain_decimal(value: Decimal) -> str:
+    # str(Decimal("0.000000000000000001")) is "1E-18"; clients get plain notation.
+    return format(canonical_decimal(value), "f")
+
+
+DecimalString = Annotated[
+    Decimal,
+    PlainSerializer(_plain_decimal, return_type=str, when_used="json"),
+    WithJsonSchema(
+        {
+            "type": "string",
+            "pattern": r"^-?\d+(\.\d+)?$",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": ["5.649"],
+        },
+        mode="serialization",
+    ),
+]
 
 
 class ApiModel(BaseModel):
