@@ -67,6 +67,7 @@ export function FreshnessFacts({
   retrievedLabel?: string;
 }) {
   return (
+    // biome-ignore lint/a11y/useSemanticElements: a labelled group of facts, not form controls (a fieldset is for inputs).
     <div role="group" aria-label="How current this data is">
       <dl className={styles.freshness}>
         <Fact label={latestLabel}>{latestPeriod}</Fact>

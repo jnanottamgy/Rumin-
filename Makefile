@@ -6,8 +6,8 @@ FRONTEND := frontend
 UV_RUN   := cd $(BACKEND) && uv run --frozen
 
 .DEFAULT_GOAL := help
-.PHONY: help install migrate seed backend frontend test test-backend test-frontend \
-        smoke lint typecheck check openapi api-types db-up db-down
+.PHONY: help install migrate seed catalog ingest ingest-jobs backend frontend test test-backend \
+        test-frontend smoke lint typecheck check openapi api-types db-up db-down
 
 help: ## List the available targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -21,6 +21,15 @@ migrate: ## Apply database migrations
 
 seed: ## Load the illustrative sample dataset (idempotent)
 	$(UV_RUN) python -m app.db.seed
+
+catalog: ## Load the series catalogue (definitions only; fetches nothing)
+	$(UV_RUN) python -m app.ingestion catalog
+
+ingest: ## Retrieve the World Bank series (needs internet access to api.worldbank.org)
+	$(UV_RUN) python -m app.ingestion run worldbank-wdi
+
+ingest-jobs: ## List recent ingestion runs
+	$(UV_RUN) python -m app.ingestion jobs
 
 backend: ## Run the API with auto-reload on http://127.0.0.1:8000
 	$(UV_RUN) uvicorn app.main:app --reload --host 127.0.0.1 --port 8000

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { Link } from "react-router";
 import { type MotionPreference, type ThemePreference, useTheme } from "@/app/theme";
 import { Badge } from "@/components/Badge";
 import { Button } from "@/components/Button";
@@ -167,7 +168,16 @@ export function SystemPage() {
           )}
         </Panel>
 
-        <Panel title="Loaded dataset" eyebrow="Provenance">
+        <Panel
+          title="Reference dataset"
+          eyebrow="Provenance"
+          description={
+            <>
+              The curated network. Provider data (series and prices) is in the{" "}
+              <Link to="/data">Data Explorer</Link>.
+            </>
+          }
+        >
           {system.status === "success" &&
             (system.data.dataset.summary ? (
               <div className={styles.dataset}>
