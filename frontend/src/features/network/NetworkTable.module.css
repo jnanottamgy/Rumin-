@@ -1,0 +1,85 @@
+.tables {
+  display: grid;
+  gap: var(--space-6);
+  padding: var(--space-4);
+  height: 100%;
+  overflow: auto;
+  background: var(--color-surface);
+}
+
+.block {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.caption {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.scope {
+  font-weight: 400;
+  color: var(--color-ink-muted);
+}
+
+.scroll {
+  overflow-x: auto;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+}
+
+.table {
+  width: 100%;
+  font-size: var(--text-sm);
+}
+
+.table th,
+.table td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-line);
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--color-surface-raised);
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+  font-weight: 500;
+}
+
+.table tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+.table tbody tr[aria-selected="true"] {
+  background: var(--color-accent-wash);
+}
+
+.table .numeric {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.rowButton {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-weight: 500;
+  text-align: left;
+  color: var(--color-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--color-line-strong);
+  text-underline-offset: 0.2em;
+}
+
+.kind {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-ink-secondary);
+}

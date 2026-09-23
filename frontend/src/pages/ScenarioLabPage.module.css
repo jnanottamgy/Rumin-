@@ -1,0 +1,199 @@
+.page {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 14.5rem minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.main {
+  min-width: 0;
+}
+
+/* ── Saved scenarios ───────────────────────────────────────────────── */
+.list {
+  position: sticky;
+  top: calc(var(--header-height) + var(--space-4));
+  display: grid;
+  gap: var(--space-2);
+}
+
+.listHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.listHeader h2 {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: 500;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+
+.newLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.list ul {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.listEmpty {
+  color: var(--color-ink-muted);
+  font-size: var(--text-sm);
+}
+
+.listItem {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-2) var(--space-3);
+  border-left: 2px solid transparent;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.listItem:hover {
+  background: var(--color-surface-raised);
+}
+
+.listItemActive {
+  border-left-color: var(--color-accent);
+  background: var(--color-surface);
+}
+
+.listName {
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.listMeta {
+  color: var(--color-ink-muted);
+  font-size: var(--text-2xs);
+}
+
+/* ── Workspace: editor + context ───────────────────────────────────── */
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.editorPanel {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.editorHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.editorTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 450;
+}
+
+.statusLine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.errorSummary {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid color-mix(in oklab, var(--color-critical) 45%, var(--color-line));
+  border-left: 3px solid var(--color-critical);
+  border-radius: var(--radius-sm);
+  background: color-mix(in oklab, var(--color-critical) 5%, var(--color-surface));
+  font-size: var(--text-sm);
+}
+
+.errorSummaryTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 600;
+  color: var(--color-critical-ink);
+}
+
+.errorSummary ul {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding-left: var(--space-6);
+}
+
+.errorSummary button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-critical-ink);
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-line);
+}
+
+.saveNote {
+  flex: 1 1 14rem;
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+}
+
+.context {
+  min-width: 0;
+}
+
+@media (max-width: 80rem) {
+  .workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 56rem) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .list {
+    position: static;
+  }
+}

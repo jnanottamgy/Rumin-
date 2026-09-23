@@ -1,0 +1,77 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.button:disabled {
+  opacity: 0.45;
+}
+
+.md {
+  min-height: 2.5rem;
+  padding: 0 var(--space-4);
+  font-size: var(--text-sm);
+}
+
+.sm {
+  min-height: 2rem;
+  padding: 0 var(--space-3);
+  font-size: var(--text-xs);
+}
+
+.primary {
+  background: var(--color-ink);
+  color: var(--color-ink-inverse);
+}
+
+.primary:hover:not(:disabled) {
+  background: color-mix(in oklab, var(--color-ink) 86%, var(--color-accent));
+}
+
+.secondary {
+  background: var(--color-surface);
+  border-color: var(--color-line-strong);
+  color: var(--color-ink);
+}
+
+.secondary:hover:not(:disabled) {
+  background: var(--color-surface-raised);
+  border-color: var(--color-ink-muted);
+}
+
+.ghost {
+  background: transparent;
+  color: var(--color-ink-secondary);
+}
+
+.ghost:hover:not(:disabled) {
+  background: var(--color-surface-raised);
+  color: var(--color-ink);
+}
+
+.danger {
+  background: transparent;
+  border-color: color-mix(in oklab, var(--color-critical) 55%, transparent);
+  color: var(--color-critical-ink);
+}
+
+.danger:hover:not(:disabled) {
+  background: color-mix(in oklab, var(--color-critical) 10%, transparent);
+}

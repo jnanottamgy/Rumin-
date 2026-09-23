@@ -1,0 +1,190 @@
+/*
+ * RUMIN design tokens — the single source of visual truth.
+ *
+ * Components reference SEMANTIC tokens only (--color-*, --viz-*), never primitives
+ * or raw hex values. Each theme re-maps the semantic layer; nothing else changes.
+ * Contrast of every text token was checked against bg/surface/raised (WCAG AA ≥ 4.5:1;
+ * marks and focus rings ≥ 3:1). See docs/design-system.md.
+ */
+
+:root {
+  /* ── Primitives: bone & charcoal neutrals ─────────────────────────── */
+  --bone-50: #fbfaf6;
+  --bone-100: #f4f1ea;
+  --bone-150: #eeeae1;
+  --bone-200: #e6e1d6;
+  --bone-300: #dad5c9;
+  --bone-400: #b9b3a5;
+  --stone-500: #8a867c;
+  --stone-600: #6b6962;
+  --stone-700: #4a4945;
+  --charcoal-600: #4a4e55;
+  --charcoal-700: #3c4046;
+  --charcoal-750: #2b2e33;
+  --charcoal-800: #202328;
+  --charcoal-850: #191b1f;
+  --charcoal-900: #121316;
+  --ink-900: #17181b;
+
+  /* ── Primitives: restrained sky blue (emphasis only) ─────────────────── */
+  --sky-300: #8ec1ee;
+  --sky-400: #72b0e6;
+  --sky-500: #3a87cc;
+  --sky-600: #1f63a3;
+
+  /* ── Typography ───────────────────────────────────────────────────── */
+  --font-display: "Newsreader Variable", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --font-sans: "Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --text-2xs: 0.6875rem; /* 11px — labels on the canvas, eyebrow caps */
+  --text-xs: 0.75rem; /* 12px */
+  --text-sm: 0.8125rem; /* 13px */
+  --text-base: 0.9375rem; /* 15px */
+  --text-md: 1.0625rem; /* 17px */
+  --text-lg: 1.25rem; /* 20px */
+  --text-xl: 1.625rem; /* 26px */
+  --text-2xl: clamp(1.75rem, 1.4rem + 1.2vw, 2.375rem);
+  --text-display: clamp(2.5rem, 1.6rem + 3vw, 4.25rem);
+
+  --leading-tight: 1.1;
+  --leading-snug: 1.3;
+  --leading-normal: 1.55;
+  --tracking-caps: 0.09em;
+  --tracking-wordmark: 0.24em;
+
+  /* ── Space (4px grid) ─────────────────────────────────────────────── */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-24: 6rem;
+
+  /* ── Shape: precise, mostly square ───────────────────────────────── */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-pill: 999px;
+
+  /* ── Motion: purposeful and short ─────────────────────────────────── */
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.6, 0, 0.2, 1);
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 480ms;
+
+  /* ── Layout ───────────────────────────────────────────────────────── */
+  --header-height: 3.5rem;
+  --content-max: 90rem;
+  --gutter: clamp(1rem, 0.55rem + 1.8vw, 2rem);
+
+  --z-header: 20;
+  --z-popover: 30;
+  --z-sheet: 40;
+}
+
+/* ── Semantic tokens: light theme ("Bone") ──────────────────────────── */
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --color-bg: var(--bone-100);
+  --color-surface: var(--bone-50);
+  --color-surface-raised: var(--bone-150);
+  --color-surface-sunken: #efebe2;
+  --color-ink: var(--ink-900);
+  --color-ink-secondary: var(--stone-700);
+  --color-ink-muted: var(--stone-600);
+  --color-ink-inverse: var(--bone-50);
+  --color-line: var(--bone-300);
+  --color-line-strong: var(--bone-400);
+
+  --color-accent: var(--sky-500);
+  --color-accent-ink: var(--sky-600);
+  --color-accent-wash: #e1edf8;
+  --color-focus: var(--sky-500);
+
+  --color-good: #0a8f0a;
+  --color-good-ink: #006300;
+  --color-warning: #fab219;
+  --color-warning-ink: #8a5a00;
+  --color-critical: #d03b3b;
+  --color-critical-ink: #b02a2a;
+
+  /* Network & chart roles */
+  --viz-node: #2a2b2e;
+  --viz-node-hollow: var(--bone-50);
+  --viz-edge-structural: #b3aea1;
+  --viz-edge-economic: #8a867c;
+  --viz-dimmed: #d3cec3;
+  --viz-label: var(--stone-700);
+  --viz-label-halo: var(--bone-100);
+  --viz-grid: #e6e1d6;
+
+  /* A subtle brushed-metal hairline, used only for key dividers. */
+  --metal-hairline: linear-gradient(
+    90deg,
+    transparent,
+    #c9c2b3 18%,
+    #faf8f2 50%,
+    #c9c2b3 82%,
+    transparent
+  );
+  --shadow-panel: 0 1px 0 rgb(23 24 27 / 4%), 0 10px 30px -18px rgb(23 24 27 / 30%);
+  --shadow-popover: 0 16px 40px -16px rgb(23 24 27 / 35%);
+}
+
+/* ── Semantic tokens: dark theme ("Charcoal") ───────────────────────── */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-bg: var(--charcoal-900);
+  --color-surface: var(--charcoal-850);
+  --color-surface-raised: var(--charcoal-800);
+  --color-surface-sunken: #0f1012;
+  --color-ink: #ece8df;
+  --color-ink-secondary: #b8b4aa;
+  --color-ink-muted: #8e8a81;
+  --color-ink-inverse: var(--charcoal-900);
+  --color-line: var(--charcoal-750);
+  --color-line-strong: var(--charcoal-700);
+
+  --color-accent: var(--sky-400);
+  --color-accent-ink: var(--sky-300);
+  --color-accent-wash: rgb(114 176 230 / 14%);
+  --color-focus: var(--sky-400);
+
+  --color-good: #0ca30c;
+  --color-good-ink: #3fc23f;
+  --color-warning: #fab219;
+  --color-warning-ink: #e3a73a;
+  --color-critical: #e0605f;
+  --color-critical-ink: #ec8584;
+
+  --viz-node: #d9d4c9;
+  --viz-node-hollow: var(--charcoal-850);
+  --viz-edge-structural: #4a4e55;
+  --viz-edge-economic: #7c7f86;
+  --viz-dimmed: #34373d;
+  --viz-label: #b8b4aa;
+  --viz-label-halo: var(--charcoal-900);
+  --viz-grid: #202328;
+
+  --metal-hairline: linear-gradient(
+    90deg,
+    transparent,
+    #2e3136 18%,
+    #5d6066 50%,
+    #2e3136 82%,
+    transparent
+  );
+  --shadow-panel: 0 1px 0 rgb(0 0 0 / 30%), 0 12px 32px -18px rgb(0 0 0 / 70%);
+  --shadow-popover: 0 18px 44px -16px rgb(0 0 0 / 75%);
+}

@@ -1,0 +1,121 @@
+.page {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(18rem, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.side {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.transcript {
+  display: grid;
+  gap: var(--space-3);
+  min-height: 12rem;
+  padding: var(--space-5);
+  border: 1px dashed var(--color-line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-sunken);
+}
+
+.placeholderLine,
+.placeholderLineShort {
+  height: 0.6rem;
+  border-radius: var(--radius-xs);
+  background: var(--color-surface-raised);
+}
+
+.placeholderLineShort {
+  width: 55%;
+}
+
+.composer {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.composer textarea {
+  width: 100%;
+  padding: var(--space-3);
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-sunken);
+  color: var(--color-ink-muted);
+  font-size: var(--text-sm);
+  resize: none;
+}
+
+.composerFooter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.send {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.25rem;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-raised);
+  color: var(--color-ink-muted);
+  font-size: var(--text-sm);
+}
+
+.principles {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-sm);
+}
+
+.principles li {
+  display: grid;
+  gap: 2px;
+  color: var(--color-ink-secondary);
+}
+
+.principles strong {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.examples {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  color: var(--color-ink-secondary);
+}
+
+.dependency {
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-line);
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+  line-height: 1.8;
+}
+
+@media (max-width: 64rem) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

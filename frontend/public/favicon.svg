@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <title>RUMIN</title>
+  <style>
+    .ink { stroke: #17181b; fill: #17181b; }
+    .bg { fill: #f4f1ea; }
+    @media (prefers-color-scheme: dark) {
+      .ink { stroke: #ece8df; fill: #ece8df; }
+      .bg { fill: #121316; }
+    }
+  </style>
+  <rect class="bg" width="32" height="32" rx="7" />
+  <line class="ink" x1="9" y1="21" x2="21" y2="11" stroke-width="1.6" />
+  <circle class="ink" cx="9" cy="21" r="3.2" />
+  <circle cx="21" cy="11" r="4.6" fill="none" stroke="#3a87cc" stroke-width="2" />
+</svg>

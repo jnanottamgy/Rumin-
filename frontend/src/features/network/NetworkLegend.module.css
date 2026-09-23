@@ -1,0 +1,49 @@
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
+  padding: var(--space-2) var(--space-4);
+  border-top: 1px solid var(--color-line);
+  background: var(--color-surface);
+  color: var(--color-ink-secondary);
+  font-size: var(--text-xs);
+}
+
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.economic {
+  stroke: var(--viz-edge-economic);
+  stroke-width: 2;
+}
+
+.structural {
+  stroke: var(--viz-edge-structural);
+  stroke-width: 1;
+}
+
+.arrow {
+  fill: var(--viz-edge-economic);
+}
+
+.selected {
+  fill: var(--color-accent);
+}
+
+.selectedRing {
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-width: 1.3;
+}

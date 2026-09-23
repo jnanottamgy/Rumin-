@@ -1,0 +1,42 @@
+.constellation {
+  width: 100%;
+  height: 100%;
+}
+
+.edges path {
+  fill: none;
+  stroke: var(--viz-edge-economic);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.55;
+  animation: appear 900ms var(--ease-out) both;
+  animation-delay: var(--delay);
+}
+
+.edges path[data-category="structural"] {
+  stroke: var(--viz-edge-structural);
+  opacity: 0.7;
+}
+
+.nodes g {
+  animation: appear 700ms var(--ease-out) both;
+  animation-delay: var(--delay);
+}
+
+.nodes circle,
+.nodes path {
+  fill: var(--viz-node);
+  stroke: var(--viz-node);
+  stroke-width: 1.4;
+  vector-effect: non-scaling-stroke;
+}
+
+.nodes [data-hollow="true"] {
+  fill: var(--color-bg);
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+}

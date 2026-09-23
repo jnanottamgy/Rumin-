@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="RUMIN is an interactive financial intelligence and economic simulation platform."
+    />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>RUMIN — Financial intelligence &amp; simulation</title>
+    <script>
+      // Apply the saved theme before first paint to avoid a flash of the wrong theme.
+      (() => {
+        let pref = "system";
+        let motion = "system";
+        try {
+          pref = localStorage.getItem("rumin.theme") || "system";
+          motion = localStorage.getItem("rumin.motion") || "system";
+        } catch {
+          // Storage can be unavailable (private mode, blocked site data): use defaults.
+        }
+        const dark =
+          pref === "dark" ||
+          (pref === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        const reduce =
+          motion === "reduce" ||
+          (motion === "system" && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+        document.documentElement.dataset.theme = dark ? "dark" : "light";
+        document.documentElement.dataset.motion = reduce ? "reduce" : "full";
+      })();
+    </script>
+  </head>
+  <body>
+    <noscript>RUMIN needs JavaScript to run.</noscript>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

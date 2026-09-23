@@ -1,0 +1,52 @@
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  font-size: var(--text-sm);
+}
+
+.icon {
+  display: inline-grid;
+  place-items: center;
+  width: 1.125rem;
+  height: 1.125rem;
+  flex: none;
+  border-radius: var(--radius-pill);
+  color: var(--color-ink-muted);
+  border: 1px solid var(--color-line-strong);
+}
+
+.label {
+  color: var(--color-ink);
+  font-weight: 500;
+}
+
+.detail {
+  color: var(--color-ink-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status[data-tone="good"] .icon {
+  border-color: transparent;
+  background: color-mix(in oklab, var(--color-good) 14%, transparent);
+  color: var(--color-good-ink);
+}
+
+.status[data-tone="warning"] .icon {
+  border-color: transparent;
+  background: color-mix(in oklab, var(--color-warning) 22%, transparent);
+  color: var(--color-warning-ink);
+}
+
+.status[data-tone="critical"] .icon {
+  border-color: transparent;
+  background: color-mix(in oklab, var(--color-critical) 14%, transparent);
+  color: var(--color-critical-ink);
+}
+
+.status[data-tone="planned"] .icon {
+  border-style: dashed;
+}

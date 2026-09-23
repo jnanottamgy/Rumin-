@@ -1,0 +1,89 @@
+.loading {
+  padding: var(--space-4) 0;
+}
+
+.skeleton {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.skeleton span {
+  display: block;
+  height: 0.75rem;
+  border-radius: var(--radius-xs);
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in oklab, var(--color-surface) 70%, transparent),
+      transparent
+    )
+    0 0 / 40% 100% no-repeat,
+    var(--color-surface-raised);
+  animation: shimmer 1.4s var(--ease-in-out) infinite;
+}
+
+@keyframes shimmer {
+  from {
+    background-position:
+      -60% 0,
+      0 0;
+  }
+  to {
+    background-position:
+      160% 0,
+      0 0;
+  }
+}
+
+.message {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-line);
+  font-size: var(--text-sm);
+}
+
+.message > svg {
+  flex: none;
+  margin-top: 0.1rem;
+}
+
+.error {
+  border-color: color-mix(in oklab, var(--color-critical) 40%, var(--color-line));
+  background: color-mix(in oklab, var(--color-critical) 5%, var(--color-surface));
+}
+
+.error > svg {
+  color: var(--color-critical-ink);
+}
+
+.empty {
+  border-style: dashed;
+  color: var(--color-ink-secondary);
+}
+
+.empty > svg {
+  color: var(--color-ink-muted);
+}
+
+.text {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.title {
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.hint {
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+}
+
+.actions {
+  margin-top: var(--space-2);
+}
