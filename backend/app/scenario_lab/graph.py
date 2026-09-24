@@ -157,7 +157,7 @@ def profile_exposure(
 # --- Affected entities -------------------------------------------------------------------------
 
 
-def _covered_by(
+def covered_by(
     profiles: Mapping[str, ScenarioProfile],
     start: str,
     via: list[EdgeView],
@@ -250,7 +250,7 @@ def affected_entities(
                 if company not in found and len(found) >= limit:
                     truncated = True
                     continue
-                models = _covered_by(profiles, start, via, edge.edge_type, variable)
+                models = covered_by(profiles, start, via, edge.edge_type, variable)
                 found.setdefault(company, []).append(
                     {
                         "changed_variable": variable_id_of(start),
