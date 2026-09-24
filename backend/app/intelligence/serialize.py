@@ -218,6 +218,7 @@ def impact(found: DriverAnalysis) -> dict[str, Any] | None:
     if line is None:
         return None
     return {
+        "entity_key": found.entity_key,
         "execution": data(found.execution),
         "line": line.id,
         "label": line.label,

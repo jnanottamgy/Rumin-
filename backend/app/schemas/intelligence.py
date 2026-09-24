@@ -552,6 +552,7 @@ class NotInterpretedRead(ApiModel):
 
 
 class ImpactRead(ApiModel):
+    entity_key: str
     execution: ExecutionRefRead
     line: str
     label: str

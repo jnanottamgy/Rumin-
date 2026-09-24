@@ -16729,6 +16729,10 @@
       },
       "ImpactRead": {
         "properties": {
+          "entity_key": {
+            "type": "string",
+            "title": "Entity Key"
+          },
           "execution": {
             "$ref": "#/components/schemas/ExecutionRefRead"
           },
@@ -16788,6 +16792,7 @@
         },
         "type": "object",
         "required": [
+          "entity_key",
           "execution",
           "line",
           "label",

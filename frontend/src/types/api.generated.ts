@@ -4604,6 +4604,8 @@ export interface components {
         };
         /** ImpactRead */
         ImpactRead: {
+            /** Entity Key */
+            entity_key: string;
             execution: components["schemas"]["ExecutionRefRead"];
             /** Line */
             line: string;
