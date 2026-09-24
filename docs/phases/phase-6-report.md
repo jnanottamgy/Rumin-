@@ -264,7 +264,7 @@ See also the [roadmap](../roadmap.md#recommendations-for-phase-7-ai-analyst).
 | **Core workflow** | ✓ overview, dossier, brief, thresholds, filters, stored analyses, freshness |
 | **Integrity** | ✓ no fabricated data; SYNTHETIC values confined to tests and labelled; no generated text; every insight grounded |
 | **Tests** | ✓ `make check`, the smoke test and the PostgreSQL run pass locally |
-| **CI** | ✓ Runs **#15** (`58bf5ba`, the engine and API), **#16** (`80e3a2f`, the interface and fixtures), **#17** (`a00d619`, scale), **#18** (`1a30fa3`), **#19** (`f8b5b41`) and **#20** (`b159fbc`) passed all three jobs: backend on SQLite and PostgreSQL 16, frontend, and the smoke test |
+| **CI** | ✓ Runs **#15** (`58bf5ba`, the engine and API), **#16** (`80e3a2f`, the interface and fixtures), **#17** (`a00d619`, scale), **#18** (`1a30fa3`), **#19** (`f8b5b41`), **#20** (`b159fbc`) and **#21** (`2bfcb71`: the variable reach, the phone picker and this documentation) passed all three jobs: backend on SQLite and PostgreSQL 16, frontend, and the smoke test |
 | **Documentation** | ✓ [`docs/intelligence/`](../intelligence/README.md), decisions 54–64 and updates across the docs |
 
 What remains unverified is stated above. No real observation has been analysed. No exposure
