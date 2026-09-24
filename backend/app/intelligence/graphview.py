@@ -292,20 +292,26 @@ def load_entity(session: Session, entity_key: str, build_id: int | None) -> Grap
     return graph
 
 
-def load_workspace(session: Session, build_id: int | None, *, limit: int) -> GraphSlice:
-    """What the listed companies' exposures are computed from: the first ``limit`` companies
-    by name and every validated edge their paths use — their industries, the variables that
-    affect either, and up to two `influences` hops upstream. Bounded by the companies, never
-    by the edges, so a listed company is never shown without an exposure it has."""
-    graph = GraphSlice(build_id=build_id)
+def listed_companies(session: Session, *, limit: int) -> tuple[list[str], bool]:
+    """The companies a workspace lists: the first ``limit`` current companies by name, and
+    whether there are more."""
     companies = session.scalars(
         select(GraphNode.id)
         .where(GraphNode.retired_build_id.is_(None), GraphNode.node_type == GraphNodeType.COMPANY)
         .order_by(GraphNode.display_name, GraphNode.id)
         .limit(limit + 1)
     ).all()
-    graph.truncated = len(companies) > limit
-    listed = set(companies[:limit])
+    return list(companies[:limit]), len(companies) > limit
+
+
+def load_workspace(session: Session, build_id: int | None, *, limit: int) -> GraphSlice:
+    """What the listed companies' exposures are computed from: the first ``limit`` companies
+    by name and every validated edge their paths use — their industries, the variables that
+    affect either, and up to two `influences` hops upstream. Bounded by the companies, never
+    by the edges, so a listed company is never shown without an exposure it has."""
+    graph = GraphSlice(build_id=build_id)
+    companies, graph.truncated = listed_companies(session, limit=limit)
+    listed = set(companies)
     graph.add(query_edges(session, types=(GraphEdgeType.IN_INDUSTRY,), sources=listed))
     industries = {edge.target for edge in graph.of_type(GraphEdgeType.IN_INDUSTRY)}
     graph.add(query_edges(session, types=AFFECTS, targets=listed | industries))

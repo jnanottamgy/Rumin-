@@ -379,24 +379,45 @@ class WorkspaceAnalysis:
     next_steps: tuple[NextStep, ...]
 
 
-def latest_executions(session: Session, limit: int = 500) -> dict[str, ScenarioExecution]:
-    """The latest completed execution per company, from one query."""
-    rows = session.execute(
-        select(SimulationRun.entity_id, ScenarioExecution)
+def latest_executions(
+    session: Session, companies: Iterable[str] | None = None
+) -> dict[str, ScenarioExecution]:
+    """The latest completed execution of each company (of ``companies``, when given), from
+    one query. Exact: a company keeps its latest execution however many executions other
+    companies have had since."""
+    ranked = (
+        select(
+            SimulationRun.entity_id.label("entity_id"),
+            ScenarioExecution.id.label("execution_id"),
+            func.row_number()
+            .over(
+                partition_by=SimulationRun.entity_id,
+                order_by=(ScenarioExecution.finished_at.desc(), ScenarioExecution.id),
+            )
+            .label("position"),
+        )
         .join(ScenarioExecutionRun, ScenarioExecutionRun.simulation_run_id == SimulationRun.id)
         .join(ScenarioExecution, ScenarioExecution.id == ScenarioExecutionRun.execution_id)
         .where(
             ScenarioExecution.status == ScenarioExecutionStatus.COMPLETED,
             ScenarioExecution.results.is_not(None),
+            ScenarioExecution.finished_at.is_not(None),
             SimulationRun.entity_id.is_not(None),
         )
-        .order_by(ScenarioExecution.finished_at.desc(), ScenarioExecution.id)
-        .limit(limit)
+    )
+    if companies is not None:
+        keys = list(companies)
+        if not keys:
+            return {}
+        ranked = ranked.where(SimulationRun.entity_id.in_(keys))
+    latest = ranked.subquery()
+    rows = session.execute(
+        select(latest.c.entity_id, ScenarioExecution)
+        .join(ScenarioExecution, ScenarioExecution.id == latest.c.execution_id)
+        .where(latest.c.position == 1)
+        .order_by(latest.c.entity_id)
     ).all()
-    latest: dict[str, ScenarioExecution] = {}
-    for entity_id, execution in rows:
-        latest.setdefault(str(entity_id), execution)
-    return latest
+    return {str(entity_id): execution for entity_id, execution in rows}
 
 
 def _related_edges(session: Session, variable_keys: Iterable[str]) -> dict[str, EdgeInfo]:
@@ -438,12 +459,10 @@ def analyse_workspace(
     )
     series, instruments = analyse_data(session, thresholds)
     changes_in_graph = relationship_changes(session)
-    stored = latest_executions(session)
     companies = {company.key: company for company in exposure.companies}
     drivers = {
         key: analyse_drivers(session, execution, key)
-        for key, execution in stored.items()
-        if key in companies
+        for key, execution in latest_executions(session, companies).items()
     }
 
     variable_keys = {

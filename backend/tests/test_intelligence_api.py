@@ -18,6 +18,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.graph.store import GraphReader
+from app.intelligence.engine import latest_executions
 from app.intelligence.exposure import WORKSPACE_LIMIT, entity_exposure, paths_for
 from app.intelligence.graphview import AFFECTS, load_workspace, members
 from app.intelligence.model import GRADE_STRENGTH, Grade
@@ -472,6 +473,23 @@ def test_entities_are_listed_with_their_latest_impact(intel: TestClient) -> None
     assert aerisca["weakest_evidence"] == "model_assumption"
     assert {item["entity"]["node_type"] for item in industries["items"]} == {"industry"}
     assert listed["total"] == len(listed["items"]) > industries["total"]
+
+
+def test_each_company_keeps_its_own_latest_execution(
+    intel: TestClient, session_factory: sessionmaker[Session]
+) -> None:
+    execute(intel)
+    latest = execute(intel)
+
+    with session_factory() as session:
+        found = latest_executions(session, [AERISCA, "company:co_anvaya_bank"])
+        everyone = latest_executions(session)
+        assert {key: str(row.id) for key, row in found.items()} == {AERISCA: latest["id"]}
+        assert {key: str(row.id) for key, row in everyone.items()} == {AERISCA: latest["id"]}
+        assert latest_executions(session, ["company:co_anvaya_bank"]) == {}
+        assert latest_executions(session, []) == {}
+    impact = get(intel, "/intelligence/overview")["impacts"][0]
+    assert impact["execution"]["id"] == latest["id"]
 
 
 def test_the_brief_carries_evidence_and_rules_not_prose(intel: TestClient) -> None:

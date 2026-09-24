@@ -36,6 +36,7 @@ from app.intelligence.drivers import (
 )
 from app.intelligence.engine import BuildInfo, EntityNotFound, NotAnEntity
 from app.intelligence.exposure import (
+    WORKSPACE_LIMIT,
     ExposurePath,
     entity_exposure,
     industry_exposure,
@@ -44,7 +45,7 @@ from app.intelligence.exposure import (
     workspace_exposure,
 )
 from app.intelligence.graphchanges import relationship_changes
-from app.intelligence.graphview import NodeInfo, query_edges, query_nodes
+from app.intelligence.graphview import NodeInfo, listed_companies, query_edges, query_nodes
 from app.intelligence.model import EDGE_GRADE, GRADE_STATEMENT, GRADE_STRENGTH, Grade
 from app.intelligence.series import load_instrument, load_series
 from app.intelligence.thresholds import ThresholdError, Thresholds
@@ -235,7 +236,8 @@ def changes(session: Session, used: Thresholds) -> ChangesRead:
     observed.sort(key=lambda item: (item["change"]["later"]["start"], item["subject"]["id"]))
     observed.reverse()
     executions: list[dict[str, Any]] = []
-    latest_rows = intelligence.latest_executions(session)
+    listed, truncated = listed_companies(session, limit=WORKSPACE_LIMIT)
+    latest_rows = intelligence.latest_executions(session, listed)
     companies = query_nodes(session, latest_rows)
     for key, latest_row in sorted(latest_rows.items()):
         if key not in companies:
@@ -274,6 +276,14 @@ def changes(session: Session, used: Thresholds) -> ChangesRead:
                 "Observed changes are between consecutive stored values of the latest window, "
                 "tested against the thresholds shown; nothing is fetched or filled in.",
                 "Execution changes are simulated results, not observations. " + NOT_A_FORECAST,
+                *(
+                    [
+                        f"Execution changes are listed for the first {WORKSPACE_LIMIT} companies "
+                        "by name, as in the workspace."
+                    ]
+                    if truncated
+                    else []
+                ),
             ],
         }
     )
@@ -302,7 +312,7 @@ def entity_list(session: Session, kind: str | None) -> EntityListRead:
     items: list[dict[str, Any]] = []
     if kind in (None, "company"):
         workspace = workspace_exposure(session, build.id)
-        latest = intelligence.latest_executions(session)
+        latest = intelligence.latest_executions(session, [c.key for c in workspace.companies])
         for company in workspace.companies:
             item = _summary(company, workspace.paths.get(company.key, ()))
             execution = latest.get(company.key)
@@ -595,9 +605,11 @@ def inputs_for(session: Session, scope: str, entity_key: str | None) -> dict[str
                 ]
             ),
         }
+        listed, _ = listed_companies(session, limit=WORKSPACE_LIMIT)
         executions = {
             "latest": {
-                key: str(row.id) for key, row in intelligence.latest_executions(session).items()
+                key: str(row.id)
+                for key, row in intelligence.latest_executions(session, listed).items()
             },
             "completed": int(
                 session.scalar(
