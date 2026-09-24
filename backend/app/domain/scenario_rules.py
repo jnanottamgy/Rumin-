@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from decimal import Decimal
 from typing import Literal
 
 from app.domain.enums import ChangeType, ValueKind
@@ -70,8 +71,24 @@ def change_rules_for(value_kind: ValueKind, unit: str) -> list[ChangeRule]:
     ]
 
 
-def has_at_most_decimal_places(value: float, places: int = MAX_DECIMAL_PLACES) -> bool:
-    return math.isclose(round(value, places), value, rel_tol=0.0, abs_tol=1e-12)
+def _exact(value: float | Decimal) -> Decimal | None:
+    """The exact decimal a value stands for (a float through its shortest form, so 0.1 is
+    0.1), or None if it is not finite."""
+    if isinstance(value, Decimal):
+        return value if value.is_finite() else None
+    if not math.isfinite(value):
+        return None
+    return Decimal(repr(value))
+
+
+def _places(value: Decimal) -> int:
+    exponent = value.normalize().as_tuple().exponent
+    return max(0, -exponent) if isinstance(exponent, int) else 0
+
+
+def has_at_most_decimal_places(value: float | Decimal, places: int = MAX_DECIMAL_PLACES) -> bool:
+    exact = _exact(value)
+    return exact is not None and _places(exact) <= places
 
 
 @dataclass(frozen=True)
@@ -81,9 +98,11 @@ class ChangeViolation:
 
 
 def validate_change(
-    value_kind: ValueKind, unit: str, change_type: ChangeType, value: float
+    value_kind: ValueKind, unit: str, change_type: ChangeType, value: float | Decimal
 ) -> ChangeViolation | None:
-    """Check one scenario change against the variable's rules (``None`` means valid)."""
+    """Check one scenario change against the variable's rules (``None`` means valid).
+
+    Exact: a decimal is compared as it is, a float as the decimal it prints as."""
     rules = {rule.change_type: rule for rule in change_rules_for(value_kind, unit)}
     rule = rules.get(change_type)
     if rule is None:
@@ -91,24 +110,26 @@ def validate_change(
         return ChangeViolation(
             "change_type", f"'{change_type}' is not allowed for this variable. Allowed: {allowed}."
         )
-    if not math.isfinite(value):
+    exact = _exact(value)
+    if exact is None:
         return ChangeViolation("value", "The change must be a finite number.")
-    if value == 0:
+    if exact == 0:
         return ChangeViolation(
             "value", "A change of zero has no effect; remove this input instead."
         )
-    if rule.minimum_exclusive and value <= rule.minimum:
+    minimum, maximum = Decimal(repr(rule.minimum)), Decimal(repr(rule.maximum))
+    if rule.minimum_exclusive and exact <= minimum:
         return ChangeViolation(
             "value", f"The change must be greater than {rule.minimum:g} {rule.unit_label}."
         )
-    if not rule.minimum_exclusive and value < rule.minimum:
+    if not rule.minimum_exclusive and exact < minimum:
         return ChangeViolation(
             "value", f"The change must be at least {rule.minimum:g} {rule.unit_label}."
         )
-    if value > rule.maximum:
+    if exact > maximum:
         return ChangeViolation(
             "value", f"The change must be at most {rule.maximum:g} {rule.unit_label}."
         )
-    if not has_at_most_decimal_places(value):
+    if _places(exact) > MAX_DECIMAL_PLACES:
         return ChangeViolation("value", f"Use at most {MAX_DECIMAL_PLACES} decimal places.")
     return None

@@ -189,10 +189,50 @@ export interface paths {
         get: operations["list_scenarios"];
         put?: never;
         /**
-         * Create a draft scenario
-         * @description Stores scenario *inputs*. Nothing is simulated: `latest_run` stays null until drafts are connected to the simulation engine (Phase 5 Scenario Lab).
+         * Create a scenario
+         * @description Stores version 1 of a scenario: its changes, company, figures, timing, models, assumptions, constraints and stress cases. Nothing is simulated: execute it with `POST /scenarios/{id}/executions`. A draft may be incomplete; it may not be malformed (every problem is reported with its field).
          */
         post: operations["create_scenario"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenarios/plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Plan a draft scenario
+         * @description Which models apply to the scenario and why, what each still needs, which changes no included model simulates, the constraints, the stress cases and the companies the knowledge graph ties to the changes. Stores nothing. Always 200: `executable` says whether it could run; `issues` say why not.
+         */
+        post: operations["plan_scenario"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenarios/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview a draft scenario
+         * @description The plan and, when the scenario can run, its results computed by the same engine — without storing anything (for live what-if values while editing). Execute the scenario to keep a reproducible record.
+         */
+        post: operations["preview_scenario"];
         delete?: never;
         options?: never;
         head?: never;
@@ -208,11 +248,350 @@ export interface paths {
         };
         /** Get a scenario */
         get: operations["get_scenario"];
-        /** Replace a scenario's configuration */
-        put: operations["replace_scenario"];
+        /**
+         * Save a new version of a scenario
+         * @description Saves the body as a new version; earlier versions are never changed. A body identical to the latest version adds no version. With `base_version`, a save based on an older version than the latest is refused (409) so no change is lost.
+         */
+        put: operations["save_scenario"];
         post?: never;
-        /** Delete a scenario */
+        /**
+         * Delete a scenario
+         * @description Only a scenario that has never been executed can be deleted (409 otherwise): executions stay reproducible.
+         */
         delete: operations["delete_scenario"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenarios/{scenario_id}/duplicate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Duplicate a scenario
+         * @description A new scenario whose version 1 is a copy of the chosen version, recording where it came from.
+         */
+        post: operations["duplicate_scenario"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenarios/{scenario_id}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List a scenario's versions */
+        get: operations["list_versions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenarios/{scenario_id}/versions/{version}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get one version of a scenario */
+        get: operations["get_version"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenarios/{scenario_id}/versions/{version}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Restore an earlier version
+         * @description Saves the chosen version's content as the newest version. Nothing is deleted or rewritten.
+         */
+        post: operations["restore_version"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenarios/{scenario_id}/plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Plan a saved version */
+        get: operations["plan_version"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenarios/{scenario_id}/executions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List a scenario's executions
+         * @description Newest first, every version, with their status and headline results.
+         */
+        get: operations["list_executions"];
+        put?: never;
+        /**
+         * Execute a scenario version
+         * @description Checks the plan (a scenario that cannot run is refused with every reason, 422, and nothing is stored), then queues the execution on a bounded worker pool (429 when it is full). Follow it at `Location`: its status moves through validating, simulating, propagating and aggregating to completed, failed or cancelled.
+         */
+        post: operations["create_execution"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenario-executions/{execution_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a scenario execution
+         * @description Its status and every stage it has been through, with times; the plan it ran (models, reasons, inputs, graph relationships); the Phase 4 runs it stored; the error if it failed. While not final, `poll_after_ms` says when to ask again.
+         */
+        get: operations["get_execution"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenario-executions/{execution_id}/results": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get an execution's results
+         * @description Baseline against scenario for every modelled line (absolute and percentage change, direction, currency, horizon), margins and coverage, each model's key outputs, the months and their events, the stress cases and the Lab's calculation steps. Every value is simulated from stated inputs; none is a forecast.
+         */
+        get: operations["get_results"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenario-executions/{execution_id}/pathways": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get an execution's impact pathway
+         * @description How each change travelled to each line: typed links (applied, propagated along a graph relationship with its coefficient and lag, computed by an equation, aggregated, or cited as context only) and the graph's relationships no included model simulates.
+         */
+        get: operations["get_pathways"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenario-executions/{execution_id}/explanation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Explain a line or metric
+         * @description What caused it: the Lab's equation and terms, each change's contribution, and for each model its inputs, equations, intermediate steps, graph relationships, transmission paths, assumptions, data snapshot and limitations — from stored runs.
+         */
+        get: operations["get_explanation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenario-executions/{execution_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel a scenario execution
+         * @description Asks a queued or running execution to stop at its next checkpoint; it then ends as cancelled and stores nothing. 409 if it is already final.
+         */
+        post: operations["cancel_execution"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenario-executions/{execution_id}/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Re-execute and compare
+         * @description Re-executes every model from its stored run (never from current data), recombines them and compares the hashes. Stores nothing.
+         */
+        post: operations["verify_execution"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenario-executions/{execution_id}/sensitivity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List an execution's sensitivity analyses */
+        get: operations["list_sensitivity"];
+        put?: never;
+        /**
+         * Run a sensitivity analysis across the scenario
+         * @description Moves one quantity at a time — a change, a shared figure or a model's input or assumption — re-evaluates every model that uses it and recombines the chosen line or metric. Points outside a range are skipped and reported, never clipped. Bounded: 8 quantities, 7 points each, 60 evaluations. Not a stochastic simulation.
+         */
+        post: operations["create_sensitivity"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenario-executions/{execution_id}/sensitivity/{analysis_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a sensitivity analysis */
+        get: operations["get_sensitivity"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenario-comparisons": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Compare executions
+         * @description 2–6 completed executions side by side: lines, metrics, differences against the reference (only when currency and horizon match), the inputs and assumptions that differ, pathway differences and sensitivity rankings. Nothing is ranked or recommended.
+         */
+        get: operations["compare_executions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenario-templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List scenario templates
+         * @description Starting points built on implemented models, and the ones that are not offered, with the reason.
+         */
+        get: operations["list_templates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenario-templates/{template_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a scenario template
+         * @description Its changes and models; the required and optional inputs, validation rules and expected outputs derived from the models' definitions; and the scenario body to start from (it holds no company figures: RUMIN never fills those in).
+         */
+        get: operations["get_template"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -972,6 +1351,57 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AffectedEntitiesRead */
+        AffectedEntitiesRead: {
+            /** Entities */
+            entities: components["schemas"]["AffectedEntityRead"][];
+            /** Variables */
+            variables: {
+                [key: string]: string;
+            };
+            /** Truncated */
+            truncated: boolean;
+            /** Limit */
+            limit: number;
+            /** Note */
+            note: string;
+        };
+        /** AffectedEntityRead */
+        AffectedEntityRead: {
+            entity: components["schemas"]["AffectedNodeRead"];
+            /** Exposures */
+            exposures: components["schemas"]["AffectedExposureRead"][];
+        };
+        /** AffectedExposureRead */
+        AffectedExposureRead: {
+            /** Changed Variable */
+            changed_variable: string;
+            /** Via */
+            via: string[];
+            /** Relationship */
+            relationship: string;
+            /** Exposed Variable */
+            exposed_variable: string;
+            industry: components["schemas"]["AffectedNodeRead"] | null;
+            /** Edges */
+            edges: components["schemas"]["EdgeRead"][];
+            /**
+             * Models
+             * @description Models that simulate this tie; empty: none does.
+             */
+            models: string[];
+        };
+        /** AffectedNodeRead */
+        AffectedNodeRead: {
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /** Type */
+            type: string;
+            /** Nature */
+            nature: string;
+        };
         /** BridgeItemRead */
         BridgeItemRead: {
             /** Output */
@@ -1098,6 +1528,47 @@ export interface components {
             /** Provider Last Updated */
             provider_last_updated: string | null;
         };
+        /** ChangeCreditRead */
+        ChangeCreditRead: {
+            /** Variable Id */
+            variable_id: string;
+            /** Name */
+            name: string;
+            /** Change */
+            change: string | null;
+            /** Unit */
+            unit: string | null;
+            /**
+             * Value
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            value: string;
+        };
+        /** ChangePlanRead */
+        ChangePlanRead: {
+            /** Index */
+            index: number;
+            /** Variable Id */
+            variable_id: string;
+            /** Name */
+            name: string;
+            change_type: components["schemas"]["ChangeType"];
+            /**
+             * Value
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            value: string;
+            /** Unit */
+            unit: string;
+            /** Modelled */
+            modelled: boolean;
+            /** Models */
+            models: string[];
+            /** Reason */
+            reason: string | null;
+        };
         /**
          * ChangeRuleRead
          * @description A kind of scenario change a variable accepts, with its input limits.
@@ -1123,6 +1594,27 @@ export interface components {
          * @enum {string}
          */
         ChangeType: "percent_change" | "absolute_change";
+        /** CompanyInput */
+        CompanyInput: {
+            /**
+             * Reporting Currency
+             * @description ISO 4217 code.
+             * @example INR
+             */
+            reporting_currency?: string | null;
+            /**
+             * Annual Revenue
+             * @description Per year, in the reporting currency.
+             * @example 300000000
+             */
+            annual_revenue?: string | number | null;
+            /**
+             * Annual Operating Costs
+             * @description Per year, in the reporting currency.
+             * @example 250000000
+             */
+            annual_operating_costs?: string | number | null;
+        };
         /** CompanyRead */
         CompanyRead: {
             /** Id */
@@ -1162,6 +1654,144 @@ export interface components {
             /** Country Id */
             country_id: string;
         };
+        /** ComparedCellRead */
+        ComparedCellRead: {
+            /**
+             * Execution Id
+             * Format: uuid
+             */
+            execution_id: string;
+            /** Baseline */
+            baseline: string | null;
+            /** Change */
+            change: string | null;
+            /** Scenario */
+            scenario: string | null;
+            /** Percent Change */
+            percent_change: string | null;
+            /** Modelled */
+            modelled: boolean;
+            difference: components["schemas"]["DifferenceRead"] | null;
+        };
+        /** ComparedExecutionRead */
+        ComparedExecutionRead: {
+            /**
+             * Execution Id
+             * Format: uuid
+             */
+            execution_id: string;
+            /**
+             * Scenario Id
+             * Format: uuid
+             */
+            scenario_id: string;
+            /** Scenario Name */
+            scenario_name: string;
+            /** Version */
+            version: number;
+            /**
+             * Requested At
+             * Format: date-time
+             */
+            requested_at: string;
+            /** Currency */
+            currency: string | null;
+            /** Horizon Months */
+            horizon_months: number | null;
+            timing: components["schemas"]["TimingResultRead"] | null;
+            entity: components["schemas"]["EntityInfoRead"] | null;
+            /** Changes */
+            changes: components["schemas"]["ChangePlanRead"][];
+            /** Models */
+            models: components["schemas"]["ComparedModelRead"][];
+            /** Result Hash */
+            result_hash: string | null;
+        };
+        /** ComparedInputRead */
+        ComparedInputRead: {
+            /** Model Id */
+            model_id: string;
+            /** Input */
+            input: string;
+            /** Label */
+            label: string;
+            /** Category */
+            category: string;
+            /** Values */
+            values: (components["schemas"]["ComparedValueRead"] | null)[];
+        };
+        /** ComparedLinkRead */
+        ComparedLinkRead: {
+            /** Link */
+            link: string;
+            /** Present */
+            present: boolean[];
+        };
+        /** ComparedModelRead */
+        ComparedModelRead: {
+            /** Model Id */
+            model_id: string;
+            /** Version */
+            version: string;
+            /** Title */
+            title: string;
+        };
+        /** ComparedRowRead */
+        ComparedRowRead: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Values */
+            values: components["schemas"]["ComparedCellRead"][];
+        };
+        /** ComparedSensitivityRead */
+        ComparedSensitivityRead: {
+            /**
+             * Execution Id
+             * Format: uuid
+             */
+            execution_id: string;
+            /** Metric */
+            metric: string | null;
+            /** Ranking */
+            ranking: components["schemas"]["LabSensitivityRankRead"][];
+        };
+        /** ComparedValueRead */
+        ComparedValueRead: {
+            /** Value */
+            value: string | null;
+            /** Unit */
+            unit: string;
+            /** Source */
+            source: string;
+        };
+        /** ComparisonRead */
+        ComparisonRead: {
+            /**
+             * Reference
+             * Format: uuid
+             */
+            reference: string;
+            /** Executions */
+            executions: components["schemas"]["ComparedExecutionRead"][];
+            /** Comparable */
+            comparable: {
+                [key: string]: boolean;
+            };
+            /** Lines */
+            lines: components["schemas"]["ComparedRowRead"][];
+            /** Metrics */
+            metrics: components["schemas"]["ComparedRowRead"][];
+            /** Inputs */
+            inputs: components["schemas"]["ComparedInputRead"][];
+            /** Pathways */
+            pathways: components["schemas"]["ComparedLinkRead"][];
+            /** Sensitivity */
+            sensitivity: components["schemas"]["ComparedSensitivityRead"][];
+            /** Note */
+            note: string;
+        };
         /** ComponentRead */
         ComponentRead: {
             /** Number */
@@ -1185,6 +1815,32 @@ export interface components {
             components: components["schemas"]["ComponentRead"][];
             /** Note */
             note: string;
+        };
+        /** ConstraintsInput */
+        ConstraintsInput: {
+            /**
+             * Evidence
+             * @description `evidence_backed`: rely only on knowledge-graph relationships backed by evidence (transmission and exposure).
+             * @default any
+             * @enum {string}
+             */
+            evidence: "any" | "evidence_backed";
+            /**
+             * Stored Market Data
+             * @description Market baselines must be stored observations, not typed.
+             * @default false
+             */
+            stored_market_data: boolean;
+        };
+        /** ConstraintsRead */
+        ConstraintsRead: {
+            /**
+             * Evidence
+             * @enum {string}
+             */
+            evidence: "any" | "evidence_backed";
+            /** Stored Market Data */
+            stored_market_data: boolean;
         };
         /** ConstructionRuleRead */
         ConstructionRuleRead: {
@@ -1473,6 +2129,32 @@ export interface components {
          * @enum {string}
          */
         Derivation: "direct" | "derived";
+        /** DerivedFromRead */
+        DerivedFromRead: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "duplicate" | "restore";
+            /**
+             * Scenario Id
+             * Format: uuid
+             */
+            scenario_id: string;
+            /** Version */
+            version: number;
+        };
+        /** DifferenceRead */
+        DifferenceRead: {
+            /**
+             * Absolute
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            absolute: string;
+            /** Percent */
+            percent: string | null;
+        };
         /**
          * Direction
          * @description Which way edges may be followed.
@@ -1578,6 +2260,21 @@ export interface components {
              */
             stated_difference?: string | null;
         };
+        /** EdgeRead */
+        EdgeRead: {
+            /** Edge Key */
+            edge_key: string;
+            /** Edge Type */
+            edge_type: string;
+            /** Source */
+            source: string;
+            /** Target */
+            target: string;
+            /** Evidence Status */
+            evidence_status: string;
+            /** Is Illustrative */
+            is_illustrative: boolean;
+        };
         /** EdgeTypeRead */
         EdgeTypeRead: {
             type: components["schemas"]["GraphEdgeType"];
@@ -1599,6 +2296,24 @@ export interface components {
         EndpointPair: {
             source: components["schemas"]["GraphNodeType"];
             target: components["schemas"]["GraphNodeType"];
+        };
+        /** EntityIndustryRead */
+        EntityIndustryRead: {
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+        };
+        /** EntityInfoRead */
+        EntityInfoRead: {
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /** Nature */
+            nature: string;
+            /** Industries */
+            industries: components["schemas"]["EntityIndustryRead"][];
         };
         /**
          * EntityKind
@@ -1658,6 +2373,15 @@ export interface components {
             assumptions: string[];
             /** Limitations */
             limitations: string[];
+        };
+        /** EquationRefRead */
+        EquationRefRead: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Formula */
+            formula: string;
         };
         /** EquationUseRead */
         EquationUseRead: {
@@ -1807,6 +2531,282 @@ export interface components {
             /** Definition */
             definition: string;
         };
+        /** ExecutionErrorRead */
+        ExecutionErrorRead: {
+            /** Code */
+            code: string;
+            /** Message */
+            message: string;
+            /** Details */
+            details?: {
+                [key: string]: unknown;
+            }[];
+        };
+        /**
+         * ExecutionPage
+         * @description A page of executions, newest first.
+         */
+        ExecutionPage: {
+            /** Items */
+            items: components["schemas"]["ExecutionSummaryRead"][];
+            /**
+             * Total
+             * @description Total number of items matching the query.
+             */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
+        /** ExecutionRead */
+        ExecutionRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Scenario Id
+             * Format: uuid
+             */
+            scenario_id: string;
+            /** Version */
+            version: number;
+            status: components["schemas"]["ScenarioExecutionStatus"];
+            /**
+             * Requested At
+             * Format: date-time
+             */
+            requested_at: string;
+            /** Started At */
+            started_at: string | null;
+            /** Finished At */
+            finished_at: string | null;
+            /** Duration Ms */
+            duration_ms: number | null;
+            /** Inputs Hash */
+            inputs_hash: string | null;
+            /** Result Hash */
+            result_hash: string | null;
+            /** Headline */
+            headline: components["schemas"]["HeadlineRead"][];
+            /** Models */
+            models: string[];
+            error: components["schemas"]["ExecutionErrorRead"] | null;
+            /** Scenario Name */
+            scenario_name: string;
+            /** Lab Version */
+            lab_version: string;
+            /** Cancel Requested */
+            cancel_requested: boolean;
+            /** Stages */
+            stages: components["schemas"]["StageRead"][];
+            plan: components["schemas"]["PlanRead"] | null;
+            /** Runs */
+            runs: components["schemas"]["ExecutionRunRead"][];
+            /** Results Available */
+            results_available: boolean;
+            /**
+             * Poll After Ms
+             * @description While the execution is not final: when to ask again (milliseconds).
+             */
+            poll_after_ms: number | null;
+        };
+        /** ExecutionRequest */
+        ExecutionRequest: {
+            /**
+             * Version
+             * @description Default: the latest.
+             */
+            version?: number | null;
+        };
+        /** ExecutionRunRead */
+        ExecutionRunRead: {
+            /** Position */
+            position: number;
+            /** Model Id */
+            model_id: string;
+            /** Model Version */
+            model_version: string;
+            /**
+             * Run Id
+             * Format: uuid
+             */
+            run_id: string;
+        };
+        /** ExecutionSummaryRead */
+        ExecutionSummaryRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Scenario Id
+             * Format: uuid
+             */
+            scenario_id: string;
+            /** Version */
+            version: number;
+            status: components["schemas"]["ScenarioExecutionStatus"];
+            /**
+             * Requested At
+             * Format: date-time
+             */
+            requested_at: string;
+            /** Started At */
+            started_at: string | null;
+            /** Finished At */
+            finished_at: string | null;
+            /** Duration Ms */
+            duration_ms: number | null;
+            /** Inputs Hash */
+            inputs_hash: string | null;
+            /** Result Hash */
+            result_hash: string | null;
+            /** Headline */
+            headline: components["schemas"]["HeadlineRead"][];
+            /** Models */
+            models: string[];
+            error: components["schemas"]["ExecutionErrorRead"] | null;
+        };
+        /** ExecutionVerificationRead */
+        ExecutionVerificationRead: {
+            /**
+             * Execution Id
+             * Format: uuid
+             */
+            execution_id: string;
+            /** Reproduced */
+            reproduced: boolean;
+            /** Inputs Hash Matches */
+            inputs_hash_matches: boolean;
+            /** Result Hash Matches */
+            result_hash_matches: boolean;
+            /** Stored Result Hash */
+            stored_result_hash: string | null;
+            /** Recomputed Result Hash */
+            recomputed_result_hash: string | null;
+            /** Runs */
+            runs: components["schemas"]["RunCheckRead"][];
+            /** Message */
+            message: string;
+        };
+        /** ExplainedEquationRead */
+        ExplainedEquationRead: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Formula */
+            formula: string;
+            /** Scope */
+            scope: string;
+            /** Explanation */
+            explanation: string;
+            /** Assumptions */
+            assumptions: components["schemas"]["StatementRead"][];
+            /** Limitations */
+            limitations: components["schemas"]["StatementRead"][];
+        };
+        /** ExplainedGraphRead */
+        ExplainedGraphRead: {
+            /** Build Id */
+            build_id: number | null;
+            /** Freshness */
+            freshness: string | null;
+            /** Transmission */
+            transmission: {
+                [key: string]: unknown;
+            };
+            /** Supporting */
+            supporting: {
+                [key: string]: unknown;
+            };
+            /** Entity */
+            entity: {
+                [key: string]: unknown;
+            } | null;
+            /** Names */
+            names: {
+                [key: string]: string;
+            };
+        };
+        /** ExplainedItemRead */
+        ExplainedItemRead: {
+            /** Item */
+            item: string;
+            /** Label */
+            label: string;
+            /** Output */
+            output: string;
+            /**
+             * Value
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            value: string;
+            /** By Change */
+            by_change: {
+                [key: string]: string;
+            };
+        };
+        /** ExplainedModelRead */
+        ExplainedModelRead: {
+            /** Model Id */
+            model_id: string;
+            /** Version */
+            version: string;
+            /**
+             * Run Id
+             * Format: uuid
+             */
+            run_id: string;
+            /** Inputs Hash */
+            inputs_hash: string;
+            /** Result Hash */
+            result_hash: string;
+            /** Engine Version */
+            engine_version: string;
+            /** Items */
+            items: components["schemas"]["ExplainedItemRead"][];
+            /** Changes */
+            changes: components["schemas"]["ResolvedInputRead"][];
+            /** Inputs */
+            inputs: components["schemas"]["ResolvedInputRead"][];
+            /** Equations */
+            equations: components["schemas"]["ExplainedEquationRead"][];
+            /** Worked Month */
+            worked_month: number | null;
+            /** Steps */
+            steps: components["schemas"]["ExplainedStepRead"][];
+            /** Transmission */
+            transmission: components["schemas"]["TransmissionPathRead"][];
+            graph: components["schemas"]["ExplainedGraphRead"];
+            /** Data */
+            data: components["schemas"]["SimulationObservationRead"][];
+            /** Assumptions */
+            assumptions: components["schemas"]["StatementRead"][];
+            /** Limitations */
+            limitations: components["schemas"]["StatementRead"][];
+            /** Warnings */
+            warnings: components["schemas"]["SimulationIssueRead"][];
+        };
+        /** ExplainedStepRead */
+        ExplainedStepRead: {
+            /** Sequence */
+            sequence: number;
+            /** Equation */
+            equation: string;
+            /** Label */
+            label: string;
+            /** Month */
+            month: number | null;
+            output: components["schemas"]["StepValueRead"];
+            /** Inputs */
+            inputs: components["schemas"]["StepValueRead"][];
+        };
         /** ExplanationRead */
         ExplanationRead: {
             /**
@@ -1834,6 +2834,19 @@ export interface components {
             method: {
                 [key: string]: string;
             };
+        };
+        /** ExplanationTermRead */
+        ExplanationTermRead: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /**
+             * Change
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            change: string;
         };
         /** ExposureRead */
         ExposureRead: {
@@ -2261,6 +3274,16 @@ export interface components {
                 [key: string]: string;
             };
         };
+        /** GraphStateRead */
+        GraphStateRead: {
+            /** Build Id */
+            build_id: number | null;
+            /**
+             * Freshness
+             * @enum {string}
+             */
+            freshness: "current" | "stale" | "not_built";
+        };
         /** GraphTypesResponse */
         GraphTypesResponse: {
             /** Node Types */
@@ -2275,6 +3298,23 @@ export interface components {
             construction_rules: components["schemas"]["ConstructionRuleRead"][];
             /** Validation Rules */
             validation_rules: components["schemas"]["ValidationRuleRead"][];
+        };
+        /** HeadlineRead */
+        HeadlineRead: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /**
+             * Change
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            change: string;
+            /** Percent Change */
+            percent_change: string | null;
+            /** Currency */
+            currency: string;
         };
         /** HealthResponse */
         HealthResponse: {
@@ -2841,6 +3881,329 @@ export interface components {
          * @enum {string}
          */
         JobTrigger: "cli";
+        /** KeyOutputRead */
+        KeyOutputRead: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /**
+             * Value
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            value: string;
+            /** Unit */
+            unit: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "derived" | "simulated";
+        };
+        /** LabEquationRead */
+        LabEquationRead: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Formula */
+            formula: string;
+            /** Explanation */
+            explanation: string;
+        };
+        /** LabExplanationRead */
+        LabExplanationRead: {
+            /**
+             * Execution Id
+             * Format: uuid
+             */
+            execution_id: string;
+            /** Target */
+            target: string;
+            /** Label */
+            label: string;
+            equation: components["schemas"]["LabEquationRead"];
+            /** Terms */
+            terms: components["schemas"]["ExplanationTermRead"][];
+            /** By Change */
+            by_change: components["schemas"]["ChangeCreditRead"][];
+            /** Lab Steps */
+            lab_steps: components["schemas"]["LabStepRead"][];
+            /** Models */
+            models: components["schemas"]["ExplainedModelRead"][];
+            /** Profiles */
+            profiles: {
+                [key: string]: components["schemas"]["ProfileNoteRead"];
+            };
+            /** Chain */
+            chain: string[];
+            /** Method */
+            method: {
+                [key: string]: string;
+            };
+        };
+        /** LabPathwayLinkRead */
+        LabPathwayLinkRead: {
+            /** Id */
+            id: string;
+            /** Source */
+            source: string;
+            /** Target */
+            target: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "applies" | "transmission" | "equation" | "aggregation" | "cited";
+            /**
+             * Simulation
+             * @enum {string}
+             */
+            simulation: "applied" | "propagated" | "computed" | "aggregated" | "context_only";
+            /** Label */
+            label: string;
+            /** Group */
+            group: string | null;
+            /** Equations */
+            equations: components["schemas"]["EquationRefRead"][];
+            /** Rule */
+            rule: string | null;
+            edge: components["schemas"]["PathwayEdgeInfoRead"] | null;
+            /** Coefficient */
+            coefficient: string | null;
+            /** Lag Months */
+            lag_months: number | null;
+            window: components["schemas"]["WindowRead"] | null;
+            /** Assumptions */
+            assumptions: components["schemas"]["LinkAssumptionRead"][];
+            /** Statements */
+            statements: components["schemas"]["StatementRead"][];
+            /** Sign */
+            sign: number | null;
+            /** Active */
+            active: boolean;
+        };
+        /** LabPathwayNodeRead */
+        LabPathwayNodeRead: {
+            /** Id */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "change" | "variable" | "driver" | "line" | "metric" | "context";
+            /** Label */
+            label: string;
+            /** Group */
+            group: string | null;
+            /** Knowledge */
+            knowledge: string;
+            /** Value */
+            value: string | null;
+            /** Unit */
+            unit: string | null;
+            /** First Month */
+            first_month: number | null;
+            /** Monthly */
+            monthly: string[] | null;
+            /** Detail */
+            detail: string | null;
+            /** Line */
+            line?: string | null;
+            /** Item */
+            item?: string | null;
+        };
+        /** LabPathwayRead */
+        LabPathwayRead: {
+            /** Nodes */
+            nodes: components["schemas"]["LabPathwayNodeRead"][];
+            /** Links */
+            links: components["schemas"]["LabPathwayLinkRead"][];
+            /** Groups */
+            groups: components["schemas"]["PathwayGroupRead"][];
+            /** Unmodelled */
+            unmodelled: components["schemas"]["UnmodelledEdgeRead"][];
+            /** Note */
+            note: string;
+        };
+        /** LabSensitivityItemInput */
+        LabSensitivityItemInput: {
+            /**
+             * Target
+             * @description `change:<variable>`, `shared:<input>` or `model:<model>:<input>`.
+             * @example change:var_brent_crude
+             */
+            target: string;
+            /**
+             * Mode
+             * @default default
+             * @enum {string}
+             */
+            mode: "default" | "absolute" | "relative" | "values";
+            /** Step */
+            step?: string | number | null;
+            /** Values */
+            values?: (string | number)[];
+        };
+        /** LabSensitivityItemRead */
+        LabSensitivityItemRead: {
+            /** Target */
+            target: string;
+            /** Label */
+            label: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "change" | "shared" | "company" | "market" | "assumption";
+            /** Models */
+            models: string[];
+            /** Unit */
+            unit: string | null;
+            /**
+             * Base Value
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            base_value: string;
+            /** Mode */
+            mode: string;
+            /** Step */
+            step: string | null;
+            /** Points */
+            points: components["schemas"]["LabSensitivityPointRead"][];
+            range: components["schemas"]["LabSensitivityRangeRead"] | null;
+        };
+        /** LabSensitivityList */
+        LabSensitivityList: {
+            /** Items */
+            items: components["schemas"]["LabSensitivityRead"][];
+        };
+        /** LabSensitivityPointRead */
+        LabSensitivityPointRead: {
+            /** Role */
+            role: string;
+            /**
+             * Value
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            value: string;
+            /** Metric */
+            metric: string | null;
+            /** Delta */
+            delta: string | null;
+            /** Skipped */
+            skipped: string | null;
+        };
+        /** LabSensitivityRangeRead */
+        LabSensitivityRangeRead: {
+            /**
+             * Low
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            low: string;
+            /**
+             * High
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            high: string;
+            /**
+             * Spread
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            spread: string;
+        };
+        /** LabSensitivityRankRead */
+        LabSensitivityRankRead: {
+            /** Target */
+            target: string;
+            /** Label */
+            label: string;
+            /**
+             * Spread
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            spread: string;
+        };
+        /** LabSensitivityRead */
+        LabSensitivityRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Execution Id
+             * Format: uuid
+             */
+            execution_id: string;
+            /** Metric */
+            metric: string;
+            /** Metric Label */
+            metric_label: string;
+            /**
+             * Metric Kind
+             * @enum {string}
+             */
+            metric_kind: "line_change" | "metric_value";
+            /**
+             * Base
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            base: string;
+            /** Items */
+            items: components["schemas"]["LabSensitivityItemRead"][];
+            /** Ranking */
+            ranking: components["schemas"]["LabSensitivityRankRead"][];
+            /** Evaluations */
+            evaluations: number;
+            /** Duration Ms */
+            duration_ms: number;
+            /** Result Hash */
+            result_hash: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Method
+             * @default one_at_a_time
+             * @constant
+             */
+            method: "one_at_a_time";
+            /** Note */
+            note: string;
+        };
+        /** LabSensitivityRequest */
+        LabSensitivityRequest: {
+            /**
+             * Metric
+             * @description A line (its change) or a metric (its scenario value). Default: profit before tax when interest is modelled, otherwise operating profit.
+             */
+            metric?: string | null;
+            /** Inputs */
+            inputs?: components["schemas"]["LabSensitivityItemInput"][];
+        };
+        /** LabStepRead */
+        LabStepRead: {
+            /** Sequence */
+            sequence: number;
+            /** Equation */
+            equation: string;
+            /** Label */
+            label: string;
+            output: components["schemas"]["StepValueRead"];
+            /** Inputs */
+            inputs: components["schemas"]["StepValueRead"][];
+        };
         /** LatestObservation */
         LatestObservation: {
             /** Period Label */
@@ -2857,6 +4220,107 @@ export interface components {
              */
             value: string;
             quality_status: components["schemas"]["QualityStatus"];
+        };
+        /** LineItemRead */
+        LineItemRead: {
+            /** Line */
+            line: string;
+            /** Item */
+            item: string;
+            /** Label */
+            label: string;
+            /** Output */
+            output: string;
+        };
+        /** LineRead */
+        LineRead: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Equation */
+            equation: string;
+            /** Unit */
+            unit: string;
+            /** Currency */
+            currency: string;
+            /**
+             * Baseline
+             * @description Your figures over the horizon, held constant.
+             * @example 5.649
+             */
+            baseline: string;
+            /**
+             * Change
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            change: string;
+            /**
+             * Scenario
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            scenario: string;
+            /** Percent Change */
+            percent_change: string | null;
+            /**
+             * Direction
+             * @enum {string}
+             */
+            direction: "up" | "down" | "none";
+            /**
+             * Effect
+             * @enum {string}
+             */
+            effect: "raises_profit" | "reduces_profit" | "none";
+            /** Items */
+            items: components["schemas"]["ResultItemRead"][];
+            /** By Change */
+            by_change: {
+                [key: string]: string;
+            };
+            /** Monthly */
+            monthly: string[];
+            /** Cumulative */
+            cumulative: string[];
+            /**
+             * Baseline Monthly
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            baseline_monthly: string;
+            /** Note */
+            note: string | null;
+            /**
+             * Knowledge
+             * @constant
+             */
+            knowledge: "simulated";
+        };
+        /** LinkAssumptionRead */
+        LinkAssumptionRead: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Value */
+            value: string | null;
+            /** Unit */
+            unit: string;
+            /** Source */
+            source: string;
+            /** Default */
+            default: string | null;
+        };
+        /** MarketsInput */
+        MarketsInput: {
+            /** @description The exchange rate (reporting currency per US dollar) every model that needs it uses: a typed value, or `source: stored_observation` for the latest stored World Bank annual average. */
+            fx_rate?: components["schemas"]["SimulationInputValue"] | null;
+        };
+        /** MarketsRead */
+        MarketsRead: {
+            fx_rate: components["schemas"]["ValueRead"] | null;
         };
         /**
          * MeasureType
@@ -2884,6 +4348,171 @@ export interface components {
             interpretation: string;
             /** Limitations */
             limitations: string;
+        };
+        /** MetricRead */
+        MetricRead: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Equation */
+            equation: string;
+            /** Unit */
+            unit: string;
+            /**
+             * Baseline
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            baseline: string;
+            /**
+             * Scenario
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            scenario: string;
+            /**
+             * Change
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            change: string;
+            /** Change Unit */
+            change_unit: string;
+            /**
+             * Direction
+             * @enum {string}
+             */
+            direction: "up" | "down" | "none";
+            /**
+             * Knowledge
+             * @constant
+             */
+            knowledge: "simulated";
+        };
+        /** ModelExposureRead */
+        ModelExposureRead: {
+            /**
+             * Checked
+             * @description A company is chosen, so the graph was consulted.
+             */
+            checked: boolean;
+            /**
+             * Required
+             * @description The model only simulates companies with this exposure.
+             */
+            required: boolean;
+            /** Stated */
+            stated: boolean;
+            /** Chains */
+            chains: components["schemas"]["EdgeRead"][][];
+        };
+        /** ModelPlanRead */
+        ModelPlanRead: {
+            /** Model Id */
+            model_id: string;
+            /** Version */
+            version: string;
+            /** Name */
+            name: string;
+            /** Title */
+            title: string;
+            /** Covers */
+            covers: string;
+            /** Definition Hash */
+            definition_hash: string;
+            /** Profile Hash */
+            profile_hash: string;
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "auto" | "include" | "exclude";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "not_applicable" | "available" | "excluded" | "included" | "blocked";
+            /** Reasons */
+            reasons: string[];
+            /** Changes */
+            changes: string[];
+            /** Responds To */
+            responds_to: components["schemas"]["ResponseBindingRead"][];
+            /** Lines */
+            lines: components["schemas"]["LineItemRead"][];
+            exposure: components["schemas"]["ModelExposureRead"];
+            /** Issues */
+            issues: components["schemas"]["PlanIssueRead"][];
+            /** Inputs */
+            inputs: components["schemas"]["ResolvedInputRead"][];
+            graph: components["schemas"]["GraphSnapshotRead"] | null;
+        };
+        /** ModelResultRead */
+        ModelResultRead: {
+            /** Model Id */
+            model_id: string;
+            /** Version */
+            version: string;
+            /** Name */
+            name: string;
+            /** Title */
+            title: string;
+            /** Definition Hash */
+            definition_hash: string;
+            /** Profile Hash */
+            profile_hash: string;
+            /** Run Id */
+            run_id: string | null;
+            /** Inputs Hash */
+            inputs_hash: string;
+            /** Result Hash */
+            result_hash: string;
+            /** Key Outputs */
+            key_outputs: components["schemas"]["KeyOutputRead"][];
+            bridge: components["schemas"]["BridgeRead"] | null;
+            /** Warnings */
+            warnings: components["schemas"]["SimulationIssueRead"][];
+        };
+        /** ModelSettingsInput */
+        ModelSettingsInput: {
+            /**
+             * Mode
+             * @description `auto`: included when a company is chosen and the knowledge graph states its exposure. `include` / `exclude`: your choice.
+             * @default auto
+             * @enum {string}
+             */
+            mode: "auto" | "include" | "exclude";
+            /**
+             * Inputs
+             * @description The model's own figures.
+             */
+            inputs?: {
+                [key: string]: components["schemas"]["SimulationInputValue"];
+            };
+            /**
+             * Assumptions
+             * @description The model's assumptions; omitted ones take the stated default.
+             */
+            assumptions?: {
+                [key: string]: string | number;
+            };
+        };
+        /** ModelSettingsRead */
+        ModelSettingsRead: {
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "auto" | "include" | "exclude";
+            /** Inputs */
+            inputs: {
+                [key: string]: components["schemas"]["ValueRead"];
+            };
+            /** Assumptions */
+            assumptions: {
+                [key: string]: string;
+            };
         };
         /** ModelVersionRead */
         ModelVersionRead: {
@@ -3104,6 +4733,15 @@ export interface components {
             description: string;
             /** Primary Identifier */
             primary_identifier: string | null;
+        };
+        /** NotModelledRead */
+        NotModelledRead: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Reason */
+            reason: string;
         };
         /** ObservationPage */
         ObservationPage: {
@@ -3383,6 +5021,19 @@ export interface components {
             /** Note */
             note: string;
         };
+        /** PathwayEdgeInfoRead */
+        PathwayEdgeInfoRead: {
+            /** Edge Key */
+            edge_key: string;
+            /** Edge Type */
+            edge_type: string;
+            /** Relationship */
+            relationship: string;
+            /** Evidence Status */
+            evidence_status: string;
+            /** Is Illustrative */
+            is_illustrative: boolean;
+        };
         /** PathwayEdgeRead */
         PathwayEdgeRead: {
             /** Source */
@@ -3400,6 +5051,17 @@ export interface components {
             coefficient: string | null;
             /** Lag Months */
             lag_months: string | null;
+        };
+        /** PathwayGroupRead */
+        PathwayGroupRead: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Version */
+            version: string;
+            /** Nodes */
+            nodes: string[];
         };
         /** PathwayLinkRead */
         PathwayLinkRead: {
@@ -3439,12 +5101,71 @@ export interface components {
             /** Links */
             links: components["schemas"]["PathwayEdgeRead"][];
         };
+        /** PlanIssueRead */
+        PlanIssueRead: {
+            /** Code */
+            code: string;
+            /** Message */
+            message: string;
+            /**
+             * Severity
+             * @enum {string}
+             */
+            severity: "error" | "warning";
+            /** Field */
+            field: string | null;
+            /** Model Id */
+            model_id: string | null;
+        };
+        /** PlanRead */
+        PlanRead: {
+            /** Spec Hash */
+            spec_hash: string;
+            /** Executable */
+            executable: boolean;
+            graph: components["schemas"]["GraphStateRead"];
+            entity: components["schemas"]["EntityInfoRead"] | null;
+            /** Changes */
+            changes: components["schemas"]["ChangePlanRead"][];
+            /** Models */
+            models: components["schemas"]["ModelPlanRead"][];
+            /** Stress Cases */
+            stress_cases: components["schemas"]["StressPlanRead"][];
+            /** Issues */
+            issues: components["schemas"]["PlanIssueRead"][];
+            /** Errors */
+            errors: number;
+            /** Ties */
+            ties: components["schemas"]["EdgeRead"][];
+            /** Names */
+            names: {
+                [key: string]: string;
+            };
+            affected: components["schemas"]["AffectedEntitiesRead"] | null;
+        };
         /**
          * Polarity
          * @description Assumed direction of effect: does an *increase* in the source raise the target?
          * @enum {string}
          */
         Polarity: "positive" | "negative" | "mixed" | "not_applicable";
+        /**
+         * PreviewRead
+         * @description A plan and, when it is executable, the results — computed, not stored.
+         */
+        PreviewRead: {
+            plan: components["schemas"]["PlanRead"];
+            results: components["schemas"]["ResultsRead"] | null;
+            pathway: components["schemas"]["LabPathwayRead"] | null;
+            /**
+             * Stored
+             * @default false
+             * @constant
+             */
+            stored: false;
+            /** Note */
+            note: string;
+        };
         /**
          * PriceAdjustment
          * @description Whether open/high/low/close are as traded (``unadjusted``) or adjusted for
@@ -3545,6 +5266,13 @@ export interface components {
          * @enum {string}
          */
         PriceBasis: "nominal" | "real" | "not_applicable";
+        /** ProfileNoteRead */
+        ProfileNoteRead: {
+            /** Title */
+            title: string;
+            /** Covers */
+            covers: string;
+        };
         /** ProvenanceRead */
         ProvenanceRead: {
             /**
@@ -3842,6 +5570,76 @@ export interface components {
             variable: string | null;
             observation: components["schemas"]["SimulationObservationRead"] | null;
         };
+        /** ResponseBindingRead */
+        ResponseBindingRead: {
+            /** Variable Id */
+            variable_id: string;
+            change_type: components["schemas"]["ChangeType"];
+            /** Input */
+            input: string;
+        };
+        /** ResultItemRead */
+        ResultItemRead: {
+            /** Model Id */
+            model_id: string;
+            /** Item */
+            item: string;
+            /** Label */
+            label: string;
+            /** Output */
+            output: string;
+            /** Monthly Output */
+            monthly_output: string;
+            /**
+             * Value
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            value: string;
+            /** By Change */
+            by_change: {
+                [key: string]: string;
+            };
+        };
+        /** ResultsRead */
+        ResultsRead: {
+            /**
+             * Execution Id
+             * @description Null for a preview (not stored).
+             */
+            execution_id: string | null;
+            /** Lab Version */
+            lab_version: string;
+            /** Engine Version */
+            engine_version: string;
+            /** Currency */
+            currency: string;
+            /** Horizon Months */
+            horizon_months: number;
+            timing: components["schemas"]["TimingResultRead"];
+            entity: components["schemas"]["EntityInfoRead"] | null;
+            /** Lines */
+            lines: components["schemas"]["LineRead"][];
+            /** Metrics */
+            metrics: components["schemas"]["MetricRead"][];
+            /** Not Modelled */
+            not_modelled: components["schemas"]["NotModelledRead"][];
+            /** Models */
+            models: components["schemas"]["ModelResultRead"][];
+            timeline: components["schemas"]["TimelineRead"];
+            /** Stress Cases */
+            stress_cases: components["schemas"]["StressResultRead"][];
+            /** Steps */
+            steps: components["schemas"]["LabStepRead"][];
+            /** Equations */
+            equations: components["schemas"]["LabEquationRead"][];
+            /** Configuration */
+            configuration: {
+                [key: string]: string | number;
+            };
+            /** Note */
+            note: string;
+        };
         /**
          * ReviewStatus
          * @description Human review state of an issue. There is no review workflow yet, so every issue
@@ -3871,9 +5669,49 @@ export interface components {
             /** Description */
             description: string;
         };
+        /** RunCheckRead */
+        RunCheckRead: {
+            /** Model Id */
+            model_id: string;
+            /**
+             * Run Id
+             * Format: uuid
+             */
+            run_id: string;
+            /** Inputs Hash Matches */
+            inputs_hash_matches: boolean;
+            /** Result Hash Matches */
+            result_hash_matches: boolean;
+        };
+        /** ScenarioCompanyRead */
+        ScenarioCompanyRead: {
+            /** Reporting Currency */
+            reporting_currency: string | null;
+            /** Annual Revenue */
+            annual_revenue: string | null;
+            /** Annual Operating Costs */
+            annual_operating_costs: string | null;
+        };
+        /** ScenarioDuplicateRequest */
+        ScenarioDuplicateRequest: {
+            /** Name */
+            name?: string | null;
+            /**
+             * Version
+             * @description Default: the latest.
+             */
+            version?: number | null;
+        };
+        /**
+         * ScenarioExecutionStatus
+         * @description The states a Scenario Lab execution moves through, in order; the last three are
+         *     final.
+         * @enum {string}
+         */
+        ScenarioExecutionStatus: "queued" | "validating" | "simulating" | "propagating" | "aggregating" | "completed" | "failed" | "cancelled";
         /**
          * ScenarioInput
-         * @description Body for creating a scenario, or replacing one with PUT.
+         * @description A scenario version's content: the body of POST, PUT and the plan and preview.
          */
         ScenarioInput: {
             /**
@@ -3886,16 +5724,40 @@ export interface components {
              * @default
              */
             description: string;
+            /** Template Id */
+            template_id?: string | null;
             /** Shocks */
             shocks: components["schemas"]["ShockInput"][];
+            /**
+             * Entity
+             * @description A company in the knowledge graph.
+             * @example company:co_aerisca_airways
+             */
+            entity?: string | null;
+            timing?: components["schemas"]["TimingInput"];
+            company?: components["schemas"]["CompanyInput"];
+            markets?: components["schemas"]["MarketsInput"];
+            /** Models */
+            models?: {
+                [key: string]: components["schemas"]["ModelSettingsInput"];
+            };
+            constraints?: components["schemas"]["ConstraintsInput"];
+            /** Stress Cases */
+            stress_cases?: components["schemas"]["StressCaseInput"][];
+            /**
+             * Note
+             * @description What this version changes.
+             * @default
+             */
+            note: string;
         };
         /**
          * ScenarioPage
-         * @description A page of scenarios.
+         * @description A page of scenarios, most recently changed first.
          */
         ScenarioPage: {
             /** Items */
-            items: components["schemas"]["ScenarioRead"][];
+            items: components["schemas"]["ScenarioSummaryRead"][];
             /**
              * Total
              * @description Total number of items matching the query.
@@ -3918,13 +5780,23 @@ export interface components {
             /** Description */
             description: string;
             status: components["schemas"]["ScenarioStatus"];
-            /** Shocks */
-            shocks: components["schemas"]["ShockRead"][];
+            /** Template Id */
+            template_id: string | null;
+            /** Current Version */
+            current_version: number;
             /**
-             * Latest Run
-             * @description Simulation results for this scenario. Always null: drafts are not yet connected to the simulation engine (that is the Phase 5 Scenario Lab), and RUMIN never shows results that were not computed. Model runs are a separate resource: `/api/v1/simulations`.
+             * Shocks
+             * @description The latest version's changes.
              */
-            latest_run?: null;
+            shocks: components["schemas"]["ShockRead"][];
+            /** @description The latest version's content. */
+            spec: components["schemas"]["ScenarioSpecRead"];
+            /** Versions */
+            versions: components["schemas"]["VersionSummaryRead"][];
+            /** @description The most recent execution of any version, or null if none: RUMIN never shows results that were not computed. */
+            latest_execution: components["schemas"]["ExecutionSummaryRead"] | null;
+            /** Executions */
+            executions: number;
             /**
              * Created At
              * Format: date-time
@@ -3936,13 +5808,105 @@ export interface components {
              */
             updated_at: string;
         };
+        /** ScenarioSpecRead */
+        ScenarioSpecRead: {
+            /** Entity */
+            entity: string | null;
+            timing: components["schemas"]["TimingRead"];
+            company: components["schemas"]["ScenarioCompanyRead"];
+            markets: components["schemas"]["MarketsRead"];
+            /** Models */
+            models: {
+                [key: string]: components["schemas"]["ModelSettingsRead"];
+            };
+            constraints: components["schemas"]["ConstraintsRead"];
+            /** Stress Cases */
+            stress_cases: components["schemas"]["StressCaseRead"][];
+        };
         /**
          * ScenarioStatus
-         * @description Phase 1 only supports drafts. Simulation runs arrive in Phase 4 as a separate
-         *     resource, so a scenario's configuration and its results are never conflated.
+         * @description A scenario is always a draft of inputs: its results live in executions and runs, so
+         *     a scenario's configuration and its results are never conflated.
          * @enum {string}
          */
         ScenarioStatus: "draft";
+        /** ScenarioSummaryRead */
+        ScenarioSummaryRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /** Template Id */
+            template_id: string | null;
+            /** Current Version */
+            current_version: number;
+            /** Shocks */
+            shocks: components["schemas"]["ShockRead"][];
+            /** Entity */
+            entity: string | null;
+            latest_execution: components["schemas"]["ExecutionSummaryRead"] | null;
+            /** Executions */
+            executions: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** ScenarioUpdate */
+        ScenarioUpdate: {
+            /**
+             * Name
+             * @example Oil price shock
+             */
+            name: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /** Template Id */
+            template_id?: string | null;
+            /** Shocks */
+            shocks: components["schemas"]["ShockInput"][];
+            /**
+             * Entity
+             * @description A company in the knowledge graph.
+             * @example company:co_aerisca_airways
+             */
+            entity?: string | null;
+            timing?: components["schemas"]["TimingInput"];
+            company?: components["schemas"]["CompanyInput"];
+            markets?: components["schemas"]["MarketsInput"];
+            /** Models */
+            models?: {
+                [key: string]: components["schemas"]["ModelSettingsInput"];
+            };
+            constraints?: components["schemas"]["ConstraintsInput"];
+            /** Stress Cases */
+            stress_cases?: components["schemas"]["StressCaseInput"][];
+            /**
+             * Note
+             * @description What this version changes.
+             * @default
+             */
+            note: string;
+            /**
+             * Base Version
+             * @description The version this edit started from; if a newer version was saved since, the save is refused (409) instead of overwriting it.
+             */
+            base_version?: number | null;
+        };
         /**
          * SeasonalAdjustment
          * @enum {string}
@@ -4325,10 +6289,10 @@ export interface components {
             change_type: components["schemas"]["ChangeType"];
             /**
              * Value
-             * @description Percent for `percent_change` (30 = +30 %); the variable's unit for `absolute_change` (percentage points for rates).
-             * @example 30
+             * @description An exact decimal string or a JSON number. Percent for `percent_change` (30 = +30 %); the variable's unit for `absolute_change` (percentage points for rates). At most 4 decimal places.
+             * @example 20
              */
-            value: number;
+            value: string | number;
             /**
              * Note
              * @default
@@ -4340,8 +6304,12 @@ export interface components {
             /** Variable Id */
             variable_id: string;
             change_type: components["schemas"]["ChangeType"];
-            /** Value */
-            value: number;
+            /**
+             * Value
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            value: string;
             /** Note */
             note: string;
             /**
@@ -4693,6 +6661,23 @@ export interface components {
             /** Fields */
             fields?: string[];
         };
+        /** StageRead */
+        StageRead: {
+            /**
+             * Stage
+             * @enum {string}
+             */
+            stage: "validating" | "simulating" | "propagating" | "aggregating";
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /** Finished At */
+            finished_at: string | null;
+            /** Detail */
+            detail: string;
+        };
         /** StatementRead */
         StatementRead: {
             /** Id */
@@ -4733,6 +6718,72 @@ export interface components {
          * @enum {string}
          */
         Strength: "weak" | "moderate" | "strong";
+        /** StressCaseInput */
+        StressCaseInput: {
+            /**
+             * Name
+             * @example Stress
+             */
+            name: string;
+            /**
+             * Scale
+             * @description Every change × this multiple (above 0, at most 10).
+             */
+            scale?: string | number | null;
+            /**
+             * Changes
+             * @description Explicit values for some of the scenario's changes, by variable.
+             */
+            changes?: {
+                [key: string]: string | number;
+            };
+        };
+        /** StressCaseRead */
+        StressCaseRead: {
+            /** Name */
+            name: string;
+            /** Scale */
+            scale: string | null;
+            /** Changes */
+            changes: {
+                [key: string]: string;
+            };
+        };
+        /** StressPlanRead */
+        StressPlanRead: {
+            /** Index */
+            index: number;
+            /** Name */
+            name: string;
+            /** Changes */
+            changes: {
+                [key: string]: string;
+            };
+            /** Valid */
+            valid: boolean;
+            /** Issues */
+            issues: components["schemas"]["PlanIssueRead"][];
+        };
+        /** StressResultRead */
+        StressResultRead: {
+            /** Name */
+            name: string;
+            /** Scale */
+            scale: string | null;
+            /** Changes */
+            changes: {
+                [key: string]: string;
+            };
+            /** Lines */
+            lines: components["schemas"]["LineRead"][];
+            /** Metrics */
+            metrics: components["schemas"]["MetricRead"][];
+            /**
+             * Knowledge
+             * @constant
+             */
+            knowledge: "simulated";
+        };
         /**
          * StructuralLinkRead
          * @description A link derived from an entity attribute, e.g. a company's industry.
@@ -4805,6 +6856,177 @@ export interface components {
             /** Capabilities */
             capabilities: components["schemas"]["Capability"][];
         };
+        /** TemplateChangeRead */
+        TemplateChangeRead: {
+            /** Variable Id */
+            variable_id: string;
+            change_type: components["schemas"]["ChangeType"];
+            /**
+             * Value
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            value: string;
+        };
+        /** TemplateDerivedRead */
+        TemplateDerivedRead: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+        };
+        /** TemplateExpectedRead */
+        TemplateExpectedRead: {
+            /** Lines */
+            lines: components["schemas"]["TemplateLineRead"][];
+            /** Derived */
+            derived: components["schemas"]["TemplateDerivedRead"][];
+            /** Model Outputs */
+            model_outputs: components["schemas"]["TemplateOutputRead"][];
+        };
+        /** TemplateInputRead */
+        TemplateInputRead: {
+            /** Path */
+            path: string;
+            /** Input */
+            input: string;
+            /** Label */
+            label: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "entity" | "change" | "market" | "company" | "assumption" | "setting";
+            /** Unit */
+            unit: string | null;
+            /** Unit Label */
+            unit_label: string | null;
+            /** Units */
+            units: string[];
+            /** Default */
+            default: string | null;
+            /** Description */
+            description: string;
+            /** Shared */
+            shared: boolean;
+            /** Models */
+            models: string[];
+        };
+        /** TemplateLineRead */
+        TemplateLineRead: {
+            /** Line */
+            line: string;
+            /** Label */
+            label: string;
+            /** Items */
+            items: {
+                [key: string]: string;
+            }[];
+        };
+        /** TemplateList */
+        TemplateList: {
+            /** Items */
+            items: components["schemas"]["TemplateSummaryRead"][];
+            /** Unsupported */
+            unsupported: components["schemas"]["UnsupportedTemplateRead"][];
+        };
+        /** TemplateModelRead */
+        TemplateModelRead: {
+            /** Model Id */
+            model_id: string;
+            /** Title */
+            title: string;
+            /** Version */
+            version: string;
+        };
+        /** TemplateOutputRead */
+        TemplateOutputRead: {
+            /** Model Id */
+            model_id: string;
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Unit */
+            unit: string;
+        };
+        /** TemplateRead */
+        TemplateRead: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /**
+             * Category
+             * @enum {string}
+             */
+            category: "commodity" | "currency" | "interest_rate" | "energy_cost" | "combined";
+            /** Question */
+            question: string;
+            /** Summary */
+            summary: string;
+            /** Changes */
+            changes: components["schemas"]["TemplateChangeRead"][];
+            /** Models */
+            models: components["schemas"]["TemplateModelRead"][];
+            /** Stress Cases */
+            stress_cases: components["schemas"]["StressCaseRead"][];
+            /**
+             * Suggested Entities
+             * @description Companies whose exposure the knowledge graph states for the template's models (none when the graph is not built).
+             */
+            suggested_entities: components["schemas"]["AffectedNodeRead"][];
+            /** Required Inputs */
+            required_inputs: components["schemas"]["TemplateInputRead"][];
+            /** Optional Inputs */
+            optional_inputs: components["schemas"]["TemplateInputRead"][];
+            /** Validation Rules */
+            validation_rules: components["schemas"]["TemplateRuleRead"][];
+            expected_outputs: components["schemas"]["TemplateExpectedRead"];
+            /** @description The template as a scenario body to start from. */
+            scenario: components["schemas"]["ScenarioInput"];
+        };
+        /** TemplateRuleRead */
+        TemplateRuleRead: {
+            /** Model Id */
+            model_id: string;
+            /** Id */
+            id: string;
+            /** Description */
+            description: string;
+            /**
+             * Severity
+             * @enum {string}
+             */
+            severity: "error" | "warning";
+        };
+        /** TemplateSummaryRead */
+        TemplateSummaryRead: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /**
+             * Category
+             * @enum {string}
+             */
+            category: "commodity" | "currency" | "interest_rate" | "energy_cost" | "combined";
+            /** Question */
+            question: string;
+            /** Summary */
+            summary: string;
+            /** Changes */
+            changes: components["schemas"]["TemplateChangeRead"][];
+            /** Models */
+            models: components["schemas"]["TemplateModelRead"][];
+            /** Stress Cases */
+            stress_cases: components["schemas"]["StressCaseRead"][];
+            /**
+             * Suggested Entities
+             * @description Companies whose exposure the knowledge graph states for the template's models (none when the graph is not built).
+             */
+            suggested_entities: components["schemas"]["AffectedNodeRead"][];
+        };
         /** TermRead */
         TermRead: {
             /** Symbol */
@@ -4813,6 +7035,81 @@ export interface components {
             meaning: string;
             /** Unit */
             unit: string;
+        };
+        /** TimelineEventRead */
+        TimelineEventRead: {
+            /** Month */
+            month: number;
+            /** Label */
+            label: string;
+            /** Model Id */
+            model_id: string;
+        };
+        /** TimelineLineRead */
+        TimelineLineRead: {
+            /** Line */
+            line: string;
+            /** Values */
+            values: string[];
+        };
+        /** TimelineRead */
+        TimelineRead: {
+            /** Months */
+            months: number;
+            /** Start Month */
+            start_month: number;
+            /** End Month */
+            end_month: number;
+            /** Lines */
+            lines: components["schemas"]["TimelineLineRead"][];
+            /** Events */
+            events: components["schemas"]["TimelineEventRead"][];
+            /**
+             * Knowledge
+             * @constant
+             */
+            knowledge: "simulated";
+            /** Note */
+            note: string;
+        };
+        /** TimingInput */
+        TimingInput: {
+            /**
+             * Start Month
+             * @description The month the changes take effect.
+             * @default 1
+             */
+            start_month: number;
+            /**
+             * Duration Months
+             * @description How many months they last; 0 = to the horizon.
+             * @default 0
+             */
+            duration_months: number;
+            /**
+             * Horizon Months
+             * @description Months simulated.
+             * @default 12
+             */
+            horizon_months: number;
+        };
+        /** TimingRead */
+        TimingRead: {
+            /** Start Month */
+            start_month: number;
+            /** Duration Months */
+            duration_months: number;
+            /** Horizon Months */
+            horizon_months: number;
+        };
+        /** TimingResultRead */
+        TimingResultRead: {
+            /** Start Month */
+            start_month: number;
+            /** End Month */
+            end_month: number;
+            /** Duration Months */
+            duration_months: number;
         };
         /** TransmissionPathRead */
         TransmissionPathRead: {
@@ -4835,8 +7132,20 @@ export interface components {
             /** First Month */
             first_month: number;
             /**
+             * Last Month
+             * @description The last month the path's effect lasts; null: until the end of the horizon.
+             */
+            last_month?: number | null;
+            /**
+             * Kind
+             * @description `log`: the change is a log-change (prices, exchange rates). `level`: the change is in percentage points (rates), applied at its own node only.
+             * @default log
+             * @enum {string}
+             */
+            kind: "log" | "level";
+            /**
              * Log Change
-             * @description An exact decimal in plain notation (never floating point).
+             * @description The change the path carries to its last node: a log-change for kind `log`, percentage points for kind `level`.
              * @example 5.649
              */
             log_change: string;
@@ -4900,6 +7209,38 @@ export interface components {
             /** Label */
             label: string;
         };
+        /** UnmodelledEdgeRead */
+        UnmodelledEdgeRead: {
+            /** Edge Key */
+            edge_key: string;
+            /** Edge Type */
+            edge_type: string;
+            /** Source */
+            source: string;
+            /** Target */
+            target: string;
+            /** Evidence Status */
+            evidence_status: string;
+            /** Is Illustrative */
+            is_illustrative: boolean;
+            /** Relationship */
+            relationship: string;
+            /** Source Name */
+            source_name: string;
+            /** Target Name */
+            target_name: string;
+            /** Reason */
+            reason: string;
+        };
+        /** UnsupportedTemplateRead */
+        UnsupportedTemplateRead: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Reason */
+            reason: string;
+        };
         /** UnusedEdgeRead */
         UnusedEdgeRead: {
             /** Edge Key */
@@ -4952,6 +7293,17 @@ export interface components {
          * @enum {string}
          */
         ValueKind: "price" | "rate" | "exchange_rate" | "index";
+        /** ValueRead */
+        ValueRead: {
+            /** Value */
+            value: string | null;
+            /** Unit */
+            unit: string | null;
+            /** Source */
+            source: ("user" | "stored_observation") | null;
+            /** Series Id */
+            series_id: string | null;
+        };
         /**
          * VariableCategory
          * @enum {string}
@@ -4987,6 +7339,63 @@ export interface components {
             }[];
             /** Message */
             message: string;
+        };
+        /** VersionRead */
+        VersionRead: {
+            /** Version */
+            version: number;
+            /** Name */
+            name: string;
+            /** Spec Hash */
+            spec_hash: string;
+            /** Note */
+            note: string;
+            derived_from: components["schemas"]["DerivedFromRead"] | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Executions */
+            executions: number;
+            /**
+             * Scenario Id
+             * Format: uuid
+             */
+            scenario_id: string;
+            /** Description */
+            description: string;
+            /** Template Id */
+            template_id: string | null;
+            /** Shocks */
+            shocks: components["schemas"]["ShockRead"][];
+            spec: components["schemas"]["ScenarioSpecRead"];
+        };
+        /** VersionSummaryRead */
+        VersionSummaryRead: {
+            /** Version */
+            version: number;
+            /** Name */
+            name: string;
+            /** Spec Hash */
+            spec_hash: string;
+            /** Note */
+            note: string;
+            derived_from: components["schemas"]["DerivedFromRead"] | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Executions */
+            executions: number;
+        };
+        /** WindowRead */
+        WindowRead: {
+            /** First Month */
+            first_month: number | null;
+            /** Last Month */
+            last_month: number | null;
         };
     };
     responses: never;
@@ -5434,6 +7843,90 @@ export interface operations {
             };
         };
     };
+    plan_scenario: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ScenarioInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanRead"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    preview_scenario: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ScenarioInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreviewRead"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     get_scenario: {
         parameters: {
             query?: never;
@@ -5483,7 +7976,7 @@ export interface operations {
             };
         };
     };
-    replace_scenario: {
+    save_scenario: {
         parameters: {
             query?: never;
             header?: never;
@@ -5494,7 +7987,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ScenarioInput"];
+                "application/json": components["schemas"]["ScenarioUpdate"];
             };
         };
         responses: {
@@ -5509,6 +8002,15 @@ export interface operations {
             };
             /** @description Resource not found. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request conflicts with stored state. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5553,6 +8055,1044 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request conflicts with stored state. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    duplicate_scenario: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                scenario_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ScenarioDuplicateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScenarioRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_versions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                scenario_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VersionSummaryRead"][];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_version: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                scenario_id: string;
+                version: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VersionRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    restore_version: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                scenario_id: string;
+                version: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScenarioRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request conflicts with stored state. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    plan_version: {
+        parameters: {
+            query?: {
+                /** @description Default: the latest. */
+                version?: number | null;
+            };
+            header?: never;
+            path: {
+                scenario_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_executions: {
+        parameters: {
+            query?: {
+                /** @description Maximum number of items to return. */
+                limit?: number;
+                /** @description Items to skip. */
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                scenario_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExecutionPage"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_execution: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                scenario_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExecutionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExecutionRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Every worker is busy and the queue is full; nothing was stored. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_execution: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                execution_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExecutionRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_results: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                execution_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResultsRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The execution has not completed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_pathways: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                execution_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LabPathwayRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The execution has not completed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_explanation: {
+        parameters: {
+            query?: {
+                /** @description The line or metric to explain. */
+                target?: string;
+            };
+            header?: never;
+            path: {
+                execution_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LabExplanationRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The execution has not completed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    cancel_execution: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                execution_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExecutionRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The execution has not completed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    verify_execution: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                execution_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExecutionVerificationRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The execution has not completed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_sensitivity: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                execution_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LabSensitivityList"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_sensitivity: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                execution_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LabSensitivityRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LabSensitivityRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The execution has not completed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_sensitivity: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                execution_id: string;
+                analysis_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LabSensitivityRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    compare_executions: {
+        parameters: {
+            query: {
+                execution_id: string[];
+                /** @description Default: the first. */
+                reference?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComparisonRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The execution has not completed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_templates: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TemplateList"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_template: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                template_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TemplateRead"];
+                };
             };
             /** @description Resource not found. */
             404: {

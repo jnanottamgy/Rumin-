@@ -52,6 +52,15 @@ class Settings(BaseSettings):
     # Keep the exact bytes of every response and imported file (gzip-compressed).
     store_source_bodies: bool = True
 
+    # --- Scenario Lab (Phase 5) -----------------------------------------------------------
+    # "thread": executions run on a bounded pool in the API process; "inline": in the
+    # request that creates them (tests).
+    scenario_execution_mode: Literal["thread", "inline"] = "thread"
+    scenario_max_concurrent: int = Field(default=2, ge=1, le=8)
+    # Executions waiting for a worker; beyond this, requests are refused with 429.
+    scenario_max_queued: int = Field(default=8, ge=0, le=64)
+    scenario_timeout_seconds: float = Field(default=20.0, ge=1, le=120)
+
     @field_validator("cors_origins", mode="before")
     @classmethod
     def _split_comma_separated(cls, value: Any) -> Any:

@@ -55,7 +55,11 @@ from app.models import (
     Industry,
     Relationship,
     Scenario,
+    ScenarioExecution,
+    ScenarioExecutionRun,
+    ScenarioSensitivityAnalysis,
     ScenarioShock,
+    ScenarioVersion,
 )
 from app.schemas.common import EntityId
 
@@ -254,8 +258,14 @@ def read_dataset_file(path: Path) -> tuple[DatasetFile, str]:
 
 
 def clear_domain_data(session: Session) -> None:
-    """Delete scenarios, relationships, entities and datasets (in dependency order)."""
+    """Delete scenarios (with their versions and executions), relationships, entities and
+    datasets, in dependency order. Simulation runs are kept: they record the graph and data
+    they used, and do not refer to these rows."""
+    session.execute(delete(ScenarioSensitivityAnalysis))
+    session.execute(delete(ScenarioExecutionRun))
+    session.execute(delete(ScenarioExecution))
     session.execute(delete(ScenarioShock))
+    session.execute(delete(ScenarioVersion))
     session.execute(delete(Scenario))
     session.execute(delete(Relationship))
     # Subtype rows are removed by ON DELETE CASCADE from `entities`. Kinds are deleted

@@ -20,7 +20,7 @@ from alembic import command
 from alembic.config import Config as AlembicConfig
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from sqlalchemy import Engine, delete, update
+from sqlalchemy import Engine, delete, select, update
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config import BACKEND_DIR, Settings
@@ -46,6 +46,12 @@ from app.models import (
     Instrument,
     PriceBar,
     Scenario,
+    ScenarioExecution,
+    ScenarioExecutionRun,
+    ScenarioSensitivityAnalysis,
+    SimulationRun,
+    SimulationRunStep,
+    SimulationSensitivityAnalysis,
     SourceCapture,
 )
 from app.services.graph import clear_freshness_cache
@@ -68,6 +74,9 @@ def make_settings(database_url: str, **overrides: object) -> Settings:
         "log_level": "WARNING",
         "docs_enabled": True,
         "max_request_body_bytes": 64 * 1024,
+        # Executions complete within the request that creates them, so tests read them at
+        # once; the threaded runner has its own tests.
+        "scenario_execution_mode": "inline",
     }
     values.update(overrides)
     return Settings(_env_file=None, **values)  # type: ignore[arg-type]
@@ -113,16 +122,35 @@ def app(database_url: str, engine: Engine) -> FastAPI:
 def client(app: FastAPI, session_factory: sessionmaker[Session]) -> Iterator[TestClient]:
     with TestClient(app) as test_client:
         yield test_client
-    # Scenarios are the only data tests create; remove them so tests stay independent.
+    # Scenarios (with their executions and runs) are the only data tests create; remove
+    # them so tests stay independent.
     with session_factory() as session:
-        session.execute(delete(Scenario))
-        session.commit()
+        wipe_scenarios(session)
 
 
 @pytest.fixture
 def fresh_sqlite_url(tmp_path: Path) -> str:
     """URL of a brand-new, empty SQLite database (no schema)."""
     return f"sqlite:///{tmp_path / 'fresh.db'}"
+
+
+def wipe_scenarios(session: Session) -> None:
+    """Remove every scenario and everything executing one stored (in foreign-key order)."""
+    run_ids = select(ScenarioExecutionRun.simulation_run_id)
+    session.execute(delete(ScenarioSensitivityAnalysis))
+    runs = list(session.scalars(run_ids))
+    session.execute(delete(ScenarioExecutionRun))
+    session.execute(delete(ScenarioExecution))
+    if runs:
+        session.execute(
+            delete(SimulationSensitivityAnalysis).where(
+                SimulationSensitivityAnalysis.run_id.in_(runs)
+            )
+        )
+        session.execute(delete(SimulationRunStep).where(SimulationRunStep.run_id.in_(runs)))
+        session.execute(delete(SimulationRun).where(SimulationRun.id.in_(runs)))
+    session.execute(delete(Scenario))
+    session.commit()
 
 
 def wipe_ingested_data(session: Session) -> None:
@@ -185,3 +213,17 @@ def graph_session(session_factory: sessionmaker[Session]) -> Iterator[Session]:
         session.rollback()
         wipe_graph(session)
         wipe_ingested_data(session)
+
+
+@pytest.fixture
+def built_graph(graph_session: Session) -> Iterator[Session]:
+    """The reference network plus the World Bank catalogue, built into a knowledge graph
+    (removed afterwards, like everything ``graph_session`` holds)."""
+    from app.graph.build import run_build
+    from app.ingestion.catalog import DEFAULT_CATALOG_PATH, read_catalog, sync_catalog
+    from app.ingestion.registry import PROFILES
+
+    sync_catalog(graph_session, read_catalog(DEFAULT_CATALOG_PATH, PROFILES), PROFILES)
+    graph_session.commit()
+    run_build(graph_session)
+    yield graph_session

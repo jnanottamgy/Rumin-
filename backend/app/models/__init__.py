@@ -15,7 +15,14 @@ from app.models.ingestion import DataQualityIssue, IngestionJob, IngestionJobIte
 from app.models.market import Instrument, PriceBar
 from app.models.provider import DataProvider
 from app.models.relationship import Relationship
-from app.models.scenario import Scenario, ScenarioShock
+from app.models.scenario import (
+    Scenario,
+    ScenarioExecution,
+    ScenarioExecutionRun,
+    ScenarioSensitivityAnalysis,
+    ScenarioShock,
+    ScenarioVersion,
+)
 from app.models.series import EconomicObservation, EconomicSeries
 from app.models.simulation import (
     SimulationModelVersion,
@@ -48,7 +55,11 @@ __all__ = [
     "PriceBar",
     "Relationship",
     "Scenario",
+    "ScenarioExecution",
+    "ScenarioExecutionRun",
+    "ScenarioSensitivityAnalysis",
     "ScenarioShock",
+    "ScenarioVersion",
     "SimulationModelVersion",
     "SimulationRun",
     "SimulationRunStep",

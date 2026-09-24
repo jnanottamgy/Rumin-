@@ -19,7 +19,7 @@ from app.db.seed import (
     validate_integrity,
 )
 from app.db.session import create_db_engine, create_session_factory
-from app.models import Entity, Scenario, ScenarioShock
+from app.models import Entity, Scenario, ScenarioShock, ScenarioVersion
 from tests.conftest import alembic_config
 
 
@@ -286,16 +286,21 @@ def test_loading_is_idempotent_and_reset_replaces_data(tmp_path: Path) -> None:
     with session_factory() as session:
         first = load_dataset(session, dataset_path)
         second = load_dataset(session, dataset_path)
-        session.add(
-            Scenario(
+        scenario = Scenario(name="Kept until reset")
+        scenario.versions = [
+            ScenarioVersion(
+                version=1,
                 name="Kept until reset",
+                spec={},
+                spec_hash="0" * 64,
                 shocks=[
                     ScenarioShock(
                         position=0, variable_id="var_fuel", change_type="percent_change", value=5
                     )
                 ],
             )
-        )
+        ]
+        session.add(scenario)
         session.commit()
 
         changed = minimal_dataset()

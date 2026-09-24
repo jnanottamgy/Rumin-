@@ -117,10 +117,24 @@ class ChangeType(StrEnum):
 
 
 class ScenarioStatus(StrEnum):
-    """Phase 1 only supports drafts. Simulation runs arrive in Phase 4 as a separate
-    resource, so a scenario's configuration and its results are never conflated."""
+    """A scenario is always a draft of inputs: its results live in executions and runs, so
+    a scenario's configuration and its results are never conflated."""
 
     DRAFT = "draft"
+
+
+class ScenarioExecutionStatus(StrEnum):
+    """The states a Scenario Lab execution moves through, in order; the last three are
+    final."""
+
+    QUEUED = "queued"
+    VALIDATING = "validating"
+    SIMULATING = "simulating"
+    PROPAGATING = "propagating"
+    AGGREGATING = "aggregating"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
 
 
 # --- Phase 2: financial data infrastructure ------------------------------------------------

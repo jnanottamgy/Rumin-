@@ -26,10 +26,14 @@ def test_errors_are_documented_with_the_shared_envelope() -> None:
     assert "HTTPValidationError" not in document["components"]["schemas"]
 
 
-def test_scenario_drafts_still_have_no_run_endpoint() -> None:
+def test_scenario_versions_and_executions_are_never_rewritten() -> None:
+    """A version is saved by PUT on the scenario (which adds a version); no endpoint edits or
+    deletes a version or an execution."""
     paths = build_openapi()["paths"]
-
-    assert not any(path.startswith("/api/v1/scenarios") and "run" in path for path in paths)
+    for path, methods in paths.items():
+        if "/versions" in path or path.startswith("/api/v1/scenario-executions"):
+            assert not set(methods) & {"put", "patch", "delete"}, path
+    assert "post" in paths["/api/v1/scenarios/{scenario_id}/executions"]
 
 
 def test_simulation_runs_are_append_only() -> None:

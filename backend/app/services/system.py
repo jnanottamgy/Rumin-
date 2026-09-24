@@ -60,11 +60,22 @@ CAPABILITIES: tuple[Capability, ...] = (
     ),
     Capability(
         id="scenario_drafts",
-        label="Scenario drafts",
+        label="Versioned scenarios",
         available=True,
         planned_phase=1,
-        note="Scenario inputs can be created and edited. Drafts are not run yet: connecting "
-        "them to the simulation engine is the Scenario Lab (Phase 5).",
+        note="Scenarios are saved as immutable, numbered versions: a save never overwrites, "
+        "and an executed version can never change.",
+    ),
+    Capability(
+        id="scenario_lab",
+        label="Scenario Lab",
+        available=True,
+        planned_phase=5,
+        note="Scenarios executed through five registered models, chosen by what each declares "
+        "and what the knowledge graph states, with the modelled pathway, baseline against "
+        "scenario, months, stress cases, sensitivity, comparison and explanations. Executions "
+        "run on a bounded worker pool (2 at once, 8 waiting, 20-second limit) and are "
+        "reproducible. Deterministic: no stochastic simulation.",
     ),
     Capability(
         id="historical_observations",
@@ -120,10 +131,11 @@ CAPABILITIES: tuple[Capability, ...] = (
         label="Simulation engine",
         available=True,
         planned_phase=4,
-        note="One model in preview: an airline fuel-cost shock, calculated month by month "
-        "from stated inputs and assumptions, with one-at-a-time sensitivity. Every run stores "
-        "its inputs, graph snapshot and calculation steps. Results are calculations, not "
-        "forecasts.",
+        note="Five models in preview — airline fuel costs, foreign-currency revenue and costs, "
+        "floating-rate interest, crude-oil-linked and gas-linked costs — calculated month by "
+        "month from stated inputs and assumptions, with one-at-a-time sensitivity. Every run "
+        "stores its inputs, graph snapshot and calculation steps. Results are calculations, "
+        "not forecasts.",
     ),
     Capability(
         id="probabilistic_simulation",

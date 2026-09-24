@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import Settings
 from app.db.session import get_session
+from app.scenario_lab.runner import ExecutionRunner
 from app.schemas.common import DEFAULT_PAGE_LIMIT, MAX_PAGE_LIMIT, ErrorResponse
 
 SessionDep = Annotated[Session, Depends(get_session)]
@@ -21,6 +22,14 @@ def get_app_settings(request: Request) -> Settings:
 
 
 SettingsDep = Annotated[Settings, Depends(get_app_settings)]
+
+
+def get_scenario_runner(request: Request) -> ExecutionRunner:
+    runner: ExecutionRunner = request.app.state.scenario_runner
+    return runner
+
+
+RunnerDep = Annotated[ExecutionRunner, Depends(get_scenario_runner)]
 
 
 @dataclass(frozen=True)

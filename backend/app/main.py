@@ -15,6 +15,7 @@ from fastapi import FastAPI
 from fastapi.middleware import Middleware
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
+from sqlalchemy.exc import SQLAlchemyError
 
 from app import API_VERSION, __version__
 from app.api import health
@@ -24,6 +25,8 @@ from app.core.errors import register_exception_handlers
 from app.core.logging import configure_logging
 from app.core.middleware import REQUEST_ID_HEADER, BodySizeLimitMiddleware, RequestContextMiddleware
 from app.db.session import create_db_engine, create_session_factory
+from app.scenario_lab.runner import ExecutionRunner
+from app.services import scenarios
 
 logger = logging.getLogger(__name__)
 
@@ -85,7 +88,15 @@ OPENAPI_TAGS = [
     {"name": "network", "description": "Graph projection for visualisation."},
     {
         "name": "scenarios",
-        "description": "Draft scenario inputs. Drafts are not run yet (Phase 5 Scenario Lab).",
+        "description": "Versioned scenarios: every save that changes anything is a new, "
+        "immutable version. Plans say which models apply and why; previews compute without "
+        "storing.",
+    },
+    {
+        "name": "scenario lab",
+        "description": "Executions of scenario versions through the model registry (queued, "
+        "bounded, cancellable), their results, pathways, explanations, verification and "
+        "sensitivity analyses; comparisons; templates. Executions are append-only.",
     },
     {
         "name": "providers and datasets",
@@ -119,6 +130,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     configure_logging(settings.log_level)
     engine = create_db_engine(settings.database_url)
 
+    session_factory = create_session_factory(engine)
+    runner = ExecutionRunner(
+        session_factory,
+        freshness=scenarios.freshness,
+        mode=settings.scenario_execution_mode,
+        max_concurrent=settings.scenario_max_concurrent,
+        max_queued=settings.scenario_max_queued,
+        timeout_seconds=settings.scenario_timeout_seconds,
+    )
+
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         logger.info(
@@ -127,7 +148,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             settings.environment,
             settings.database_backend,
         )
+        try:
+            runner.start()
+        except SQLAlchemyError:
+            # The schema may not be migrated yet; readiness reports it. Executions cannot
+            # be requested until it is.
+            logger.warning("Scenario executions could not be checked at startup.")
         yield
+        runner.stop()
         engine.dispose()
 
     docs = settings.docs_enabled
@@ -160,7 +188,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     app.state.settings = settings
     app.state.engine = engine
-    app.state.session_factory = create_session_factory(engine)
+    app.state.session_factory = session_factory
+    app.state.scenario_runner = runner
 
     register_exception_handlers(app)
     app.include_router(health.router)

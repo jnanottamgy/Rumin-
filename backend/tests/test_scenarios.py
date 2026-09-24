@@ -35,12 +35,15 @@ def test_creates_a_draft_scenario_without_results(client: TestClient) -> None:
     assert response.headers["Location"] == f"{URL}/{body['id']}"
     assert body["name"] == "Oil price shock"
     assert body["status"] == "draft"
-    assert body["latest_run"] is None  # nothing has been simulated
+    assert body["latest_execution"] is None  # nothing has been simulated
+    assert body["executions"] == 0
+    assert body["current_version"] == 1
+    # Values are exact decimal strings (since Phase 5), however they were typed.
     assert body["shocks"] == [
         {
             "variable_id": "var_brent_crude",
             "change_type": "percent_change",
-            "value": 30.0,
+            "value": "30",
             "note": "",
             "epistemic_category": "scenario_input",
         }
@@ -65,7 +68,7 @@ def test_trims_whitespace_in_names(client: TestClient) -> None:
     assert body["name"] == "Oil shock"
 
 
-def test_replaces_a_scenario_including_its_inputs(client: TestClient) -> None:
+def test_saving_adds_a_version_and_keeps_the_previous_one(client: TestClient) -> None:
     created = client.post(URL, json=oil_shock()).json()
     replacement = oil_shock(
         name="Oil and rupee shock",
@@ -82,11 +85,15 @@ def test_replaces_a_scenario_including_its_inputs(client: TestClient) -> None:
     body = response.json()
     assert body["name"] == "Oil and rupee shock"
     assert [(s["variable_id"], s["value"]) for s in body["shocks"]] == [
-        ("var_brent_crude", 12.5),
-        ("var_usd_inr", 5.0),
+        ("var_brent_crude", "12.5"),
+        ("var_usd_inr", "5"),
     ]
     assert body["updated_at"] > created["updated_at"]
     assert body["created_at"] == created["created_at"]
+    # Saving adds a version; the first one is kept as it was.
+    assert body["current_version"] == 2
+    first = client.get(f"{URL}/{created['id']}/versions/1").json()
+    assert [(s["variable_id"], s["value"]) for s in first["shocks"]] == [("var_brent_crude", "30")]
 
 
 def test_deletes_a_scenario(client: TestClient) -> None:

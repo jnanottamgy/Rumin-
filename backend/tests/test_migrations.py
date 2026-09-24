@@ -2,7 +2,12 @@
 
 from __future__ import annotations
 
+import json
+import uuid
+from decimal import Decimal
+
 import pytest
+import sqlalchemy as sa
 from alembic import command
 from alembic.autogenerate import compare_metadata
 from alembic.runtime.migration import MigrationContext
@@ -11,8 +16,11 @@ from sqlalchemy.exc import IntegrityError
 
 import app.models  # noqa: F401
 from app.db.base import Base, utcnow
+from app.db.seed import load_dataset
 from app.db.session import create_db_engine, create_session_factory
+from app.domain.enums import ChangeType
 from app.models import Company
+from app.scenario_lab.spec import ShockSpec, from_parts, spec_hash
 from tests.conftest import alembic_config
 
 
@@ -56,3 +64,59 @@ def test_foreign_keys_are_enforced(engine: Engine) -> None:
         )
         with pytest.raises(IntegrityError):
             session.commit()
+
+
+def test_phase_1_drafts_become_version_one_of_themselves(fresh_sqlite_url: str) -> None:
+    """Migration 0005 turns every existing draft into version 1, hashed exactly as the
+    application hashes a version, and the downgrade keeps the latest version's changes."""
+    config = alembic_config(fresh_sqlite_url)
+    command.upgrade(config, "0004")
+    engine = create_db_engine(fresh_sqlite_url)
+    with create_session_factory(engine)() as session:
+        load_dataset(session)
+    draft = uuid.uuid4()
+    with engine.begin() as connection:
+        now = utcnow()
+        connection.execute(
+            sa.text(
+                "INSERT INTO scenarios (id, name, description, status, created_at, updated_at) "
+                "VALUES (:id, 'Oil shock', 'Brent rises.', 'draft', :now, :now)"
+            ),
+            {"id": draft.hex, "now": now},
+        )
+        connection.execute(
+            sa.text(
+                "INSERT INTO scenario_shocks (scenario_id, position, variable_id, change_type, "
+                "value, note) VALUES (:id, 0, 'var_brent_crude', 'percent_change', 30.25, 'Up')"
+            ),
+            {"id": draft.hex},
+        )
+
+    command.upgrade(config, "head")
+
+    with engine.connect() as connection:
+        version = connection.execute(
+            sa.text("SELECT id, version, name, spec, spec_hash FROM scenario_versions")
+        ).one()
+        shocks = connection.execute(
+            sa.text("SELECT scenario_version_id, variable_id, value FROM scenario_shocks")
+        ).all()
+        current = connection.execute(sa.text("SELECT current_version FROM scenarios")).scalar()
+    assert (version.version, version.name, current) == (1, "Oil shock", 1)
+    assert [(row.scenario_version_id, row.variable_id) for row in shocks] == [
+        (version.id, "var_brent_crude")
+    ]
+    spec = from_parts(
+        name="Oil shock",
+        description="Brent rises.",
+        template_id=None,
+        shocks=[ShockSpec("var_brent_crude", ChangeType.PERCENT_CHANGE, Decimal("30.25"), "Up")],
+        spec=json.loads(version.spec) if isinstance(version.spec, str) else version.spec,
+    )
+    assert version.spec_hash == spec_hash(spec)
+
+    command.downgrade(config, "0004")
+    with engine.connect() as connection:
+        rows = connection.execute(sa.text("SELECT variable_id, note FROM scenario_shocks")).all()
+    assert [(row.variable_id, row.note) for row in rows] == [("var_brent_crude", "Up")]
+    engine.dispose()
