@@ -319,6 +319,10 @@ describe("Financial intelligence — stored analyses", () => {
       "Stale. Since it was stored, stored values changed.",
     );
     expect(screen.getByRole("link", { name: "The analysis now" })).toHaveAttribute("href", DOSSIER);
+    // On a phone the subject picker names what is open, not a live subject.
+    expect(screen.getByRole("combobox", { name: "Subject" })).toHaveDisplayValue(
+      "A stored analysis",
+    );
   });
 });
 

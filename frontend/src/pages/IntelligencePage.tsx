@@ -845,7 +845,7 @@ export function IntelligencePage() {
     <div className={styles.page}>
       <SubjectRail entities={entities.data} />
       <div className={styles.content}>
-        <SubjectPicker entities={entities.data} current={entityKey} />
+        <SubjectPicker entities={entities.data} current={entityKey} stored={Boolean(analysisId)} />
         {analysisId ? (
           <StoredView analysisId={analysisId} />
         ) : entityKey ? (

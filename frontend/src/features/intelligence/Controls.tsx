@@ -238,12 +238,17 @@ export function SubjectRail({ entities }: { entities: IntelligenceEntityList | u
 }
 
 /** Small screens: the same subjects as a compact picker. */
+const STORED = "stored";
+
 export function SubjectPicker({
   entities,
   current,
+  stored = false,
 }: {
   entities: IntelligenceEntityList | undefined;
   current: string | undefined;
+  /** A stored analysis is open: no live subject is selected. */
+  stored?: boolean;
 }) {
   const navigate = useNavigate();
   const id = useId();
@@ -254,11 +259,16 @@ export function SubjectPicker({
       <label htmlFor={id}>Subject</label>
       <select
         id={id}
-        value={current ?? ""}
+        value={stored ? STORED : (current ?? "")}
         onChange={(event) =>
           navigate(event.target.value ? entityPath(event.target.value) : "/intelligence")
         }
       >
+        {stored && (
+          <option value={STORED} disabled>
+            A stored analysis
+          </option>
+        )}
         <option value="">Workspace</option>
         {companies.length > 0 && (
           <optgroup label="Companies">
