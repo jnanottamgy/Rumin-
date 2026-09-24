@@ -16,6 +16,7 @@ import pytest
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, sessionmaker
 
+from app.db.base import utcnow
 from app.domain.enums import ChangeType, ScenarioExecutionStatus
 from app.models import (
     Scenario,
@@ -25,9 +26,11 @@ from app.models import (
     SimulationRun,
 )
 from app.scenario_lab import LAB_VERSION
+from app.scenario_lab import runner as runner_module
 from app.scenario_lab.aggregate import IDENTITY_TOLERANCE
 from app.scenario_lab.comparison import compare
 from app.scenario_lab.executor import (
+    ExecutionSuperseded,
     _timeline,
     combine,
     evaluate_stress,
@@ -35,6 +38,7 @@ from app.scenario_lab.executor import (
     run_execution,
     simulate,
     spec_of,
+    write_state,
 )
 from app.scenario_lab.pathways import complete, trace
 from app.scenario_lab.planner import Plan, build_plan
@@ -673,6 +677,70 @@ def test_a_final_execution_is_never_run_again(
     with session_factory() as session:
         assert session.get_one(ScenarioExecution, execution_id).finished_at == before
         assert session.scalar(select(func.count()).select_from(ScenarioExecutionRun)) == 1
+
+
+def test_a_run_whose_execution_was_made_final_elsewhere_stores_nothing(
+    built_graph: Session, session_factory: sessionmaker[Session]
+) -> None:
+    execution_id = queue(built_graph, brent_only())
+
+    def another_process_starts(session: Session) -> str:
+        # Called while the execution is validating: a starting process marks it interrupted.
+        assert recover(session_factory) == 1
+        return scenario_service.freshness(session)
+
+    run_execution(
+        session_factory, execution_id, freshness=another_process_starts, timeout_seconds=20.0
+    )
+
+    with session_factory() as session:
+        row = session.get_one(ScenarioExecution, execution_id)
+        assert (row.status, stored(row.error)["code"]) == (S.FAILED, "interrupted")
+        assert [stage["stage"] for stage in row.stages] == ["validating"]
+        assert row.plan is None and row.results is None and row.runs == []
+        assert session.scalar(select(func.count()).select_from(SimulationRun)) == 0
+
+
+def test_a_final_state_is_never_overwritten(
+    built_graph: Session, session_factory: sessionmaker[Session]
+) -> None:
+    execution_id = queue(built_graph, brent_only())
+    carry_out(session_factory, execution_id)
+
+    with session_factory() as session:
+        row = session.get_one(ScenarioExecution, execution_id)
+        with pytest.raises(ExecutionSuperseded):
+            write_state(session, row, status=S.FAILED, error={"code": "interrupted"})
+        session.rollback()
+
+    with session_factory() as session:
+        row = session.get_one(ScenarioExecution, execution_id)
+        assert row.status is S.COMPLETED and row.error is None and row.results is not None
+
+
+def test_recovery_leaves_an_execution_that_became_final_in_the_meantime(
+    built_graph: Session,
+    session_factory: sessionmaker[Session],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    execution_id = queue(built_graph, brent_only())
+    with session_factory() as session:
+        session.get_one(ScenarioExecution, execution_id).status = S.AGGREGATING
+        session.commit()
+
+    def finished_meanwhile() -> Any:
+        # Between recovery's read and its update, the running process completes it.
+        with session_factory() as other:
+            other.get_one(ScenarioExecution, execution_id).status = S.COMPLETED
+            other.commit()
+        return utcnow()
+
+    monkeypatch.setattr(runner_module, "utcnow", finished_meanwhile)
+
+    assert recover(session_factory) == 0
+    with session_factory() as session:
+        row = session.get_one(ScenarioExecution, execution_id)
+        assert row.status is S.COMPLETED and row.error is None
 
 
 # --- The runner ---------------------------------------------------------------------------------

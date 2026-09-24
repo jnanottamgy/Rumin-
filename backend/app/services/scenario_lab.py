@@ -14,7 +14,7 @@ import uuid
 from collections.abc import Sequence
 from typing import Any
 
-from sqlalchemy import func, select
+from sqlalchemy import CursorResult, func, select, update
 from sqlalchemy.orm import Session
 
 from app.core.errors import AppError, ConflictError, DomainValidationError, NotFoundError
@@ -202,10 +202,17 @@ def get_pathways(session: Session, execution_id: uuid.UUID) -> LabPathwayRead:
 
 def cancel_execution(session: Session, execution_id: uuid.UUID) -> ExecutionRead:
     row = _execution_or_404(session, execution_id)
-    if row.status in TERMINAL:
-        raise ConflictError(f"The execution is already {row.status.value}; it cannot change.")
-    row.cancel_requested = True
+    # Conditional, so an execution that finished a moment ago is not changed.
+    result = session.execute(
+        update(ScenarioExecution)
+        .where(ScenarioExecution.id == row.id, ScenarioExecution.status.not_in(list(TERMINAL)))
+        .values(cancel_requested=True)
+        .execution_options(synchronize_session=False)
+    )
     session.commit()
+    session.refresh(row)
+    if not isinstance(result, CursorResult) or result.rowcount != 1:
+        raise ConflictError(f"The execution is already {row.status.value}; it cannot change.")
     return execution_read(session, row)
 
 

@@ -18,7 +18,10 @@ happens, so the page shows the real progression:
 
 Cancellation and the time limit are checked between stages and between models. An
 execution that fails, is cancelled or times out stores nothing but its state and the
-reason. Once final, an execution never changes.
+reason. Once final, an execution never changes: every change of state is a conditional
+update that applies only while the execution is not final, so a state recorded elsewhere
+(another process marking it interrupted when it starts) is never overwritten, and a run
+that finds its execution already final stops without storing anything.
 """
 
 from __future__ import annotations
@@ -32,7 +35,9 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Any
 
+from sqlalchemy import CursorResult, update
 from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm.attributes import set_committed_value
 
 from app.db.base import utcnow
 from app.domain.enums import ScenarioExecutionStatus
@@ -89,6 +94,11 @@ class ExecutionStopped(Exception):
         self.status = status
         self.code = code
         self.message = message
+
+
+class ExecutionSuperseded(Exception):
+    """The execution is already final: its state was recorded elsewhere (for example, a
+    starting process marked it interrupted). It is left as it is; this run stores nothing."""
 
 
 class ExecutionFailed(Exception):
@@ -423,6 +433,23 @@ def _now_text(moment: datetime) -> str:
     return moment.isoformat()
 
 
+def write_state(session: Session, row: ScenarioExecution, **values: Any) -> None:
+    """Write ``values`` to the execution in the current transaction, only while it is not
+    final (a conditional update); ``ExecutionSuperseded`` if it already is. The row's other
+    pending changes are flushed first, so they belong to the same transaction."""
+    session.flush()
+    result = session.execute(
+        update(ScenarioExecution)
+        .where(ScenarioExecution.id == row.id, ScenarioExecution.status.not_in(list(TERMINAL)))
+        .values(**values)
+        .execution_options(synchronize_session=False)
+    )
+    if not isinstance(result, CursorResult) or result.rowcount != 1:
+        raise ExecutionSuperseded(str(row.id))
+    for key, value in values.items():
+        set_committed_value(row, key, value)
+
+
 class _Stages:
     def __init__(self, session: Session, row: ScenarioExecution, clock: Callable[[], datetime]):
         self.session = session
@@ -437,15 +464,14 @@ class _Stages:
         stages.append(
             {"stage": status.value, "started_at": now, "finished_at": None, "detail": detail}
         )
-        self.row.stages = stages
-        self.row.status = status
+        write_state(self.session, self.row, stages=stages, status=status)
         self.session.commit()
 
-    def close(self) -> None:
+    def closed(self) -> list[dict[str, Any]]:
         stages = [dict(item) for item in self.row.stages or []]
         if stages and stages[-1]["finished_at"] is None:
             stages[-1]["finished_at"] = _now_text(self.clock())
-        self.row.stages = stages
+        return stages
 
 
 def _finish(
@@ -457,13 +483,33 @@ def _finish(
     *,
     error: dict[str, Any] | None = None,
 ) -> None:
-    stages.close()
-    row.status = status
-    row.error = error
-    row.finished_at = clock()
+    """Record the final state, with whatever the transaction holds (the results and runs of
+    a completed execution). If the execution is already final, nothing is written."""
+    execution_id = row.id
+    finished_at = clock()
+    values: dict[str, Any] = {
+        "stages": stages.closed(),
+        "status": status,
+        "finished_at": finished_at,
+    }
+    if error is not None:
+        values["error"] = error
     if row.started_at is not None:
-        row.duration_ms = max(0, round((row.finished_at - row.started_at).total_seconds() * 1000))
+        values["duration_ms"] = max(0, round((finished_at - row.started_at).total_seconds() * 1000))
+    try:
+        write_state(session, row, **values)
+    except ExecutionSuperseded:
+        session.rollback()
+        _superseded(execution_id)
+        return
     session.commit()
+
+
+def _superseded(execution_id: uuid.UUID) -> None:
+    logger.warning(
+        "Scenario execution %s was already final (recorded elsewhere); this run stored nothing",
+        execution_id,
+    )
 
 
 def run_execution(
@@ -491,7 +537,9 @@ def run_execution(
                     f"The execution exceeded its time limit of {timeout_seconds:g} seconds and "
                     "was stopped. Nothing was stored.",
                 )
-            session.refresh(row, attribute_names=["cancel_requested"])
+            session.refresh(row, attribute_names=["cancel_requested", "status"])
+            if row.status in TERMINAL:
+                raise ExecutionSuperseded(str(execution_id))
             if row.cancel_requested:
                 raise ExecutionStopped(
                     S.CANCELLED, "cancelled", "Cancelled on request. Nothing was stored."
@@ -566,6 +614,9 @@ def run_execution(
             row.inputs_hash = inputs_hash(plan.spec_hash, members, executions)
             row.result_hash = sha256(hashed_result(combined, executions, spec))
             _finish(session, row, stages, S.COMPLETED, clock)
+        except ExecutionSuperseded:
+            session.rollback()
+            _superseded(execution_id)
         except ExecutionStopped as stop:
             session.rollback()
             _finish(

@@ -7,8 +7,10 @@ between stages (``executor``). An execution left unfinished by a stopped server 
 failed when the server starts again, so no execution stays "running" forever.
 
 ``inline`` mode runs each execution in the request that created it (tests, and a
-fallback when threads are not wanted). The pool is per API process: with several processes
-each has its own limits (documented; a shared job queue is Phase 10 work).
+fallback when threads are not wanted). The pool is per API process, and recovery assumes
+one API process: a starting process marks every unfinished execution interrupted,
+including one another live process is running (that run then stops and stores nothing;
+a final execution is never changed). A shared job queue is Phase 10 work.
 """
 
 from __future__ import annotations
@@ -20,7 +22,7 @@ from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from typing import Literal
 
-from sqlalchemy import select
+from sqlalchemy import CursorResult, select, update
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.db.base import utcnow
@@ -129,21 +131,38 @@ class ExecutionRunner:
 
 
 def recover(session_factory: sessionmaker[Session]) -> int:
-    """Mark every unfinished execution failed (the process that ran it has stopped)."""
+    """Mark every unfinished execution failed (the process that ran it has stopped). Each
+    update applies only while the execution is still unfinished, so one that became final
+    in the meantime is left as it is."""
     with session_factory() as session:
-        rows = session.scalars(
-            select(ScenarioExecution).where(ScenarioExecution.status.not_in(list(TERMINAL)))
+        rows = session.execute(
+            select(ScenarioExecution.id, ScenarioExecution.stages).where(
+                ScenarioExecution.status.not_in(list(TERMINAL))
+            )
         ).all()
         now = utcnow()
-        for row in rows:
-            stages = [dict(item) for item in row.stages or []]
+        marked = 0
+        for execution_id, stored_stages in rows:
+            stages = [dict(item) for item in stored_stages or []]
             if stages and stages[-1]["finished_at"] is None:
                 stages[-1]["finished_at"] = now.isoformat()
-            row.stages = stages
-            row.status = ScenarioExecutionStatus.FAILED
-            row.error = {"code": "interrupted", "message": INTERRUPTED, "details": []}
-            row.finished_at = now
+            result = session.execute(
+                update(ScenarioExecution)
+                .where(
+                    ScenarioExecution.id == execution_id,
+                    ScenarioExecution.status.not_in(list(TERMINAL)),
+                )
+                .values(
+                    stages=stages,
+                    status=ScenarioExecutionStatus.FAILED,
+                    error={"code": "interrupted", "message": INTERRUPTED, "details": []},
+                    finished_at=now,
+                )
+                .execution_options(synchronize_session=False)
+            )
+            if isinstance(result, CursorResult):
+                marked += result.rowcount
         session.commit()
-        if rows:
-            logger.warning("Marked %d interrupted scenario executions as failed", len(rows))
-        return len(rows)
+        if marked:
+            logger.warning("Marked %d interrupted scenario executions as failed", marked)
+        return marked
