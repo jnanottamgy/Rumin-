@@ -42,6 +42,9 @@
 .nav {
   flex: 1;
   min-width: 0;
+  /* A last resort if a fallback font runs wider than planned: scroll, never overlap. */
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 
 .navList {
@@ -57,7 +60,7 @@
   align-items: center;
   gap: var(--space-2);
   height: var(--header-height);
-  padding: 0 var(--space-3);
+  padding: 0 var(--space-2);
   color: var(--color-ink-secondary);
   font-size: var(--text-sm);
   font-weight: 500;
@@ -181,15 +184,15 @@
   font-size: var(--text-xs);
 }
 
-/* Tablet: keep the nav, drop the workspace detail text. */
-@media (max-width: 75rem) {
+/* Below wide screens: keep the nav, drop the workspace detail text. */
+@media (max-width: 90rem) {
   .meta [data-part="detail"] {
     display: none;
   }
 }
 
-/* Small screens: collapse navigation into the menu. */
-@media (max-width: 56rem) {
+/* Small screens: collapse navigation into the menu (nine modules need ~72rem). */
+@media (max-width: 72rem) {
   .nav,
   .meta {
     display: none;
@@ -204,7 +207,7 @@
   }
 }
 
-@media (min-width: 56.0625rem) {
+@media (min-width: 72.0625rem) {
   .mobileMenu {
     display: none;
   }
