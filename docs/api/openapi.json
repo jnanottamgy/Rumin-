@@ -11354,11 +11354,18 @@
         "properties": {
           "companies": {
             "type": "integer",
-            "title": "Companies"
+            "title": "Companies",
+            "description": "Companies in the current knowledge graph."
+          },
+          "companies_listed": {
+            "type": "integer",
+            "title": "Companies Listed",
+            "description": "Companies analysed: the first 200 by name when there are more (`truncated`)."
           },
           "companies_with_exposure": {
             "type": "integer",
-            "title": "Companies With Exposure"
+            "title": "Companies With Exposure",
+            "description": "Of those listed."
           },
           "exposure_paths": {
             "type": "integer",
@@ -11412,6 +11419,7 @@
         "type": "object",
         "required": [
           "companies",
+          "companies_listed",
           "companies_with_exposure",
           "exposure_paths",
           "variables",

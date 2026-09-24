@@ -322,7 +322,7 @@
       "id": "X01",
       "kind": "cross_entity",
       "title": "Shared driver",
-      "purpose": "A variable that reaches two or more companies through validated relationships."
+      "purpose": "A variable that reaches two or more companies through validated relationships (at most 12, those reaching the most companies; the exposure matrix shows every one)."
     },
     {
       "id": "E01",

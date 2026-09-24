@@ -334,8 +334,9 @@ def analyse_entity(
 
 @dataclass(frozen=True)
 class Coverage:
-    companies: int
-    companies_with_exposure: int
+    companies: int  # in the current graph
+    companies_listed: int  # analysed (the first WORKSPACE_LIMIT by name)
+    companies_with_exposure: int  # among those listed
     exposure_paths: int
     variables: int
     series: int
@@ -406,15 +407,10 @@ def _related_edges(session: Session, variable_keys: Iterable[str]) -> dict[str, 
     return found
 
 
-def analyse_workspace(
-    session: Session, thresholds: Thresholds, *, build: BuildInfo
-) -> WorkspaceAnalysis:
-    exposure = workspace_exposure(session, build.id)
-    names = rules.names_of(
-        exposure.companies,
-        exposure.variables,
-        [p.industry for paths in exposure.paths.values() for p in paths if p.industry],
-    )
+def analyse_data(
+    session: Session, thresholds: Thresholds
+) -> tuple[list[SeriesAnalysis], list[SeriesAnalysis]]:
+    """Every series and instrument with two or more stored values, analysed."""
     series: list[SeriesAnalysis] = []
     for series_id in series_with_data(session):
         history = load_series(session, series_id)
@@ -426,6 +422,19 @@ def analyse_workspace(
         for history in load_instrument(session, instrument_id)
         if history.points
     ]
+    return series, instruments
+
+
+def analyse_workspace(
+    session: Session, thresholds: Thresholds, *, build: BuildInfo
+) -> WorkspaceAnalysis:
+    exposure = workspace_exposure(session, build.id)
+    names = rules.names_of(
+        exposure.companies,
+        exposure.variables,
+        [p.industry for paths in exposure.paths.values() for p in paths if p.industry],
+    )
+    series, instruments = analyse_data(session, thresholds)
     changes_in_graph = relationship_changes(session)
     stored = latest_executions(session)
     companies = {company.key: company for company in exposure.companies}
@@ -485,7 +494,8 @@ def analyse_workspace(
         for edge in query_edges(session, types=(GraphEdgeType.RELATED_MEASURE_OF,))
     }
     coverage = Coverage(
-        companies=len(exposure.companies),
+        companies=company_count(session),
+        companies_listed=len(exposure.companies),
         companies_with_exposure=sum(1 for paths in exposure.paths.values() if paths),
         exposure_paths=sum(len(paths) for paths in exposure.paths.values()),
         variables=len(exposure.variables),

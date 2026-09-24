@@ -11,8 +11,15 @@ from decimal import Decimal
 import pytest
 
 from app.intelligence import fmt, serialize
-from app.intelligence.exposure import analyse
+from app.intelligence.exposure import (
+    ExposurePath,
+    WorkspaceExposure,
+    analyse,
+    reach_index,
+    variable_exposure,
+)
 from app.intelligence.graphview import EdgeInfo, GraphSlice, NodeInfo
+from app.intelligence.insights import MAX_SHARED_DRIVERS, shared_driver_insights
 from app.intelligence.model import (
     Basis,
     ChainError,
@@ -355,3 +362,52 @@ def test_numbers_are_formatted_for_reading_and_kept_exact_as_data() -> None:
         "d": "2024-01-01",
         "t": ["0.1"],
     }
+
+
+def test_shared_drivers_are_capped_by_reach_and_never_invented() -> None:
+    companies = [node(f"company:co_{i:02d}", f"Company {i:02d}", "company") for i in range(20)]
+    variables = [
+        node(f"variable:var_{i:02d}", f"Variable {i:02d}", "economic_variable") for i in range(15)
+    ]
+
+    def path(variable: NodeInfo, company: NodeInfo, index: int) -> ExposurePath:
+        link = edge(f"e-{index:016x}", "affects_costs", variable.key, company.key)
+        return ExposurePath(
+            origin=variable,
+            variable=variable,
+            channel="costs",
+            directness="direct",
+            base="direct",
+            industry=None,
+            hops=(variable,),
+            edges=(link,),
+            evidence_status="model_assumption",
+            models=(),
+            group="Other variables",
+        )
+
+    # Variable i reaches companies 0 … i+1 (i + 2 companies); variable 14 reaches only one.
+    paths: dict[str, list[ExposurePath]] = {company.key: [] for company in companies}
+    index = 0
+    for i, variable in enumerate(variables):
+        reach = 1 if i == 14 else i + 2
+        for company in companies[:reach]:
+            index += 1
+            paths[company.key].append(path(variable, company, index))
+    workspace = WorkspaceExposure(
+        build_id=1,
+        companies=tuple(companies),
+        variables=tuple(variables),
+        paths={key: tuple(value) for key, value in paths.items()},
+        truncated=False,
+    )
+
+    found = shared_driver_insights(workspace, {n.key: n.name for n in [*companies, *variables]})
+
+    assert len(found) == MAX_SHARED_DRIVERS == 12
+    assert [item.subject.id for item in found][:2] == ["variable:var_13", "variable:var_12"]
+    assert "variable:var_14" not in {item.subject.id for item in found}  # reaches one company
+    assert all(item.evidence.grade is Grade.ASSUMED for item in found)
+    by_variable = reach_index(workspace)  # one pass, the same answer as asking per variable
+    for variable in variables:
+        assert by_variable.get(variable.key, []) == variable_exposure(workspace, variable.key)

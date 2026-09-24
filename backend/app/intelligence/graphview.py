@@ -99,24 +99,32 @@ class GraphSlice:
     nodes: dict[str, NodeInfo] = field(default_factory=dict)
     series: dict[str, SeriesInfo] = field(default_factory=dict)  # by series node key
     truncated: bool = False
+    # Edges by endpoint, in edge order; rebuilt after every `add`.
+    _by_target: dict[str, list[EdgeInfo]] | None = field(default=None, repr=False)
+    _by_source: dict[str, list[EdgeInfo]] | None = field(default=None, repr=False)
 
     def add(self, edges: Iterable[EdgeInfo]) -> None:
         for edge in edges:
             self.edges[edge.key] = edge
+        self._by_target = self._by_source = None
+
+    def _index(self) -> tuple[dict[str, list[EdgeInfo]], dict[str, list[EdgeInfo]]]:
+        if self._by_target is None or self._by_source is None:
+            by_target: dict[str, list[EdgeInfo]] = {}
+            by_source: dict[str, list[EdgeInfo]] = {}
+            for edge in sorted(self.edges.values(), key=_edge_order):
+                by_target.setdefault(edge.target, []).append(edge)
+                by_source.setdefault(edge.source, []).append(edge)
+            self._by_target, self._by_source = by_target, by_source
+        return self._by_target, self._by_source
 
     def by_target(self, target: str, *types: GraphEdgeType) -> list[EdgeInfo]:
         wanted = {item.value for item in types}
-        return sorted(
-            (e for e in self.edges.values() if e.target == target and e.edge_type in wanted),
-            key=_edge_order,
-        )
+        return [e for e in self._index()[0].get(target, ()) if e.edge_type in wanted]
 
     def by_source(self, source: str, *types: GraphEdgeType) -> list[EdgeInfo]:
         wanted = {item.value for item in types}
-        return sorted(
-            (e for e in self.edges.values() if e.source == source and e.edge_type in wanted),
-            key=_edge_order,
-        )
+        return [e for e in self._index()[1].get(source, ()) if e.edge_type in wanted]
 
     def of_type(self, *types: GraphEdgeType) -> list[EdgeInfo]:
         wanted = {item.value for item in types}
@@ -285,16 +293,11 @@ def load_entity(session: Session, entity_key: str, build_id: int | None) -> Grap
 
 
 def load_workspace(session: Session, build_id: int | None, *, limit: int) -> GraphSlice:
-    """The edges every company's exposures are computed from, in one pass, bounded."""
+    """What the listed companies' exposures are computed from: the first ``limit`` companies
+    by name and every validated edge their paths use — their industries, the variables that
+    affect either, and up to two `influences` hops upstream. Bounded by the companies, never
+    by the edges, so a listed company is never shown without an exposure it has."""
     graph = GraphSlice(build_id=build_id)
-    graph.add(query_edges(session, types=AFFECTS, limit=limit))
-    graph.add(query_edges(session, types=(GraphEdgeType.INFLUENCES,), limit=limit))
-    industries = {e.target for e in graph.of_type(*AFFECTS) if e.target.startswith("industry:")}
-    graph.add(query_edges(session, types=(GraphEdgeType.IN_INDUSTRY,), targets=industries))
-    variables = {e.source for e in graph.of_type(*AFFECTS)} | {
-        key for e in graph.of_type(GraphEdgeType.INFLUENCES) for key in (e.source, e.target)
-    }
-    graph.add(query_edges(session, types=(GraphEdgeType.RELATED_MEASURE_OF,), targets=variables))
     companies = session.scalars(
         select(GraphNode.id)
         .where(GraphNode.retired_build_id.is_(None), GraphNode.node_type == GraphNodeType.COMPANY)
@@ -302,11 +305,38 @@ def load_workspace(session: Session, build_id: int | None, *, limit: int) -> Gra
         .limit(limit + 1)
     ).all()
     graph.truncated = len(companies) > limit
-    keys = set(companies[:limit])
+    listed = set(companies[:limit])
+    graph.add(query_edges(session, types=(GraphEdgeType.IN_INDUSTRY,), sources=listed))
+    industries = {edge.target for edge in graph.of_type(GraphEdgeType.IN_INDUSTRY)}
+    graph.add(query_edges(session, types=AFFECTS, targets=listed | industries))
+    variables = _upstream(session, graph, {edge.source for edge in graph.of_type(*AFFECTS)})
+    graph.add(query_edges(session, types=(GraphEdgeType.RELATED_MEASURE_OF,), targets=variables))
+    keys = set(listed)
     for edge in graph.edges.values():
         keys.update((edge.source, edge.target))
     graph.nodes = query_nodes(session, keys)
     _attach_series(session, graph)
+    return graph
+
+
+def load_industries(session: Session, build_id: int | None, *, limit: int) -> GraphSlice:
+    """What the listed industries' exposures are computed from (the first ``limit`` by
+    name): the variables that affect each, and up to two `influences` hops upstream."""
+    graph = GraphSlice(build_id=build_id)
+    industries = session.scalars(
+        select(GraphNode.id)
+        .where(GraphNode.retired_build_id.is_(None), GraphNode.node_type == GraphNodeType.INDUSTRY)
+        .order_by(GraphNode.display_name, GraphNode.id)
+        .limit(limit + 1)
+    ).all()
+    graph.truncated = len(industries) > limit
+    listed = set(industries[:limit])
+    graph.add(query_edges(session, types=AFFECTS, targets=listed))
+    _upstream(session, graph, {edge.source for edge in graph.of_type(*AFFECTS)})
+    keys = set(listed)
+    for edge in graph.edges.values():
+        keys.update((edge.source, edge.target))
+    graph.nodes = query_nodes(session, keys)
     return graph
 
 

@@ -38,17 +38,18 @@ from app.intelligence.engine import BuildInfo, EntityNotFound, NotAnEntity
 from app.intelligence.exposure import (
     ExposurePath,
     entity_exposure,
+    industry_exposure,
     variable_exposure,
     weakest,
     workspace_exposure,
 )
+from app.intelligence.graphchanges import relationship_changes
 from app.intelligence.graphview import NodeInfo, query_edges, query_nodes
 from app.intelligence.model import EDGE_GRADE, GRADE_STATEMENT, GRADE_STRENGTH, Grade
 from app.intelligence.series import load_instrument, load_series
 from app.intelligence.thresholds import ThresholdError, Thresholds
 from app.models import (
     EconomicObservation,
-    GraphNode,
     IntelligenceAnalysis,
     PriceBar,
     ScenarioExecution,
@@ -212,10 +213,10 @@ def changes(session: Session, used: Thresholds) -> ChangesRead:
     """What changed: stored values (observed), revisions, relationships (graph builds) and
     executions of the same scenario (simulated) — each labelled by what it is."""
     build = build_info(session)
-    found = intelligence.analyse_workspace(session, used, build=build)
+    series, instruments = intelligence.analyse_data(session, used)
     observed: list[dict[str, Any]] = []
     revised: list[dict[str, Any]] = []
-    for analysis in [*found.series, *found.instruments]:
+    for analysis in [*series, *instruments]:
         latest = analysis.latest
         subject = serialize.data(analysis.history.subject)
         for change in analysis.detected:
@@ -234,15 +235,13 @@ def changes(session: Session, used: Thresholds) -> ChangesRead:
     observed.sort(key=lambda item: (item["change"]["later"]["start"], item["subject"]["id"]))
     observed.reverse()
     executions: list[dict[str, Any]] = []
-    companies = {company.key: company for company in found.exposure.companies}
-    for key, latest_drivers in sorted(found.drivers.items()):
-        stored = executions_for(session, key)
-        latest_row = next(
-            (row for row in stored if str(row.id) == latest_drivers.execution.id), None
-        )
-        if latest_row is None:
+    latest_rows = intelligence.latest_executions(session)
+    companies = query_nodes(session, latest_rows)
+    for key, latest_row in sorted(latest_rows.items()):
+        if key not in companies:
             continue
-        before = previous_of_same_scenario(stored, latest_row)
+        before = previous_of_same_scenario(executions_for(session, key), latest_row)
+        latest_drivers = analyse_drivers(session, latest_row, key)
         if before is None or latest_drivers.headline is None:
             continue
         previous = analyse_drivers(session, before, key)
@@ -269,7 +268,7 @@ def changes(session: Session, used: Thresholds) -> ChangesRead:
             "thresholds": used.to_json(),
             "observed": observed,
             "revisions": revised,
-            "relationships": serialize.data(found.relationships),
+            "relationships": serialize.data(relationship_changes(session)),
             "executions": executions,
             "notes": [
                 "Observed changes are between consecutive stored values of the latest window, "
@@ -313,18 +312,8 @@ def entity_list(session: Session, kind: str | None) -> EntityListRead:
                 )
             items.append(item)
     if kind in (None, "industry"):
-        industries = session.scalars(
-            select(GraphNode.id)
-            .where(
-                GraphNode.retired_build_id.is_(None),
-                GraphNode.node_type == GraphNodeType.INDUSTRY,
-            )
-            .order_by(GraphNode.display_name)
-            .limit(MAX_ENTITIES)
-        ).all()
-        for key in industries:
-            exposure = entity_exposure(session, key, build.id)
-            items.append(_summary(exposure.entity, exposure.paths))
+        for industry, paths in industry_exposure(session, build.id, limit=MAX_ENTITIES):
+            items.append(_summary(industry, paths))
     return EntityListRead.model_validate(
         {"build": serialize.build(build), "items": items, "total": len(items)}
     )

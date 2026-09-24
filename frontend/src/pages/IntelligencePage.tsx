@@ -145,11 +145,11 @@ function StoredNotice({ analysis, onClose }: { analysis: StoredAnalysis; onClose
 
 function CoverageLine({ overview }: { overview: IntelligenceOverview }) {
   const coverage = overview.coverage;
+  const companies = coverage.truncated
+    ? `${coverage.companies_with_exposure} of the first ${coverage.companies_listed} (${formatCount(coverage.companies)} in the graph)`
+    : `${coverage.companies_with_exposure} of ${coverage.companies}`;
   const items: [string, string][] = [
-    [
-      "Companies with a stated exposure",
-      `${coverage.companies_with_exposure} of ${coverage.companies}`,
-    ],
+    ["Companies with a stated exposure", companies],
     ["Exposure paths", formatCount(coverage.exposure_paths)],
     ["Series with stored values", `${coverage.series_with_data} of ${coverage.series}`],
     ["Stored values", formatCount(coverage.observations)],

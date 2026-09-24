@@ -17,6 +17,9 @@ from fastapi.testclient import TestClient
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session, sessionmaker
 
+from app.graph.store import GraphReader
+from app.intelligence.exposure import WORKSPACE_LIMIT, entity_exposure, paths_for
+from app.intelligence.graphview import AFFECTS, load_workspace, members
 from app.intelligence.model import GRADE_STRENGTH, Grade
 from app.models import GraphEdge, IntelligenceAnalysis, ScenarioExecution, SimulationRun
 from app.openapi_export import build_openapi
@@ -159,6 +162,26 @@ def test_exposure_comes_from_validated_relationships_only(intel: TestClient) -> 
 
     strict = get(intel, f"/intelligence/entities/{AERISCA}/exposure", evidence="evidence_backed")
     assert strict["paths"] == [] and strict["removed_by_filter"] == 4
+
+
+def test_the_workspace_states_each_listed_company_exposure_in_full(built_graph: Session) -> None:
+    """The workspace is bounded by companies, never by edges: every company it lists has
+    exactly the paths its own analysis finds, including when the listing is cut short."""
+    build = GraphReader(built_graph).latest_build()
+    assert build is not None
+    for limit in (3, WORKSPACE_LIMIT):
+        graph = load_workspace(built_graph, build.id, limit=limit)
+        membership = members(graph)
+        companies = [key for key, node in graph.nodes.items() if node.node_type == "company"]
+        listed = [key for key in companies if key in membership or graph.by_target(key, *AFFECTS)]
+        assert graph.truncated is (limit == 3)
+        assert listed
+        for key in listed:
+            shown = paths_for(graph, key, membership.get(key, []))
+            own = entity_exposure(built_graph, key, build.id).paths
+            assert [[e.key for e in p.edges] for p in shown] == [
+                [e.key for e in p.edges] for p in own
+            ], key
 
 
 def test_a_variable_lists_the_companies_it_reaches(intel: TestClient) -> None:

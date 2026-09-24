@@ -593,8 +593,11 @@ class EntityAnalysisRead(ApiModel):
 
 
 class CoverageRead(ApiModel):
-    companies: int
-    companies_with_exposure: int
+    companies: int = Field(description="Companies in the current knowledge graph.")
+    companies_listed: int = Field(
+        description="Companies analysed: the first 200 by name when there are more (`truncated`)."
+    )
+    companies_with_exposure: int = Field(description="Of those listed.")
     exposure_paths: int
     variables: int
     series: int

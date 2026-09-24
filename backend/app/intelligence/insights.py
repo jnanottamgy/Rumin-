@@ -25,6 +25,7 @@ from app.intelligence.exposure import (
     ExposureMap,
     ExposurePath,
     WorkspaceExposure,
+    reach_index,
     variable_exposure,
 )
 from app.intelligence.graphchanges import RelationshipChanges
@@ -157,7 +158,8 @@ RULES: tuple[RuleSpec, ...] = (
         "X01",
         "cross_entity",
         "Shared driver",
-        "A variable that reaches two or more companies through validated relationships.",
+        "A variable that reaches two or more companies through validated relationships (at "
+        "most 12, those reaching the most companies; the exposure matrix shows every one).",
     ),
     RuleSpec(
         "E01",
@@ -1593,14 +1595,22 @@ def relationship_change_insights(changes: RelationshipChanges) -> list[Insight]:
     return found
 
 
+MAX_SHARED_DRIVERS = 12
+
+
 def shared_driver_insights(workspace: WorkspaceExposure, names: dict[str, str]) -> list[Insight]:
-    """X01: variables that reach two or more companies."""
+    """X01: variables that reach two or more companies — at most ``MAX_SHARED_DRIVERS``, those
+    reaching the most companies (every variable stays in the exposure matrix)."""
     found: list[Insight] = []
     build = build_ref(workspace.build_id)
-    for variable in workspace.variables:
-        reached = variable_exposure(workspace, variable.key)
-        if len(reached) < 2:
-            continue
+    index = reach_index(workspace)
+    shared = [
+        (variable, reached)
+        for variable in workspace.variables
+        if len(reached := index.get(variable.key, [])) >= 2
+    ]
+    shared.sort(key=lambda item: (-len(item[1]), item[0].name))
+    for variable, reached in shared[:MAX_SHARED_DRIVERS]:
         by_channel: dict[str, list[str]] = {}
         for company, paths in reached:
             for channel in sorted({p.channel for p in paths}):

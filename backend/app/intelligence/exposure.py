@@ -34,6 +34,7 @@ from app.intelligence.graphview import (
     NodeInfo,
     SeriesInfo,
     load_entity,
+    load_industries,
     load_workspace,
     members,
 )
@@ -395,6 +396,35 @@ def workspace_exposure(session: Session, build_id: int | None) -> WorkspaceExpos
         paths=paths,
         truncated=graph.truncated,
     )
+
+
+def industry_exposure(
+    session: Session, build_id: int | None, *, limit: int = WORKSPACE_LIMIT
+) -> list[tuple[NodeInfo, list[ExposurePath]]]:
+    """Every listed industry's exposure paths, from one bounded read of the graph."""
+    graph = load_industries(session, build_id, limit=limit)
+    industries = sorted(
+        (node for node in graph.nodes.values() if node.node_type == "industry"),
+        key=lambda node: (node.name, node.key),
+    )
+    return [(industry, paths_for(graph, industry.key, [])) for industry in industries]
+
+
+def reach_index(
+    workspace: WorkspaceExposure,
+) -> dict[str, list[tuple[NodeInfo, list[ExposurePath]]]]:
+    """variable key → the companies it reaches (in listing order) with the paths through it,
+    for every variable on a path, from one pass over the workspace."""
+    index: dict[str, dict[str, list[ExposurePath]]] = {}
+    for company in workspace.companies:
+        for path in workspace.paths.get(company.key, ()):
+            for key in dict.fromkeys(node.key for node in path.hops):
+                index.setdefault(key, {}).setdefault(company.key, []).append(path)
+    companies = {company.key: company for company in workspace.companies}
+    return {
+        key: [(companies[company], paths) for company, paths in reached.items()]
+        for key, reached in index.items()
+    }
 
 
 def variable_exposure(

@@ -2690,9 +2690,20 @@ export interface components {
         };
         /** CoverageRead */
         CoverageRead: {
-            /** Companies */
+            /**
+             * Companies
+             * @description Companies in the current knowledge graph.
+             */
             companies: number;
-            /** Companies With Exposure */
+            /**
+             * Companies Listed
+             * @description Companies analysed: the first 200 by name when there are more (`truncated`).
+             */
+            companies_listed: number;
+            /**
+             * Companies With Exposure
+             * @description Of those listed.
+             */
             companies_with_exposure: number;
             /** Exposure Paths */
             exposure_paths: number;
