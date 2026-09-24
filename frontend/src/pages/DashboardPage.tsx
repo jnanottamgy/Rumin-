@@ -16,11 +16,12 @@ import { defaultFilters, KIND_ORDER, visibleSubgraph } from "@/features/network/
 import { NetworkCanvas } from "@/features/network/NetworkCanvas";
 import { NetworkLegend } from "@/features/network/NetworkLegend";
 import { useNetworkGraph } from "@/features/network/useNetworkGraph";
+import { STATUS_LABEL as EXECUTION_STATUS } from "@/features/scenarioLab/format";
 import { useApiResource } from "@/hooks/useApiResource";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { formatCount, formatDate, plural } from "@/lib/format";
 import { api } from "@/services/api";
-import type { SystemStatus } from "@/types/api";
+import type { ScenarioExecutionSummary, SystemStatus } from "@/types/api";
 import styles from "./DashboardPage.module.css";
 
 const UNAVAILABLE = "—";
@@ -111,12 +112,20 @@ function RecentScenarios() {
                 ? `executed ${formatDate(scenario.latest_execution.requested_at)}`
                 : `updated ${formatDate(scenario.updated_at)}`}
             </span>
-            <Badge tone="neutral">Not simulated</Badge>
+            <ExecutionBadge execution={scenario.latest_execution} />
           </Link>
         </li>
       ))}
     </ul>
   );
+}
+
+/** The latest execution's state, in words (a scenario that was never executed says so). */
+function ExecutionBadge({ execution }: { execution: ScenarioExecutionSummary | null }) {
+  if (!execution) return <Badge tone="neutral">Not executed</Badge>;
+  if (execution.status === "completed") return <Badge tone="outline">Executed</Badge>;
+  if (execution.status === "failed") return <Badge tone="critical">Execution failed</Badge>;
+  return <Badge tone="neutral">{EXECUTION_STATUS[execution.status] ?? execution.status}</Badge>;
 }
 
 function SystemSummary({ system }: { system: ReturnType<typeof useSystem> }) {

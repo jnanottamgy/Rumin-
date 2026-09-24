@@ -51,6 +51,9 @@ describe("Overview dashboard", () => {
     const recent = screen.getByRole("link", { name: /Oil, rupee and rates on Aerisca/ });
     expect(recent).toHaveAttribute("href", `/scenarios/${scenarioFixture().id}`);
     expect(within(recent).getByText(/3 changes · v1 · executed/)).toBeInTheDocument();
+    // The badge follows the latest execution; it never calls an executed scenario "not simulated".
+    expect(within(recent).getByText("Executed")).toBeInTheDocument();
+    expect(screen.queryByText("Not simulated")).not.toBeInTheDocument();
 
     // Capabilities that do not exist yet are listed as such; the simulation engine exists.
     expect(screen.queryByText("Simulation engine")).not.toBeInTheDocument();

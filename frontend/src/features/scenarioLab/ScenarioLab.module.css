@@ -1566,10 +1566,6 @@ g[data-dimmed="true"] {
   color: var(--color-ink-muted);
 }
 
-.stageMarker {
-  animation: stagePulse 1.2s var(--ease-in-out) infinite;
-}
-
 .stage[data-state="done"],
 .stage[data-state="completed"] {
   color: var(--color-ink);
@@ -1581,7 +1577,7 @@ g[data-dimmed="true"] {
   border-color: var(--color-accent);
 }
 
-.stage[data-state="current"] .stage[data-state="failed"],
+.stage[data-state="failed"],
 .stage[data-state="cancelled"] {
   color: var(--color-critical-ink);
   border-color: var(--color-critical);
@@ -1602,6 +1598,11 @@ g[data-dimmed="true"] {
   border: 1px solid currentcolor;
   font-size: 10px;
   font-family: var(--font-mono);
+}
+
+/* Only the stage the server reports as running pulses. */
+.stage[data-state="current"] .stageMarker {
+  animation: stagePulse 1.2s var(--ease-in-out) infinite;
 }
 
 .stageName {
