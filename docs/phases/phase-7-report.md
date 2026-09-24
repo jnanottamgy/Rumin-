@@ -269,4 +269,4 @@ where it is reachable.
 | Smoke test | passed: fresh database, graph built and rebuilt unchanged, 57 integration tests |
 | Evaluation (grounded composer) | 33 of 33 |
 | Dependency audit | `pip-audit`: none; `npm audit`: none |
-| CI | CI_PLACEHOLDER |
+| CI | [Run #25](https://github.com/jnanottamgy/Rumin-/actions/runs/36049146524) on `4b3f5b1` (the security review's fixes) passed: frontend (lint, types, tests, build, API types) and backend (lint, format, types, sample data, OpenAPI, tests on SQLite and PostgreSQL 16). [Run #24](https://github.com/jnanottamgy/Rumin-/actions/runs/36044526595) on `b37355e` passed. [Run #23](https://github.com/jnanottamgy/Rumin-/actions/runs/36036241582) on `f17ff94` **failed** on PostgreSQL: the coverage answer's build number, not in its evidence (fixed in `b37355e`; [evaluation](../analyst/evaluation.md#results)) |
