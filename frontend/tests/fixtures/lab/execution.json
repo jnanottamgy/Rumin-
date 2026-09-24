@@ -1,0 +1,2385 @@
+{
+  "id": "348bd1e1-ea11-4851-bbf6-78389f1512c1",
+  "scenario_id": "f5a5b9a1-87b4-4fe8-8dc3-dc2979e4ba8e",
+  "version": 1,
+  "status": "completed",
+  "requested_at": "2026-09-24T03:27:57.123440Z",
+  "started_at": "2026-09-24T03:27:57.129168Z",
+  "finished_at": "2026-09-24T03:27:57.224542Z",
+  "duration_ms": 95,
+  "inputs_hash": "f6de3e60b25529da5405788ece8ab094fcbb2ff65a19f20c96c66310e77cd15b",
+  "result_hash": "45fe9f3bf9a5d69b0f49f5e01ae5f6ebf291fc8e3f94635f5d6072c8e8dce622",
+  "headline": [
+    {
+      "id": "profit_before_tax",
+      "label": "Profit before tax",
+      "change": "-6700000",
+      "percent_change": "-17.6315789474",
+      "currency": "INR"
+    },
+    {
+      "id": "operating_profit",
+      "label": "Operating profit",
+      "change": "-6325000",
+      "percent_change": "-12.65",
+      "currency": "INR"
+    }
+  ],
+  "models": ["airline_fuel_cost", "fx_exposure", "floating_rate_interest"],
+  "error": null,
+  "scenario_name": "Oil, rupee and rates on Aerisca",
+  "lab_version": "1.0.0",
+  "cancel_requested": false,
+  "stages": [
+    {
+      "stage": "validating",
+      "started_at": "2026-09-24T03:27:57.129892Z",
+      "finished_at": "2026-09-24T03:27:57.160953Z",
+      "detail": "Rebuilding the plan and validating every model's inputs"
+    },
+    {
+      "stage": "simulating",
+      "started_at": "2026-09-24T03:27:57.160953Z",
+      "finished_at": "2026-09-24T03:27:57.180454Z",
+      "detail": "Executing 3 models and 2 stress cases"
+    },
+    {
+      "stage": "propagating",
+      "started_at": "2026-09-24T03:27:57.180454Z",
+      "finished_at": "2026-09-24T03:27:57.186494Z",
+      "detail": "Following each change through the models' runs"
+    },
+    {
+      "stage": "aggregating",
+      "started_at": "2026-09-24T03:27:57.186494Z",
+      "finished_at": "2026-09-24T03:27:57.224526Z",
+      "detail": "Combining the models into lines, metrics and the timeline"
+    }
+  ],
+  "plan": {
+    "spec_hash": "c868ca0c9d2786aed631c6c651b935d099a22c88318a729d5a5e016a99725615",
+    "executable": true,
+    "graph": {
+      "build_id": 1,
+      "freshness": "current"
+    },
+    "entity": {
+      "key": "company:co_aerisca_airways",
+      "name": "Aerisca Airways",
+      "nature": "fictional",
+      "industries": [
+        {
+          "key": "industry:ind_air_transport",
+          "name": "Air transport"
+        }
+      ]
+    },
+    "changes": [
+      {
+        "index": 0,
+        "variable_id": "var_brent_crude",
+        "name": "Brent crude oil price",
+        "change_type": "percent_change",
+        "value": "20",
+        "unit": "%",
+        "modelled": true,
+        "models": ["airline_fuel_cost"],
+        "reason": null
+      },
+      {
+        "index": 1,
+        "variable_id": "var_usd_inr",
+        "name": "USD/INR exchange rate",
+        "change_type": "percent_change",
+        "value": "5",
+        "unit": "%",
+        "modelled": true,
+        "models": ["airline_fuel_cost", "fx_exposure"],
+        "reason": null
+      },
+      {
+        "index": 2,
+        "variable_id": "var_rbi_repo_rate",
+        "name": "RBI policy repo rate",
+        "change_type": "absolute_change",
+        "value": "0.5",
+        "unit": "percentage points",
+        "modelled": true,
+        "models": ["floating_rate_interest"],
+        "reason": null
+      }
+    ],
+    "models": [
+      {
+        "model_id": "airline_fuel_cost",
+        "version": "1.1.0",
+        "name": "Airline fuel-cost shock",
+        "title": "Airline fuel cost",
+        "covers": "An airline's jet fuel bill (priced in US dollars, partly hedged) and the part of its change passed on to fares.",
+        "definition_hash": "1e6ddaac9f18fed44bab55dd1bb12f192ff50326438aa331c7cb295ada15ed6f",
+        "profile_hash": "6c1ad56c7c95601cbb2941b595a08e3bd3b2454e1271fae39bda2d6b98aa592d",
+        "mode": "auto",
+        "status": "included",
+        "reasons": [
+          "The knowledge graph states that Jet fuel price (U.S. Gulf Coast) affects costs of Air transport, the industry of Aerisca Airways. This decides whether the model applies, not how much: the amounts come from your figures.",
+          "Included by default."
+        ],
+        "changes": ["var_brent_crude", "var_usd_inr"],
+        "responds_to": [
+          {
+            "variable_id": "var_brent_crude",
+            "change_type": "percent_change",
+            "input": "crude_oil_change"
+          },
+          {
+            "variable_id": "var_jet_fuel",
+            "change_type": "percent_change",
+            "input": "jet_fuel_margin_change"
+          },
+          {
+            "variable_id": "var_usd_inr",
+            "change_type": "percent_change",
+            "input": "usd_change"
+          }
+        ],
+        "lines": [
+          {
+            "line": "operating_costs",
+            "item": "jet_fuel",
+            "label": "Jet fuel",
+            "output": "fuel_cost_change"
+          },
+          {
+            "line": "revenue",
+            "item": "fuel_cost_recovery",
+            "label": "Fare recovery",
+            "output": "fare_recovery"
+          }
+        ],
+        "exposure": {
+          "checked": true,
+          "required": true,
+          "stated": true,
+          "chains": [
+            [
+              {
+                "edge_key": "e-df536e008d0660a5",
+                "edge_type": "affects_costs",
+                "source": "variable:var_jet_fuel",
+                "target": "industry:ind_air_transport",
+                "evidence_status": "model_assumption",
+                "is_illustrative": true
+              },
+              {
+                "edge_key": "e-3c1cd4f52348ae25",
+                "edge_type": "in_industry",
+                "source": "company:co_aerisca_airways",
+                "target": "industry:ind_air_transport",
+                "evidence_status": "analyst_created",
+                "is_illustrative": true
+              }
+            ]
+          ]
+        },
+        "issues": [
+          {
+            "code": "assumption_based_channel",
+            "message": "Rule T1 follows a relationship the knowledge graph records as a model assumption, not an empirical finding: results that depend on it are assumption-driven.",
+            "severity": "warning",
+            "field": "shocks[0].value",
+            "model_id": "airline_fuel_cost"
+          }
+        ],
+        "inputs": [
+          {
+            "id": "crude_oil_change",
+            "label": "Crude oil price change",
+            "category": "scenario_input",
+            "knowledge": "scenario_input",
+            "source": "user",
+            "value": "20",
+            "unit": "percent_change",
+            "unit_label": "% change",
+            "default": "0",
+            "rationale": "No change unless you enter one.",
+            "variable": "variable:var_brent_crude",
+            "observation": null
+          },
+          {
+            "id": "jet_fuel_margin_change",
+            "label": "Additional jet fuel price change",
+            "category": "scenario_input",
+            "knowledge": "scenario_input",
+            "source": "default",
+            "value": "0",
+            "unit": "percent_change",
+            "unit_label": "% change",
+            "default": "0",
+            "rationale": "No change unless you enter one.",
+            "variable": "variable:var_jet_fuel",
+            "observation": null
+          },
+          {
+            "id": "usd_change",
+            "label": "Exchange-rate change",
+            "category": "scenario_input",
+            "knowledge": "scenario_input",
+            "source": "user",
+            "value": "5",
+            "unit": "percent_change",
+            "unit_label": "% change",
+            "default": "0",
+            "rationale": "No change unless you enter one.",
+            "variable": "variable:var_usd_inr",
+            "observation": null
+          },
+          {
+            "id": "jet_fuel_price",
+            "label": "Baseline jet fuel price",
+            "category": "market_baseline",
+            "knowledge": "user_input",
+            "source": "user",
+            "value": "750",
+            "unit": "usd_per_kilolitre",
+            "unit_label": "USD per kilolitre",
+            "default": null,
+            "rationale": null,
+            "variable": "variable:var_jet_fuel",
+            "observation": null
+          },
+          {
+            "id": "fx_rate",
+            "label": "Baseline exchange rate",
+            "category": "market_baseline",
+            "knowledge": "user_input",
+            "source": "user",
+            "value": "80",
+            "unit": "currency_per_usd",
+            "unit_label": "INR per USD",
+            "default": null,
+            "rationale": null,
+            "variable": "variable:var_usd_inr",
+            "observation": null
+          },
+          {
+            "id": "entity",
+            "label": "Airline in the knowledge graph",
+            "category": "company_input",
+            "knowledge": "user_input",
+            "source": "user",
+            "value": "company:co_aerisca_airways",
+            "unit": "graph_node",
+            "unit_label": "knowledge-graph node",
+            "default": null,
+            "rationale": null,
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "reporting_currency",
+            "label": "Reporting currency",
+            "category": "company_input",
+            "knowledge": "user_input",
+            "source": "user",
+            "value": "INR",
+            "unit": "currency_code",
+            "unit_label": "ISO 4217 code",
+            "default": null,
+            "rationale": null,
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "annual_revenue",
+            "label": "Annual revenue",
+            "category": "company_input",
+            "knowledge": "user_input",
+            "source": "user",
+            "value": "300000000",
+            "unit": "currency_per_year",
+            "unit_label": "INR per year",
+            "default": null,
+            "rationale": null,
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "annual_operating_costs",
+            "label": "Annual operating costs",
+            "category": "company_input",
+            "knowledge": "user_input",
+            "source": "user",
+            "value": "250000000",
+            "unit": "currency_per_year",
+            "unit_label": "INR per year",
+            "default": null,
+            "rationale": null,
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "annual_fuel_consumption",
+            "label": "Annual fuel consumption",
+            "category": "company_input",
+            "knowledge": "user_input",
+            "source": "user",
+            "value": "1000",
+            "unit": "kilolitre",
+            "unit_label": "kilolitre per year",
+            "default": null,
+            "rationale": null,
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "crude_pass_through",
+            "label": "Crude-to-jet-fuel elasticity (β)",
+            "category": "assumption",
+            "knowledge": "assumption",
+            "source": "default",
+            "value": "1",
+            "unit": "elasticity",
+            "unit_label": "elasticity (dimensionless)",
+            "default": "1",
+            "rationale": "β = 1 keeps the refining margin a constant proportion of the price, so jet fuel moves by the same percentage as crude. A neutral starting point, not an estimate: test other values with sensitivity analysis.",
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "crude_pass_through_lag",
+            "label": "Crude-to-jet-fuel lag",
+            "category": "assumption",
+            "knowledge": "assumption",
+            "source": "user",
+            "value": "1",
+            "unit": "months",
+            "unit_label": "months",
+            "default": "0",
+            "rationale": "0 assumes crude changes reach jet fuel in the same month. Set it to how the airline's fuel contracts reprice.",
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "hedge_ratio",
+            "label": "Hedge ratio",
+            "category": "assumption",
+            "knowledge": "assumption",
+            "source": "user",
+            "value": "40",
+            "unit": "percent",
+            "unit_label": "%",
+            "default": "0",
+            "rationale": "0 assumes no hedging. Enter the share of the coming months' fuel the airline has hedged.",
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "hedge_months",
+            "label": "Hedge cover",
+            "category": "assumption",
+            "knowledge": "assumption",
+            "source": "user",
+            "value": "6",
+            "unit": "months",
+            "unit_label": "months",
+            "default": "0",
+            "rationale": "0 assumes no hedge cover. Hedges are assumed not to be rolled over when they expire.",
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "fare_pass_through",
+            "label": "Fare pass-through",
+            "category": "assumption",
+            "knowledge": "assumption",
+            "source": "user",
+            "value": "50",
+            "unit": "percent",
+            "unit_label": "%",
+            "default": "0",
+            "rationale": "0 assumes fares do not change. Enter the share of a fuel-cost change the airline expects to pass on to passengers.",
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "fare_pass_through_lag",
+            "label": "Fare pass-through lag",
+            "category": "assumption",
+            "knowledge": "assumption",
+            "source": "user",
+            "value": "2",
+            "unit": "months",
+            "unit_label": "months",
+            "default": "0",
+            "rationale": "0 assumes fares adjust in the same month as the fuel cost. Enter the delay you expect.",
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "horizon_months",
+            "label": "Horizon",
+            "category": "setting",
+            "knowledge": "setting",
+            "source": "user",
+            "value": "12",
+            "unit": "months",
+            "unit_label": "months",
+            "default": "12",
+            "rationale": "Twelve months shows a full year after the shock.",
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "shock_start_month",
+            "label": "Changes start in month",
+            "category": "setting",
+            "knowledge": "setting",
+            "source": "user",
+            "value": "1",
+            "unit": "months",
+            "unit_label": "months",
+            "default": "1",
+            "rationale": "The changes take effect in the first month unless you set a later one.",
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "shock_duration_months",
+            "label": "Changes last for (months)",
+            "category": "setting",
+            "knowledge": "setting",
+            "source": "user",
+            "value": "0",
+            "unit": "months",
+            "unit_label": "months",
+            "default": "0",
+            "rationale": "0: the changes last for the rest of the horizon (a permanent step).",
+            "variable": null,
+            "observation": null
+          }
+        ],
+        "graph": {
+          "build_id": 1,
+          "build_finished_at": "2026-09-24T03:27:55.249248+00:00",
+          "source_fingerprint": "0c765a31f90ad535d027fc8ec9a676c21085d2a78d2d04d38f9f03f64dc4a3b3",
+          "freshness": "current",
+          "transmission": {
+            "T1": {
+              "rule": "T1",
+              "role": "transmission",
+              "edge_key": "e-ea305310288a3f88",
+              "edge_type": "influences",
+              "source": "variable:var_brent_crude",
+              "target": "variable:var_jet_fuel",
+              "evidence_status": "model_assumption",
+              "is_illustrative": true,
+              "description": "A change in Brent crude reaches the jet fuel price with elasticity β after the stated lag."
+            }
+          },
+          "supporting": {
+            "S1": {
+              "rule": "S1",
+              "role": "supporting",
+              "edge_key": "e-df536e008d0660a5",
+              "edge_type": "affects_costs",
+              "source": "variable:var_jet_fuel",
+              "target": "industry:ind_air_transport",
+              "evidence_status": "model_assumption",
+              "is_illustrative": true,
+              "description": "Jet fuel is a cost of air transport: the reason the fuel bill (E2–E10) belongs in an airline's operating costs. Cited, not propagated."
+            },
+            "S2": {
+              "rule": "S2",
+              "role": "supporting",
+              "edge_key": "e-3c1cd4f52348ae25",
+              "edge_type": "in_industry",
+              "source": "company:co_aerisca_airways",
+              "target": "industry:ind_air_transport",
+              "evidence_status": "analyst_created",
+              "is_illustrative": true,
+              "description": "The chosen airline operates in air transport."
+            },
+            "S3": {
+              "rule": "S3",
+              "role": "supporting",
+              "edge_key": "e-2afc04ee80f0699e",
+              "edge_type": "affects_costs",
+              "source": "variable:var_usd_inr",
+              "target": "company:co_aerisca_airways",
+              "evidence_status": "model_assumption",
+              "is_illustrative": true,
+              "description": "The exchange rate affects the chosen airline's costs (E3, E8). Cited, not propagated."
+            }
+          },
+          "entity": {
+            "key": "company:co_aerisca_airways",
+            "name": "Aerisca Airways",
+            "nature": "fictional"
+          },
+          "unused": [
+            {
+              "edge_key": "e-5b3dfdaaf8d458c9",
+              "edge_type": "affects_costs",
+              "source": "variable:var_brent_crude",
+              "target": "industry:ind_land_transport",
+              "evidence_status": "model_assumption"
+            },
+            {
+              "edge_key": "e-235c56ef17fc35ed",
+              "edge_type": "affects_costs",
+              "source": "variable:var_brent_crude",
+              "target": "industry:ind_petroleum_refining",
+              "evidence_status": "model_assumption"
+            },
+            {
+              "edge_key": "e-1cd600a6c634bc37",
+              "edge_type": "affects_revenue",
+              "source": "variable:var_brent_crude",
+              "target": "industry:ind_oil_gas_extraction",
+              "evidence_status": "model_assumption"
+            },
+            {
+              "edge_key": "e-c50b129f9181c94f",
+              "edge_type": "influences",
+              "source": "variable:var_brent_crude",
+              "target": "variable:var_india_cpi_inflation",
+              "evidence_status": "model_assumption"
+            },
+            {
+              "edge_key": "e-2202a51d4a09a79b",
+              "edge_type": "affects_revenue",
+              "source": "variable:var_jet_fuel",
+              "target": "industry:ind_petroleum_refining",
+              "evidence_status": "model_assumption"
+            },
+            {
+              "edge_key": "e-6e089ceadfef679c",
+              "edge_type": "measured_for",
+              "source": "variable:var_jet_fuel",
+              "target": "country:cty_us",
+              "evidence_status": "analyst_created"
+            },
+            {
+              "edge_key": "e-0ad272aa06e1d7d6",
+              "edge_type": "influences",
+              "source": "variable:var_us_fed_funds",
+              "target": "variable:var_usd_inr",
+              "evidence_status": "model_assumption"
+            },
+            {
+              "edge_key": "e-dff724fccf21ee64",
+              "edge_type": "affects_costs",
+              "source": "variable:var_usd_inr",
+              "target": "company:co_deltrin_refining",
+              "evidence_status": "model_assumption"
+            },
+            {
+              "edge_key": "e-c93a6964520b431b",
+              "edge_type": "affects_costs",
+              "source": "variable:var_usd_inr",
+              "target": "company:co_skyvara_air",
+              "evidence_status": "model_assumption"
+            },
+            {
+              "edge_key": "e-30bd282fe1fdf72a",
+              "edge_type": "affects_revenue",
+              "source": "variable:var_usd_inr",
+              "target": "company:co_kovalent_digital",
+              "evidence_status": "model_assumption"
+            },
+            {
+              "edge_key": "e-e2f1d52da5ce0ff9",
+              "edge_type": "influences",
+              "source": "variable:var_usd_inr",
+              "target": "variable:var_india_cpi_inflation",
+              "evidence_status": "model_assumption"
+            },
+            {
+              "edge_key": "e-03239d9ebfdfaa7c",
+              "edge_type": "measured_for",
+              "source": "variable:var_usd_inr",
+              "target": "country:cty_in",
+              "evidence_status": "analyst_created"
+            }
+          ],
+          "unused_total": 12,
+          "names": {
+            "company:co_aerisca_airways": "Aerisca Airways",
+            "company:co_deltrin_refining": "Deltrin Refining",
+            "company:co_kovalent_digital": "Kovalent Digital",
+            "company:co_skyvara_air": "Skyvara Air",
+            "country:cty_in": "India",
+            "country:cty_us": "United States",
+            "industry:ind_air_transport": "Air transport",
+            "industry:ind_land_transport": "Land transport",
+            "industry:ind_oil_gas_extraction": "Crude petroleum & natural gas extraction",
+            "industry:ind_petroleum_refining": "Refined petroleum products",
+            "variable:var_brent_crude": "Brent crude oil price",
+            "variable:var_india_cpi_inflation": "India CPI inflation",
+            "variable:var_jet_fuel": "Jet fuel price (U.S. Gulf Coast)",
+            "variable:var_us_fed_funds": "U.S. effective federal funds rate",
+            "variable:var_usd_inr": "USD/INR exchange rate"
+          }
+        }
+      },
+      {
+        "model_id": "fx_exposure",
+        "version": "1.0.0",
+        "name": "Foreign-currency revenue and costs",
+        "title": "Foreign-currency revenue and costs",
+        "covers": "Revenue invoiced and costs paid in US dollars, converted at the month's exchange rate, with hedges.",
+        "definition_hash": "1d0da6e5da1964c8910696394f6c905b4c2d5016c4bb9ed70dd94253890492a3",
+        "profile_hash": "417399ee48cd2e2bd466d11baa7320b0aa198cdb523d233363efe13e1b7f52a6",
+        "mode": "auto",
+        "status": "included",
+        "reasons": [
+          "The knowledge graph states that USD/INR exchange rate affects costs of Aerisca Airways. This decides whether the model applies, not how much: the amounts come from your figures.",
+          "Included by default."
+        ],
+        "changes": ["var_usd_inr"],
+        "responds_to": [
+          {
+            "variable_id": "var_usd_inr",
+            "change_type": "percent_change",
+            "input": "fx_change"
+          }
+        ],
+        "lines": [
+          {
+            "line": "revenue",
+            "item": "usd_revenue",
+            "label": "US-dollar revenue",
+            "output": "revenue_change"
+          },
+          {
+            "line": "operating_costs",
+            "item": "usd_costs",
+            "label": "US-dollar costs",
+            "output": "cost_change"
+          }
+        ],
+        "exposure": {
+          "checked": true,
+          "required": false,
+          "stated": true,
+          "chains": [
+            [
+              {
+                "edge_key": "e-2afc04ee80f0699e",
+                "edge_type": "affects_costs",
+                "source": "variable:var_usd_inr",
+                "target": "company:co_aerisca_airways",
+                "evidence_status": "model_assumption",
+                "is_illustrative": true
+              }
+            ]
+          ]
+        },
+        "issues": [],
+        "inputs": [
+          {
+            "id": "fx_change",
+            "label": "Exchange-rate change",
+            "category": "scenario_input",
+            "knowledge": "scenario_input",
+            "source": "user",
+            "value": "5",
+            "unit": "percent_change",
+            "unit_label": "% change",
+            "default": "0",
+            "rationale": "No change unless you enter one.",
+            "variable": "variable:var_usd_inr",
+            "observation": null
+          },
+          {
+            "id": "fx_rate",
+            "label": "Baseline exchange rate",
+            "category": "market_baseline",
+            "knowledge": "user_input",
+            "source": "user",
+            "value": "80",
+            "unit": "currency_per_usd",
+            "unit_label": "INR per USD",
+            "default": null,
+            "rationale": null,
+            "variable": "variable:var_usd_inr",
+            "observation": null
+          },
+          {
+            "id": "entity",
+            "label": "Company in the knowledge graph",
+            "category": "company_input",
+            "knowledge": "user_input",
+            "source": "user",
+            "value": "company:co_aerisca_airways",
+            "unit": "graph_node",
+            "unit_label": "knowledge-graph node",
+            "default": null,
+            "rationale": null,
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "reporting_currency",
+            "label": "Reporting currency",
+            "category": "company_input",
+            "knowledge": "user_input",
+            "source": "user",
+            "value": "INR",
+            "unit": "currency_code",
+            "unit_label": "ISO 4217 code",
+            "default": null,
+            "rationale": null,
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "annual_revenue",
+            "label": "Annual revenue",
+            "category": "company_input",
+            "knowledge": "user_input",
+            "source": "user",
+            "value": "300000000",
+            "unit": "currency_per_year",
+            "unit_label": "INR per year",
+            "default": null,
+            "rationale": null,
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "annual_operating_costs",
+            "label": "Annual operating costs",
+            "category": "company_input",
+            "knowledge": "user_input",
+            "source": "user",
+            "value": "250000000",
+            "unit": "currency_per_year",
+            "unit_label": "INR per year",
+            "default": null,
+            "rationale": null,
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "annual_usd_revenue",
+            "label": "Annual revenue invoiced in US dollars",
+            "category": "company_input",
+            "knowledge": "user_input",
+            "source": "user",
+            "value": "500000",
+            "unit": "usd_per_year",
+            "unit_label": "USD per year",
+            "default": null,
+            "rationale": null,
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "annual_usd_costs",
+            "label": "Annual costs paid in US dollars",
+            "category": "company_input",
+            "knowledge": "user_input",
+            "source": "user",
+            "value": "200000",
+            "unit": "usd_per_year",
+            "unit_label": "USD per year",
+            "default": null,
+            "rationale": null,
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "revenue_hedge_ratio",
+            "label": "Revenue hedge ratio",
+            "category": "assumption",
+            "knowledge": "assumption",
+            "source": "default",
+            "value": "0",
+            "unit": "percent",
+            "unit_label": "%",
+            "default": "0",
+            "rationale": "0: no hedging unless you enter it.",
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "cost_hedge_ratio",
+            "label": "Cost hedge ratio",
+            "category": "assumption",
+            "knowledge": "assumption",
+            "source": "default",
+            "value": "0",
+            "unit": "percent",
+            "unit_label": "%",
+            "default": "0",
+            "rationale": "0: no hedging unless you enter it.",
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "hedge_months",
+            "label": "Hedge cover",
+            "category": "assumption",
+            "knowledge": "assumption",
+            "source": "default",
+            "value": "0",
+            "unit": "months",
+            "unit_label": "months",
+            "default": "0",
+            "rationale": "0: no hedges. Hedges cover the first months of the horizon and are not rolled over.",
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "horizon_months",
+            "label": "Horizon",
+            "category": "setting",
+            "knowledge": "setting",
+            "source": "user",
+            "value": "12",
+            "unit": "months",
+            "unit_label": "months",
+            "default": "12",
+            "rationale": "Twelve months shows a full year after the change.",
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "shock_start_month",
+            "label": "Changes start in month",
+            "category": "setting",
+            "knowledge": "setting",
+            "source": "user",
+            "value": "1",
+            "unit": "months",
+            "unit_label": "months",
+            "default": "1",
+            "rationale": "The changes take effect in the first month unless you set a later one.",
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "shock_duration_months",
+            "label": "Changes last for (months)",
+            "category": "setting",
+            "knowledge": "setting",
+            "source": "user",
+            "value": "0",
+            "unit": "months",
+            "unit_label": "months",
+            "default": "0",
+            "rationale": "0: the changes last for the rest of the horizon (a permanent step).",
+            "variable": null,
+            "observation": null
+          }
+        ],
+        "graph": {
+          "build_id": 1,
+          "build_finished_at": "2026-09-24T03:27:55.249248+00:00",
+          "source_fingerprint": "0c765a31f90ad535d027fc8ec9a676c21085d2a78d2d04d38f9f03f64dc4a3b3",
+          "freshness": "current",
+          "transmission": {},
+          "supporting": {
+            "S1": null,
+            "S2": {
+              "rule": "S2",
+              "role": "supporting",
+              "edge_key": "e-2afc04ee80f0699e",
+              "edge_type": "affects_costs",
+              "source": "variable:var_usd_inr",
+              "target": "company:co_aerisca_airways",
+              "evidence_status": "model_assumption",
+              "is_illustrative": true,
+              "description": "The exchange rate affects the chosen company's costs (E2, E8). Cited, not propagated."
+            }
+          },
+          "entity": {
+            "key": "company:co_aerisca_airways",
+            "name": "Aerisca Airways",
+            "nature": "fictional"
+          },
+          "unused": [
+            {
+              "edge_key": "e-0ad272aa06e1d7d6",
+              "edge_type": "influences",
+              "source": "variable:var_us_fed_funds",
+              "target": "variable:var_usd_inr",
+              "evidence_status": "model_assumption"
+            },
+            {
+              "edge_key": "e-dff724fccf21ee64",
+              "edge_type": "affects_costs",
+              "source": "variable:var_usd_inr",
+              "target": "company:co_deltrin_refining",
+              "evidence_status": "model_assumption"
+            },
+            {
+              "edge_key": "e-c93a6964520b431b",
+              "edge_type": "affects_costs",
+              "source": "variable:var_usd_inr",
+              "target": "company:co_skyvara_air",
+              "evidence_status": "model_assumption"
+            },
+            {
+              "edge_key": "e-30bd282fe1fdf72a",
+              "edge_type": "affects_revenue",
+              "source": "variable:var_usd_inr",
+              "target": "company:co_kovalent_digital",
+              "evidence_status": "model_assumption"
+            },
+            {
+              "edge_key": "e-e2f1d52da5ce0ff9",
+              "edge_type": "influences",
+              "source": "variable:var_usd_inr",
+              "target": "variable:var_india_cpi_inflation",
+              "evidence_status": "model_assumption"
+            },
+            {
+              "edge_key": "e-03239d9ebfdfaa7c",
+              "edge_type": "measured_for",
+              "source": "variable:var_usd_inr",
+              "target": "country:cty_in",
+              "evidence_status": "analyst_created"
+            }
+          ],
+          "unused_total": 6,
+          "names": {
+            "company:co_aerisca_airways": "Aerisca Airways",
+            "company:co_deltrin_refining": "Deltrin Refining",
+            "company:co_kovalent_digital": "Kovalent Digital",
+            "company:co_skyvara_air": "Skyvara Air",
+            "country:cty_in": "India",
+            "variable:var_india_cpi_inflation": "India CPI inflation",
+            "variable:var_us_fed_funds": "U.S. effective federal funds rate",
+            "variable:var_usd_inr": "USD/INR exchange rate"
+          }
+        }
+      },
+      {
+        "model_id": "floating_rate_interest",
+        "version": "1.0.0",
+        "name": "Floating-rate interest costs",
+        "title": "Floating-rate interest",
+        "covers": "Interest on floating-rate debt linked to the RBI repo rate or US short-term rates, after pass-through and repricing delays.",
+        "definition_hash": "e11b2df833e9dbe2cb7146b0c3d0719304260e8a5c74852127996c64979fbe2d",
+        "profile_hash": "77df5f90574749af2647b18978999741bc2c49786e3ef344d9d5a608893a1dd1",
+        "mode": "include",
+        "status": "included",
+        "reasons": [
+          "The knowledge graph does not state that RBI policy repo rate affects financing costs of or U.S. effective federal funds rate affects financing costs of Aerisca Airways or its industry.",
+          "Included by you."
+        ],
+        "changes": ["var_rbi_repo_rate"],
+        "responds_to": [
+          {
+            "variable_id": "var_rbi_repo_rate",
+            "change_type": "absolute_change",
+            "input": "repo_rate_change"
+          },
+          {
+            "variable_id": "var_us_fed_funds",
+            "change_type": "absolute_change",
+            "input": "us_rate_change"
+          }
+        ],
+        "lines": [
+          {
+            "line": "interest_expense",
+            "item": "repo_linked_interest",
+            "label": "Repo-linked debt",
+            "output": "repo_interest_change"
+          },
+          {
+            "line": "interest_expense",
+            "item": "us_rate_linked_interest",
+            "label": "US-rate-linked debt",
+            "output": "us_interest_change"
+          }
+        ],
+        "exposure": {
+          "checked": true,
+          "required": false,
+          "stated": false,
+          "chains": []
+        },
+        "issues": [
+          {
+            "code": "exposure_not_stated",
+            "message": "Floating-rate interest: the knowledge graph does not state this exposure of Aerisca Airways; the result rests on your figures alone.",
+            "severity": "warning",
+            "field": "entity",
+            "model_id": "floating_rate_interest"
+          }
+        ],
+        "inputs": [
+          {
+            "id": "repo_rate_change",
+            "label": "RBI repo rate change",
+            "category": "scenario_input",
+            "knowledge": "scenario_input",
+            "source": "user",
+            "value": "0.5",
+            "unit": "percentage_points",
+            "unit_label": "percentage points",
+            "default": "0",
+            "rationale": "No change unless you enter one.",
+            "variable": "variable:var_rbi_repo_rate",
+            "observation": null
+          },
+          {
+            "id": "us_rate_change",
+            "label": "US short-term rate change",
+            "category": "scenario_input",
+            "knowledge": "scenario_input",
+            "source": "default",
+            "value": "0",
+            "unit": "percentage_points",
+            "unit_label": "percentage points",
+            "default": "0",
+            "rationale": "No change unless you enter one.",
+            "variable": "variable:var_us_fed_funds",
+            "observation": null
+          },
+          {
+            "id": "entity",
+            "label": "Company in the knowledge graph",
+            "category": "company_input",
+            "knowledge": "user_input",
+            "source": "user",
+            "value": "company:co_aerisca_airways",
+            "unit": "graph_node",
+            "unit_label": "knowledge-graph node",
+            "default": null,
+            "rationale": null,
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "reporting_currency",
+            "label": "Reporting currency",
+            "category": "company_input",
+            "knowledge": "user_input",
+            "source": "user",
+            "value": "INR",
+            "unit": "currency_code",
+            "unit_label": "ISO 4217 code",
+            "default": null,
+            "rationale": null,
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "annual_revenue",
+            "label": "Annual revenue",
+            "category": "company_input",
+            "knowledge": "user_input",
+            "source": "user",
+            "value": "300000000",
+            "unit": "currency_per_year",
+            "unit_label": "INR per year",
+            "default": null,
+            "rationale": null,
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "annual_operating_costs",
+            "label": "Annual operating costs",
+            "category": "company_input",
+            "knowledge": "user_input",
+            "source": "user",
+            "value": "250000000",
+            "unit": "currency_per_year",
+            "unit_label": "INR per year",
+            "default": null,
+            "rationale": null,
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "annual_interest_expense",
+            "label": "Annual interest expense",
+            "category": "company_input",
+            "knowledge": "user_input",
+            "source": "user",
+            "value": "12000000",
+            "unit": "currency_per_year",
+            "unit_label": "INR per year",
+            "default": null,
+            "rationale": null,
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "repo_linked_debt",
+            "label": "Debt linked to the repo rate",
+            "category": "company_input",
+            "knowledge": "user_input",
+            "source": "user",
+            "value": "100000000",
+            "unit": "currency",
+            "unit_label": "INR",
+            "default": null,
+            "rationale": null,
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "us_rate_linked_debt",
+            "label": "Debt linked to US short-term rates",
+            "category": "company_input",
+            "knowledge": "user_input",
+            "source": "user",
+            "value": "0",
+            "unit": "currency",
+            "unit_label": "INR",
+            "default": null,
+            "rationale": null,
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "repo_pass_through",
+            "label": "Repo pass-through",
+            "category": "assumption",
+            "knowledge": "assumption",
+            "source": "default",
+            "value": "100",
+            "unit": "percent",
+            "unit_label": "%",
+            "default": "100",
+            "rationale": "100: loans linked to the repo rate reprice one-for-one. Enter less if the spread absorbs part of the change.",
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "repo_repricing_lag",
+            "label": "Repo repricing delay",
+            "category": "assumption",
+            "knowledge": "assumption",
+            "source": "user",
+            "value": "3",
+            "unit": "months",
+            "unit_label": "months",
+            "default": "0",
+            "rationale": "0: the loans reprice in the month the rate changes. Enter your loans' reset delay (for example 3 months).",
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "us_pass_through",
+            "label": "US-rate pass-through",
+            "category": "assumption",
+            "knowledge": "assumption",
+            "source": "default",
+            "value": "100",
+            "unit": "percent",
+            "unit_label": "%",
+            "default": "100",
+            "rationale": "100: loans linked to US rates reprice one-for-one. Enter less if the spread absorbs part of the change.",
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "us_repricing_lag",
+            "label": "US-rate repricing delay",
+            "category": "assumption",
+            "knowledge": "assumption",
+            "source": "default",
+            "value": "0",
+            "unit": "months",
+            "unit_label": "months",
+            "default": "0",
+            "rationale": "0: the loans reprice in the month the rate changes. Enter your loans' reset delay.",
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "horizon_months",
+            "label": "Horizon",
+            "category": "setting",
+            "knowledge": "setting",
+            "source": "user",
+            "value": "12",
+            "unit": "months",
+            "unit_label": "months",
+            "default": "12",
+            "rationale": "Twelve months shows a full year after the change.",
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "shock_start_month",
+            "label": "Changes start in month",
+            "category": "setting",
+            "knowledge": "setting",
+            "source": "user",
+            "value": "1",
+            "unit": "months",
+            "unit_label": "months",
+            "default": "1",
+            "rationale": "The changes take effect in the first month unless you set a later one.",
+            "variable": null,
+            "observation": null
+          },
+          {
+            "id": "shock_duration_months",
+            "label": "Changes last for (months)",
+            "category": "setting",
+            "knowledge": "setting",
+            "source": "user",
+            "value": "0",
+            "unit": "months",
+            "unit_label": "months",
+            "default": "0",
+            "rationale": "0: the changes last for the rest of the horizon (a permanent step).",
+            "variable": null,
+            "observation": null
+          }
+        ],
+        "graph": {
+          "build_id": 1,
+          "build_finished_at": "2026-09-24T03:27:55.249248+00:00",
+          "source_fingerprint": "0c765a31f90ad535d027fc8ec9a676c21085d2a78d2d04d38f9f03f64dc4a3b3",
+          "freshness": "current",
+          "transmission": {},
+          "supporting": {
+            "S1": null,
+            "S2": null
+          },
+          "entity": {
+            "key": "company:co_aerisca_airways",
+            "name": "Aerisca Airways",
+            "nature": "fictional"
+          },
+          "unused": [
+            {
+              "edge_key": "e-63ca87f4cb0cc460",
+              "edge_type": "influences",
+              "source": "variable:var_india_cpi_inflation",
+              "target": "variable:var_rbi_repo_rate",
+              "evidence_status": "model_assumption"
+            },
+            {
+              "edge_key": "e-c1196940c5ae72f5",
+              "edge_type": "affects_financing",
+              "source": "variable:var_rbi_repo_rate",
+              "target": "company:co_gridwell_power",
+              "evidence_status": "model_assumption"
+            },
+            {
+              "edge_key": "e-277924cd30f42d80",
+              "edge_type": "affects_financing",
+              "source": "variable:var_rbi_repo_rate",
+              "target": "company:co_trakvel_logistics",
+              "evidence_status": "model_assumption"
+            },
+            {
+              "edge_key": "e-a4d9310e19366033",
+              "edge_type": "affects_revenue",
+              "source": "variable:var_rbi_repo_rate",
+              "target": "company:co_anvaya_bank",
+              "evidence_status": "model_assumption"
+            },
+            {
+              "edge_key": "e-f065815e062a9a6c",
+              "edge_type": "measured_for",
+              "source": "variable:var_rbi_repo_rate",
+              "target": "country:cty_in",
+              "evidence_status": "analyst_created"
+            },
+            {
+              "edge_key": "e-d7f79df4700a8b0f",
+              "edge_type": "affects_financing",
+              "source": "variable:var_us_fed_funds",
+              "target": "company:co_lumeric_chemicals",
+              "evidence_status": "model_assumption"
+            },
+            {
+              "edge_key": "e-a59514e8ac6b5dc2",
+              "edge_type": "affects_revenue",
+              "source": "variable:var_us_fed_funds",
+              "target": "company:co_brookvane_bank",
+              "evidence_status": "model_assumption"
+            },
+            {
+              "edge_key": "e-0ad272aa06e1d7d6",
+              "edge_type": "influences",
+              "source": "variable:var_us_fed_funds",
+              "target": "variable:var_usd_inr",
+              "evidence_status": "model_assumption"
+            },
+            {
+              "edge_key": "e-77cddc87c77326c6",
+              "edge_type": "measured_for",
+              "source": "variable:var_us_fed_funds",
+              "target": "country:cty_us",
+              "evidence_status": "analyst_created"
+            }
+          ],
+          "unused_total": 9,
+          "names": {
+            "company:co_anvaya_bank": "Anvaya Bank",
+            "company:co_brookvane_bank": "Brookvane Bank",
+            "company:co_gridwell_power": "Gridwell Power",
+            "company:co_lumeric_chemicals": "Lumeric Chemicals",
+            "company:co_trakvel_logistics": "Trakvel Logistics",
+            "country:cty_in": "India",
+            "country:cty_us": "United States",
+            "variable:var_india_cpi_inflation": "India CPI inflation",
+            "variable:var_rbi_repo_rate": "RBI policy repo rate",
+            "variable:var_us_fed_funds": "U.S. effective federal funds rate",
+            "variable:var_usd_inr": "USD/INR exchange rate"
+          }
+        }
+      },
+      {
+        "model_id": "crude_linked_costs",
+        "version": "1.0.0",
+        "name": "Crude-oil-linked costs",
+        "title": "Crude-oil-linked costs",
+        "covers": "Operating costs priced off crude oil (feedstock, diesel), with hedges and price recovery. Not jet fuel: the airline model covers it.",
+        "definition_hash": "ed8d535e7e31a81e4abe98b3f2b492fe5348c85febd16fa4b94fa0989c5a4b29",
+        "profile_hash": "75d8a04fbc913ad729f3e852f6eb22ced9c7d0fb916ce867dab0c8f4a1af19e5",
+        "mode": "auto",
+        "status": "available",
+        "reasons": [
+          "The knowledge graph does not state that Brent crude oil price affects costs of Aerisca Airways or its industry.",
+          "Not included by default: the exposure is not stated. Include it to use it."
+        ],
+        "changes": ["var_brent_crude"],
+        "responds_to": [
+          {
+            "variable_id": "var_brent_crude",
+            "change_type": "percent_change",
+            "input": "crude_oil_change"
+          }
+        ],
+        "lines": [
+          {
+            "line": "operating_costs",
+            "item": "crude_linked_inputs",
+            "label": "Crude-linked inputs",
+            "output": "linked_cost_change"
+          },
+          {
+            "line": "revenue",
+            "item": "crude_cost_recovery",
+            "label": "Price recovery",
+            "output": "price_recovery"
+          }
+        ],
+        "exposure": {
+          "checked": true,
+          "required": false,
+          "stated": false,
+          "chains": []
+        },
+        "issues": [],
+        "inputs": [],
+        "graph": null
+      },
+      {
+        "model_id": "gas_linked_costs",
+        "version": "1.0.0",
+        "name": "Natural-gas-linked costs",
+        "title": "Natural-gas-linked costs",
+        "covers": "Operating costs priced off natural gas (fuel, feedstock), with hedges and price recovery.",
+        "definition_hash": "7749e5d0ab262415b35c274813951433f5977be81198ad7c588ae3a1e8ee112f",
+        "profile_hash": "a0984a0d6aaab80d756b1778a3888970f4b6bf15a00678c8b366288c09195426",
+        "mode": "auto",
+        "status": "not_applicable",
+        "reasons": [
+          "None of the scenario's changes reaches it. It responds to Natural gas price (Henry Hub) (%)."
+        ],
+        "changes": [],
+        "responds_to": [
+          {
+            "variable_id": "var_henry_hub_gas",
+            "change_type": "percent_change",
+            "input": "gas_price_change"
+          }
+        ],
+        "lines": [
+          {
+            "line": "operating_costs",
+            "item": "gas_linked_inputs",
+            "label": "Gas-linked inputs",
+            "output": "linked_cost_change"
+          },
+          {
+            "line": "revenue",
+            "item": "gas_cost_recovery",
+            "label": "Price recovery",
+            "output": "price_recovery"
+          }
+        ],
+        "exposure": {
+          "checked": true,
+          "required": false,
+          "stated": false,
+          "chains": []
+        },
+        "issues": [],
+        "inputs": [],
+        "graph": null
+      }
+    ],
+    "stress_cases": [
+      {
+        "index": 0,
+        "name": "Half",
+        "changes": {
+          "var_brent_crude": "10",
+          "var_usd_inr": "2.5",
+          "var_rbi_repo_rate": "0.25"
+        },
+        "valid": true,
+        "issues": []
+      },
+      {
+        "index": 1,
+        "name": "Double",
+        "changes": {
+          "var_brent_crude": "40",
+          "var_usd_inr": "10",
+          "var_rbi_repo_rate": "1"
+        },
+        "valid": true,
+        "issues": []
+      }
+    ],
+    "issues": [
+      {
+        "code": "fictional_entity",
+        "message": "Aerisca Airways is a fictional company in RUMIN's sample network: the results describe the figures you entered, not a real company.",
+        "severity": "warning",
+        "field": "entity",
+        "model_id": null
+      },
+      {
+        "code": "assumption_based_channel",
+        "message": "Rule T1 follows a relationship the knowledge graph records as a model assumption, not an empirical finding: results that depend on it are assumption-driven.",
+        "severity": "warning",
+        "field": "shocks[0].value",
+        "model_id": "airline_fuel_cost"
+      },
+      {
+        "code": "exposure_not_stated",
+        "message": "Floating-rate interest: the knowledge graph does not state this exposure of Aerisca Airways; the result rests on your figures alone.",
+        "severity": "warning",
+        "field": "entity",
+        "model_id": "floating_rate_interest"
+      },
+      {
+        "code": "cross_effect",
+        "message": "Leave jet fuel out of the US-dollar costs: the airline fuel model already converts the fuel bill at the new exchange rate.",
+        "severity": "warning",
+        "field": null,
+        "model_id": null
+      }
+    ],
+    "errors": 0,
+    "ties": [
+      {
+        "edge_key": "e-5b3dfdaaf8d458c9",
+        "edge_type": "affects_costs",
+        "source": "variable:var_brent_crude",
+        "target": "industry:ind_land_transport",
+        "evidence_status": "model_assumption",
+        "is_illustrative": true
+      },
+      {
+        "edge_key": "e-235c56ef17fc35ed",
+        "edge_type": "affects_costs",
+        "source": "variable:var_brent_crude",
+        "target": "industry:ind_petroleum_refining",
+        "evidence_status": "model_assumption",
+        "is_illustrative": true
+      },
+      {
+        "edge_key": "e-1cd600a6c634bc37",
+        "edge_type": "affects_revenue",
+        "source": "variable:var_brent_crude",
+        "target": "industry:ind_oil_gas_extraction",
+        "evidence_status": "model_assumption",
+        "is_illustrative": true
+      },
+      {
+        "edge_key": "e-c50b129f9181c94f",
+        "edge_type": "influences",
+        "source": "variable:var_brent_crude",
+        "target": "variable:var_india_cpi_inflation",
+        "evidence_status": "model_assumption",
+        "is_illustrative": true
+      },
+      {
+        "edge_key": "e-ea305310288a3f88",
+        "edge_type": "influences",
+        "source": "variable:var_brent_crude",
+        "target": "variable:var_jet_fuel",
+        "evidence_status": "model_assumption",
+        "is_illustrative": true
+      },
+      {
+        "edge_key": "e-c1196940c5ae72f5",
+        "edge_type": "affects_financing",
+        "source": "variable:var_rbi_repo_rate",
+        "target": "company:co_gridwell_power",
+        "evidence_status": "model_assumption",
+        "is_illustrative": true
+      },
+      {
+        "edge_key": "e-277924cd30f42d80",
+        "edge_type": "affects_financing",
+        "source": "variable:var_rbi_repo_rate",
+        "target": "company:co_trakvel_logistics",
+        "evidence_status": "model_assumption",
+        "is_illustrative": true
+      },
+      {
+        "edge_key": "e-a4d9310e19366033",
+        "edge_type": "affects_revenue",
+        "source": "variable:var_rbi_repo_rate",
+        "target": "company:co_anvaya_bank",
+        "evidence_status": "model_assumption",
+        "is_illustrative": true
+      },
+      {
+        "edge_key": "e-2afc04ee80f0699e",
+        "edge_type": "affects_costs",
+        "source": "variable:var_usd_inr",
+        "target": "company:co_aerisca_airways",
+        "evidence_status": "model_assumption",
+        "is_illustrative": true
+      },
+      {
+        "edge_key": "e-dff724fccf21ee64",
+        "edge_type": "affects_costs",
+        "source": "variable:var_usd_inr",
+        "target": "company:co_deltrin_refining",
+        "evidence_status": "model_assumption",
+        "is_illustrative": true
+      },
+      {
+        "edge_key": "e-c93a6964520b431b",
+        "edge_type": "affects_costs",
+        "source": "variable:var_usd_inr",
+        "target": "company:co_skyvara_air",
+        "evidence_status": "model_assumption",
+        "is_illustrative": true
+      },
+      {
+        "edge_key": "e-30bd282fe1fdf72a",
+        "edge_type": "affects_revenue",
+        "source": "variable:var_usd_inr",
+        "target": "company:co_kovalent_digital",
+        "evidence_status": "model_assumption",
+        "is_illustrative": true
+      },
+      {
+        "edge_key": "e-e2f1d52da5ce0ff9",
+        "edge_type": "influences",
+        "source": "variable:var_usd_inr",
+        "target": "variable:var_india_cpi_inflation",
+        "evidence_status": "model_assumption",
+        "is_illustrative": true
+      }
+    ],
+    "names": {
+      "company:co_aerisca_airways": "Aerisca Airways",
+      "company:co_anvaya_bank": "Anvaya Bank",
+      "company:co_deltrin_refining": "Deltrin Refining",
+      "company:co_gridwell_power": "Gridwell Power",
+      "company:co_kovalent_digital": "Kovalent Digital",
+      "company:co_skyvara_air": "Skyvara Air",
+      "company:co_trakvel_logistics": "Trakvel Logistics",
+      "industry:ind_land_transport": "Land transport",
+      "industry:ind_oil_gas_extraction": "Crude petroleum & natural gas extraction",
+      "industry:ind_petroleum_refining": "Refined petroleum products",
+      "variable:var_brent_crude": "Brent crude oil price",
+      "variable:var_india_cpi_inflation": "India CPI inflation",
+      "variable:var_jet_fuel": "Jet fuel price (U.S. Gulf Coast)",
+      "variable:var_rbi_repo_rate": "RBI policy repo rate",
+      "variable:var_usd_inr": "USD/INR exchange rate"
+    },
+    "affected": {
+      "entities": [
+        {
+          "entity": {
+            "key": "company:co_aerisca_airways",
+            "name": "Aerisca Airways",
+            "type": "company",
+            "nature": "fictional"
+          },
+          "exposures": [
+            {
+              "changed_variable": "var_brent_crude",
+              "via": ["var_jet_fuel"],
+              "relationship": "affects_costs",
+              "exposed_variable": "var_jet_fuel",
+              "industry": {
+                "key": "industry:ind_air_transport",
+                "name": "Air transport",
+                "type": "industry",
+                "nature": "real"
+              },
+              "edges": [
+                {
+                  "edge_key": "e-ea305310288a3f88",
+                  "edge_type": "influences",
+                  "source": "variable:var_brent_crude",
+                  "target": "variable:var_jet_fuel",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                },
+                {
+                  "edge_key": "e-df536e008d0660a5",
+                  "edge_type": "affects_costs",
+                  "source": "variable:var_jet_fuel",
+                  "target": "industry:ind_air_transport",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                },
+                {
+                  "edge_key": "e-3c1cd4f52348ae25",
+                  "edge_type": "in_industry",
+                  "source": "company:co_aerisca_airways",
+                  "target": "industry:ind_air_transport",
+                  "evidence_status": "analyst_created",
+                  "is_illustrative": true
+                }
+              ],
+              "models": ["airline_fuel_cost"]
+            },
+            {
+              "changed_variable": "var_usd_inr",
+              "via": [],
+              "relationship": "affects_costs",
+              "exposed_variable": "var_usd_inr",
+              "industry": null,
+              "edges": [
+                {
+                  "edge_key": "e-2afc04ee80f0699e",
+                  "edge_type": "affects_costs",
+                  "source": "variable:var_usd_inr",
+                  "target": "company:co_aerisca_airways",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                }
+              ],
+              "models": ["fx_exposure"]
+            }
+          ]
+        },
+        {
+          "entity": {
+            "key": "company:co_anvaya_bank",
+            "name": "Anvaya Bank",
+            "type": "company",
+            "nature": "fictional"
+          },
+          "exposures": [
+            {
+              "changed_variable": "var_brent_crude",
+              "via": ["var_india_cpi_inflation", "var_rbi_repo_rate"],
+              "relationship": "affects_revenue",
+              "exposed_variable": "var_rbi_repo_rate",
+              "industry": null,
+              "edges": [
+                {
+                  "edge_key": "e-c50b129f9181c94f",
+                  "edge_type": "influences",
+                  "source": "variable:var_brent_crude",
+                  "target": "variable:var_india_cpi_inflation",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                },
+                {
+                  "edge_key": "e-63ca87f4cb0cc460",
+                  "edge_type": "influences",
+                  "source": "variable:var_india_cpi_inflation",
+                  "target": "variable:var_rbi_repo_rate",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                },
+                {
+                  "edge_key": "e-a4d9310e19366033",
+                  "edge_type": "affects_revenue",
+                  "source": "variable:var_rbi_repo_rate",
+                  "target": "company:co_anvaya_bank",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                }
+              ],
+              "models": []
+            },
+            {
+              "changed_variable": "var_rbi_repo_rate",
+              "via": [],
+              "relationship": "affects_revenue",
+              "exposed_variable": "var_rbi_repo_rate",
+              "industry": null,
+              "edges": [
+                {
+                  "edge_key": "e-a4d9310e19366033",
+                  "edge_type": "affects_revenue",
+                  "source": "variable:var_rbi_repo_rate",
+                  "target": "company:co_anvaya_bank",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                }
+              ],
+              "models": []
+            },
+            {
+              "changed_variable": "var_usd_inr",
+              "via": ["var_india_cpi_inflation", "var_rbi_repo_rate"],
+              "relationship": "affects_revenue",
+              "exposed_variable": "var_rbi_repo_rate",
+              "industry": null,
+              "edges": [
+                {
+                  "edge_key": "e-e2f1d52da5ce0ff9",
+                  "edge_type": "influences",
+                  "source": "variable:var_usd_inr",
+                  "target": "variable:var_india_cpi_inflation",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                },
+                {
+                  "edge_key": "e-63ca87f4cb0cc460",
+                  "edge_type": "influences",
+                  "source": "variable:var_india_cpi_inflation",
+                  "target": "variable:var_rbi_repo_rate",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                },
+                {
+                  "edge_key": "e-a4d9310e19366033",
+                  "edge_type": "affects_revenue",
+                  "source": "variable:var_rbi_repo_rate",
+                  "target": "company:co_anvaya_bank",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                }
+              ],
+              "models": []
+            }
+          ]
+        },
+        {
+          "entity": {
+            "key": "company:co_deltrin_refining",
+            "name": "Deltrin Refining",
+            "type": "company",
+            "nature": "fictional"
+          },
+          "exposures": [
+            {
+              "changed_variable": "var_brent_crude",
+              "via": [],
+              "relationship": "affects_costs",
+              "exposed_variable": "var_brent_crude",
+              "industry": {
+                "key": "industry:ind_petroleum_refining",
+                "name": "Refined petroleum products",
+                "type": "industry",
+                "nature": "real"
+              },
+              "edges": [
+                {
+                  "edge_key": "e-235c56ef17fc35ed",
+                  "edge_type": "affects_costs",
+                  "source": "variable:var_brent_crude",
+                  "target": "industry:ind_petroleum_refining",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                },
+                {
+                  "edge_key": "e-abbed46434b7e33a",
+                  "edge_type": "in_industry",
+                  "source": "company:co_deltrin_refining",
+                  "target": "industry:ind_petroleum_refining",
+                  "evidence_status": "analyst_created",
+                  "is_illustrative": true
+                }
+              ],
+              "models": ["crude_linked_costs"]
+            },
+            {
+              "changed_variable": "var_brent_crude",
+              "via": ["var_jet_fuel"],
+              "relationship": "affects_revenue",
+              "exposed_variable": "var_jet_fuel",
+              "industry": {
+                "key": "industry:ind_petroleum_refining",
+                "name": "Refined petroleum products",
+                "type": "industry",
+                "nature": "real"
+              },
+              "edges": [
+                {
+                  "edge_key": "e-ea305310288a3f88",
+                  "edge_type": "influences",
+                  "source": "variable:var_brent_crude",
+                  "target": "variable:var_jet_fuel",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                },
+                {
+                  "edge_key": "e-2202a51d4a09a79b",
+                  "edge_type": "affects_revenue",
+                  "source": "variable:var_jet_fuel",
+                  "target": "industry:ind_petroleum_refining",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                },
+                {
+                  "edge_key": "e-abbed46434b7e33a",
+                  "edge_type": "in_industry",
+                  "source": "company:co_deltrin_refining",
+                  "target": "industry:ind_petroleum_refining",
+                  "evidence_status": "analyst_created",
+                  "is_illustrative": true
+                }
+              ],
+              "models": []
+            },
+            {
+              "changed_variable": "var_usd_inr",
+              "via": [],
+              "relationship": "affects_costs",
+              "exposed_variable": "var_usd_inr",
+              "industry": null,
+              "edges": [
+                {
+                  "edge_key": "e-dff724fccf21ee64",
+                  "edge_type": "affects_costs",
+                  "source": "variable:var_usd_inr",
+                  "target": "company:co_deltrin_refining",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                }
+              ],
+              "models": ["fx_exposure"]
+            }
+          ]
+        },
+        {
+          "entity": {
+            "key": "company:co_gridwell_power",
+            "name": "Gridwell Power",
+            "type": "company",
+            "nature": "fictional"
+          },
+          "exposures": [
+            {
+              "changed_variable": "var_brent_crude",
+              "via": ["var_india_cpi_inflation", "var_rbi_repo_rate"],
+              "relationship": "affects_financing",
+              "exposed_variable": "var_rbi_repo_rate",
+              "industry": null,
+              "edges": [
+                {
+                  "edge_key": "e-c50b129f9181c94f",
+                  "edge_type": "influences",
+                  "source": "variable:var_brent_crude",
+                  "target": "variable:var_india_cpi_inflation",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                },
+                {
+                  "edge_key": "e-63ca87f4cb0cc460",
+                  "edge_type": "influences",
+                  "source": "variable:var_india_cpi_inflation",
+                  "target": "variable:var_rbi_repo_rate",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                },
+                {
+                  "edge_key": "e-c1196940c5ae72f5",
+                  "edge_type": "affects_financing",
+                  "source": "variable:var_rbi_repo_rate",
+                  "target": "company:co_gridwell_power",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                }
+              ],
+              "models": []
+            },
+            {
+              "changed_variable": "var_rbi_repo_rate",
+              "via": [],
+              "relationship": "affects_financing",
+              "exposed_variable": "var_rbi_repo_rate",
+              "industry": null,
+              "edges": [
+                {
+                  "edge_key": "e-c1196940c5ae72f5",
+                  "edge_type": "affects_financing",
+                  "source": "variable:var_rbi_repo_rate",
+                  "target": "company:co_gridwell_power",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                }
+              ],
+              "models": ["floating_rate_interest"]
+            },
+            {
+              "changed_variable": "var_usd_inr",
+              "via": ["var_india_cpi_inflation", "var_rbi_repo_rate"],
+              "relationship": "affects_financing",
+              "exposed_variable": "var_rbi_repo_rate",
+              "industry": null,
+              "edges": [
+                {
+                  "edge_key": "e-e2f1d52da5ce0ff9",
+                  "edge_type": "influences",
+                  "source": "variable:var_usd_inr",
+                  "target": "variable:var_india_cpi_inflation",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                },
+                {
+                  "edge_key": "e-63ca87f4cb0cc460",
+                  "edge_type": "influences",
+                  "source": "variable:var_india_cpi_inflation",
+                  "target": "variable:var_rbi_repo_rate",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                },
+                {
+                  "edge_key": "e-c1196940c5ae72f5",
+                  "edge_type": "affects_financing",
+                  "source": "variable:var_rbi_repo_rate",
+                  "target": "company:co_gridwell_power",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                }
+              ],
+              "models": []
+            }
+          ]
+        },
+        {
+          "entity": {
+            "key": "company:co_kovalent_digital",
+            "name": "Kovalent Digital",
+            "type": "company",
+            "nature": "fictional"
+          },
+          "exposures": [
+            {
+              "changed_variable": "var_usd_inr",
+              "via": [],
+              "relationship": "affects_revenue",
+              "exposed_variable": "var_usd_inr",
+              "industry": null,
+              "edges": [
+                {
+                  "edge_key": "e-30bd282fe1fdf72a",
+                  "edge_type": "affects_revenue",
+                  "source": "variable:var_usd_inr",
+                  "target": "company:co_kovalent_digital",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                }
+              ],
+              "models": ["fx_exposure"]
+            }
+          ]
+        },
+        {
+          "entity": {
+            "key": "company:co_orvane_petroleum",
+            "name": "Orvane Petroleum",
+            "type": "company",
+            "nature": "fictional"
+          },
+          "exposures": [
+            {
+              "changed_variable": "var_brent_crude",
+              "via": [],
+              "relationship": "affects_revenue",
+              "exposed_variable": "var_brent_crude",
+              "industry": {
+                "key": "industry:ind_oil_gas_extraction",
+                "name": "Crude petroleum & natural gas extraction",
+                "type": "industry",
+                "nature": "real"
+              },
+              "edges": [
+                {
+                  "edge_key": "e-1cd600a6c634bc37",
+                  "edge_type": "affects_revenue",
+                  "source": "variable:var_brent_crude",
+                  "target": "industry:ind_oil_gas_extraction",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                },
+                {
+                  "edge_key": "e-221294c47808a5cf",
+                  "edge_type": "in_industry",
+                  "source": "company:co_orvane_petroleum",
+                  "target": "industry:ind_oil_gas_extraction",
+                  "evidence_status": "analyst_created",
+                  "is_illustrative": true
+                }
+              ],
+              "models": []
+            }
+          ]
+        },
+        {
+          "entity": {
+            "key": "company:co_skyvara_air",
+            "name": "Skyvara Air",
+            "type": "company",
+            "nature": "fictional"
+          },
+          "exposures": [
+            {
+              "changed_variable": "var_brent_crude",
+              "via": ["var_jet_fuel"],
+              "relationship": "affects_costs",
+              "exposed_variable": "var_jet_fuel",
+              "industry": {
+                "key": "industry:ind_air_transport",
+                "name": "Air transport",
+                "type": "industry",
+                "nature": "real"
+              },
+              "edges": [
+                {
+                  "edge_key": "e-ea305310288a3f88",
+                  "edge_type": "influences",
+                  "source": "variable:var_brent_crude",
+                  "target": "variable:var_jet_fuel",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                },
+                {
+                  "edge_key": "e-df536e008d0660a5",
+                  "edge_type": "affects_costs",
+                  "source": "variable:var_jet_fuel",
+                  "target": "industry:ind_air_transport",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                },
+                {
+                  "edge_key": "e-5e13079bf457935d",
+                  "edge_type": "in_industry",
+                  "source": "company:co_skyvara_air",
+                  "target": "industry:ind_air_transport",
+                  "evidence_status": "analyst_created",
+                  "is_illustrative": true
+                }
+              ],
+              "models": ["airline_fuel_cost"]
+            },
+            {
+              "changed_variable": "var_usd_inr",
+              "via": [],
+              "relationship": "affects_costs",
+              "exposed_variable": "var_usd_inr",
+              "industry": null,
+              "edges": [
+                {
+                  "edge_key": "e-c93a6964520b431b",
+                  "edge_type": "affects_costs",
+                  "source": "variable:var_usd_inr",
+                  "target": "company:co_skyvara_air",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                }
+              ],
+              "models": ["fx_exposure"]
+            }
+          ]
+        },
+        {
+          "entity": {
+            "key": "company:co_solvane_refining",
+            "name": "Solvane Refining",
+            "type": "company",
+            "nature": "fictional"
+          },
+          "exposures": [
+            {
+              "changed_variable": "var_brent_crude",
+              "via": [],
+              "relationship": "affects_costs",
+              "exposed_variable": "var_brent_crude",
+              "industry": {
+                "key": "industry:ind_petroleum_refining",
+                "name": "Refined petroleum products",
+                "type": "industry",
+                "nature": "real"
+              },
+              "edges": [
+                {
+                  "edge_key": "e-235c56ef17fc35ed",
+                  "edge_type": "affects_costs",
+                  "source": "variable:var_brent_crude",
+                  "target": "industry:ind_petroleum_refining",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                },
+                {
+                  "edge_key": "e-898a3284542bdd62",
+                  "edge_type": "in_industry",
+                  "source": "company:co_solvane_refining",
+                  "target": "industry:ind_petroleum_refining",
+                  "evidence_status": "analyst_created",
+                  "is_illustrative": true
+                }
+              ],
+              "models": ["crude_linked_costs"]
+            },
+            {
+              "changed_variable": "var_brent_crude",
+              "via": ["var_jet_fuel"],
+              "relationship": "affects_revenue",
+              "exposed_variable": "var_jet_fuel",
+              "industry": {
+                "key": "industry:ind_petroleum_refining",
+                "name": "Refined petroleum products",
+                "type": "industry",
+                "nature": "real"
+              },
+              "edges": [
+                {
+                  "edge_key": "e-ea305310288a3f88",
+                  "edge_type": "influences",
+                  "source": "variable:var_brent_crude",
+                  "target": "variable:var_jet_fuel",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                },
+                {
+                  "edge_key": "e-2202a51d4a09a79b",
+                  "edge_type": "affects_revenue",
+                  "source": "variable:var_jet_fuel",
+                  "target": "industry:ind_petroleum_refining",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                },
+                {
+                  "edge_key": "e-898a3284542bdd62",
+                  "edge_type": "in_industry",
+                  "source": "company:co_solvane_refining",
+                  "target": "industry:ind_petroleum_refining",
+                  "evidence_status": "analyst_created",
+                  "is_illustrative": true
+                }
+              ],
+              "models": []
+            }
+          ]
+        },
+        {
+          "entity": {
+            "key": "company:co_tessaline_energy",
+            "name": "Tessaline Energy",
+            "type": "company",
+            "nature": "fictional"
+          },
+          "exposures": [
+            {
+              "changed_variable": "var_brent_crude",
+              "via": [],
+              "relationship": "affects_revenue",
+              "exposed_variable": "var_brent_crude",
+              "industry": {
+                "key": "industry:ind_oil_gas_extraction",
+                "name": "Crude petroleum & natural gas extraction",
+                "type": "industry",
+                "nature": "real"
+              },
+              "edges": [
+                {
+                  "edge_key": "e-1cd600a6c634bc37",
+                  "edge_type": "affects_revenue",
+                  "source": "variable:var_brent_crude",
+                  "target": "industry:ind_oil_gas_extraction",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                },
+                {
+                  "edge_key": "e-052ca199e0523f38",
+                  "edge_type": "in_industry",
+                  "source": "company:co_tessaline_energy",
+                  "target": "industry:ind_oil_gas_extraction",
+                  "evidence_status": "analyst_created",
+                  "is_illustrative": true
+                }
+              ],
+              "models": []
+            }
+          ]
+        },
+        {
+          "entity": {
+            "key": "company:co_trakvel_logistics",
+            "name": "Trakvel Logistics",
+            "type": "company",
+            "nature": "fictional"
+          },
+          "exposures": [
+            {
+              "changed_variable": "var_brent_crude",
+              "via": [],
+              "relationship": "affects_costs",
+              "exposed_variable": "var_brent_crude",
+              "industry": {
+                "key": "industry:ind_land_transport",
+                "name": "Land transport",
+                "type": "industry",
+                "nature": "real"
+              },
+              "edges": [
+                {
+                  "edge_key": "e-5b3dfdaaf8d458c9",
+                  "edge_type": "affects_costs",
+                  "source": "variable:var_brent_crude",
+                  "target": "industry:ind_land_transport",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                },
+                {
+                  "edge_key": "e-aed21c332c46c8ea",
+                  "edge_type": "in_industry",
+                  "source": "company:co_trakvel_logistics",
+                  "target": "industry:ind_land_transport",
+                  "evidence_status": "analyst_created",
+                  "is_illustrative": true
+                }
+              ],
+              "models": ["crude_linked_costs"]
+            },
+            {
+              "changed_variable": "var_brent_crude",
+              "via": ["var_india_cpi_inflation", "var_rbi_repo_rate"],
+              "relationship": "affects_financing",
+              "exposed_variable": "var_rbi_repo_rate",
+              "industry": null,
+              "edges": [
+                {
+                  "edge_key": "e-c50b129f9181c94f",
+                  "edge_type": "influences",
+                  "source": "variable:var_brent_crude",
+                  "target": "variable:var_india_cpi_inflation",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                },
+                {
+                  "edge_key": "e-63ca87f4cb0cc460",
+                  "edge_type": "influences",
+                  "source": "variable:var_india_cpi_inflation",
+                  "target": "variable:var_rbi_repo_rate",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                },
+                {
+                  "edge_key": "e-277924cd30f42d80",
+                  "edge_type": "affects_financing",
+                  "source": "variable:var_rbi_repo_rate",
+                  "target": "company:co_trakvel_logistics",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                }
+              ],
+              "models": []
+            },
+            {
+              "changed_variable": "var_rbi_repo_rate",
+              "via": [],
+              "relationship": "affects_financing",
+              "exposed_variable": "var_rbi_repo_rate",
+              "industry": null,
+              "edges": [
+                {
+                  "edge_key": "e-277924cd30f42d80",
+                  "edge_type": "affects_financing",
+                  "source": "variable:var_rbi_repo_rate",
+                  "target": "company:co_trakvel_logistics",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                }
+              ],
+              "models": ["floating_rate_interest"]
+            },
+            {
+              "changed_variable": "var_usd_inr",
+              "via": ["var_india_cpi_inflation", "var_rbi_repo_rate"],
+              "relationship": "affects_financing",
+              "exposed_variable": "var_rbi_repo_rate",
+              "industry": null,
+              "edges": [
+                {
+                  "edge_key": "e-e2f1d52da5ce0ff9",
+                  "edge_type": "influences",
+                  "source": "variable:var_usd_inr",
+                  "target": "variable:var_india_cpi_inflation",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                },
+                {
+                  "edge_key": "e-63ca87f4cb0cc460",
+                  "edge_type": "influences",
+                  "source": "variable:var_india_cpi_inflation",
+                  "target": "variable:var_rbi_repo_rate",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                },
+                {
+                  "edge_key": "e-277924cd30f42d80",
+                  "edge_type": "affects_financing",
+                  "source": "variable:var_rbi_repo_rate",
+                  "target": "company:co_trakvel_logistics",
+                  "evidence_status": "model_assumption",
+                  "is_illustrative": true
+                }
+              ],
+              "models": []
+            }
+          ]
+        }
+      ],
+      "variables": {
+        "variable:var_brent_crude": "Brent crude oil price",
+        "variable:var_india_cpi_inflation": "India CPI inflation",
+        "variable:var_jet_fuel": "Jet fuel price (U.S. Gulf Coast)",
+        "variable:var_rbi_repo_rate": "RBI policy repo rate",
+        "variable:var_usd_inr": "USD/INR exchange rate"
+      },
+      "truncated": false,
+      "limit": 200,
+      "note": "Ties the knowledge graph states (assumptions or curated facts), not measured effects. A connection is not evidence of causation; only ties a model covers are simulated."
+    }
+  },
+  "runs": [
+    {
+      "position": 0,
+      "model_id": "airline_fuel_cost",
+      "model_version": "1.1.0",
+      "run_id": "39413e33-5972-4106-b818-6a92770b59bc"
+    },
+    {
+      "position": 1,
+      "model_id": "fx_exposure",
+      "model_version": "1.0.0",
+      "run_id": "912b1630-941f-4ac4-afe1-60967999aac3"
+    },
+    {
+      "position": 2,
+      "model_id": "floating_rate_interest",
+      "model_version": "1.0.0",
+      "run_id": "e78cb524-99cb-4540-8bf8-e3b6600f703d"
+    }
+  ],
+  "results_available": true,
+  "poll_after_ms": null
+}

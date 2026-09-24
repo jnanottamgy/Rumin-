@@ -6,6 +6,7 @@
 import { vi } from "vitest";
 import type { ErrorDetail } from "@/types/api";
 import { networkFixture, scenarioPageFixture, systemFixture, variablesFixture } from "../fixtures";
+import { labFixtures } from "../fixtures/lab";
 
 export interface MockReply {
   status?: number;
@@ -46,7 +47,8 @@ export function defaultRoutes(): Record<string, Route> {
     "/api/v1/network": { body: networkFixture() },
     "/api/v1/variables": { body: variablesFixture() },
     "/api/v1/system": { body: systemFixture() },
-    "/api/v1/scenarios": { body: scenarioPageFixture() },
+    "/api/v1/scenarios": { body: scenarioPageFixture([]) },
+    "/api/v1/scenario-templates": { body: labFixtures.templates() },
   };
 }
 

@@ -1,0 +1,2326 @@
+{
+  "execution_id": "348bd1e1-ea11-4851-bbf6-78389f1512c1",
+  "target": "profit_before_tax",
+  "label": "Profit before tax",
+  "equation": {
+    "id": "AG5",
+    "name": "Change in profit before tax",
+    "formula": "ΔP = ΔΠ − ΔI",
+    "explanation": "Operating profit is held at its baseline when no included model changes it."
+  },
+  "terms": [
+    {
+      "id": "operating_profit",
+      "label": "Operating profit",
+      "change": "-6325000"
+    },
+    {
+      "id": "interest_expense",
+      "label": "Interest expense",
+      "change": "375000"
+    }
+  ],
+  "by_change": [
+    {
+      "variable_id": "var_brent_crude",
+      "name": "Brent crude oil price",
+      "change": "20",
+      "unit": "%",
+      "value": "-5637500"
+    },
+    {
+      "variable_id": "var_rbi_repo_rate",
+      "name": "RBI policy repo rate",
+      "change": "0.5",
+      "unit": "percentage points",
+      "value": "-375000"
+    },
+    {
+      "variable_id": "var_usd_inr",
+      "name": "USD/INR exchange rate",
+      "change": "5",
+      "unit": "%",
+      "value": "-687500"
+    }
+  ],
+  "lab_steps": [
+    {
+      "sequence": 3,
+      "equation": "AG3",
+      "label": "Change in operating profit",
+      "output": {
+        "symbol": "ΔΠ",
+        "value": "-6325000",
+        "unit": "currency"
+      },
+      "inputs": [
+        {
+          "symbol": "ΔR",
+          "value": "6925000",
+          "unit": "currency"
+        },
+        {
+          "symbol": "ΔO",
+          "value": "13250000",
+          "unit": "currency"
+        }
+      ]
+    },
+    {
+      "sequence": 4,
+      "equation": "AG4",
+      "label": "Change in interest expense",
+      "output": {
+        "symbol": "ΔI",
+        "value": "375000",
+        "unit": "currency"
+      },
+      "inputs": [
+        {
+          "symbol": "floating_rate_interest.repo_interest_change",
+          "value": "375000",
+          "unit": "currency"
+        },
+        {
+          "symbol": "floating_rate_interest.us_interest_change",
+          "value": "0",
+          "unit": "currency"
+        }
+      ]
+    },
+    {
+      "sequence": 5,
+      "equation": "AG5",
+      "label": "Change in profit before tax",
+      "output": {
+        "symbol": "ΔP",
+        "value": "-6700000",
+        "unit": "currency"
+      },
+      "inputs": [
+        {
+          "symbol": "ΔΠ",
+          "value": "-6325000",
+          "unit": "currency"
+        },
+        {
+          "symbol": "ΔI",
+          "value": "375000",
+          "unit": "currency"
+        }
+      ]
+    }
+  ],
+  "models": [
+    {
+      "model_id": "airline_fuel_cost",
+      "version": "1.1.0",
+      "run_id": "39413e33-5972-4106-b818-6a92770b59bc",
+      "inputs_hash": "c1bd2d91950f9be4350542e7edc335244a46bf0423423be66d5d49236e3e6e4c",
+      "result_hash": "82d7107dcfb3949bd3c537b376b5c39a821b2a16fdb3ae0b848f3aceea6f614b",
+      "engine_version": "1.0.0",
+      "items": [
+        {
+          "item": "fuel_cost_recovery",
+          "label": "Fare recovery",
+          "output": "fare_recovery",
+          "value": "4925000",
+          "by_change": {
+            "var_brent_crude": "3587500",
+            "var_usd_inr": "1337500"
+          }
+        },
+        {
+          "item": "jet_fuel",
+          "label": "Jet fuel",
+          "output": "fuel_cost_change",
+          "value": "12450000",
+          "by_change": {
+            "var_brent_crude": "9225000",
+            "var_usd_inr": "3225000"
+          }
+        }
+      ],
+      "changes": [
+        {
+          "id": "crude_oil_change",
+          "label": "Crude oil price change",
+          "category": "scenario_input",
+          "knowledge": "scenario_input",
+          "source": "user",
+          "value": "20",
+          "unit": "percent_change",
+          "unit_label": "% change",
+          "default": "0",
+          "rationale": "No change unless you enter one.",
+          "variable": "variable:var_brent_crude",
+          "observation": null
+        },
+        {
+          "id": "jet_fuel_margin_change",
+          "label": "Additional jet fuel price change",
+          "category": "scenario_input",
+          "knowledge": "scenario_input",
+          "source": "default",
+          "value": "0",
+          "unit": "percent_change",
+          "unit_label": "% change",
+          "default": "0",
+          "rationale": "No change unless you enter one.",
+          "variable": "variable:var_jet_fuel",
+          "observation": null
+        },
+        {
+          "id": "usd_change",
+          "label": "Exchange-rate change",
+          "category": "scenario_input",
+          "knowledge": "scenario_input",
+          "source": "user",
+          "value": "5",
+          "unit": "percent_change",
+          "unit_label": "% change",
+          "default": "0",
+          "rationale": "No change unless you enter one.",
+          "variable": "variable:var_usd_inr",
+          "observation": null
+        }
+      ],
+      "inputs": [
+        {
+          "id": "jet_fuel_price",
+          "label": "Baseline jet fuel price",
+          "category": "market_baseline",
+          "knowledge": "user_input",
+          "source": "user",
+          "value": "750",
+          "unit": "usd_per_kilolitre",
+          "unit_label": "USD per kilolitre",
+          "default": null,
+          "rationale": null,
+          "variable": "variable:var_jet_fuel",
+          "observation": null
+        },
+        {
+          "id": "fx_rate",
+          "label": "Baseline exchange rate",
+          "category": "market_baseline",
+          "knowledge": "user_input",
+          "source": "user",
+          "value": "80",
+          "unit": "currency_per_usd",
+          "unit_label": "INR per USD",
+          "default": null,
+          "rationale": null,
+          "variable": "variable:var_usd_inr",
+          "observation": null
+        },
+        {
+          "id": "entity",
+          "label": "Airline in the knowledge graph",
+          "category": "company_input",
+          "knowledge": "user_input",
+          "source": "user",
+          "value": "company:co_aerisca_airways",
+          "unit": "graph_node",
+          "unit_label": "knowledge-graph node",
+          "default": null,
+          "rationale": null,
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "reporting_currency",
+          "label": "Reporting currency",
+          "category": "company_input",
+          "knowledge": "user_input",
+          "source": "user",
+          "value": "INR",
+          "unit": "currency_code",
+          "unit_label": "ISO 4217 code",
+          "default": null,
+          "rationale": null,
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "annual_revenue",
+          "label": "Annual revenue",
+          "category": "company_input",
+          "knowledge": "user_input",
+          "source": "user",
+          "value": "300000000",
+          "unit": "currency_per_year",
+          "unit_label": "INR per year",
+          "default": null,
+          "rationale": null,
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "annual_operating_costs",
+          "label": "Annual operating costs",
+          "category": "company_input",
+          "knowledge": "user_input",
+          "source": "user",
+          "value": "250000000",
+          "unit": "currency_per_year",
+          "unit_label": "INR per year",
+          "default": null,
+          "rationale": null,
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "annual_fuel_consumption",
+          "label": "Annual fuel consumption",
+          "category": "company_input",
+          "knowledge": "user_input",
+          "source": "user",
+          "value": "1000",
+          "unit": "kilolitre",
+          "unit_label": "kilolitre per year",
+          "default": null,
+          "rationale": null,
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "crude_pass_through",
+          "label": "Crude-to-jet-fuel elasticity (β)",
+          "category": "assumption",
+          "knowledge": "assumption",
+          "source": "default",
+          "value": "1",
+          "unit": "elasticity",
+          "unit_label": "elasticity (dimensionless)",
+          "default": "1",
+          "rationale": "β = 1 keeps the refining margin a constant proportion of the price, so jet fuel moves by the same percentage as crude. A neutral starting point, not an estimate: test other values with sensitivity analysis.",
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "crude_pass_through_lag",
+          "label": "Crude-to-jet-fuel lag",
+          "category": "assumption",
+          "knowledge": "assumption",
+          "source": "user",
+          "value": "1",
+          "unit": "months",
+          "unit_label": "months",
+          "default": "0",
+          "rationale": "0 assumes crude changes reach jet fuel in the same month. Set it to how the airline's fuel contracts reprice.",
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "hedge_ratio",
+          "label": "Hedge ratio",
+          "category": "assumption",
+          "knowledge": "assumption",
+          "source": "user",
+          "value": "40",
+          "unit": "percent",
+          "unit_label": "%",
+          "default": "0",
+          "rationale": "0 assumes no hedging. Enter the share of the coming months' fuel the airline has hedged.",
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "hedge_months",
+          "label": "Hedge cover",
+          "category": "assumption",
+          "knowledge": "assumption",
+          "source": "user",
+          "value": "6",
+          "unit": "months",
+          "unit_label": "months",
+          "default": "0",
+          "rationale": "0 assumes no hedge cover. Hedges are assumed not to be rolled over when they expire.",
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "fare_pass_through",
+          "label": "Fare pass-through",
+          "category": "assumption",
+          "knowledge": "assumption",
+          "source": "user",
+          "value": "50",
+          "unit": "percent",
+          "unit_label": "%",
+          "default": "0",
+          "rationale": "0 assumes fares do not change. Enter the share of a fuel-cost change the airline expects to pass on to passengers.",
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "fare_pass_through_lag",
+          "label": "Fare pass-through lag",
+          "category": "assumption",
+          "knowledge": "assumption",
+          "source": "user",
+          "value": "2",
+          "unit": "months",
+          "unit_label": "months",
+          "default": "0",
+          "rationale": "0 assumes fares adjust in the same month as the fuel cost. Enter the delay you expect.",
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "horizon_months",
+          "label": "Horizon",
+          "category": "setting",
+          "knowledge": "setting",
+          "source": "user",
+          "value": "12",
+          "unit": "months",
+          "unit_label": "months",
+          "default": "12",
+          "rationale": "Twelve months shows a full year after the shock.",
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "shock_start_month",
+          "label": "Changes start in month",
+          "category": "setting",
+          "knowledge": "setting",
+          "source": "user",
+          "value": "1",
+          "unit": "months",
+          "unit_label": "months",
+          "default": "1",
+          "rationale": "The changes take effect in the first month unless you set a later one.",
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "shock_duration_months",
+          "label": "Changes last for (months)",
+          "category": "setting",
+          "knowledge": "setting",
+          "source": "user",
+          "value": "0",
+          "unit": "months",
+          "unit_label": "months",
+          "default": "0",
+          "rationale": "0: the changes last for the rest of the horizon (a permanent step).",
+          "variable": null,
+          "observation": null
+        }
+      ],
+      "equations": [
+        {
+          "id": "E3",
+          "name": "Baseline benchmark fuel cost in the reporting currency",
+          "formula": "B = B_USD × X₀",
+          "scope": "annual",
+          "explanation": "An explicit currency conversion at the baseline exchange rate (an input, never assumed).",
+          "assumptions": [
+            {
+              "id": "A8",
+              "text": "The exchange rate affects the fuel bill only: other dollar costs and any dollar revenue are outside the model."
+            }
+          ],
+          "limitations": []
+        },
+        {
+          "id": "E6",
+          "name": "Jet fuel log-change",
+          "formula": "ℓ(m) = β · ln(1 + c) · 𝟙[S + L ≤ m ≤ E + L] + ln(1 + s) · 𝟙[S ≤ m ≤ E]",
+          "scope": "monthly",
+          "explanation": "Propagated by the transmission engine along rule T1 (Brent crude → influences → jet fuel), plus the direct change to jet fuel itself. Each change lasts from S to E; the crude-driven part arrives L months later and ends L months later.",
+          "assumptions": [
+            {
+              "id": "A4",
+              "text": "Scenario changes are step changes: they take effect in the start month and last for the stated duration (to the end of the horizon unless one is set), after which the changed variables return to their baselines. Every change in a run shares this timing."
+            },
+            {
+              "id": "A5",
+              "text": "Jet fuel responds to crude oil with a constant elasticity β after a lag: ln(jet fuel) changes by β × ln(1 + crude change). With β = 1 the refining margin stays a constant proportion of the price."
+            }
+          ],
+          "limitations": [
+            {
+              "id": "L5",
+              "text": "The elasticity, lags, hedge terms and pass-through are assumptions with stated defaults. None has been estimated from data in RUMIN."
+            }
+          ]
+        },
+        {
+          "id": "E7",
+          "name": "Jet fuel price relative to baseline",
+          "formula": "r(m) = exp(ℓ(m))",
+          "scope": "monthly",
+          "explanation": "Turns the log-change back into a price ratio (r = 1.3 means +30 %).",
+          "assumptions": [],
+          "limitations": []
+        },
+        {
+          "id": "E8",
+          "name": "Exchange rate relative to baseline",
+          "formula": "q(m) = exp(ln(1 + x) · 𝟙[S ≤ m ≤ E])",
+          "scope": "monthly",
+          "explanation": "The reporting currency's price of a dollar in month m, relative to the baseline. Propagated by the transmission engine like every change, so it follows the scenario's timing.",
+          "assumptions": [
+            {
+              "id": "A4",
+              "text": "Scenario changes are step changes: they take effect in the start month and last for the stated duration (to the end of the horizon unless one is set), after which the changed variables return to their baselines. Every change in a run shares this timing."
+            },
+            {
+              "id": "A8",
+              "text": "The exchange rate affects the fuel bill only: other dollar costs and any dollar revenue are outside the model."
+            }
+          ],
+          "limitations": []
+        },
+        {
+          "id": "E9",
+          "name": "Hedged share in month m",
+          "formula": "h(m) = h if m ≤ M_h, otherwise 0",
+          "scope": "monthly",
+          "explanation": "Hedges cover the first M_h months and are not rolled over.",
+          "assumptions": [
+            {
+              "id": "A6",
+              "text": "Hedged fuel pays the baseline US-dollar price until the hedges expire; the exchange rate is not hedged; hedges are not rolled over."
+            }
+          ],
+          "limitations": []
+        },
+        {
+          "id": "E10",
+          "name": "Scenario monthly fuel cost",
+          "formula": "b₁(m) = b₀ × q(m) × [h(m) + (1 − h(m)) × r(m)]",
+          "scope": "monthly",
+          "explanation": "Hedged fuel keeps the baseline dollar price; unhedged fuel pays the new price. All fuel is paid in dollars converted at the month's exchange rate.",
+          "assumptions": [
+            {
+              "id": "A1",
+              "text": "Everything the model does not include stays at its baseline: fuel consumption, other costs, traffic, capacity, fares (apart from the stated pass-through) and financing."
+            },
+            {
+              "id": "A3",
+              "text": "The fuel bill is consumption × the benchmark jet fuel price × the exchange rate. Taxes, fees and supplier margins that do not follow the benchmark are outside the model."
+            },
+            {
+              "id": "A6",
+              "text": "Hedged fuel pays the baseline US-dollar price until the hedges expire; the exchange rate is not hedged; hedges are not rolled over."
+            },
+            {
+              "id": "A8",
+              "text": "The exchange rate affects the fuel bill only: other dollar costs and any dollar revenue are outside the model."
+            }
+          ],
+          "limitations": []
+        },
+        {
+          "id": "E11",
+          "name": "Change in fuel cost",
+          "formula": "Δb(m) = b₁(m) − b₀",
+          "scope": "monthly",
+          "explanation": "Positive means the scenario costs more than the baseline.",
+          "assumptions": [],
+          "limitations": []
+        },
+        {
+          "id": "E12",
+          "name": "Fare recovery",
+          "formula": "Δr(m) = φ × Δb(m − L_f) if m > L_f, otherwise 0",
+          "scope": "monthly",
+          "explanation": "Fares recover a share of the change in fuel cost after a delay, for rises and falls alike.",
+          "assumptions": [
+            {
+              "id": "A7",
+              "text": "Fares recover a fixed share of the change in fuel cost after a lag, for rises and falls alike, and passenger demand does not respond."
+            }
+          ],
+          "limitations": [
+            {
+              "id": "L2",
+              "text": "Passenger demand, capacity and schedules do not respond to fares or costs."
+            },
+            {
+              "id": "L3",
+              "text": "Competitors' responses and market share are not modelled."
+            }
+          ]
+        },
+        {
+          "id": "E14",
+          "name": "Totals over the horizon",
+          "formula": "ΣΔb = Σₘ Δb(m); ΣΔr = Σₘ Δr(m); ΣΔπ = Σₘ Δπ(m), m = 1…H",
+          "scope": "horizon",
+          "explanation": "Sums of the monthly changes.",
+          "assumptions": [],
+          "limitations": []
+        }
+      ],
+      "worked_month": 1,
+      "steps": [
+        {
+          "sequence": 3,
+          "equation": "E3",
+          "label": "Baseline benchmark fuel cost in the reporting currency",
+          "month": null,
+          "output": {
+            "symbol": "B",
+            "value": "60000000",
+            "unit": "INR per year"
+          },
+          "inputs": [
+            {
+              "symbol": "B_USD",
+              "value": "750000",
+              "unit": "USD per year"
+            },
+            {
+              "symbol": "X₀",
+              "value": "80",
+              "unit": "INR per USD"
+            }
+          ]
+        },
+        {
+          "sequence": 6,
+          "equation": "E6",
+          "label": "Jet fuel log-change",
+          "month": 1,
+          "output": {
+            "symbol": "ℓ",
+            "value": "0",
+            "unit": "log change"
+          },
+          "inputs": [
+            {
+              "symbol": "β",
+              "value": "1",
+              "unit": "elasticity"
+            },
+            {
+              "symbol": "c",
+              "value": "0.2",
+              "unit": "fraction"
+            },
+            {
+              "symbol": "L",
+              "value": "1",
+              "unit": "months"
+            },
+            {
+              "symbol": "s",
+              "value": "0",
+              "unit": "fraction"
+            },
+            {
+              "symbol": "S",
+              "value": "1",
+              "unit": "months"
+            },
+            {
+              "symbol": "E",
+              "value": "12",
+              "unit": "months"
+            }
+          ]
+        },
+        {
+          "sequence": 7,
+          "equation": "E7",
+          "label": "Jet fuel price relative to baseline",
+          "month": 1,
+          "output": {
+            "symbol": "r",
+            "value": "1",
+            "unit": "ratio"
+          },
+          "inputs": [
+            {
+              "symbol": "ℓ",
+              "value": "0",
+              "unit": "log change"
+            }
+          ]
+        },
+        {
+          "sequence": 8,
+          "equation": "E8",
+          "label": "Exchange rate relative to baseline",
+          "month": 1,
+          "output": {
+            "symbol": "q",
+            "value": "1.05",
+            "unit": "ratio"
+          },
+          "inputs": [
+            {
+              "symbol": "x",
+              "value": "0.05",
+              "unit": "fraction"
+            },
+            {
+              "symbol": "S",
+              "value": "1",
+              "unit": "months"
+            },
+            {
+              "symbol": "E",
+              "value": "12",
+              "unit": "months"
+            }
+          ]
+        },
+        {
+          "sequence": 9,
+          "equation": "E9",
+          "label": "Hedged share",
+          "month": 1,
+          "output": {
+            "symbol": "h",
+            "value": "0.4",
+            "unit": "ratio"
+          },
+          "inputs": [
+            {
+              "symbol": "h",
+              "value": "0.4",
+              "unit": "fraction"
+            },
+            {
+              "symbol": "M_h",
+              "value": "6",
+              "unit": "months"
+            }
+          ]
+        },
+        {
+          "sequence": 10,
+          "equation": "E10",
+          "label": "Scenario monthly fuel cost",
+          "month": 1,
+          "output": {
+            "symbol": "b₁",
+            "value": "5250000",
+            "unit": "INR per month"
+          },
+          "inputs": [
+            {
+              "symbol": "b₀",
+              "value": "5000000",
+              "unit": "INR per month"
+            },
+            {
+              "symbol": "q",
+              "value": "1.05",
+              "unit": "ratio"
+            },
+            {
+              "symbol": "h",
+              "value": "0.4",
+              "unit": "ratio"
+            },
+            {
+              "symbol": "r",
+              "value": "1",
+              "unit": "ratio"
+            }
+          ]
+        },
+        {
+          "sequence": 11,
+          "equation": "E11",
+          "label": "Change in fuel cost",
+          "month": 1,
+          "output": {
+            "symbol": "Δb",
+            "value": "250000",
+            "unit": "INR per month"
+          },
+          "inputs": [
+            {
+              "symbol": "b₁",
+              "value": "5250000",
+              "unit": "INR per month"
+            },
+            {
+              "symbol": "b₀",
+              "value": "5000000",
+              "unit": "INR per month"
+            }
+          ]
+        },
+        {
+          "sequence": 12,
+          "equation": "E12",
+          "label": "Fare recovery",
+          "month": 1,
+          "output": {
+            "symbol": "Δr",
+            "value": "0",
+            "unit": "INR per month"
+          },
+          "inputs": [
+            {
+              "symbol": "φ",
+              "value": "0.5",
+              "unit": "fraction"
+            },
+            {
+              "symbol": "Δb(m − L_f)",
+              "value": "0",
+              "unit": "INR per month"
+            },
+            {
+              "symbol": "L_f",
+              "value": "2",
+              "unit": "months"
+            }
+          ]
+        },
+        {
+          "sequence": 102,
+          "equation": "E14",
+          "label": "Change in operating profit over the horizon",
+          "month": null,
+          "output": {
+            "symbol": "ΣΔπ",
+            "value": "-7525000",
+            "unit": "INR"
+          },
+          "inputs": [
+            {
+              "symbol": "ΣΔb",
+              "value": "12450000",
+              "unit": "INR"
+            },
+            {
+              "symbol": "ΣΔr",
+              "value": "4925000",
+              "unit": "INR"
+            },
+            {
+              "symbol": "H",
+              "value": "12",
+              "unit": "months"
+            }
+          ]
+        }
+      ],
+      "transmission": [
+        {
+          "input": "crude_oil_change",
+          "nodes": ["variable:var_brent_crude"],
+          "rules": [],
+          "edge_keys": [],
+          "coefficient": "1",
+          "lag": 0,
+          "first_month": 1,
+          "last_month": null,
+          "kind": "log",
+          "log_change": "0.1823215568"
+        },
+        {
+          "input": "crude_oil_change",
+          "nodes": ["variable:var_brent_crude", "variable:var_jet_fuel"],
+          "rules": ["T1"],
+          "edge_keys": ["e-ea305310288a3f88"],
+          "coefficient": "1",
+          "lag": 1,
+          "first_month": 2,
+          "last_month": null,
+          "kind": "log",
+          "log_change": "0.1823215568"
+        },
+        {
+          "input": "usd_change",
+          "nodes": ["variable:var_usd_inr"],
+          "rules": [],
+          "edge_keys": [],
+          "coefficient": "1",
+          "lag": 0,
+          "first_month": 1,
+          "last_month": null,
+          "kind": "log",
+          "log_change": "0.0487901642"
+        }
+      ],
+      "graph": {
+        "build_id": 1,
+        "freshness": "current",
+        "transmission": {
+          "T1": {
+            "rule": "T1",
+            "role": "transmission",
+            "edge_key": "e-ea305310288a3f88",
+            "edge_type": "influences",
+            "source": "variable:var_brent_crude",
+            "target": "variable:var_jet_fuel",
+            "evidence_status": "model_assumption",
+            "is_illustrative": true,
+            "description": "A change in Brent crude reaches the jet fuel price with elasticity β after the stated lag."
+          }
+        },
+        "supporting": {
+          "S1": {
+            "rule": "S1",
+            "role": "supporting",
+            "edge_key": "e-df536e008d0660a5",
+            "edge_type": "affects_costs",
+            "source": "variable:var_jet_fuel",
+            "target": "industry:ind_air_transport",
+            "evidence_status": "model_assumption",
+            "is_illustrative": true,
+            "description": "Jet fuel is a cost of air transport: the reason the fuel bill (E2–E10) belongs in an airline's operating costs. Cited, not propagated."
+          },
+          "S2": {
+            "rule": "S2",
+            "role": "supporting",
+            "edge_key": "e-3c1cd4f52348ae25",
+            "edge_type": "in_industry",
+            "source": "company:co_aerisca_airways",
+            "target": "industry:ind_air_transport",
+            "evidence_status": "analyst_created",
+            "is_illustrative": true,
+            "description": "The chosen airline operates in air transport."
+          },
+          "S3": {
+            "rule": "S3",
+            "role": "supporting",
+            "edge_key": "e-2afc04ee80f0699e",
+            "edge_type": "affects_costs",
+            "source": "variable:var_usd_inr",
+            "target": "company:co_aerisca_airways",
+            "evidence_status": "model_assumption",
+            "is_illustrative": true,
+            "description": "The exchange rate affects the chosen airline's costs (E3, E8). Cited, not propagated."
+          }
+        },
+        "entity": {
+          "key": "company:co_aerisca_airways",
+          "name": "Aerisca Airways",
+          "nature": "fictional"
+        },
+        "names": {
+          "company:co_aerisca_airways": "Aerisca Airways",
+          "company:co_deltrin_refining": "Deltrin Refining",
+          "company:co_kovalent_digital": "Kovalent Digital",
+          "company:co_skyvara_air": "Skyvara Air",
+          "country:cty_in": "India",
+          "country:cty_us": "United States",
+          "industry:ind_air_transport": "Air transport",
+          "industry:ind_land_transport": "Land transport",
+          "industry:ind_oil_gas_extraction": "Crude petroleum & natural gas extraction",
+          "industry:ind_petroleum_refining": "Refined petroleum products",
+          "variable:var_brent_crude": "Brent crude oil price",
+          "variable:var_india_cpi_inflation": "India CPI inflation",
+          "variable:var_jet_fuel": "Jet fuel price (U.S. Gulf Coast)",
+          "variable:var_us_fed_funds": "U.S. effective federal funds rate",
+          "variable:var_usd_inr": "USD/INR exchange rate"
+        }
+      },
+      "data": [],
+      "assumptions": [
+        {
+          "id": "A1",
+          "text": "Everything the model does not include stays at its baseline: fuel consumption, other costs, traffic, capacity, fares (apart from the stated pass-through) and financing."
+        },
+        {
+          "id": "A2",
+          "text": "Fuel is consumed evenly through the year: each month uses one twelfth of the annual volume, and annual revenue and costs accrue evenly."
+        },
+        {
+          "id": "A3",
+          "text": "The fuel bill is consumption × the benchmark jet fuel price × the exchange rate. Taxes, fees and supplier margins that do not follow the benchmark are outside the model."
+        },
+        {
+          "id": "A4",
+          "text": "Scenario changes are step changes: they take effect in the start month and last for the stated duration (to the end of the horizon unless one is set), after which the changed variables return to their baselines. Every change in a run shares this timing."
+        },
+        {
+          "id": "A5",
+          "text": "Jet fuel responds to crude oil with a constant elasticity β after a lag: ln(jet fuel) changes by β × ln(1 + crude change). With β = 1 the refining margin stays a constant proportion of the price."
+        },
+        {
+          "id": "A6",
+          "text": "Hedged fuel pays the baseline US-dollar price until the hedges expire; the exchange rate is not hedged; hedges are not rolled over."
+        },
+        {
+          "id": "A7",
+          "text": "Fares recover a fixed share of the change in fuel cost after a lag, for rises and falls alike, and passenger demand does not respond."
+        },
+        {
+          "id": "A8",
+          "text": "The exchange rate affects the fuel bill only: other dollar costs and any dollar revenue are outside the model."
+        }
+      ],
+      "limitations": [
+        {
+          "id": "L1",
+          "text": "The model shows the arithmetic consequence of the inputs and assumptions. It is not a forecast of what will happen, and not investment advice."
+        },
+        {
+          "id": "L2",
+          "text": "Passenger demand, capacity and schedules do not respond to fares or costs."
+        },
+        {
+          "id": "L3",
+          "text": "Competitors' responses and market share are not modelled."
+        },
+        {
+          "id": "L4",
+          "text": "Only the benchmark-linked fuel cost is modelled. Ad-valorem taxes that scale with the price are not captured, so a real fuel bill can move more than the benchmark."
+        },
+        {
+          "id": "L5",
+          "text": "The elasticity, lags, hedge terms and pass-through are assumptions with stated defaults. None has been estimated from data in RUMIN."
+        },
+        {
+          "id": "L6",
+          "text": "Monthly steps: timing within a month is ignored, and seasonality is not modelled."
+        },
+        {
+          "id": "L7",
+          "text": "Operating profit only: no interest, tax, hedge accounting, working capital or cash-flow timing."
+        }
+      ],
+      "warnings": [
+        {
+          "code": "fictional_entity",
+          "message": "Aerisca Airways is a fictional company in RUMIN's sample network: the results describe the figures you entered, not a real airline.",
+          "field": "entity"
+        },
+        {
+          "code": "assumption_based_channel",
+          "message": "Rule T1 follows a relationship the knowledge graph records as a model assumption, not an empirical finding: results that depend on it are assumption-driven.",
+          "field": "crude_oil_change"
+        }
+      ]
+    },
+    {
+      "model_id": "fx_exposure",
+      "version": "1.0.0",
+      "run_id": "912b1630-941f-4ac4-afe1-60967999aac3",
+      "inputs_hash": "0e70d2e64c2a834ecbe4ead28e982f0965ca43abb3e93fc267bfce932a91f471",
+      "result_hash": "5a976601299ee1c411e3b815b61e81b3c1be8089c95311e3e536074af633e044",
+      "engine_version": "1.0.0",
+      "items": [
+        {
+          "item": "usd_revenue",
+          "label": "US-dollar revenue",
+          "output": "revenue_change",
+          "value": "2000000",
+          "by_change": {
+            "var_usd_inr": "2000000"
+          }
+        },
+        {
+          "item": "usd_costs",
+          "label": "US-dollar costs",
+          "output": "cost_change",
+          "value": "800000",
+          "by_change": {
+            "var_usd_inr": "800000"
+          }
+        }
+      ],
+      "changes": [
+        {
+          "id": "fx_change",
+          "label": "Exchange-rate change",
+          "category": "scenario_input",
+          "knowledge": "scenario_input",
+          "source": "user",
+          "value": "5",
+          "unit": "percent_change",
+          "unit_label": "% change",
+          "default": "0",
+          "rationale": "No change unless you enter one.",
+          "variable": "variable:var_usd_inr",
+          "observation": null
+        }
+      ],
+      "inputs": [
+        {
+          "id": "fx_rate",
+          "label": "Baseline exchange rate",
+          "category": "market_baseline",
+          "knowledge": "user_input",
+          "source": "user",
+          "value": "80",
+          "unit": "currency_per_usd",
+          "unit_label": "INR per USD",
+          "default": null,
+          "rationale": null,
+          "variable": "variable:var_usd_inr",
+          "observation": null
+        },
+        {
+          "id": "entity",
+          "label": "Company in the knowledge graph",
+          "category": "company_input",
+          "knowledge": "user_input",
+          "source": "user",
+          "value": "company:co_aerisca_airways",
+          "unit": "graph_node",
+          "unit_label": "knowledge-graph node",
+          "default": null,
+          "rationale": null,
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "reporting_currency",
+          "label": "Reporting currency",
+          "category": "company_input",
+          "knowledge": "user_input",
+          "source": "user",
+          "value": "INR",
+          "unit": "currency_code",
+          "unit_label": "ISO 4217 code",
+          "default": null,
+          "rationale": null,
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "annual_revenue",
+          "label": "Annual revenue",
+          "category": "company_input",
+          "knowledge": "user_input",
+          "source": "user",
+          "value": "300000000",
+          "unit": "currency_per_year",
+          "unit_label": "INR per year",
+          "default": null,
+          "rationale": null,
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "annual_operating_costs",
+          "label": "Annual operating costs",
+          "category": "company_input",
+          "knowledge": "user_input",
+          "source": "user",
+          "value": "250000000",
+          "unit": "currency_per_year",
+          "unit_label": "INR per year",
+          "default": null,
+          "rationale": null,
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "annual_usd_revenue",
+          "label": "Annual revenue invoiced in US dollars",
+          "category": "company_input",
+          "knowledge": "user_input",
+          "source": "user",
+          "value": "500000",
+          "unit": "usd_per_year",
+          "unit_label": "USD per year",
+          "default": null,
+          "rationale": null,
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "annual_usd_costs",
+          "label": "Annual costs paid in US dollars",
+          "category": "company_input",
+          "knowledge": "user_input",
+          "source": "user",
+          "value": "200000",
+          "unit": "usd_per_year",
+          "unit_label": "USD per year",
+          "default": null,
+          "rationale": null,
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "revenue_hedge_ratio",
+          "label": "Revenue hedge ratio",
+          "category": "assumption",
+          "knowledge": "assumption",
+          "source": "default",
+          "value": "0",
+          "unit": "percent",
+          "unit_label": "%",
+          "default": "0",
+          "rationale": "0: no hedging unless you enter it.",
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "cost_hedge_ratio",
+          "label": "Cost hedge ratio",
+          "category": "assumption",
+          "knowledge": "assumption",
+          "source": "default",
+          "value": "0",
+          "unit": "percent",
+          "unit_label": "%",
+          "default": "0",
+          "rationale": "0: no hedging unless you enter it.",
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "hedge_months",
+          "label": "Hedge cover",
+          "category": "assumption",
+          "knowledge": "assumption",
+          "source": "default",
+          "value": "0",
+          "unit": "months",
+          "unit_label": "months",
+          "default": "0",
+          "rationale": "0: no hedges. Hedges cover the first months of the horizon and are not rolled over.",
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "horizon_months",
+          "label": "Horizon",
+          "category": "setting",
+          "knowledge": "setting",
+          "source": "user",
+          "value": "12",
+          "unit": "months",
+          "unit_label": "months",
+          "default": "12",
+          "rationale": "Twelve months shows a full year after the change.",
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "shock_start_month",
+          "label": "Changes start in month",
+          "category": "setting",
+          "knowledge": "setting",
+          "source": "user",
+          "value": "1",
+          "unit": "months",
+          "unit_label": "months",
+          "default": "1",
+          "rationale": "The changes take effect in the first month unless you set a later one.",
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "shock_duration_months",
+          "label": "Changes last for (months)",
+          "category": "setting",
+          "knowledge": "setting",
+          "source": "user",
+          "value": "0",
+          "unit": "months",
+          "unit_label": "months",
+          "default": "0",
+          "rationale": "0: the changes last for the rest of the horizon (a permanent step).",
+          "variable": null,
+          "observation": null
+        }
+      ],
+      "equations": [
+        {
+          "id": "E1",
+          "name": "Baseline US-dollar revenue in the reporting currency",
+          "formula": "R$ = U_R × X₀",
+          "scope": "annual",
+          "explanation": "An explicit currency conversion at the baseline exchange rate (an input, never assumed).",
+          "assumptions": [
+            {
+              "id": "A2",
+              "text": "US-dollar revenue and costs accrue evenly through the year: each month carries one twelfth."
+            }
+          ],
+          "limitations": []
+        },
+        {
+          "id": "E2",
+          "name": "Baseline US-dollar costs in the reporting currency",
+          "formula": "C$ = U_C × X₀",
+          "scope": "annual",
+          "explanation": "An explicit currency conversion at the baseline exchange rate.",
+          "assumptions": [
+            {
+              "id": "A2",
+              "text": "US-dollar revenue and costs accrue evenly through the year: each month carries one twelfth."
+            },
+            {
+              "id": "A6",
+              "text": "Only amounts invoiced or paid in US dollars are exposed. Costs another model in the same scenario already converts must be left out of the US-dollar costs."
+            }
+          ],
+          "limitations": []
+        },
+        {
+          "id": "E5",
+          "name": "Exchange rate relative to baseline",
+          "formula": "q(m) = exp(ln(1 + x) · 𝟙[S ≤ m ≤ E])",
+          "scope": "monthly",
+          "explanation": "Propagated by the transmission engine from the change to USD/INR, so it follows the scenario's timing.",
+          "assumptions": [
+            {
+              "id": "A4",
+              "text": "Scenario changes are step changes: they take effect in the start month and last for the stated duration (to the end of the horizon unless one is set), after which the changed variables return to their baselines. Every change in a run shares this timing."
+            }
+          ],
+          "limitations": []
+        },
+        {
+          "id": "E6",
+          "name": "Hedged shares in month m",
+          "formula": "h_R(m) = h_R if m ≤ M_h, otherwise 0; h_C(m) likewise",
+          "scope": "monthly",
+          "explanation": "Hedges cover the first M_h months and are not rolled over.",
+          "assumptions": [
+            {
+              "id": "A5",
+              "text": "Hedges fix the baseline exchange rate for the hedged share during the first months of cover, then expire; they are not rolled over. Revenue and cost hedges are separate."
+            }
+          ],
+          "limitations": []
+        },
+        {
+          "id": "E7",
+          "name": "Change in revenue",
+          "formula": "Δr(m) = r₀ × (1 − h_R(m)) × (q(m) − 1)",
+          "scope": "monthly",
+          "explanation": "Unhedged dollar revenue is converted at the month's rate; hedged revenue keeps the baseline rate.",
+          "assumptions": [
+            {
+              "id": "A1",
+              "text": "Everything the model does not include stays at its baseline: the US-dollar amounts, volumes, prices in every currency, other costs and financing."
+            },
+            {
+              "id": "A3",
+              "text": "Dollar amounts are converted at the month's exchange rate. Dollar prices, volumes and demand do not respond to the exchange rate."
+            },
+            {
+              "id": "A5",
+              "text": "Hedges fix the baseline exchange rate for the hedged share during the first months of cover, then expire; they are not rolled over. Revenue and cost hedges are separate."
+            }
+          ],
+          "limitations": []
+        },
+        {
+          "id": "E8",
+          "name": "Change in costs",
+          "formula": "Δc(m) = c₀ × (1 − h_C(m)) × (q(m) − 1)",
+          "scope": "monthly",
+          "explanation": "Unhedged dollar costs are converted at the month's rate; hedged costs keep the baseline rate.",
+          "assumptions": [
+            {
+              "id": "A1",
+              "text": "Everything the model does not include stays at its baseline: the US-dollar amounts, volumes, prices in every currency, other costs and financing."
+            },
+            {
+              "id": "A3",
+              "text": "Dollar amounts are converted at the month's exchange rate. Dollar prices, volumes and demand do not respond to the exchange rate."
+            },
+            {
+              "id": "A5",
+              "text": "Hedges fix the baseline exchange rate for the hedged share during the first months of cover, then expire; they are not rolled over. Revenue and cost hedges are separate."
+            },
+            {
+              "id": "A6",
+              "text": "Only amounts invoiced or paid in US dollars are exposed. Costs another model in the same scenario already converts must be left out of the US-dollar costs."
+            }
+          ],
+          "limitations": []
+        },
+        {
+          "id": "E10",
+          "name": "Totals over the horizon",
+          "formula": "ΣΔr = Σₘ Δr(m); ΣΔc = Σₘ Δc(m); ΣΔπ = Σₘ Δπ(m), m = 1…H",
+          "scope": "horizon",
+          "explanation": "Sums of the monthly changes.",
+          "assumptions": [],
+          "limitations": []
+        }
+      ],
+      "worked_month": 1,
+      "steps": [
+        {
+          "sequence": 1,
+          "equation": "E1",
+          "label": "Baseline US-dollar revenue in the reporting currency",
+          "month": null,
+          "output": {
+            "symbol": "R$",
+            "value": "40000000",
+            "unit": "INR per year"
+          },
+          "inputs": [
+            {
+              "symbol": "U_R",
+              "value": "500000",
+              "unit": "USD per year"
+            },
+            {
+              "symbol": "X₀",
+              "value": "80",
+              "unit": "INR per USD"
+            }
+          ]
+        },
+        {
+          "sequence": 2,
+          "equation": "E2",
+          "label": "Baseline US-dollar costs in the reporting currency",
+          "month": null,
+          "output": {
+            "symbol": "C$",
+            "value": "16000000",
+            "unit": "INR per year"
+          },
+          "inputs": [
+            {
+              "symbol": "U_C",
+              "value": "200000",
+              "unit": "USD per year"
+            },
+            {
+              "symbol": "X₀",
+              "value": "80",
+              "unit": "INR per USD"
+            }
+          ]
+        },
+        {
+          "sequence": 7,
+          "equation": "E5",
+          "label": "Exchange rate relative to baseline",
+          "month": 1,
+          "output": {
+            "symbol": "q",
+            "value": "1.05",
+            "unit": "ratio"
+          },
+          "inputs": [
+            {
+              "symbol": "x",
+              "value": "0.05",
+              "unit": "fraction"
+            },
+            {
+              "symbol": "S",
+              "value": "1",
+              "unit": "months"
+            },
+            {
+              "symbol": "E",
+              "value": "12",
+              "unit": "months"
+            }
+          ]
+        },
+        {
+          "sequence": 8,
+          "equation": "E6",
+          "label": "Hedged share of US-dollar revenue",
+          "month": 1,
+          "output": {
+            "symbol": "h_R",
+            "value": "0",
+            "unit": "ratio"
+          },
+          "inputs": [
+            {
+              "symbol": "h_R",
+              "value": "0",
+              "unit": "fraction"
+            },
+            {
+              "symbol": "M_h",
+              "value": "0",
+              "unit": "months"
+            }
+          ]
+        },
+        {
+          "sequence": 9,
+          "equation": "E6",
+          "label": "Hedged share of US-dollar costs",
+          "month": 1,
+          "output": {
+            "symbol": "h_C",
+            "value": "0",
+            "unit": "ratio"
+          },
+          "inputs": [
+            {
+              "symbol": "h_C",
+              "value": "0",
+              "unit": "fraction"
+            },
+            {
+              "symbol": "M_h",
+              "value": "0",
+              "unit": "months"
+            }
+          ]
+        },
+        {
+          "sequence": 10,
+          "equation": "E7",
+          "label": "Change in revenue",
+          "month": 1,
+          "output": {
+            "symbol": "Δr",
+            "value": "166666.6666666667",
+            "unit": "INR per month"
+          },
+          "inputs": [
+            {
+              "symbol": "r₀",
+              "value": "3333333.3333333333",
+              "unit": "INR per month"
+            },
+            {
+              "symbol": "h_R",
+              "value": "0",
+              "unit": "ratio"
+            },
+            {
+              "symbol": "q",
+              "value": "1.05",
+              "unit": "ratio"
+            }
+          ]
+        },
+        {
+          "sequence": 11,
+          "equation": "E8",
+          "label": "Change in costs",
+          "month": 1,
+          "output": {
+            "symbol": "Δc",
+            "value": "66666.6666666667",
+            "unit": "INR per month"
+          },
+          "inputs": [
+            {
+              "symbol": "c₀",
+              "value": "1333333.3333333333",
+              "unit": "INR per month"
+            },
+            {
+              "symbol": "h_C",
+              "value": "0",
+              "unit": "ratio"
+            },
+            {
+              "symbol": "q",
+              "value": "1.05",
+              "unit": "ratio"
+            }
+          ]
+        },
+        {
+          "sequence": 79,
+          "equation": "E10",
+          "label": "Change in operating profit over the horizon",
+          "month": null,
+          "output": {
+            "symbol": "ΣΔπ",
+            "value": "1200000",
+            "unit": "INR"
+          },
+          "inputs": [
+            {
+              "symbol": "ΣΔr",
+              "value": "2000000",
+              "unit": "INR"
+            },
+            {
+              "symbol": "ΣΔc",
+              "value": "800000",
+              "unit": "INR"
+            },
+            {
+              "symbol": "H",
+              "value": "12",
+              "unit": "months"
+            }
+          ]
+        }
+      ],
+      "transmission": [
+        {
+          "input": "fx_change",
+          "nodes": ["variable:var_usd_inr"],
+          "rules": [],
+          "edge_keys": [],
+          "coefficient": "1",
+          "lag": 0,
+          "first_month": 1,
+          "last_month": null,
+          "kind": "log",
+          "log_change": "0.0487901642"
+        }
+      ],
+      "graph": {
+        "build_id": 1,
+        "freshness": "current",
+        "transmission": {},
+        "supporting": {
+          "S1": null,
+          "S2": {
+            "rule": "S2",
+            "role": "supporting",
+            "edge_key": "e-2afc04ee80f0699e",
+            "edge_type": "affects_costs",
+            "source": "variable:var_usd_inr",
+            "target": "company:co_aerisca_airways",
+            "evidence_status": "model_assumption",
+            "is_illustrative": true,
+            "description": "The exchange rate affects the chosen company's costs (E2, E8). Cited, not propagated."
+          }
+        },
+        "entity": {
+          "key": "company:co_aerisca_airways",
+          "name": "Aerisca Airways",
+          "nature": "fictional"
+        },
+        "names": {
+          "company:co_aerisca_airways": "Aerisca Airways",
+          "company:co_deltrin_refining": "Deltrin Refining",
+          "company:co_kovalent_digital": "Kovalent Digital",
+          "company:co_skyvara_air": "Skyvara Air",
+          "country:cty_in": "India",
+          "variable:var_india_cpi_inflation": "India CPI inflation",
+          "variable:var_us_fed_funds": "U.S. effective federal funds rate",
+          "variable:var_usd_inr": "USD/INR exchange rate"
+        }
+      },
+      "data": [],
+      "assumptions": [
+        {
+          "id": "A1",
+          "text": "Everything the model does not include stays at its baseline: the US-dollar amounts, volumes, prices in every currency, other costs and financing."
+        },
+        {
+          "id": "A2",
+          "text": "US-dollar revenue and costs accrue evenly through the year: each month carries one twelfth."
+        },
+        {
+          "id": "A3",
+          "text": "Dollar amounts are converted at the month's exchange rate. Dollar prices, volumes and demand do not respond to the exchange rate."
+        },
+        {
+          "id": "A4",
+          "text": "Scenario changes are step changes: they take effect in the start month and last for the stated duration (to the end of the horizon unless one is set), after which the changed variables return to their baselines. Every change in a run shares this timing."
+        },
+        {
+          "id": "A5",
+          "text": "Hedges fix the baseline exchange rate for the hedged share during the first months of cover, then expire; they are not rolled over. Revenue and cost hedges are separate."
+        },
+        {
+          "id": "A6",
+          "text": "Only amounts invoiced or paid in US dollars are exposed. Costs another model in the same scenario already converts must be left out of the US-dollar costs."
+        }
+      ],
+      "limitations": [
+        {
+          "id": "L1",
+          "text": "The model shows the arithmetic consequence of the inputs and assumptions. It is not a forecast of what will happen, and not investment advice."
+        },
+        {
+          "id": "L2",
+          "text": "Transaction exposure only: revaluing dollar debt or other balance-sheet items (translation exposure) and the effect on competitiveness or demand (economic exposure) are not modelled."
+        },
+        {
+          "id": "L3",
+          "text": "One foreign currency, the US dollar."
+        },
+        {
+          "id": "L4",
+          "text": "The hedge ratios and cover are the user's figures or neutral defaults. None is estimated in RUMIN."
+        },
+        {
+          "id": "L5",
+          "text": "Operating profit only: no interest, tax, hedge accounting, working capital or cash-flow timing."
+        },
+        {
+          "id": "L6",
+          "text": "Monthly steps: timing within a month is ignored, and seasonality is not modelled."
+        }
+      ],
+      "warnings": [
+        {
+          "code": "fictional_entity",
+          "message": "Aerisca Airways is a fictional company in RUMIN's sample network: the results describe the figures you entered, not a real airline.",
+          "field": "entity"
+        }
+      ]
+    },
+    {
+      "model_id": "floating_rate_interest",
+      "version": "1.0.0",
+      "run_id": "e78cb524-99cb-4540-8bf8-e3b6600f703d",
+      "inputs_hash": "ac54adfda1dcddb4026e09ef8274193d795da05c4548ac6e70698da7c4737a84",
+      "result_hash": "08fbbf330a3d1ddf2a89ac84d5ef6354bb68551a62cf4323f87e50ccea864288",
+      "engine_version": "1.0.0",
+      "items": [
+        {
+          "item": "repo_linked_interest",
+          "label": "Repo-linked debt",
+          "output": "repo_interest_change",
+          "value": "375000",
+          "by_change": {
+            "var_rbi_repo_rate": "375000"
+          }
+        },
+        {
+          "item": "us_rate_linked_interest",
+          "label": "US-rate-linked debt",
+          "output": "us_interest_change",
+          "value": "0",
+          "by_change": {
+            "var_rbi_repo_rate": "0"
+          }
+        }
+      ],
+      "changes": [
+        {
+          "id": "repo_rate_change",
+          "label": "RBI repo rate change",
+          "category": "scenario_input",
+          "knowledge": "scenario_input",
+          "source": "user",
+          "value": "0.5",
+          "unit": "percentage_points",
+          "unit_label": "percentage points",
+          "default": "0",
+          "rationale": "No change unless you enter one.",
+          "variable": "variable:var_rbi_repo_rate",
+          "observation": null
+        },
+        {
+          "id": "us_rate_change",
+          "label": "US short-term rate change",
+          "category": "scenario_input",
+          "knowledge": "scenario_input",
+          "source": "default",
+          "value": "0",
+          "unit": "percentage_points",
+          "unit_label": "percentage points",
+          "default": "0",
+          "rationale": "No change unless you enter one.",
+          "variable": "variable:var_us_fed_funds",
+          "observation": null
+        }
+      ],
+      "inputs": [
+        {
+          "id": "entity",
+          "label": "Company in the knowledge graph",
+          "category": "company_input",
+          "knowledge": "user_input",
+          "source": "user",
+          "value": "company:co_aerisca_airways",
+          "unit": "graph_node",
+          "unit_label": "knowledge-graph node",
+          "default": null,
+          "rationale": null,
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "reporting_currency",
+          "label": "Reporting currency",
+          "category": "company_input",
+          "knowledge": "user_input",
+          "source": "user",
+          "value": "INR",
+          "unit": "currency_code",
+          "unit_label": "ISO 4217 code",
+          "default": null,
+          "rationale": null,
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "annual_revenue",
+          "label": "Annual revenue",
+          "category": "company_input",
+          "knowledge": "user_input",
+          "source": "user",
+          "value": "300000000",
+          "unit": "currency_per_year",
+          "unit_label": "INR per year",
+          "default": null,
+          "rationale": null,
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "annual_operating_costs",
+          "label": "Annual operating costs",
+          "category": "company_input",
+          "knowledge": "user_input",
+          "source": "user",
+          "value": "250000000",
+          "unit": "currency_per_year",
+          "unit_label": "INR per year",
+          "default": null,
+          "rationale": null,
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "annual_interest_expense",
+          "label": "Annual interest expense",
+          "category": "company_input",
+          "knowledge": "user_input",
+          "source": "user",
+          "value": "12000000",
+          "unit": "currency_per_year",
+          "unit_label": "INR per year",
+          "default": null,
+          "rationale": null,
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "repo_linked_debt",
+          "label": "Debt linked to the repo rate",
+          "category": "company_input",
+          "knowledge": "user_input",
+          "source": "user",
+          "value": "100000000",
+          "unit": "currency",
+          "unit_label": "INR",
+          "default": null,
+          "rationale": null,
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "us_rate_linked_debt",
+          "label": "Debt linked to US short-term rates",
+          "category": "company_input",
+          "knowledge": "user_input",
+          "source": "user",
+          "value": "0",
+          "unit": "currency",
+          "unit_label": "INR",
+          "default": null,
+          "rationale": null,
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "repo_pass_through",
+          "label": "Repo pass-through",
+          "category": "assumption",
+          "knowledge": "assumption",
+          "source": "default",
+          "value": "100",
+          "unit": "percent",
+          "unit_label": "%",
+          "default": "100",
+          "rationale": "100: loans linked to the repo rate reprice one-for-one. Enter less if the spread absorbs part of the change.",
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "repo_repricing_lag",
+          "label": "Repo repricing delay",
+          "category": "assumption",
+          "knowledge": "assumption",
+          "source": "user",
+          "value": "3",
+          "unit": "months",
+          "unit_label": "months",
+          "default": "0",
+          "rationale": "0: the loans reprice in the month the rate changes. Enter your loans' reset delay (for example 3 months).",
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "us_pass_through",
+          "label": "US-rate pass-through",
+          "category": "assumption",
+          "knowledge": "assumption",
+          "source": "default",
+          "value": "100",
+          "unit": "percent",
+          "unit_label": "%",
+          "default": "100",
+          "rationale": "100: loans linked to US rates reprice one-for-one. Enter less if the spread absorbs part of the change.",
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "us_repricing_lag",
+          "label": "US-rate repricing delay",
+          "category": "assumption",
+          "knowledge": "assumption",
+          "source": "default",
+          "value": "0",
+          "unit": "months",
+          "unit_label": "months",
+          "default": "0",
+          "rationale": "0: the loans reprice in the month the rate changes. Enter your loans' reset delay.",
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "horizon_months",
+          "label": "Horizon",
+          "category": "setting",
+          "knowledge": "setting",
+          "source": "user",
+          "value": "12",
+          "unit": "months",
+          "unit_label": "months",
+          "default": "12",
+          "rationale": "Twelve months shows a full year after the change.",
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "shock_start_month",
+          "label": "Changes start in month",
+          "category": "setting",
+          "knowledge": "setting",
+          "source": "user",
+          "value": "1",
+          "unit": "months",
+          "unit_label": "months",
+          "default": "1",
+          "rationale": "The changes take effect in the first month unless you set a later one.",
+          "variable": null,
+          "observation": null
+        },
+        {
+          "id": "shock_duration_months",
+          "label": "Changes last for (months)",
+          "category": "setting",
+          "knowledge": "setting",
+          "source": "user",
+          "value": "0",
+          "unit": "months",
+          "unit_label": "months",
+          "default": "0",
+          "rationale": "0: the changes last for the rest of the horizon (a permanent step).",
+          "variable": null,
+          "observation": null
+        }
+      ],
+      "equations": [
+        {
+          "id": "E1",
+          "name": "Benchmark change in effect",
+          "formula": "Δk(m) = Δk · 𝟙[S ≤ m ≤ E]",
+          "scope": "monthly",
+          "explanation": "Applied by the transmission engine at the benchmark's own node (a change in percentage points is never carried along a log-linear relationship).",
+          "assumptions": [
+            {
+              "id": "A4",
+              "text": "Scenario changes are step changes: they take effect in the start month and last for the stated duration (to the end of the horizon unless one is set), after which the changed variables return to their baselines. Every change in a run shares this timing."
+            }
+          ],
+          "limitations": []
+        },
+        {
+          "id": "E2",
+          "name": "Change in interest on repo-linked debt",
+          "formula": "ΔI_r(m) = D_r × p_r × Δk_r(m − L_r) / 10 000 / 12",
+          "scope": "monthly",
+          "explanation": "The loans' rate moves by p_r % of the benchmark change L_r months later. Percent × percentage points ÷ 10,000 is the change as a fraction; ÷ 12 is one month's interest.",
+          "assumptions": [
+            {
+              "id": "A1",
+              "text": "Everything the model does not include stays at its baseline: the amount of debt (no repayments or new borrowing), fixed-rate debt, operating profit and other income."
+            },
+            {
+              "id": "A2",
+              "text": "Floating-rate loans reprice by the stated share of the benchmark change after the stated delay, then keep that rate while the change lasts. Interest accrues evenly: each month carries one twelfth of the annual rate."
+            },
+            {
+              "id": "A3",
+              "text": "The benchmark change is taken as given. RUMIN does not predict policy rates."
+            }
+          ],
+          "limitations": [
+            {
+              "id": "L4",
+              "text": "The pass-through shares and repricing delays are assumptions with neutral defaults. None is estimated in RUMIN."
+            }
+          ]
+        },
+        {
+          "id": "E3",
+          "name": "Change in interest on US-rate-linked debt",
+          "formula": "ΔI_u(m) = D_u × p_u × Δk_u(m − L_u) / 10 000 / 12",
+          "scope": "monthly",
+          "explanation": "As E2, for debt linked to US short-term rates.",
+          "assumptions": [
+            {
+              "id": "A1",
+              "text": "Everything the model does not include stays at its baseline: the amount of debt (no repayments or new borrowing), fixed-rate debt, operating profit and other income."
+            },
+            {
+              "id": "A2",
+              "text": "Floating-rate loans reprice by the stated share of the benchmark change after the stated delay, then keep that rate while the change lasts. Interest accrues evenly: each month carries one twelfth of the annual rate."
+            },
+            {
+              "id": "A3",
+              "text": "The benchmark change is taken as given. RUMIN does not predict policy rates."
+            },
+            {
+              "id": "A5",
+              "text": "Debt linked to US rates is stated in the reporting currency at today's exchange rate; exchange-rate movements on it are not modelled here."
+            }
+          ],
+          "limitations": [
+            {
+              "id": "L4",
+              "text": "The pass-through shares and repricing delays are assumptions with neutral defaults. None is estimated in RUMIN."
+            }
+          ]
+        },
+        {
+          "id": "E4",
+          "name": "Change in interest expense",
+          "formula": "ΔI(m) = ΔI_r(m) + ΔI_u(m); ΣΔI = Σₘ ΔI(m), m = 1…H",
+          "scope": "horizon",
+          "explanation": "Monthly changes, summed over the horizon.",
+          "assumptions": [],
+          "limitations": []
+        }
+      ],
+      "worked_month": 4,
+      "steps": [
+        {
+          "sequence": 16,
+          "equation": "E1",
+          "label": "Repo-rate change in effect",
+          "month": 4,
+          "output": {
+            "symbol": "Δk_r",
+            "value": "0.5",
+            "unit": "percentage points"
+          },
+          "inputs": [
+            {
+              "symbol": "Δk_r",
+              "value": "0.5",
+              "unit": "percentage points"
+            },
+            {
+              "symbol": "S",
+              "value": "1",
+              "unit": "months"
+            },
+            {
+              "symbol": "E",
+              "value": "12",
+              "unit": "months"
+            }
+          ]
+        },
+        {
+          "sequence": 17,
+          "equation": "E1",
+          "label": "US-rate change in effect",
+          "month": 4,
+          "output": {
+            "symbol": "Δk_u",
+            "value": "0",
+            "unit": "percentage points"
+          },
+          "inputs": [
+            {
+              "symbol": "Δk_u",
+              "value": "0",
+              "unit": "percentage points"
+            },
+            {
+              "symbol": "S",
+              "value": "1",
+              "unit": "months"
+            },
+            {
+              "symbol": "E",
+              "value": "12",
+              "unit": "months"
+            }
+          ]
+        },
+        {
+          "sequence": 18,
+          "equation": "E2",
+          "label": "Change in interest on repo-linked debt",
+          "month": 4,
+          "output": {
+            "symbol": "ΔI_r",
+            "value": "41666.6666666667",
+            "unit": "INR per month"
+          },
+          "inputs": [
+            {
+              "symbol": "D_r",
+              "value": "100000000",
+              "unit": "INR"
+            },
+            {
+              "symbol": "p_r",
+              "value": "100",
+              "unit": "percent"
+            },
+            {
+              "symbol": "Δk_r(m − L_r)",
+              "value": "0.5",
+              "unit": "percentage points"
+            },
+            {
+              "symbol": "L_r",
+              "value": "3",
+              "unit": "months"
+            }
+          ]
+        },
+        {
+          "sequence": 19,
+          "equation": "E3",
+          "label": "Change in interest on US-rate-linked debt",
+          "month": 4,
+          "output": {
+            "symbol": "ΔI_u",
+            "value": "0",
+            "unit": "INR per month"
+          },
+          "inputs": [
+            {
+              "symbol": "D_u",
+              "value": "0",
+              "unit": "INR"
+            },
+            {
+              "symbol": "p_u",
+              "value": "100",
+              "unit": "percent"
+            },
+            {
+              "symbol": "Δk_u(m − L_u)",
+              "value": "0",
+              "unit": "percentage points"
+            },
+            {
+              "symbol": "L_u",
+              "value": "0",
+              "unit": "months"
+            }
+          ]
+        },
+        {
+          "sequence": 20,
+          "equation": "E4",
+          "label": "Change in interest expense",
+          "month": 4,
+          "output": {
+            "symbol": "ΔI",
+            "value": "41666.6666666667",
+            "unit": "INR per month"
+          },
+          "inputs": [
+            {
+              "symbol": "ΔI_r",
+              "value": "41666.6666666667",
+              "unit": "INR per month"
+            },
+            {
+              "symbol": "ΔI_u",
+              "value": "0",
+              "unit": "INR per month"
+            }
+          ]
+        },
+        {
+          "sequence": 61,
+          "equation": "E4",
+          "label": "Change in interest expense over the horizon",
+          "month": null,
+          "output": {
+            "symbol": "ΣΔI",
+            "value": "375000",
+            "unit": "INR"
+          },
+          "inputs": [
+            {
+              "symbol": "ΣΔI_r",
+              "value": "375000",
+              "unit": "INR"
+            },
+            {
+              "symbol": "ΣΔI_u",
+              "value": "0",
+              "unit": "INR"
+            },
+            {
+              "symbol": "H",
+              "value": "12",
+              "unit": "months"
+            }
+          ]
+        },
+        {
+          "sequence": 62,
+          "equation": "E4",
+          "label": "Floating-rate debt",
+          "month": null,
+          "output": {
+            "symbol": "D_r + D_u",
+            "value": "100000000",
+            "unit": "INR"
+          },
+          "inputs": [
+            {
+              "symbol": "D_r",
+              "value": "100000000",
+              "unit": "INR"
+            },
+            {
+              "symbol": "D_u",
+              "value": "0",
+              "unit": "INR"
+            }
+          ]
+        }
+      ],
+      "transmission": [
+        {
+          "input": "repo_rate_change",
+          "nodes": ["variable:var_rbi_repo_rate"],
+          "rules": [],
+          "edge_keys": [],
+          "coefficient": "1",
+          "lag": 0,
+          "first_month": 1,
+          "last_month": null,
+          "kind": "level",
+          "log_change": "0.5"
+        }
+      ],
+      "graph": {
+        "build_id": 1,
+        "freshness": "current",
+        "transmission": {},
+        "supporting": {
+          "S1": null,
+          "S2": null
+        },
+        "entity": {
+          "key": "company:co_aerisca_airways",
+          "name": "Aerisca Airways",
+          "nature": "fictional"
+        },
+        "names": {
+          "company:co_anvaya_bank": "Anvaya Bank",
+          "company:co_brookvane_bank": "Brookvane Bank",
+          "company:co_gridwell_power": "Gridwell Power",
+          "company:co_lumeric_chemicals": "Lumeric Chemicals",
+          "company:co_trakvel_logistics": "Trakvel Logistics",
+          "country:cty_in": "India",
+          "country:cty_us": "United States",
+          "variable:var_india_cpi_inflation": "India CPI inflation",
+          "variable:var_rbi_repo_rate": "RBI policy repo rate",
+          "variable:var_us_fed_funds": "U.S. effective federal funds rate",
+          "variable:var_usd_inr": "USD/INR exchange rate"
+        }
+      },
+      "data": [],
+      "assumptions": [
+        {
+          "id": "A1",
+          "text": "Everything the model does not include stays at its baseline: the amount of debt (no repayments or new borrowing), fixed-rate debt, operating profit and other income."
+        },
+        {
+          "id": "A2",
+          "text": "Floating-rate loans reprice by the stated share of the benchmark change after the stated delay, then keep that rate while the change lasts. Interest accrues evenly: each month carries one twelfth of the annual rate."
+        },
+        {
+          "id": "A3",
+          "text": "The benchmark change is taken as given. RUMIN does not predict policy rates."
+        },
+        {
+          "id": "A4",
+          "text": "Scenario changes are step changes: they take effect in the start month and last for the stated duration (to the end of the horizon unless one is set), after which the changed variables return to their baselines. Every change in a run shares this timing."
+        },
+        {
+          "id": "A5",
+          "text": "Debt linked to US rates is stated in the reporting currency at today's exchange rate; exchange-rate movements on it are not modelled here."
+        }
+      ],
+      "limitations": [
+        {
+          "id": "L1",
+          "text": "The model shows the arithmetic consequence of the inputs and assumptions. It is not a forecast of what will happen, and not investment advice."
+        },
+        {
+          "id": "L2",
+          "text": "No refinancing, repayment, covenant, credit-spread or rating effects, and no change in deposits or interest income."
+        },
+        {
+          "id": "L3",
+          "text": "Before tax: the tax deductibility of interest is not modelled."
+        },
+        {
+          "id": "L4",
+          "text": "The pass-through shares and repricing delays are assumptions with neutral defaults. None is estimated in RUMIN."
+        },
+        {
+          "id": "L5",
+          "text": "Two benchmarks only: the RBI repo rate and US short-term rates."
+        },
+        {
+          "id": "L6",
+          "text": "Monthly steps: timing within a month is ignored, and seasonality is not modelled."
+        }
+      ],
+      "warnings": [
+        {
+          "code": "fictional_entity",
+          "message": "Aerisca Airways is a fictional company in RUMIN's sample network: the results describe the figures you entered, not a real airline.",
+          "field": "entity"
+        }
+      ]
+    }
+  ],
+  "profiles": {
+    "airline_fuel_cost": {
+      "title": "Airline fuel cost",
+      "covers": "An airline's jet fuel bill (priced in US dollars, partly hedged) and the part of its change passed on to fares."
+    },
+    "fx_exposure": {
+      "title": "Foreign-currency revenue and costs",
+      "covers": "Revenue invoiced and costs paid in US dollars, converted at the month's exchange rate, with hedges."
+    },
+    "floating_rate_interest": {
+      "title": "Floating-rate interest",
+      "covers": "Interest on floating-rate debt linked to the RBI repo rate or US short-term rates, after pass-through and repricing delays."
+    }
+  },
+  "chain": [
+    "Scenario changes and inputs",
+    "Model equations",
+    "Intermediate calculation steps",
+    "Knowledge-graph relationships and transmission",
+    "Model outputs",
+    "Lab aggregation (AG5)",
+    "Profit before tax"
+  ],
+  "method": {
+    "contributions": "Within each model, Shapley values over its non-zero changes; the Lab adds each change's credits across models. They add up to the line within rounding (10 decimal places).",
+    "source": "Built from the stored execution and model runs; nothing is generated."
+  }
+}

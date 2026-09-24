@@ -1,0 +1,474 @@
+{
+  "id": "crude_oil_airline",
+  "title": "Crude oil shock on an airline",
+  "category": "commodity",
+  "question": "What happens to an airline's fuel bill and operating profit if Brent crude rises 20 %?",
+  "summary": "Brent crude rises; the change reaches jet fuel through the pass-through the airline model assumes, then the fuel bill, hedges and fares.",
+  "changes": [
+    {
+      "variable_id": "var_brent_crude",
+      "change_type": "percent_change",
+      "value": "20"
+    }
+  ],
+  "models": [
+    {
+      "model_id": "airline_fuel_cost",
+      "title": "Airline fuel cost",
+      "version": "1.1.0"
+    }
+  ],
+  "stress_cases": [
+    {
+      "name": "Base",
+      "scale": null,
+      "changes": {
+        "var_brent_crude": "10"
+      }
+    },
+    {
+      "name": "Stress",
+      "scale": null,
+      "changes": {
+        "var_brent_crude": "25"
+      }
+    },
+    {
+      "name": "Extreme",
+      "scale": null,
+      "changes": {
+        "var_brent_crude": "40"
+      }
+    }
+  ],
+  "suggested_entities": [
+    {
+      "key": "company:co_aerisca_airways",
+      "name": "Aerisca Airways",
+      "type": "company",
+      "nature": "fictional"
+    },
+    {
+      "key": "company:co_skyvara_air",
+      "name": "Skyvara Air",
+      "type": "company",
+      "nature": "fictional"
+    }
+  ],
+  "required_inputs": [
+    {
+      "path": "models.airline_fuel_cost.inputs.jet_fuel_price",
+      "input": "jet_fuel_price",
+      "label": "Baseline jet fuel price",
+      "kind": "market",
+      "unit": null,
+      "unit_label": null,
+      "units": ["usd_per_us_gallon", "usd_per_us_barrel", "usd_per_kilolitre"],
+      "default": null,
+      "description": "The benchmark jet fuel price the airline's fuel is priced from, in US dollars per unit of volume. RUMIN holds no jet fuel prices: enter the benchmark and the date you rely on.",
+      "shared": false,
+      "models": ["airline_fuel_cost"]
+    },
+    {
+      "path": "markets.fx_rate",
+      "input": "fx_rate",
+      "label": "Baseline exchange rate",
+      "kind": "market",
+      "unit": "currency_per_usd",
+      "unit_label": "reporting currency per USD",
+      "units": [],
+      "default": null,
+      "description": "Units of the reporting currency per US dollar at the baseline. Enter a rate, or use the latest World Bank annual average stored in RUMIN.",
+      "shared": true,
+      "models": ["airline_fuel_cost"]
+    },
+    {
+      "path": "company.reporting_currency",
+      "input": "reporting_currency",
+      "label": "Reporting currency",
+      "kind": "company",
+      "unit": "currency_code",
+      "unit_label": "ISO 4217 code",
+      "units": [],
+      "default": null,
+      "description": "The currency the airline reports in (ISO 4217 code, e.g. INR).",
+      "shared": true,
+      "models": ["airline_fuel_cost"]
+    },
+    {
+      "path": "company.annual_revenue",
+      "input": "annual_revenue",
+      "label": "Annual revenue",
+      "kind": "company",
+      "unit": "currency_per_year",
+      "unit_label": "reporting currency per year",
+      "units": [],
+      "default": null,
+      "description": "Annual revenue in the reporting currency, from the airline's own accounts or plan. RUMIN holds no company financial data.",
+      "shared": true,
+      "models": ["airline_fuel_cost"]
+    },
+    {
+      "path": "company.annual_operating_costs",
+      "input": "annual_operating_costs",
+      "label": "Annual operating costs",
+      "kind": "company",
+      "unit": "currency_per_year",
+      "unit_label": "reporting currency per year",
+      "units": [],
+      "default": null,
+      "description": "Annual operating costs, including fuel, in the reporting currency.",
+      "shared": true,
+      "models": ["airline_fuel_cost"]
+    },
+    {
+      "path": "models.airline_fuel_cost.inputs.annual_fuel_consumption",
+      "input": "annual_fuel_consumption",
+      "label": "Annual fuel consumption",
+      "kind": "company",
+      "unit": null,
+      "unit_label": null,
+      "units": ["kilolitre", "us_gallon", "us_barrel"],
+      "default": null,
+      "description": "Jet fuel consumed in a year, in kilolitres, US gallons or US barrels.",
+      "shared": false,
+      "models": ["airline_fuel_cost"]
+    }
+  ],
+  "optional_inputs": [
+    {
+      "path": "entity",
+      "input": "entity",
+      "label": "Airline in the knowledge graph",
+      "kind": "entity",
+      "unit": "graph_node",
+      "unit_label": "knowledge-graph node",
+      "units": [],
+      "default": null,
+      "description": "Optional: the airline in RUMIN's knowledge graph this run is about. It must be a company that operates in air transport. RUMIN's sample airlines are fictional; the figures you enter are what the model uses.",
+      "shared": true,
+      "models": ["airline_fuel_cost"]
+    },
+    {
+      "path": "models.airline_fuel_cost.assumptions.crude_pass_through",
+      "input": "crude_pass_through",
+      "label": "Crude-to-jet-fuel elasticity (β)",
+      "kind": "assumption",
+      "unit": "elasticity",
+      "unit_label": "elasticity (dimensionless)",
+      "units": [],
+      "default": "1",
+      "description": "How strongly jet fuel responds to crude oil: a 1 % change in crude changes jet fuel by β % (in log terms).",
+      "shared": false,
+      "models": ["airline_fuel_cost"]
+    },
+    {
+      "path": "models.airline_fuel_cost.assumptions.crude_pass_through_lag",
+      "input": "crude_pass_through_lag",
+      "label": "Crude-to-jet-fuel lag",
+      "kind": "assumption",
+      "unit": "months",
+      "unit_label": "months",
+      "units": [],
+      "default": "0",
+      "description": "Months before a crude oil change reaches jet fuel prices.",
+      "shared": false,
+      "models": ["airline_fuel_cost"]
+    },
+    {
+      "path": "models.airline_fuel_cost.assumptions.hedge_ratio",
+      "input": "hedge_ratio",
+      "label": "Hedge ratio",
+      "kind": "assumption",
+      "unit": "percent",
+      "unit_label": "%",
+      "units": [],
+      "default": "0",
+      "description": "The share of fuel consumption hedged at the baseline US-dollar price, in percent.",
+      "shared": false,
+      "models": ["airline_fuel_cost"]
+    },
+    {
+      "path": "models.airline_fuel_cost.assumptions.hedge_months",
+      "input": "hedge_months",
+      "label": "Hedge cover",
+      "kind": "assumption",
+      "unit": "months",
+      "unit_label": "months",
+      "units": [],
+      "default": "0",
+      "description": "How many months, from month 1, the existing hedges cover.",
+      "shared": false,
+      "models": ["airline_fuel_cost"]
+    },
+    {
+      "path": "models.airline_fuel_cost.assumptions.fare_pass_through",
+      "input": "fare_pass_through",
+      "label": "Fare pass-through",
+      "kind": "assumption",
+      "unit": "percent",
+      "unit_label": "%",
+      "units": [],
+      "default": "0",
+      "description": "The share of any change in fuel cost recovered through fares, in percent.",
+      "shared": false,
+      "models": ["airline_fuel_cost"]
+    },
+    {
+      "path": "models.airline_fuel_cost.assumptions.fare_pass_through_lag",
+      "input": "fare_pass_through_lag",
+      "label": "Fare pass-through lag",
+      "kind": "assumption",
+      "unit": "months",
+      "unit_label": "months",
+      "units": [],
+      "default": "0",
+      "description": "Months before fares respond to a change in fuel cost.",
+      "shared": false,
+      "models": ["airline_fuel_cost"]
+    },
+    {
+      "path": "timing.horizon_months",
+      "input": "horizon_months",
+      "label": "Horizon",
+      "kind": "setting",
+      "unit": "months",
+      "unit_label": "months",
+      "units": [],
+      "default": "12",
+      "description": "How many months to simulate.",
+      "shared": false,
+      "models": ["airline_fuel_cost"]
+    },
+    {
+      "path": "timing.start_month",
+      "input": "shock_start_month",
+      "label": "Changes start in month",
+      "kind": "setting",
+      "unit": "months",
+      "unit_label": "months",
+      "units": [],
+      "default": "1",
+      "description": "The month of the horizon in which every scenario change takes effect (1 is the first month).",
+      "shared": false,
+      "models": ["airline_fuel_cost"]
+    },
+    {
+      "path": "timing.duration_months",
+      "input": "shock_duration_months",
+      "label": "Changes last for (months)",
+      "kind": "setting",
+      "unit": "months",
+      "unit_label": "months",
+      "units": [],
+      "default": "0",
+      "description": "How many months the changes last before the variables return to their baselines. 0 means they last until the end of the horizon.",
+      "shared": false,
+      "models": ["airline_fuel_cost"]
+    }
+  ],
+  "validation_rules": [
+    {
+      "model_id": "airline_fuel_cost",
+      "id": "input_range",
+      "description": "Every number is within its range and has at most the allowed decimal places; required inputs are present.",
+      "severity": "error"
+    },
+    {
+      "model_id": "airline_fuel_cost",
+      "id": "percent_change_limits",
+      "description": "Scenario changes are greater than −100 % and at most +1,000 %, with at most 4 decimals — the limits Phase 1 publishes for scenario inputs.",
+      "severity": "error"
+    },
+    {
+      "model_id": "airline_fuel_cost",
+      "id": "unit_choice",
+      "description": "Quantities use one of the listed units; no other unit is converted.",
+      "severity": "error"
+    },
+    {
+      "model_id": "airline_fuel_cost",
+      "id": "usd_rate_is_one",
+      "description": "When the reporting currency is USD, the exchange rate must be exactly 1.",
+      "severity": "error"
+    },
+    {
+      "model_id": "airline_fuel_cost",
+      "id": "observation_matches",
+      "description": "A stored observation may supply the exchange rate only when its currency pair and unit match the reporting currency.",
+      "severity": "error"
+    },
+    {
+      "model_id": "airline_fuel_cost",
+      "id": "fuel_share_exceeds_costs",
+      "description": "The benchmark fuel cost of the stated consumption cannot exceed operating costs.",
+      "severity": "error"
+    },
+    {
+      "model_id": "airline_fuel_cost",
+      "id": "fuel_share_low",
+      "description": "A benchmark fuel cost below 1 % of operating costs is flagged: it usually means a wrong consumption or price unit.",
+      "severity": "warning"
+    },
+    {
+      "model_id": "airline_fuel_cost",
+      "id": "channel_confirmed",
+      "description": "A crude oil change reaches jet fuel only if the knowledge graph states that Brent crude influences jet fuel.",
+      "severity": "error"
+    },
+    {
+      "model_id": "airline_fuel_cost",
+      "id": "entity_is_airline",
+      "description": "A chosen entity must be a company that operates in air transport in the knowledge graph.",
+      "severity": "error"
+    },
+    {
+      "model_id": "airline_fuel_cost",
+      "id": "timing_within_horizon",
+      "description": "Hedges, lags and fare responses that fall outside the horizon are flagged.",
+      "severity": "warning"
+    },
+    {
+      "model_id": "airline_fuel_cost",
+      "id": "no_shock",
+      "description": "A run in which every scenario change is zero is flagged: it equals the baseline.",
+      "severity": "warning"
+    },
+    {
+      "model_id": "airline_fuel_cost",
+      "id": "start_within_horizon",
+      "description": "The changes must take effect within the horizon.",
+      "severity": "error"
+    }
+  ],
+  "expected_outputs": {
+    "lines": [
+      {
+        "line": "operating_costs",
+        "label": "Operating costs",
+        "items": [
+          {
+            "model_id": "airline_fuel_cost",
+            "item": "jet_fuel",
+            "label": "Jet fuel"
+          }
+        ]
+      },
+      {
+        "line": "revenue",
+        "label": "Revenue",
+        "items": [
+          {
+            "model_id": "airline_fuel_cost",
+            "item": "fuel_cost_recovery",
+            "label": "Fare recovery of fuel costs"
+          }
+        ]
+      }
+    ],
+    "derived": [
+      {
+        "id": "operating_profit",
+        "label": "Operating profit"
+      },
+      {
+        "id": "operating_margin",
+        "label": "Operating margin"
+      }
+    ],
+    "model_outputs": [
+      {
+        "model_id": "airline_fuel_cost",
+        "id": "fuel_cost_change",
+        "label": "Change in fuel cost (horizon)",
+        "unit": "currency"
+      },
+      {
+        "model_id": "airline_fuel_cost",
+        "id": "hedging_effect",
+        "label": "Hedging effect (horizon)",
+        "unit": "currency"
+      },
+      {
+        "model_id": "airline_fuel_cost",
+        "id": "fare_recovery",
+        "label": "Fare recovery (horizon)",
+        "unit": "currency"
+      },
+      {
+        "model_id": "airline_fuel_cost",
+        "id": "jet_fuel_price_change",
+        "label": "Jet fuel price change (run rate)",
+        "unit": "ratio"
+      },
+      {
+        "model_id": "airline_fuel_cost",
+        "id": "steady_state_operating_profit_change",
+        "label": "Run-rate annual operating-profit change",
+        "unit": "currency_per_year"
+      }
+    ]
+  },
+  "scenario": {
+    "name": "Crude oil shock on an airline",
+    "description": "Brent crude rises; the change reaches jet fuel through the pass-through the airline model assumes, then the fuel bill, hedges and fares.",
+    "template_id": "crude_oil_airline",
+    "shocks": [
+      {
+        "variable_id": "var_brent_crude",
+        "change_type": "percent_change",
+        "value": "20",
+        "note": ""
+      }
+    ],
+    "entity": null,
+    "timing": {
+      "start_month": 1,
+      "duration_months": 0,
+      "horizon_months": 12
+    },
+    "company": {
+      "reporting_currency": null,
+      "annual_revenue": null,
+      "annual_operating_costs": null
+    },
+    "markets": {
+      "fx_rate": null
+    },
+    "models": {
+      "airline_fuel_cost": {
+        "mode": "include",
+        "inputs": {},
+        "assumptions": {}
+      }
+    },
+    "constraints": {
+      "evidence": "any",
+      "stored_market_data": false
+    },
+    "stress_cases": [
+      {
+        "name": "Base",
+        "scale": null,
+        "changes": {
+          "var_brent_crude": "10"
+        }
+      },
+      {
+        "name": "Stress",
+        "scale": null,
+        "changes": {
+          "var_brent_crude": "25"
+        }
+      },
+      {
+        "name": "Extreme",
+        "scale": null,
+        "changes": {
+          "var_brent_crude": "40"
+        }
+      }
+    ],
+    "note": ""
+  }
+}

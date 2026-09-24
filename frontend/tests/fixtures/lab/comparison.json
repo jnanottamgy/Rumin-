@@ -1,0 +1,449 @@
+{
+  "reference": "348bd1e1-ea11-4851-bbf6-78389f1512c1",
+  "executions": [
+    {
+      "execution_id": "348bd1e1-ea11-4851-bbf6-78389f1512c1",
+      "scenario_id": "f5a5b9a1-87b4-4fe8-8dc3-dc2979e4ba8e",
+      "scenario_name": "Oil, rupee and rates on Aerisca",
+      "version": 1,
+      "requested_at": "2026-09-24T03:27:57.123440Z",
+      "currency": "INR",
+      "horizon_months": 12,
+      "timing": {
+        "start_month": 1,
+        "end_month": 12,
+        "duration_months": 0
+      },
+      "entity": {
+        "key": "company:co_aerisca_airways",
+        "name": "Aerisca Airways",
+        "nature": "fictional",
+        "industries": [
+          {
+            "key": "industry:ind_air_transport",
+            "name": "Air transport"
+          }
+        ]
+      },
+      "changes": [
+        {
+          "index": 0,
+          "variable_id": "var_brent_crude",
+          "name": "Brent crude oil price",
+          "change_type": "percent_change",
+          "value": "20",
+          "unit": "%",
+          "modelled": true,
+          "models": ["airline_fuel_cost"],
+          "reason": null
+        },
+        {
+          "index": 1,
+          "variable_id": "var_usd_inr",
+          "name": "USD/INR exchange rate",
+          "change_type": "percent_change",
+          "value": "5",
+          "unit": "%",
+          "modelled": true,
+          "models": ["airline_fuel_cost", "fx_exposure"],
+          "reason": null
+        },
+        {
+          "index": 2,
+          "variable_id": "var_rbi_repo_rate",
+          "name": "RBI policy repo rate",
+          "change_type": "absolute_change",
+          "value": "0.5",
+          "unit": "percentage points",
+          "modelled": true,
+          "models": ["floating_rate_interest"],
+          "reason": null
+        }
+      ],
+      "models": [
+        {
+          "model_id": "airline_fuel_cost",
+          "version": "1.1.0",
+          "title": "Airline fuel cost"
+        },
+        {
+          "model_id": "fx_exposure",
+          "version": "1.0.0",
+          "title": "Foreign-currency revenue and costs"
+        },
+        {
+          "model_id": "floating_rate_interest",
+          "version": "1.0.0",
+          "title": "Floating-rate interest"
+        }
+      ],
+      "result_hash": "45fe9f3bf9a5d69b0f49f5e01ae5f6ebf291fc8e3f94635f5d6072c8e8dce622"
+    },
+    {
+      "execution_id": "7aefb335-44f1-4765-9de7-979353449061",
+      "scenario_id": "22529d0e-c394-46b0-a86c-fe99a41bbb3c",
+      "scenario_name": "Oil alone on Aerisca",
+      "version": 1,
+      "requested_at": "2026-09-24T03:27:57.378534Z",
+      "currency": "INR",
+      "horizon_months": 12,
+      "timing": {
+        "start_month": 1,
+        "end_month": 12,
+        "duration_months": 0
+      },
+      "entity": {
+        "key": "company:co_aerisca_airways",
+        "name": "Aerisca Airways",
+        "nature": "fictional",
+        "industries": [
+          {
+            "key": "industry:ind_air_transport",
+            "name": "Air transport"
+          }
+        ]
+      },
+      "changes": [
+        {
+          "index": 0,
+          "variable_id": "var_brent_crude",
+          "name": "Brent crude oil price",
+          "change_type": "percent_change",
+          "value": "20",
+          "unit": "%",
+          "modelled": true,
+          "models": ["airline_fuel_cost"],
+          "reason": null
+        }
+      ],
+      "models": [
+        {
+          "model_id": "airline_fuel_cost",
+          "version": "1.1.0",
+          "title": "Airline fuel cost"
+        }
+      ],
+      "result_hash": "b836bad88e711c587e6e43fb0dce9b27c7e8facc4461503c1c5406412ed84914"
+    }
+  ],
+  "comparable": {
+    "348bd1e1-ea11-4851-bbf6-78389f1512c1": true,
+    "7aefb335-44f1-4765-9de7-979353449061": true
+  },
+  "lines": [
+    {
+      "id": "revenue",
+      "label": "Revenue",
+      "values": [
+        {
+          "execution_id": "348bd1e1-ea11-4851-bbf6-78389f1512c1",
+          "baseline": "300000000",
+          "change": "6925000",
+          "scenario": "306925000",
+          "percent_change": "2.3083333333",
+          "modelled": true,
+          "difference": null
+        },
+        {
+          "execution_id": "7aefb335-44f1-4765-9de7-979353449061",
+          "baseline": "300000000",
+          "change": "3500000",
+          "scenario": "303500000",
+          "percent_change": "1.1666666667",
+          "modelled": true,
+          "difference": {
+            "absolute": "-3425000",
+            "percent": "-49.4584837545"
+          }
+        }
+      ]
+    },
+    {
+      "id": "operating_costs",
+      "label": "Operating costs",
+      "values": [
+        {
+          "execution_id": "348bd1e1-ea11-4851-bbf6-78389f1512c1",
+          "baseline": "250000000",
+          "change": "13250000",
+          "scenario": "263250000",
+          "percent_change": "5.3",
+          "modelled": true,
+          "difference": null
+        },
+        {
+          "execution_id": "7aefb335-44f1-4765-9de7-979353449061",
+          "baseline": "250000000",
+          "change": "9000000",
+          "scenario": "259000000",
+          "percent_change": "3.6",
+          "modelled": true,
+          "difference": {
+            "absolute": "-4250000",
+            "percent": "-32.0754716981"
+          }
+        }
+      ]
+    },
+    {
+      "id": "operating_profit",
+      "label": "Operating profit",
+      "values": [
+        {
+          "execution_id": "348bd1e1-ea11-4851-bbf6-78389f1512c1",
+          "baseline": "50000000",
+          "change": "-6325000",
+          "scenario": "43675000",
+          "percent_change": "-12.65",
+          "modelled": true,
+          "difference": null
+        },
+        {
+          "execution_id": "7aefb335-44f1-4765-9de7-979353449061",
+          "baseline": "50000000",
+          "change": "-5500000",
+          "scenario": "44500000",
+          "percent_change": "-11",
+          "modelled": true,
+          "difference": {
+            "absolute": "825000",
+            "percent": "13.0434782609"
+          }
+        }
+      ]
+    },
+    {
+      "id": "interest_expense",
+      "label": "Interest expense",
+      "values": [
+        {
+          "execution_id": "348bd1e1-ea11-4851-bbf6-78389f1512c1",
+          "baseline": "12000000",
+          "change": "375000",
+          "scenario": "12375000",
+          "percent_change": "3.125",
+          "modelled": true,
+          "difference": null
+        },
+        {
+          "execution_id": "7aefb335-44f1-4765-9de7-979353449061",
+          "baseline": null,
+          "change": null,
+          "scenario": null,
+          "percent_change": null,
+          "modelled": false,
+          "difference": null
+        }
+      ]
+    },
+    {
+      "id": "profit_before_tax",
+      "label": "Profit before tax",
+      "values": [
+        {
+          "execution_id": "348bd1e1-ea11-4851-bbf6-78389f1512c1",
+          "baseline": "38000000",
+          "change": "-6700000",
+          "scenario": "31300000",
+          "percent_change": "-17.6315789474",
+          "modelled": true,
+          "difference": null
+        },
+        {
+          "execution_id": "7aefb335-44f1-4765-9de7-979353449061",
+          "baseline": null,
+          "change": null,
+          "scenario": null,
+          "percent_change": null,
+          "modelled": false,
+          "difference": null
+        }
+      ]
+    }
+  ],
+  "metrics": [
+    {
+      "id": "operating_margin",
+      "label": "Operating margin",
+      "values": [
+        {
+          "execution_id": "348bd1e1-ea11-4851-bbf6-78389f1512c1",
+          "baseline": "0.1666666667",
+          "change": "-0.0243680595",
+          "scenario": "0.1422986072",
+          "percent_change": null,
+          "modelled": true,
+          "difference": null
+        },
+        {
+          "execution_id": "7aefb335-44f1-4765-9de7-979353449061",
+          "baseline": "0.1666666667",
+          "change": "-0.0200439319",
+          "scenario": "0.1466227348",
+          "percent_change": null,
+          "modelled": true,
+          "difference": {
+            "absolute": "0.0043241276",
+            "percent": "3.0387701504"
+          }
+        }
+      ]
+    },
+    {
+      "id": "interest_coverage",
+      "label": "Interest coverage",
+      "values": [
+        {
+          "execution_id": "348bd1e1-ea11-4851-bbf6-78389f1512c1",
+          "baseline": "4.1666666667",
+          "change": "-0.6373737374",
+          "scenario": "3.5292929293",
+          "percent_change": null,
+          "modelled": true,
+          "difference": null
+        },
+        {
+          "execution_id": "7aefb335-44f1-4765-9de7-979353449061",
+          "baseline": null,
+          "change": null,
+          "scenario": null,
+          "percent_change": null,
+          "modelled": false,
+          "difference": null
+        }
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "model_id": "airline_fuel_cost",
+      "input": "usd_change",
+      "label": "Exchange-rate change",
+      "category": "scenario_input",
+      "values": [
+        {
+          "value": "5",
+          "unit": "% change",
+          "source": "user"
+        },
+        {
+          "value": "0",
+          "unit": "% change",
+          "source": "default"
+        }
+      ]
+    }
+  ],
+  "pathways": [
+    {
+      "link": "airline_fuel_cost:variable:var_usd_inr→airline_fuel_cost:output:fuel_cost_change",
+      "present": [true, false]
+    },
+    {
+      "link": "change:var_rbi_repo_rate→floating_rate_interest:variable:var_rbi_repo_rate",
+      "present": [true, false]
+    },
+    {
+      "link": "change:var_usd_inr→airline_fuel_cost:variable:var_usd_inr",
+      "present": [true, false]
+    },
+    {
+      "link": "change:var_usd_inr→fx_exposure:variable:var_usd_inr",
+      "present": [true, false]
+    },
+    {
+      "link": "floating_rate_interest:output:repo_interest_change→line:interest_expense",
+      "present": [true, false]
+    },
+    {
+      "link": "floating_rate_interest:variable:var_rbi_repo_rate→floating_rate_interest:output:repo_interest_change",
+      "present": [true, false]
+    },
+    {
+      "link": "fx_exposure:output:cost_change→line:operating_costs",
+      "present": [true, false]
+    },
+    {
+      "link": "fx_exposure:output:revenue_change→line:revenue",
+      "present": [true, false]
+    },
+    {
+      "link": "fx_exposure:variable:var_usd_inr→fx_exposure:output:cost_change",
+      "present": [true, false]
+    },
+    {
+      "link": "fx_exposure:variable:var_usd_inr→fx_exposure:output:revenue_change",
+      "present": [true, false]
+    },
+    {
+      "link": "line:interest_expense→line:profit_before_tax",
+      "present": [true, false]
+    },
+    {
+      "link": "line:interest_expense→metric:interest_coverage",
+      "present": [true, false]
+    },
+    {
+      "link": "line:operating_profit→line:profit_before_tax",
+      "present": [true, false]
+    },
+    {
+      "link": "line:operating_profit→metric:interest_coverage",
+      "present": [true, false]
+    }
+  ],
+  "sensitivity": [
+    {
+      "execution_id": "348bd1e1-ea11-4851-bbf6-78389f1512c1",
+      "metric": "profit_before_tax",
+      "ranking": [
+        {
+          "target": "change:var_brent_crude",
+          "label": "Crude oil price change",
+          "spread": "5775000"
+        },
+        {
+          "target": "model:airline_fuel_cost:fare_pass_through",
+          "label": "Fare pass-through (Airline fuel cost)",
+          "spread": "3940000"
+        },
+        {
+          "target": "model:airline_fuel_cost:crude_pass_through",
+          "label": "Crude-to-jet-fuel elasticity (β) (Airline fuel cost)",
+          "spread": "2527536.8118238243"
+        },
+        {
+          "target": "change:var_usd_inr",
+          "label": "Exchange-rate change",
+          "spread": "1650000"
+        },
+        {
+          "target": "model:airline_fuel_cost:hedge_ratio",
+          "label": "Hedge ratio (Airline fuel cost)",
+          "spread": "1050000"
+        },
+        {
+          "target": "change:var_rbi_repo_rate",
+          "label": "RBI repo rate change",
+          "spread": "375000"
+        },
+        {
+          "target": "model:fx_exposure:cost_hedge_ratio",
+          "label": "Cost hedge ratio (Foreign-currency revenue and costs)",
+          "spread": "0"
+        },
+        {
+          "target": "model:fx_exposure:revenue_hedge_ratio",
+          "label": "Revenue hedge ratio (Foreign-currency revenue and costs)",
+          "spread": "0"
+        }
+      ]
+    },
+    {
+      "execution_id": "7aefb335-44f1-4765-9de7-979353449061",
+      "metric": null,
+      "ranking": []
+    }
+  ],
+  "note": "Executions are shown side by side and differenced against the reference only when their currency and horizon match. Nothing is ranked or recommended: which result is preferable depends on an objective you have not stated."
+}

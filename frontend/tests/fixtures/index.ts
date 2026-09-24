@@ -11,8 +11,10 @@ import type {
   NetworkResponse,
   Scenario,
   ScenarioPage,
+  ScenarioSummary,
   SystemStatus,
 } from "@/types/api";
+import { labFixtures } from "./lab";
 import networkJson from "./network.json";
 import systemJson from "./system.json";
 import variablesJson from "./variables.json";
@@ -31,28 +33,13 @@ export function variableFixture(id: string): EconomicVariable {
   return variable;
 }
 
+/** A saved scenario, as captured with the Scenario Lab fixtures (see `./lab`). */
 export function scenarioFixture(overrides: Partial<Scenario> = {}): Scenario {
-  return {
-    id: "7632ecaf-b2bb-4839-84b3-400268a18c22",
-    name: "Oil price shock",
-    description: "Brent crude rises 30 %.",
-    status: "draft",
-    shocks: [
-      {
-        variable_id: "var_brent_crude",
-        change_type: "percent_change",
-        value: 30,
-        note: "",
-        epistemic_category: "scenario_input",
-      },
-    ],
-    latest_run: null,
-    created_at: "2026-09-23T10:00:00Z",
-    updated_at: "2026-09-23T10:00:00Z",
-    ...overrides,
-  };
+  return { ...labFixtures.scenario(), ...overrides };
 }
 
-export function scenarioPageFixture(items: Scenario[] = []): ScenarioPage {
+/** The scenario library: the captured scenarios by default, or the given summaries. */
+export function scenarioPageFixture(items?: ScenarioSummary[]): ScenarioPage {
+  if (!items) return labFixtures.scenarios();
   return { items, total: items.length, limit: 100, offset: 0 };
 }

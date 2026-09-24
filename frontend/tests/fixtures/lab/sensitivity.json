@@ -1,0 +1,306 @@
+{
+  "id": "79ea15c4-f849-47de-8ea2-a29b7cec7d7d",
+  "execution_id": "348bd1e1-ea11-4851-bbf6-78389f1512c1",
+  "metric": "profit_before_tax",
+  "metric_label": "Profit before tax",
+  "metric_kind": "line_change",
+  "base": "-6700000",
+  "items": [
+    {
+      "target": "change:var_brent_crude",
+      "label": "Crude oil price change",
+      "kind": "change",
+      "models": ["airline_fuel_cost"],
+      "unit": "percent_change",
+      "base_value": "20",
+      "mode": "absolute",
+      "step": "10",
+      "points": [
+        {
+          "role": "low",
+          "value": "10",
+          "metric": "-3812500",
+          "delta": "2887500",
+          "skipped": null
+        },
+        {
+          "role": "high",
+          "value": "30",
+          "metric": "-9587500",
+          "delta": "-2887500",
+          "skipped": null
+        }
+      ],
+      "range": {
+        "low": "-9587500",
+        "high": "-3812500",
+        "spread": "5775000"
+      }
+    },
+    {
+      "target": "change:var_usd_inr",
+      "label": "Exchange-rate change",
+      "kind": "change",
+      "models": ["airline_fuel_cost", "fx_exposure"],
+      "unit": "percent_change",
+      "base_value": "5",
+      "mode": "absolute",
+      "step": "5",
+      "points": [
+        {
+          "role": "low",
+          "value": "0",
+          "metric": "-5875000",
+          "delta": "825000",
+          "skipped": null
+        },
+        {
+          "role": "high",
+          "value": "10",
+          "metric": "-7525000",
+          "delta": "-825000",
+          "skipped": null
+        }
+      ],
+      "range": {
+        "low": "-7525000",
+        "high": "-5875000",
+        "spread": "1650000"
+      }
+    },
+    {
+      "target": "change:var_rbi_repo_rate",
+      "label": "RBI repo rate change",
+      "kind": "change",
+      "models": ["floating_rate_interest"],
+      "unit": "percentage_points",
+      "base_value": "0.5",
+      "mode": "absolute",
+      "step": "0.25",
+      "points": [
+        {
+          "role": "low",
+          "value": "0.25",
+          "metric": "-6512500",
+          "delta": "187500",
+          "skipped": null
+        },
+        {
+          "role": "high",
+          "value": "0.75",
+          "metric": "-6887500",
+          "delta": "-187500",
+          "skipped": null
+        }
+      ],
+      "range": {
+        "low": "-6887500",
+        "high": "-6512500",
+        "spread": "375000"
+      }
+    },
+    {
+      "target": "model:airline_fuel_cost:crude_pass_through",
+      "label": "Crude-to-jet-fuel elasticity (β) (Airline fuel cost)",
+      "kind": "assumption",
+      "models": ["airline_fuel_cost"],
+      "unit": "elasticity",
+      "base_value": "1",
+      "mode": "absolute",
+      "step": "0.2",
+      "points": [
+        {
+          "role": "low",
+          "value": "0.8",
+          "metric": "-5459270.2636910325",
+          "delta": "1240729.7363089675",
+          "skipped": null
+        },
+        {
+          "role": "high",
+          "value": "1.2",
+          "metric": "-7986807.0755148568",
+          "delta": "-1286807.0755148568",
+          "skipped": null
+        }
+      ],
+      "range": {
+        "low": "-7986807.0755148568",
+        "high": "-5459270.2636910325",
+        "spread": "2527536.8118238243"
+      }
+    },
+    {
+      "target": "model:airline_fuel_cost:hedge_ratio",
+      "label": "Hedge ratio (Airline fuel cost)",
+      "kind": "assumption",
+      "models": ["airline_fuel_cost"],
+      "unit": "percent",
+      "base_value": "40",
+      "mode": "absolute",
+      "step": "20",
+      "points": [
+        {
+          "role": "low",
+          "value": "20",
+          "metric": "-7225000",
+          "delta": "-525000",
+          "skipped": null
+        },
+        {
+          "role": "high",
+          "value": "60",
+          "metric": "-6175000",
+          "delta": "525000",
+          "skipped": null
+        }
+      ],
+      "range": {
+        "low": "-7225000",
+        "high": "-6175000",
+        "spread": "1050000"
+      }
+    },
+    {
+      "target": "model:airline_fuel_cost:fare_pass_through",
+      "label": "Fare pass-through (Airline fuel cost)",
+      "kind": "assumption",
+      "models": ["airline_fuel_cost"],
+      "unit": "percent",
+      "base_value": "50",
+      "mode": "absolute",
+      "step": "20",
+      "points": [
+        {
+          "role": "low",
+          "value": "30",
+          "metric": "-8670000",
+          "delta": "-1970000",
+          "skipped": null
+        },
+        {
+          "role": "high",
+          "value": "70",
+          "metric": "-4730000",
+          "delta": "1970000",
+          "skipped": null
+        }
+      ],
+      "range": {
+        "low": "-8670000",
+        "high": "-4730000",
+        "spread": "3940000"
+      }
+    },
+    {
+      "target": "model:fx_exposure:revenue_hedge_ratio",
+      "label": "Revenue hedge ratio (Foreign-currency revenue and costs)",
+      "kind": "assumption",
+      "models": ["fx_exposure"],
+      "unit": "percent",
+      "base_value": "0",
+      "mode": "absolute",
+      "step": "25",
+      "points": [
+        {
+          "role": "low",
+          "value": "-25",
+          "metric": null,
+          "delta": null,
+          "skipped": "Revenue hedge ratio (Foreign-currency revenue and costs) must be at least 0 %."
+        },
+        {
+          "role": "high",
+          "value": "25",
+          "metric": "-6700000",
+          "delta": "0",
+          "skipped": null
+        }
+      ],
+      "range": {
+        "low": "-6700000",
+        "high": "-6700000",
+        "spread": "0"
+      }
+    },
+    {
+      "target": "model:fx_exposure:cost_hedge_ratio",
+      "label": "Cost hedge ratio (Foreign-currency revenue and costs)",
+      "kind": "assumption",
+      "models": ["fx_exposure"],
+      "unit": "percent",
+      "base_value": "0",
+      "mode": "absolute",
+      "step": "25",
+      "points": [
+        {
+          "role": "low",
+          "value": "-25",
+          "metric": null,
+          "delta": null,
+          "skipped": "Cost hedge ratio (Foreign-currency revenue and costs) must be at least 0 %."
+        },
+        {
+          "role": "high",
+          "value": "25",
+          "metric": "-6700000",
+          "delta": "0",
+          "skipped": null
+        }
+      ],
+      "range": {
+        "low": "-6700000",
+        "high": "-6700000",
+        "spread": "0"
+      }
+    }
+  ],
+  "ranking": [
+    {
+      "target": "change:var_brent_crude",
+      "label": "Crude oil price change",
+      "spread": "5775000"
+    },
+    {
+      "target": "model:airline_fuel_cost:fare_pass_through",
+      "label": "Fare pass-through (Airline fuel cost)",
+      "spread": "3940000"
+    },
+    {
+      "target": "model:airline_fuel_cost:crude_pass_through",
+      "label": "Crude-to-jet-fuel elasticity (β) (Airline fuel cost)",
+      "spread": "2527536.8118238243"
+    },
+    {
+      "target": "change:var_usd_inr",
+      "label": "Exchange-rate change",
+      "spread": "1650000"
+    },
+    {
+      "target": "model:airline_fuel_cost:hedge_ratio",
+      "label": "Hedge ratio (Airline fuel cost)",
+      "spread": "1050000"
+    },
+    {
+      "target": "change:var_rbi_repo_rate",
+      "label": "RBI repo rate change",
+      "spread": "375000"
+    },
+    {
+      "target": "model:fx_exposure:cost_hedge_ratio",
+      "label": "Cost hedge ratio (Foreign-currency revenue and costs)",
+      "spread": "0"
+    },
+    {
+      "target": "model:fx_exposure:revenue_hedge_ratio",
+      "label": "Revenue hedge ratio (Foreign-currency revenue and costs)",
+      "spread": "0"
+    }
+  ],
+  "evaluations": 15,
+  "duration_ms": 13,
+  "result_hash": "4625ba7a565381da15ad9439714fad31dd2fa1dcdb6ad92146f4da98ee432f60",
+  "created_at": "2026-09-24T03:27:57.305367Z",
+  "method": "one_at_a_time",
+  "note": "One quantity is moved at a time while everything else keeps the execution's value. The spread shows how much the result depends on it, not how likely any value is. This is sensitivity analysis, not a stochastic (Monte Carlo) simulation."
+}

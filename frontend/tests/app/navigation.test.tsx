@@ -40,7 +40,7 @@ describe("application shell and routing", () => {
 
     await user.click(within(nav).getByRole("link", { name: /Scenario Lab/ }));
     expect(
-      await screen.findByRole("heading", { level: 1, name: "Define a scenario" }),
+      await screen.findByRole("heading", { level: 1, name: "What happens if something changes?" }),
     ).toBeInTheDocument();
     expect(router.state.location.pathname).toBe("/scenarios");
 

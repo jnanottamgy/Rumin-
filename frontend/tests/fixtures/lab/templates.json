@@ -1,0 +1,415 @@
+{
+  "items": [
+    {
+      "id": "crude_oil_airline",
+      "title": "Crude oil shock on an airline",
+      "category": "commodity",
+      "question": "What happens to an airline's fuel bill and operating profit if Brent crude rises 20 %?",
+      "summary": "Brent crude rises; the change reaches jet fuel through the pass-through the airline model assumes, then the fuel bill, hedges and fares.",
+      "changes": [
+        {
+          "variable_id": "var_brent_crude",
+          "change_type": "percent_change",
+          "value": "20"
+        }
+      ],
+      "models": [
+        {
+          "model_id": "airline_fuel_cost",
+          "title": "Airline fuel cost",
+          "version": "1.1.0"
+        }
+      ],
+      "stress_cases": [
+        {
+          "name": "Base",
+          "scale": null,
+          "changes": {
+            "var_brent_crude": "10"
+          }
+        },
+        {
+          "name": "Stress",
+          "scale": null,
+          "changes": {
+            "var_brent_crude": "25"
+          }
+        },
+        {
+          "name": "Extreme",
+          "scale": null,
+          "changes": {
+            "var_brent_crude": "40"
+          }
+        }
+      ],
+      "suggested_entities": [
+        {
+          "key": "company:co_aerisca_airways",
+          "name": "Aerisca Airways",
+          "type": "company",
+          "nature": "fictional"
+        },
+        {
+          "key": "company:co_skyvara_air",
+          "name": "Skyvara Air",
+          "type": "company",
+          "nature": "fictional"
+        }
+      ]
+    },
+    {
+      "id": "jet_fuel_airline",
+      "title": "Jet fuel price shock",
+      "category": "energy_cost",
+      "question": "What happens to an airline if the jet fuel price rises 15 % with crude oil unchanged (a wider refining margin)?",
+      "summary": "Jet fuel rises on its own; the airline model carries it to the fuel bill, hedges and fares.",
+      "changes": [
+        {
+          "variable_id": "var_jet_fuel",
+          "change_type": "percent_change",
+          "value": "15"
+        }
+      ],
+      "models": [
+        {
+          "model_id": "airline_fuel_cost",
+          "title": "Airline fuel cost",
+          "version": "1.1.0"
+        }
+      ],
+      "stress_cases": [
+        {
+          "name": "Mild",
+          "scale": null,
+          "changes": {
+            "var_jet_fuel": "7.5"
+          }
+        },
+        {
+          "name": "Severe",
+          "scale": null,
+          "changes": {
+            "var_jet_fuel": "30"
+          }
+        }
+      ],
+      "suggested_entities": [
+        {
+          "key": "company:co_aerisca_airways",
+          "name": "Aerisca Airways",
+          "type": "company",
+          "nature": "fictional"
+        },
+        {
+          "key": "company:co_skyvara_air",
+          "name": "Skyvara Air",
+          "type": "company",
+          "nature": "fictional"
+        }
+      ]
+    },
+    {
+      "id": "rupee_depreciation",
+      "title": "Rupee depreciation",
+      "category": "currency",
+      "question": "What happens to a company's revenue and costs invoiced in US dollars if the rupee weakens 10 % against the dollar?",
+      "summary": "USD/INR rises; revenue and costs in US dollars are converted at the new rate, net of hedges.",
+      "changes": [
+        {
+          "variable_id": "var_usd_inr",
+          "change_type": "percent_change",
+          "value": "10"
+        }
+      ],
+      "models": [
+        {
+          "model_id": "fx_exposure",
+          "title": "Foreign-currency revenue and costs",
+          "version": "1.0.0"
+        }
+      ],
+      "stress_cases": [
+        {
+          "name": "Mild",
+          "scale": null,
+          "changes": {
+            "var_usd_inr": "5"
+          }
+        },
+        {
+          "name": "Severe",
+          "scale": null,
+          "changes": {
+            "var_usd_inr": "20"
+          }
+        }
+      ],
+      "suggested_entities": [
+        {
+          "key": "company:co_aerisca_airways",
+          "name": "Aerisca Airways",
+          "type": "company",
+          "nature": "fictional"
+        },
+        {
+          "key": "company:co_deltrin_refining",
+          "name": "Deltrin Refining",
+          "type": "company",
+          "nature": "fictional"
+        },
+        {
+          "key": "company:co_kovalent_digital",
+          "name": "Kovalent Digital",
+          "type": "company",
+          "nature": "fictional"
+        },
+        {
+          "key": "company:co_skyvara_air",
+          "name": "Skyvara Air",
+          "type": "company",
+          "nature": "fictional"
+        }
+      ]
+    },
+    {
+      "id": "policy_rate_rise",
+      "title": "Policy-rate rise",
+      "category": "interest_rate",
+      "question": "What happens to a company's interest costs and profit before tax if the RBI repo rate rises 1.5 percentage points?",
+      "summary": "The repo rate rises; floating-rate loans linked to it reprice after the stated delay, with the stated pass-through.",
+      "changes": [
+        {
+          "variable_id": "var_rbi_repo_rate",
+          "change_type": "absolute_change",
+          "value": "1.5"
+        }
+      ],
+      "models": [
+        {
+          "model_id": "floating_rate_interest",
+          "title": "Floating-rate interest",
+          "version": "1.0.0"
+        }
+      ],
+      "stress_cases": [
+        {
+          "name": "Mild",
+          "scale": null,
+          "changes": {
+            "var_rbi_repo_rate": "0.5"
+          }
+        },
+        {
+          "name": "Severe",
+          "scale": null,
+          "changes": {
+            "var_rbi_repo_rate": "2.5"
+          }
+        }
+      ],
+      "suggested_entities": [
+        {
+          "key": "company:co_gridwell_power",
+          "name": "Gridwell Power",
+          "type": "company",
+          "nature": "fictional"
+        },
+        {
+          "key": "company:co_trakvel_logistics",
+          "name": "Trakvel Logistics",
+          "type": "company",
+          "nature": "fictional"
+        }
+      ]
+    },
+    {
+      "id": "crude_linked_costs",
+      "title": "Crude oil shock on crude-linked costs",
+      "category": "commodity",
+      "question": "What happens to a refiner's or a road haulier's costs if Brent crude rises 25 %?",
+      "summary": "Brent rises; costs priced off crude (feedstock, diesel) follow with the stated pass-through and lag, net of hedges and price recovery.",
+      "changes": [
+        {
+          "variable_id": "var_brent_crude",
+          "change_type": "percent_change",
+          "value": "25"
+        }
+      ],
+      "models": [
+        {
+          "model_id": "crude_linked_costs",
+          "title": "Crude-oil-linked costs",
+          "version": "1.0.0"
+        }
+      ],
+      "stress_cases": [
+        {
+          "name": "Base",
+          "scale": null,
+          "changes": {
+            "var_brent_crude": "10"
+          }
+        },
+        {
+          "name": "Stress",
+          "scale": null,
+          "changes": {
+            "var_brent_crude": "25"
+          }
+        },
+        {
+          "name": "Extreme",
+          "scale": null,
+          "changes": {
+            "var_brent_crude": "40"
+          }
+        }
+      ],
+      "suggested_entities": [
+        {
+          "key": "company:co_deltrin_refining",
+          "name": "Deltrin Refining",
+          "type": "company",
+          "nature": "fictional"
+        },
+        {
+          "key": "company:co_solvane_refining",
+          "name": "Solvane Refining",
+          "type": "company",
+          "nature": "fictional"
+        },
+        {
+          "key": "company:co_trakvel_logistics",
+          "name": "Trakvel Logistics",
+          "type": "company",
+          "nature": "fictional"
+        }
+      ]
+    },
+    {
+      "id": "natural_gas",
+      "title": "Natural gas price shock",
+      "category": "energy_cost",
+      "question": "What happens to a company whose costs follow natural gas if Henry Hub rises 30 %?",
+      "summary": "Henry Hub rises; gas-linked costs follow with the stated pass-through and lag, net of hedges and price recovery.",
+      "changes": [
+        {
+          "variable_id": "var_henry_hub_gas",
+          "change_type": "percent_change",
+          "value": "30"
+        }
+      ],
+      "models": [
+        {
+          "model_id": "gas_linked_costs",
+          "title": "Natural-gas-linked costs",
+          "version": "1.0.0"
+        }
+      ],
+      "stress_cases": [
+        {
+          "name": "Mild",
+          "scale": null,
+          "changes": {
+            "var_henry_hub_gas": "15"
+          }
+        },
+        {
+          "name": "Severe",
+          "scale": null,
+          "changes": {
+            "var_henry_hub_gas": "60"
+          }
+        }
+      ],
+      "suggested_entities": [
+        {
+          "key": "company:co_lumeric_chemicals",
+          "name": "Lumeric Chemicals",
+          "type": "company",
+          "nature": "fictional"
+        }
+      ]
+    },
+    {
+      "id": "oil_rupee_rates",
+      "title": "Oil, rupee and rates together",
+      "category": "combined",
+      "question": "What happens to an airline if Brent rises 20 %, the rupee weakens 5 % and the repo rate rises 0.5 percentage points at the same time?",
+      "summary": "Three changes, three models: the fuel bill (crude and the exchange rate), other US-dollar revenue and costs, and floating-rate interest.",
+      "changes": [
+        {
+          "variable_id": "var_brent_crude",
+          "change_type": "percent_change",
+          "value": "20"
+        },
+        {
+          "variable_id": "var_usd_inr",
+          "change_type": "percent_change",
+          "value": "5"
+        },
+        {
+          "variable_id": "var_rbi_repo_rate",
+          "change_type": "absolute_change",
+          "value": "0.5"
+        }
+      ],
+      "models": [
+        {
+          "model_id": "airline_fuel_cost",
+          "title": "Airline fuel cost",
+          "version": "1.1.0"
+        },
+        {
+          "model_id": "fx_exposure",
+          "title": "Foreign-currency revenue and costs",
+          "version": "1.0.0"
+        },
+        {
+          "model_id": "floating_rate_interest",
+          "title": "Floating-rate interest",
+          "version": "1.0.0"
+        }
+      ],
+      "stress_cases": [
+        {
+          "name": "Half",
+          "scale": "0.5",
+          "changes": {}
+        },
+        {
+          "name": "Double",
+          "scale": "2",
+          "changes": {}
+        }
+      ],
+      "suggested_entities": [
+        {
+          "key": "company:co_aerisca_airways",
+          "name": "Aerisca Airways",
+          "type": "company",
+          "nature": "fictional"
+        },
+        {
+          "key": "company:co_skyvara_air",
+          "name": "Skyvara Air",
+          "type": "company",
+          "nature": "fictional"
+        }
+      ]
+    }
+  ],
+  "unsupported": [
+    {
+      "id": "demand",
+      "title": "Demand shock",
+      "reason": "No registered model simulates volumes. Every model holds volumes fixed (fuel consumed, US dollars invoiced), so a demand change would contradict them."
+    },
+    {
+      "id": "supply_chain",
+      "title": "Supply-chain disruption",
+      "reason": "No registered model simulates supply disruptions: the knowledge graph's supplier relationships carry no quantities to simulate with."
+    }
+  ]
+}

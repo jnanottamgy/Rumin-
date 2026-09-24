@@ -11,6 +11,7 @@ import type {
   EconomicSeriesPage,
   EconomicVariablePage,
   EvidenceStatus,
+  ExecutionVerification,
   GraphBuildDetail,
   GraphBuildPage,
   GraphComponents,
@@ -29,6 +30,11 @@ import type {
   IngestionJobPage,
   InstrumentDetail,
   InstrumentPage,
+  LabExplanation,
+  LabPathway,
+  LabSensitivity,
+  LabSensitivityList,
+  LabSensitivityRequest,
   NetworkResponse,
   ObservationPage,
   PriceBarPage,
@@ -37,8 +43,18 @@ import type {
   QualityRule,
   ReadinessResponse,
   Scenario,
+  ScenarioComparison,
+  ScenarioExecution,
+  ScenarioExecutionPage,
   ScenarioInput,
   ScenarioPage,
+  ScenarioPlan,
+  ScenarioPreview,
+  ScenarioResults,
+  ScenarioTemplate,
+  ScenarioTemplateList,
+  ScenarioUpdate,
+  ScenarioVersion,
   SensitivityAnalysis,
   SensitivityAnalysisList,
   SensitivityRequest,
@@ -95,7 +111,8 @@ export const api = {
       apiRequest<Scenario>(`/api/v1/scenarios/${encodeURIComponent(id)}`, options),
     create: (input: ScenarioInput, options?: Options) =>
       apiRequest<Scenario>("/api/v1/scenarios", { ...options, method: "POST", body: input }),
-    replace: (id: string, input: ScenarioInput, options?: Options) =>
+    /** Saves a new version (never overwrites one). */
+    replace: (id: string, input: ScenarioUpdate, options?: Options) =>
       apiRequest<Scenario>(`/api/v1/scenarios/${encodeURIComponent(id)}`, {
         ...options,
         method: "PUT",
@@ -107,6 +124,104 @@ export const api = {
         method: "DELETE",
       }),
   },
+};
+
+/**
+ * The Scenario Lab (Phase 5): versions, plans, previews, executions and everything read
+ * from them. Executions and analyses are append-only.
+ */
+export const labApi = {
+  templates: (options?: Options) =>
+    apiRequest<ScenarioTemplateList>("/api/v1/scenario-templates", options),
+
+  template: (id: string, options?: Options) =>
+    apiRequest<ScenarioTemplate>(`/api/v1/scenario-templates/${segment(id)}`, options),
+
+  plan: (input: ScenarioInput, options?: Options) =>
+    apiRequest<ScenarioPlan>("/api/v1/scenarios/plan", { ...options, method: "POST", body: input }),
+
+  preview: (input: ScenarioInput, options?: Options) =>
+    apiRequest<ScenarioPreview>("/api/v1/scenarios/preview", {
+      ...options,
+      method: "POST",
+      body: input,
+    }),
+
+  version: (id: string, version: number, options?: Options) =>
+    apiRequest<ScenarioVersion>(`/api/v1/scenarios/${segment(id)}/versions/${version}`, options),
+
+  restore: (id: string, version: number, options?: Options) =>
+    apiRequest<Scenario>(`/api/v1/scenarios/${segment(id)}/versions/${version}/restore`, {
+      ...options,
+      method: "POST",
+    }),
+
+  duplicate: (id: string, name: string | null, options?: Options) =>
+    apiRequest<Scenario>(`/api/v1/scenarios/${segment(id)}/duplicate`, {
+      ...options,
+      method: "POST",
+      body: { name, version: null },
+    }),
+
+  execute: (id: string, version: number | null, options?: Options) =>
+    apiRequest<ScenarioExecution>(`/api/v1/scenarios/${segment(id)}/executions`, {
+      ...options,
+      method: "POST",
+      body: { version },
+    }),
+
+  executions: (id: string, options?: Options) =>
+    apiRequest<ScenarioExecutionPage>(
+      `/api/v1/scenarios/${segment(id)}/executions${toQuery({ limit: 50 })}`,
+      options,
+    ),
+
+  execution: (id: string, options?: Options) =>
+    apiRequest<ScenarioExecution>(`/api/v1/scenario-executions/${segment(id)}`, options),
+
+  results: (id: string, options?: Options) =>
+    apiRequest<ScenarioResults>(`/api/v1/scenario-executions/${segment(id)}/results`, options),
+
+  pathways: (id: string, options?: Options) =>
+    apiRequest<LabPathway>(`/api/v1/scenario-executions/${segment(id)}/pathways`, options),
+
+  explanation: (id: string, target: string, options?: Options) =>
+    apiRequest<LabExplanation>(
+      `/api/v1/scenario-executions/${segment(id)}/explanation${toQuery({ target })}`,
+      options,
+    ),
+
+  cancel: (id: string, options?: Options) =>
+    apiRequest<ScenarioExecution>(`/api/v1/scenario-executions/${segment(id)}/cancel`, {
+      ...options,
+      method: "POST",
+    }),
+
+  verify: (id: string, options?: Options) =>
+    apiRequest<ExecutionVerification>(`/api/v1/scenario-executions/${segment(id)}/verify`, {
+      ...options,
+      method: "POST",
+    }),
+
+  sensitivity: {
+    list: (id: string, options?: Options) =>
+      apiRequest<LabSensitivityList>(
+        `/api/v1/scenario-executions/${segment(id)}/sensitivity`,
+        options,
+      ),
+    create: (id: string, request: LabSensitivityRequest, options?: Options) =>
+      apiRequest<LabSensitivity>(`/api/v1/scenario-executions/${segment(id)}/sensitivity`, {
+        ...options,
+        method: "POST",
+        body: request,
+      }),
+  },
+
+  compare: (ids: readonly string[], reference: string | null, options?: Options) =>
+    apiRequest<ScenarioComparison>(
+      `/api/v1/scenario-comparisons${toMultiQuery({ execution_id: ids, reference })}`,
+      options,
+    ),
 };
 
 export interface JobQuery {

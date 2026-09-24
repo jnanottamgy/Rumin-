@@ -1,0 +1,37 @@
+{
+  "items": [
+    {
+      "id": "348bd1e1-ea11-4851-bbf6-78389f1512c1",
+      "scenario_id": "f5a5b9a1-87b4-4fe8-8dc3-dc2979e4ba8e",
+      "version": 1,
+      "status": "completed",
+      "requested_at": "2026-09-24T03:27:57.123440Z",
+      "started_at": "2026-09-24T03:27:57.129168Z",
+      "finished_at": "2026-09-24T03:27:57.224542Z",
+      "duration_ms": 95,
+      "inputs_hash": "f6de3e60b25529da5405788ece8ab094fcbb2ff65a19f20c96c66310e77cd15b",
+      "result_hash": "45fe9f3bf9a5d69b0f49f5e01ae5f6ebf291fc8e3f94635f5d6072c8e8dce622",
+      "headline": [
+        {
+          "id": "profit_before_tax",
+          "label": "Profit before tax",
+          "change": "-6700000",
+          "percent_change": "-17.6315789474",
+          "currency": "INR"
+        },
+        {
+          "id": "operating_profit",
+          "label": "Operating profit",
+          "change": "-6325000",
+          "percent_change": "-12.65",
+          "currency": "INR"
+        }
+      ],
+      "models": ["airline_fuel_cost", "fx_exposure", "floating_rate_interest"],
+      "error": null
+    }
+  ],
+  "total": 1,
+  "limit": 100,
+  "offset": 0
+}

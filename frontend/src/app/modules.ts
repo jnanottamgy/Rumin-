@@ -67,7 +67,7 @@ export const APP_MODULES: readonly AppModule[] = [
     summary:
       "Run a model on stated inputs and assumptions, and see how the result was reached: pathway, months, contributions, sensitivity and provenance.",
     status: "available",
-    statusNote: "Preview · one model: an airline fuel-cost shock",
+    statusNote: "Preview · five models, one run at a time",
     phase: 4,
   },
   {
@@ -75,10 +75,11 @@ export const APP_MODULES: readonly AppModule[] = [
     path: "/scenarios",
     navLabel: "Scenario Lab",
     title: "Scenario Lab",
-    summary: "Define scenario inputs on the same network.",
-    status: "foundation",
-    statusNote: "Drafts only · running scenarios arrives with the full Scenario Lab in Phase 5",
-    phase: 1,
+    summary:
+      "Ask what happens if something changes: models chosen by what they declare and what the graph states, the modelled pathway, months, stress cases, sensitivity and comparisons.",
+    status: "available",
+    statusNote: "Five models · versioned scenarios · reproducible executions",
+    phase: 5,
   },
   {
     id: "analyst",
@@ -113,7 +114,7 @@ export interface RoadmapPhase {
   title: string;
 }
 
-export const CURRENT_PHASE = 4;
+export const CURRENT_PHASE = 5;
 
 export const ROADMAP: readonly RoadmapPhase[] = [
   { phase: 1, title: "Foundation & system architecture" },

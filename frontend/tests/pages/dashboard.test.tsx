@@ -34,7 +34,7 @@ describe("Overview dashboard", () => {
   });
 
   it("reports the workspace from live API data", async () => {
-    mockApi({ "/api/v1/scenarios": { body: scenarioPageFixture([scenarioFixture()]) } });
+    mockApi({ "/api/v1/scenarios": { body: scenarioPageFixture() } });
     renderRoute("/dashboard");
     await screen.findByRole("group", { name: /^Preview of the financial network/ });
 
@@ -42,15 +42,15 @@ describe("Overview dashboard", () => {
     expect(statValue("Relationships")).toBe("41");
     expect(screen.getByText("+ 30 structural links derived from records")).toBeInTheDocument();
     expect(screen.getByText("All illustrative assumptions")).toBeInTheDocument();
-    expect(statValue("Draft scenarios")).toBe("1");
+    expect(statValue("Scenarios")).toBe("2");
     expect(
-      screen.getByText("Drafts are not run yet: that arrives with the Scenario Lab in Phase 5"),
+      screen.getByText("Versioned; executed through the model registry in the Scenario Lab"),
     ).toBeInTheDocument();
     expect(statValue("Dataset")).toBe("v1.0.0");
 
-    const recent = screen.getByRole("link", { name: /Oil price shock/ });
+    const recent = screen.getByRole("link", { name: /Oil, rupee and rates on Aerisca/ });
     expect(recent).toHaveAttribute("href", `/scenarios/${scenarioFixture().id}`);
-    expect(within(recent).getByText("Not simulated")).toBeInTheDocument();
+    expect(within(recent).getByText(/3 changes · v1 · executed/)).toBeInTheDocument();
 
     // Capabilities that do not exist yet are listed as such; the simulation engine exists.
     expect(screen.queryByText("Simulation engine")).not.toBeInTheDocument();

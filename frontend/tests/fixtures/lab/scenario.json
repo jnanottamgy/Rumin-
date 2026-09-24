@@ -1,0 +1,182 @@
+{
+  "id": "f5a5b9a1-87b4-4fe8-8dc3-dc2979e4ba8e",
+  "name": "Oil, rupee and rates on Aerisca",
+  "description": "",
+  "status": "draft",
+  "template_id": null,
+  "current_version": 1,
+  "shocks": [
+    {
+      "variable_id": "var_brent_crude",
+      "change_type": "percent_change",
+      "value": "20",
+      "note": "",
+      "epistemic_category": "scenario_input"
+    },
+    {
+      "variable_id": "var_usd_inr",
+      "change_type": "percent_change",
+      "value": "5",
+      "note": "",
+      "epistemic_category": "scenario_input"
+    },
+    {
+      "variable_id": "var_rbi_repo_rate",
+      "change_type": "absolute_change",
+      "value": "0.5",
+      "note": "",
+      "epistemic_category": "scenario_input"
+    }
+  ],
+  "spec": {
+    "entity": "company:co_aerisca_airways",
+    "timing": {
+      "start_month": 1,
+      "duration_months": 0,
+      "horizon_months": 12
+    },
+    "company": {
+      "reporting_currency": "INR",
+      "annual_revenue": "300000000",
+      "annual_operating_costs": "250000000"
+    },
+    "markets": {
+      "fx_rate": {
+        "value": "80",
+        "unit": null,
+        "source": null,
+        "series_id": null
+      }
+    },
+    "models": {
+      "airline_fuel_cost": {
+        "mode": "auto",
+        "inputs": {
+          "annual_fuel_consumption": {
+            "value": "1000",
+            "unit": "kilolitre",
+            "source": null,
+            "series_id": null
+          },
+          "jet_fuel_price": {
+            "value": "750",
+            "unit": "usd_per_kilolitre",
+            "source": null,
+            "series_id": null
+          }
+        },
+        "assumptions": {
+          "crude_pass_through_lag": "1",
+          "fare_pass_through": "50",
+          "fare_pass_through_lag": "2",
+          "hedge_months": "6",
+          "hedge_ratio": "40"
+        }
+      },
+      "floating_rate_interest": {
+        "mode": "include",
+        "inputs": {
+          "annual_interest_expense": {
+            "value": "12000000",
+            "unit": null,
+            "source": null,
+            "series_id": null
+          },
+          "repo_linked_debt": {
+            "value": "100000000",
+            "unit": null,
+            "source": null,
+            "series_id": null
+          },
+          "us_rate_linked_debt": {
+            "value": "0",
+            "unit": null,
+            "source": null,
+            "series_id": null
+          }
+        },
+        "assumptions": {
+          "repo_repricing_lag": "3"
+        }
+      },
+      "fx_exposure": {
+        "mode": "auto",
+        "inputs": {
+          "annual_usd_costs": {
+            "value": "200000",
+            "unit": null,
+            "source": null,
+            "series_id": null
+          },
+          "annual_usd_revenue": {
+            "value": "500000",
+            "unit": null,
+            "source": null,
+            "series_id": null
+          }
+        },
+        "assumptions": {}
+      }
+    },
+    "constraints": {
+      "evidence": "any",
+      "stored_market_data": false
+    },
+    "stress_cases": [
+      {
+        "name": "Half",
+        "scale": "0.5",
+        "changes": {}
+      },
+      {
+        "name": "Double",
+        "scale": "2",
+        "changes": {}
+      }
+    ]
+  },
+  "versions": [
+    {
+      "version": 1,
+      "name": "Oil, rupee and rates on Aerisca",
+      "spec_hash": "c868ca0c9d2786aed631c6c651b935d099a22c88318a729d5a5e016a99725615",
+      "note": "",
+      "derived_from": null,
+      "created_at": "2026-09-24T03:27:57.079462Z",
+      "executions": 1
+    }
+  ],
+  "latest_execution": {
+    "id": "348bd1e1-ea11-4851-bbf6-78389f1512c1",
+    "scenario_id": "f5a5b9a1-87b4-4fe8-8dc3-dc2979e4ba8e",
+    "version": 1,
+    "status": "completed",
+    "requested_at": "2026-09-24T03:27:57.123440Z",
+    "started_at": "2026-09-24T03:27:57.129168Z",
+    "finished_at": "2026-09-24T03:27:57.224542Z",
+    "duration_ms": 95,
+    "inputs_hash": "f6de3e60b25529da5405788ece8ab094fcbb2ff65a19f20c96c66310e77cd15b",
+    "result_hash": "45fe9f3bf9a5d69b0f49f5e01ae5f6ebf291fc8e3f94635f5d6072c8e8dce622",
+    "headline": [
+      {
+        "id": "profit_before_tax",
+        "label": "Profit before tax",
+        "change": "-6700000",
+        "percent_change": "-17.6315789474",
+        "currency": "INR"
+      },
+      {
+        "id": "operating_profit",
+        "label": "Operating profit",
+        "change": "-6325000",
+        "percent_change": "-12.65",
+        "currency": "INR"
+      }
+    ],
+    "models": ["airline_fuel_cost", "fx_exposure", "floating_rate_interest"],
+    "error": null
+  },
+  "executions": 1,
+  "created_at": "2026-09-24T03:27:57.078245Z",
+  "updated_at": "2026-09-24T03:27:57.078250Z"
+}

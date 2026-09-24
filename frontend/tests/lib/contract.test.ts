@@ -6,6 +6,7 @@ import {
   systemFixture,
   variablesFixture,
 } from "../fixtures";
+import { labFixtures } from "../fixtures/lab";
 import { simulationFixtures } from "../fixtures/simulation";
 import { contractViolations } from "../integration/contract";
 
@@ -15,9 +16,43 @@ describe("the unit-test fixtures follow the committed OpenAPI contract", () => {
     ["EconomicVariablePage", variablesFixture()],
     ["SystemStatus", systemFixture()],
     ["ScenarioRead", scenarioFixture()],
-    ["ScenarioPage", scenarioPageFixture([scenarioFixture()])],
+    ["ScenarioPage", scenarioPageFixture()],
   ])("%s", (schema, fixture) => {
     expect(contractViolations(schema, fixture)).toEqual([]);
+  });
+});
+
+describe("the Scenario Lab fixtures follow the committed OpenAPI contract", () => {
+  it.each([
+    ["TemplateList", labFixtures.templates()],
+    ["TemplateRead", labFixtures.template()],
+    ["ScenarioRead", labFixtures.scenario()],
+    ["ScenarioPage", labFixtures.scenarios()],
+    ["ExecutionRead", labFixtures.execution()],
+    ["ExecutionPage", labFixtures.executions()],
+    ["ResultsRead", labFixtures.results()],
+    ["LabPathwayRead", labFixtures.pathway()],
+    ["LabExplanationRead", labFixtures.explanation()],
+    ["LabSensitivityRead", labFixtures.sensitivity()],
+    ["LabSensitivityList", labFixtures.sensitivityList()],
+    ["ExecutionVerificationRead", labFixtures.verification()],
+    ["ComparisonRead", labFixtures.comparison()],
+    ["PreviewRead", labFixtures.previewNeedsFigures()],
+    ["PreviewRead", labFixtures.preview()],
+  ])("%s", (schema, fixture) => {
+    expect(contractViolations(schema, fixture)).toEqual([]);
+  });
+
+  it("SimulationModelDetail (the included models)", () => {
+    const models = Object.values(labFixtures.models());
+    expect(models.map((model) => model.id)).toEqual([
+      "airline_fuel_cost",
+      "fx_exposure",
+      "floating_rate_interest",
+    ]);
+    for (const model of models) {
+      expect(contractViolations("SimulationModelDetail", model)).toEqual([]);
+    }
   });
 });
 
@@ -48,15 +83,18 @@ describe("the simulation fixtures follow the committed OpenAPI contract", () => 
 
 describe("contractViolations", () => {
   it("reports missing fields, wrong types and values outside an enum", () => {
-    const scenario: Record<string, unknown> = { ...scenarioFixture(), status: "simulated" };
-    delete scenario.name;
-    scenario.shocks = [{ ...scenarioFixture().shocks[0], value: "30" }];
+    const execution: Record<string, unknown> = {
+      ...labFixtures.execution(),
+      status: "exploded",
+      version: "one",
+    };
+    delete execution.scenario_name;
 
-    expect(contractViolations("ScenarioRead", scenario)).toEqual(
+    expect(contractViolations("ExecutionRead", execution)).toEqual(
       expect.arrayContaining([
-        "$.name: required but missing",
-        expect.stringMatching(/^\$\.status: "simulated" is not one of/),
-        "$.shocks[0].value: expected a number",
+        "$.scenario_name: required but missing",
+        expect.stringMatching(/^\$\.status: "exploded" is not one of/),
+        "$.version: expected an integer",
       ]),
     );
   });

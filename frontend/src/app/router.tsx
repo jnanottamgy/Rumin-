@@ -66,6 +66,18 @@ export const routes: RouteObject[] = [
         }),
       },
       {
+        path: "scenarios/new",
+        lazy: async () => ({
+          Component: (await import("@/pages/ScenarioLabPage")).ScenarioLabPage,
+        }),
+      },
+      {
+        path: "scenarios/compare",
+        lazy: async () => ({
+          Component: (await import("@/pages/ScenarioLabPage")).ScenarioLabPage,
+        }),
+      },
+      {
         path: "scenarios/:scenarioId",
         lazy: async () => ({
           Component: (await import("@/pages/ScenarioLabPage")).ScenarioLabPage,

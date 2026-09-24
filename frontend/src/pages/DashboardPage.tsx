@@ -95,7 +95,7 @@ function RecentScenarios() {
           </ButtonLink>
         }
       >
-        Scenarios are saved as drafts. Nothing is simulated in this build.
+        Build one in the Scenario Lab from a template or from scratch.
       </EmptyState>
     );
   }
@@ -106,7 +106,10 @@ function RecentScenarios() {
           <Link to={`/scenarios/${scenario.id}`} className={styles.scenario}>
             <span className={styles.scenarioName}>{scenario.name}</span>
             <span className={styles.scenarioMeta}>
-              {plural(scenario.shocks.length, "input")} · updated {formatDate(scenario.updated_at)}
+              {plural(scenario.shocks.length, "change")} · v{scenario.current_version} ·{" "}
+              {scenario.latest_execution
+                ? `executed ${formatDate(scenario.latest_execution.requested_at)}`
+                : `updated ${formatDate(scenario.updated_at)}`}
             </span>
             <Badge tone="neutral">Not simulated</Badge>
           </Link>
@@ -241,9 +244,9 @@ export function DashboardPage() {
           source="All illustrative assumptions"
         />
         <StatTile
-          label="Draft scenarios"
+          label="Scenarios"
           value={scenarios.status === "success" ? formatCount(scenarios.data.total) : UNAVAILABLE}
-          detail="Drafts are not run yet: that arrives with the Scenario Lab in Phase 5"
+          detail="Versioned; executed through the model registry in the Scenario Lab"
           source="Scenario Lab"
         />
         <StatTile

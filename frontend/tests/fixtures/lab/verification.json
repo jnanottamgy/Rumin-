@@ -1,0 +1,29 @@
+{
+  "execution_id": "348bd1e1-ea11-4851-bbf6-78389f1512c1",
+  "reproduced": true,
+  "inputs_hash_matches": true,
+  "result_hash_matches": true,
+  "stored_result_hash": "45fe9f3bf9a5d69b0f49f5e01ae5f6ebf291fc8e3f94635f5d6072c8e8dce622",
+  "recomputed_result_hash": "45fe9f3bf9a5d69b0f49f5e01ae5f6ebf291fc8e3f94635f5d6072c8e8dce622",
+  "runs": [
+    {
+      "model_id": "airline_fuel_cost",
+      "run_id": "39413e33-5972-4106-b818-6a92770b59bc",
+      "inputs_hash_matches": true,
+      "result_hash_matches": true
+    },
+    {
+      "model_id": "fx_exposure",
+      "run_id": "912b1630-941f-4ac4-afe1-60967999aac3",
+      "inputs_hash_matches": true,
+      "result_hash_matches": true
+    },
+    {
+      "model_id": "floating_rate_interest",
+      "run_id": "e78cb524-99cb-4540-8bf8-e3b6600f703d",
+      "inputs_hash_matches": true,
+      "result_hash_matches": true
+    }
+  ],
+  "message": "Re-executed from the stored runs and recombined: identical results."
+}
