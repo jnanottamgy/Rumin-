@@ -12,6 +12,7 @@ from app.models.graph import (
     GraphResolutionDecision,
 )
 from app.models.ingestion import DataQualityIssue, IngestionJob, IngestionJobItem, SourceCapture
+from app.models.intelligence import IntelligenceAnalysis
 from app.models.market import Instrument, PriceBar
 from app.models.provider import DataProvider
 from app.models.relationship import Relationship
@@ -52,6 +53,7 @@ __all__ = [
     "IngestionJob",
     "IngestionJobItem",
     "Instrument",
+    "IntelligenceAnalysis",
     "PriceBar",
     "Relationship",
     "Scenario",

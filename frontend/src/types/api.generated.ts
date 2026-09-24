@@ -1327,6 +1327,310 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/intelligence/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The intelligence overview
+         * @description Every finding about the workspace, ordered (new observations first, then simulations, relationships, exposure and coverage), with the exposure matrix (companies × variables), the observed series and their signals, relationship changes, the latest simulated headline per company, and what the stored data can support.
+         */
+        get: operations["get_overview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intelligence/insights": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List insights
+         * @description The workspace's insights, or one entity's (`entity`), filtered by kind, rule or minimum evidence grade. Each carries its facts, entities, relationships, period, models, evidence chain and grade, assumptions, sources, limitations and next steps.
+         */
+        get: operations["list_insights"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intelligence/changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * What changed
+         * @description Changes of stored values that meet their thresholds (observed), data revisions, relationships the latest graph build added, changed or retired, and the headline between two executions of the same scenario (simulated) — each labelled.
+         */
+        get: operations["get_changes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intelligence/methods": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * How intelligence is computed
+         * @description The modules (question, inputs, method, limitations), the signal definitions, the insight rules, the thresholds with defaults and reasons, and the evidence grades.
+         */
+        get: operations["get_methods"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intelligence/entities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List entities
+         * @description Companies and industries with their stated exposure (paths, variables, channels, weakest evidence) and each company's latest simulated headline.
+         */
+        get: operations["list_intelligence_entities"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intelligence/entities/{entity_key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Analyse an entity
+         * @description The dossier: exposure map, stored executions and their drivers, related series with their signals, model interpretations of observed changes (computed on request, not stored), the entity's signals and every insight with its evidence chain.
+         */
+        get: operations["get_entity_intelligence"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intelligence/entities/{entity_key}/brief": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The entity brief
+         * @description The structured object a future AI Analyst would receive: observations, drivers, relationships, simulation results, assumptions, evidence and limitations, with rules for narrating them. Every number is computed by RUMIN.
+         */
+        get: operations["get_entity_brief"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intelligence/entities/{entity_key}/exposure": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * An entity's exposure
+         * @description Direct, via-industry and upstream exposure paths over validated relationships, with the models able to simulate each; counterparties and context listed apart; flagged relationships listed but never used.
+         */
+        get: operations["get_entity_exposure"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intelligence/entities/{entity_key}/signals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * An entity's signals
+         * @description Exposure breadth, dependency and scenario sensitivity, each with its definition, inputs, period, evidence and limitations.
+         */
+        get: operations["get_entity_signals"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intelligence/entities/{entity_key}/drivers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * What drives an entity's simulated results
+         * @description The latest completed execution's stored contributions per change (amounts, shares of the change, points of the baseline, per-unit effects), its sensitivity ranking, assumptions and entered figures, and the previous execution of the same scenario.
+         */
+        get: operations["get_entity_drivers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intelligence/variables/{variable_key}/exposure": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Who a variable reaches
+         * @description Every company the graph states the variable reaches, with the paths.
+         */
+        get: operations["get_variable_exposure"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intelligence/series/{series_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Analyse a series
+         * @description Its stored values, changes, detected changes, trend, volatility and unusual change, revisions, the variable it is a related measure of and the companies that variable reaches, with the resulting insights.
+         */
+        get: operations["get_series_intelligence"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intelligence/instruments/{instrument_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Analyse an instrument's prices
+         * @description Changes, trend, volatility and unusual moves of its stored closing prices, one analysis per price dataset (datasets are never blended).
+         */
+        get: operations["get_instrument_intelligence"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intelligence/analyses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List stored analyses
+         * @description Newest first.
+         */
+        get: operations["list_analyses"];
+        put?: never;
+        /**
+         * Store an analysis
+         * @description Computes an entity or workspace analysis and stores it with its thresholds, a fingerprint of everything it read and hashes of both. Stored analyses are never changed or deleted.
+         */
+        post: operations["create_analysis"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intelligence/analyses/{analysis_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a stored analysis
+         * @description The analysis as it was stored, and whether what it read has changed since (`freshness`).
+         */
+        get: operations["get_analysis"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/system": {
         parameters: {
             query?: never;
@@ -1402,6 +1706,157 @@ export interface components {
             /** Nature */
             nature: string;
         };
+        /** AnalysisFreshnessRead */
+        AnalysisFreshnessRead: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "current" | "stale";
+            /**
+             * Changed
+             * @description What changed since: graph, data, executions, engine or subject.
+             */
+            changed: string[];
+            /**
+             * Checked At
+             * Format: date-time
+             */
+            checked_at: string;
+            /** Message */
+            message: string;
+        };
+        /** AnalysisRead */
+        AnalysisRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Scope
+             * @enum {string}
+             */
+            scope: "entity" | "workspace";
+            /** Subject Key */
+            subject_key: string | null;
+            /** Subject Name */
+            subject_name: string;
+            /** Label */
+            label: string | null;
+            /** Engine Version */
+            engine_version: string;
+            /** Graph Build Id */
+            graph_build_id: number | null;
+            /** Inputs Hash */
+            inputs_hash: string;
+            /** Result Hash */
+            result_hash: string;
+            /** Insight Count */
+            insight_count: number;
+            /** Duration Ms */
+            duration_ms: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            thresholds: components["schemas"]["ThresholdsRead"];
+            /**
+             * Inputs
+             * @description Fingerprint of everything the analysis read.
+             */
+            inputs: {
+                [key: string]: unknown;
+            };
+            /** @description Scope `entity`: the analysis. */
+            entity: components["schemas"]["EntityAnalysisRead"] | null;
+            /** @description Scope `workspace`: the analysis. */
+            workspace: components["schemas"]["OverviewRead"] | null;
+            freshness: components["schemas"]["AnalysisFreshnessRead"];
+        };
+        /** AnalysisRequest */
+        AnalysisRequest: {
+            /**
+             * Scope
+             * @enum {string}
+             */
+            scope: "entity" | "workspace";
+            /**
+             * Entity
+             * @description The company or industry (graph key); required for scope `entity`.
+             * @example company:co_aerisca_airways
+             */
+            entity?: string | null;
+            /**
+             * Thresholds
+             * @description Overrides of the default thresholds (see GET /intelligence/methods).
+             * @example {
+             *       "relative_change_percent": "3"
+             *     }
+             */
+            thresholds?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Evidence
+             * @description `evidence_backed` keeps only relationships with a cited source.
+             * @default any
+             * @enum {string}
+             */
+            evidence: "any" | "evidence_backed";
+            /** Label */
+            label?: string | null;
+        };
+        /** AnalysisSummaryRead */
+        AnalysisSummaryRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Scope
+             * @enum {string}
+             */
+            scope: "entity" | "workspace";
+            /** Subject Key */
+            subject_key: string | null;
+            /** Subject Name */
+            subject_name: string;
+            /** Label */
+            label: string | null;
+            /** Engine Version */
+            engine_version: string;
+            /** Graph Build Id */
+            graph_build_id: number | null;
+            /** Inputs Hash */
+            inputs_hash: string;
+            /** Result Hash */
+            result_hash: string;
+            /** Insight Count */
+            insight_count: number;
+            /** Duration Ms */
+            duration_ms: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** AnomalyRead */
+        AnomalyRead: {
+            change: components["schemas"]["ChangeRead"];
+            /** Reference */
+            reference: number;
+            /** Score */
+            score: string | null;
+            /**
+             * Level
+             * @enum {string}
+             */
+            level: "unusual" | "not_unusual" | "undefined" | "insufficient_history";
+        };
         /** BridgeItemRead */
         BridgeItemRead: {
             /** Output */
@@ -1443,6 +1898,208 @@ export interface components {
              */
             value: string;
         };
+        /** BriefDriverLineRead */
+        BriefDriverLineRead: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /**
+             * Change
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            change: string;
+            /** Currency */
+            currency: string;
+            /** Contributions */
+            contributions: components["schemas"]["DriverContributionRead"][];
+            /**
+             * Unattributed
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            unattributed: string;
+        };
+        /** BriefDriversRead */
+        BriefDriversRead: {
+            /** Headline */
+            headline: string | null;
+            /** Lines */
+            lines: components["schemas"]["BriefDriverLineRead"][];
+            sensitivity: components["schemas"]["SensitivityRankingRead"] | null;
+            /** Method */
+            method: string;
+            /**
+             * Evidence Grade
+             * @enum {string}
+             */
+            evidence_grade: "observed" | "documented" | "curated" | "simulated" | "assumed" | "unverified";
+        };
+        /** BriefEvidenceRead */
+        BriefEvidenceRead: {
+            /** Insight Id */
+            insight_id: string;
+            /** Rule */
+            rule: string;
+            /** Kind */
+            kind: string;
+            /** Statement */
+            statement: string;
+            /**
+             * Grade
+             * @enum {string}
+             */
+            grade: "observed" | "documented" | "curated" | "simulated" | "assumed" | "unverified";
+            /** Conditional On Simulation */
+            conditional_on_simulation: boolean;
+            /** Facts */
+            facts: components["schemas"]["FactRead"][];
+            /** Chain */
+            chain: components["schemas"]["EvidenceStepRead"][];
+        };
+        /** BriefObservationRead */
+        BriefObservationRead: {
+            subject: components["schemas"]["SubjectRead"];
+            latest_change: components["schemas"]["ChangeRead"] | null;
+            /** Meets Threshold */
+            meets_threshold: boolean;
+            threshold: components["schemas"]["BriefThresholdRead"];
+            /** Signals */
+            signals: components["schemas"]["BriefSignalRead"][];
+            /** Revisions */
+            revisions: components["schemas"]["RevisionRead"][];
+            /**
+             * Evidence Grade
+             * @enum {string}
+             */
+            evidence_grade: "observed" | "documented" | "curated" | "simulated" | "assumed" | "unverified";
+        };
+        /**
+         * BriefRead
+         * @description What a future AI Analyst would receive about one entity. Numbers are computed by
+         *     RUMIN, never by the model that narrates them (see `narration_rules`).
+         */
+        BriefRead: {
+            /**
+             * Format
+             * @constant
+             */
+            format: "rumin.intelligence.brief/1";
+            /** Engine Version */
+            engine_version: string;
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
+            entity: components["schemas"]["NodeRead"];
+            build: components["schemas"]["BuildRead"];
+            thresholds: components["schemas"]["ThresholdsRead"];
+            /** Observations */
+            observations: components["schemas"]["BriefObservationRead"][];
+            /** Exposures */
+            exposures: components["schemas"]["ExposurePathRead"][];
+            /** Counterparties */
+            counterparties: components["schemas"]["CounterpartyRead"][];
+            /** Context */
+            context: components["schemas"]["ContextLinkRead"][];
+            /** Relationships */
+            relationships: components["schemas"]["EdgeInfoRead"][];
+            drivers: components["schemas"]["BriefDriversRead"] | null;
+            simulation_results: components["schemas"]["BriefSimulationRead"] | null;
+            /** Figures Entered */
+            figures_entered: components["schemas"]["FigureRead"][];
+            /** Assumptions */
+            assumptions: string[];
+            /** Evidence */
+            evidence: components["schemas"]["BriefEvidenceRead"][];
+            /** Limitations */
+            limitations: string[];
+            /** Next Steps */
+            next_steps: components["schemas"]["NextStepRead"][];
+            /** Narration Rules */
+            narration_rules: string[];
+        };
+        /** BriefResultLineRead */
+        BriefResultLineRead: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Currency */
+            currency: string;
+            /**
+             * Baseline
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            baseline: string;
+            /**
+             * Change
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            change: string;
+            /**
+             * Scenario
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            scenario: string;
+            /** Percent Change */
+            percent_change: string | null;
+        };
+        /** BriefSignalRead */
+        BriefSignalRead: {
+            /** Id */
+            id: string;
+            /** Status */
+            status: string;
+            /** Level */
+            level: string | null;
+            /** Summary */
+            summary: string;
+            /** Values */
+            values: components["schemas"]["FactRead"][];
+            /**
+             * Evidence Grade
+             * @enum {string}
+             */
+            evidence_grade: "observed" | "documented" | "curated" | "simulated" | "assumed" | "unverified";
+        };
+        /** BriefSimulationRead */
+        BriefSimulationRead: {
+            execution: components["schemas"]["ExecutionRefRead"];
+            /** Changes */
+            changes: components["schemas"]["ChangeInputRead"][];
+            /** Lines */
+            lines: components["schemas"]["BriefResultLineRead"][];
+            /** Metrics */
+            metrics: components["schemas"]["MetricChangeRead"][];
+            /** Not Modelled */
+            not_modelled: string[];
+            /** Unstated Exposures */
+            unstated_exposures: components["schemas"]["UnstatedExposureRead"][];
+            /** Interpretations */
+            interpretations: components["schemas"]["InterpretationRead"][];
+            /**
+             * Evidence Grade
+             * @enum {string}
+             */
+            evidence_grade: "observed" | "documented" | "curated" | "simulated" | "assumed" | "unverified";
+        };
+        /** BriefThresholdRead */
+        BriefThresholdRead: {
+            /** Name */
+            name: string;
+            /**
+             * Value
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            value: string;
+        };
         /** BuildChanges */
         BuildChanges: {
             /** Added */
@@ -1464,6 +2121,32 @@ export interface components {
             flagged: number;
             /** Rejected */
             rejected: number;
+        };
+        /** BuildRead */
+        BuildRead: {
+            /**
+             * Id
+             * @description The latest completed knowledge-graph build.
+             */
+            id: number | null;
+            /** Finished At */
+            finished_at: string | null;
+            /**
+             * Freshness
+             * @enum {string}
+             */
+            freshness: "current" | "stale" | "not_built";
+            /** Message */
+            message: string | null;
+        };
+        /** BuildRefRead */
+        BuildRefRead: {
+            /** Id */
+            id: number;
+            /** Finished At */
+            finished_at: string | null;
+            /** Status */
+            status: string;
         };
         /** Capability */
         Capability: {
@@ -1545,6 +2228,28 @@ export interface components {
              */
             value: string;
         };
+        /** ChangeInputRead */
+        ChangeInputRead: {
+            /** Variable Id */
+            variable_id: string;
+            /** Name */
+            name: string;
+            /**
+             * Change Type
+             * @enum {string}
+             */
+            change_type: "percent_change" | "absolute_change";
+            /**
+             * Value
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            value: string;
+            /** Unit */
+            unit: string;
+            /** Modelled */
+            modelled: boolean;
+        };
         /** ChangePlanRead */
         ChangePlanRead: {
             /** Index */
@@ -1568,6 +2273,24 @@ export interface components {
             models: string[];
             /** Reason */
             reason: string | null;
+        };
+        /** ChangeRead */
+        ChangeRead: {
+            earlier: components["schemas"]["PointRead"];
+            later: components["schemas"]["PointRead"];
+            /**
+             * Value
+             * @description Percent, or percentage points (`change_unit`).
+             * @example 5.649
+             */
+            value: string;
+            /**
+             * Direction
+             * @enum {string}
+             */
+            direction: "up" | "down" | "none";
+            /** Flagged */
+            flagged: boolean;
         };
         /**
          * ChangeRuleRead
@@ -1594,6 +2317,26 @@ export interface components {
          * @enum {string}
          */
         ChangeType: "percent_change" | "absolute_change";
+        /** ChangesRead */
+        ChangesRead: {
+            build: components["schemas"]["BuildRead"];
+            thresholds: components["schemas"]["ThresholdsRead"];
+            /**
+             * Observed
+             * @description Stored values: changes of each latest window that meet their threshold.
+             */
+            observed: components["schemas"]["ObservedChangeRead"][];
+            /** Revisions */
+            revisions: components["schemas"]["RevisionChangeRead"][];
+            relationships: components["schemas"]["RelationshipChangesRead"];
+            /**
+             * Executions
+             * @description Simulated: the headline between two executions of the same scenario.
+             */
+            executions: components["schemas"]["ExecutionChangeRead"][];
+            /** Notes */
+            notes: string[];
+        };
         /** CompanyInput */
         CompanyInput: {
             /**
@@ -1856,6 +2599,14 @@ export interface components {
             /** Description */
             description: string;
         };
+        /** ContextLinkRead */
+        ContextLinkRead: {
+            /** Kind */
+            kind: string;
+            node: components["schemas"]["NodeRead"];
+            /** Edges */
+            edges: components["schemas"]["EdgeInfoRead"][];
+        };
         /** ContributionItemRead */
         ContributionItemRead: {
             /** Input */
@@ -1877,6 +2628,26 @@ export interface components {
             label: string;
             /** Items */
             items: components["schemas"]["ContributionItemRead"][];
+        };
+        /** CounterpartyRead */
+        CounterpartyRead: {
+            /**
+             * Relationship
+             * @enum {string}
+             */
+            relationship: "supplies_to" | "lends_to";
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "supplier" | "customer" | "lender" | "borrower";
+            counterparty: components["schemas"]["NodeRead"];
+            /**
+             * Level
+             * @enum {string}
+             */
+            level: "company" | "industry";
+            edge: components["schemas"]["EdgeInfoRead"];
         };
         /** CountryRead */
         CountryRead: {
@@ -1916,6 +2687,37 @@ export interface components {
             iso_alpha2: string;
             /** Currency Code */
             currency_code: string;
+        };
+        /** CoverageRead */
+        CoverageRead: {
+            /** Companies */
+            companies: number;
+            /** Companies With Exposure */
+            companies_with_exposure: number;
+            /** Exposure Paths */
+            exposure_paths: number;
+            /** Variables */
+            variables: number;
+            /** Series */
+            series: number;
+            /** Series With Data */
+            series_with_data: number;
+            /** Observations */
+            observations: number;
+            /** Instruments */
+            instruments: number;
+            /** Instruments With Data */
+            instruments_with_data: number;
+            /** Related Series */
+            related_series: number;
+            /** Related With Data */
+            related_with_data: number;
+            /** Executions */
+            executions: number;
+            /** Companies With Executions */
+            companies_with_executions: number;
+            /** Truncated */
+            truncated: boolean;
         };
         /**
          * DataStatus
@@ -1966,6 +2768,21 @@ export interface components {
             migration_head: string | null;
             /** Schema Up To Date */
             schema_up_to_date: boolean;
+        };
+        /** DatasetInfoRead */
+        DatasetInfoRead: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Version */
+            version: string;
+            /** Is Illustrative */
+            is_illustrative: boolean;
+            /** License */
+            license: string;
+            /** Attribution */
+            attribution: string | null;
         };
         /**
          * DatasetKind
@@ -2165,6 +2982,79 @@ export interface components {
          * @enum {string}
          */
         Direction: "any" | "out" | "in";
+        /** DriverAnalysisRead */
+        DriverAnalysisRead: {
+            /** Entity Key */
+            entity_key: string;
+            execution: components["schemas"]["ExecutionRefRead"];
+            /** Changes */
+            changes: components["schemas"]["ChangeInputRead"][];
+            /** Lines */
+            lines: components["schemas"]["LineDriversRead"][];
+            /** Metrics */
+            metrics: components["schemas"]["MetricChangeRead"][];
+            /** Headline */
+            headline: string | null;
+            /** Models */
+            models: components["schemas"]["ModelUsedRead"][];
+            /** Assumptions */
+            assumptions: string[];
+            /**
+             * Figures
+             * @description Figures the user entered: not RUMIN data.
+             */
+            figures: components["schemas"]["FigureRead"][];
+            sensitivity: components["schemas"]["SensitivityRankingRead"] | null;
+            /** Notes */
+            notes: string[];
+            /** Not Modelled */
+            not_modelled: string[];
+            /**
+             * Unstated
+             * @description Models included although the graph states no exposure: those parts rest on the entered figures alone.
+             */
+            unstated: components["schemas"]["UnstatedExposureRead"][];
+        };
+        /** DriverContributionRead */
+        DriverContributionRead: {
+            /** Variable Id */
+            variable_id: string;
+            /** Name */
+            name: string;
+            /**
+             * Value
+             * @description Stored contribution, in the line's currency.
+             * @example 5.649
+             */
+            value: string;
+            /**
+             * Share Of Change
+             * @description Percent of the line's change.
+             */
+            share_of_change: string | null;
+            /**
+             * Points Of Baseline
+             * @description Percent of the baseline.
+             */
+            points_of_baseline: string | null;
+            /**
+             * Per Unit
+             * @description Contribution per 1 % (or per percentage point) of the change: an average over the scenario's change, not a slope.
+             */
+            per_unit: string | null;
+            /** Per Unit Label */
+            per_unit_label: string | null;
+        };
+        /** DriversRead */
+        DriversRead: {
+            entity: components["schemas"]["NodeRead"];
+            /** Executions */
+            executions: components["schemas"]["ExecutionRefRead"][];
+            drivers: components["schemas"]["DriverAnalysisRead"] | null;
+            previous: components["schemas"]["DriverAnalysisRead"] | null;
+            /** Note */
+            note: string;
+        };
         /**
          * EconomicVariablePage
          * @description A page of economic variables.
@@ -2232,6 +3122,70 @@ export interface components {
              */
             readonly scenario_rules: components["schemas"]["ChangeRuleRead"][];
         };
+        /** EdgeChangeRead */
+        EdgeChangeRead: {
+            /**
+             * Change
+             * @enum {string}
+             */
+            change: "added" | "changed" | "retired";
+            /** Edge Key */
+            edge_key: string;
+            /** Edge Type */
+            edge_type: string;
+            /** Label */
+            label: string;
+            /** Source */
+            source: string;
+            /** Source Name */
+            source_name: string;
+            /** Target */
+            target: string;
+            /** Target Name */
+            target_name: string;
+            /** Evidence Status */
+            evidence_status: string;
+            /** Quality Status */
+            quality_status: string;
+            /** Exposure Relevant */
+            exposure_relevant: boolean;
+        };
+        /** EdgeInfoRead */
+        EdgeInfoRead: {
+            /** Key */
+            key: string;
+            /** Edge Type */
+            edge_type: string;
+            /** Label */
+            label: string;
+            /** Source */
+            source: string;
+            /** Target */
+            target: string;
+            /**
+             * Evidence Status
+             * @enum {string}
+             */
+            evidence_status: "evidence_backed" | "analyst_created" | "model_assumption" | "unverified";
+            /** Is Illustrative */
+            is_illustrative: boolean;
+            /** Quality Status */
+            quality_status: string;
+            /** Description */
+            description: string;
+            /** Caveat */
+            caveat: string;
+            /** Polarity */
+            polarity: string | null;
+            /** Strength */
+            strength: string | null;
+            /** Rationale */
+            rationale: string | null;
+            /** Evidence Level */
+            evidence_level: string | null;
+            /** Stated Difference */
+            stated_difference: string | null;
+        };
         /**
          * EdgeQualifiers
          * @description Type-specific qualifiers, each with the meaning Phase 1 or the catalogue gave it.
@@ -2297,6 +3251,47 @@ export interface components {
             source: components["schemas"]["GraphNodeType"];
             target: components["schemas"]["GraphNodeType"];
         };
+        /** EntityAnalysisRead */
+        EntityAnalysisRead: {
+            /** Engine Version */
+            engine_version: string;
+            entity: components["schemas"]["NodeRead"];
+            build: components["schemas"]["BuildRead"];
+            thresholds: components["schemas"]["ThresholdsRead"];
+            exposure: components["schemas"]["ExposureMapRead"];
+            /** Executions */
+            executions: components["schemas"]["ExecutionRefRead"][];
+            /** @description The latest completed execution. */
+            drivers: components["schemas"]["DriverAnalysisRead"] | null;
+            /** @description The previous execution of the same scenario, if any. */
+            previous: components["schemas"]["DriverAnalysisRead"] | null;
+            /**
+             * Series
+             * @description Stored series recorded as related measures of the entity's exposure variables.
+             */
+            series: components["schemas"]["SeriesAnalysisRead"][];
+            /**
+             * Interpretations
+             * @description Model interpretations of observed changes: computed on request, never stored as results.
+             */
+            interpretations: components["schemas"]["InterpretationRead"][];
+            /** Not Interpreted */
+            not_interpreted: components["schemas"]["NotInterpretedRead"][];
+            /** Signals */
+            signals: components["schemas"]["SignalRead"][];
+            /** Insights */
+            insights: components["schemas"]["InsightRead"][];
+            /** Grades */
+            grades: {
+                [key: string]: number;
+            };
+            /** Kinds */
+            kinds: {
+                [key: string]: number;
+            };
+            /** Next Steps */
+            next_steps: components["schemas"]["NextStepRead"][];
+        };
         /** EntityIndustryRead */
         EntityIndustryRead: {
             /** Key */
@@ -2325,6 +3320,14 @@ export interface components {
             source_kind: components["schemas"]["EntityKind"];
             target_kind: components["schemas"]["EntityKind"];
         };
+        /** EntityListRead */
+        EntityListRead: {
+            build: components["schemas"]["BuildRead"];
+            /** Items */
+            items: components["schemas"]["EntitySummaryRead"][];
+            /** Total */
+            total: number;
+        };
         /**
          * EntityPage
          * @description A page of entities.
@@ -2350,6 +3353,25 @@ export interface components {
             name: string;
             /** Nature */
             nature: string;
+        };
+        /** EntitySummaryRead */
+        EntitySummaryRead: {
+            entity: components["schemas"]["NodeRead"];
+            /** Paths */
+            paths: number;
+            /** Variables */
+            variables: number;
+            /** By Channel */
+            by_channel: {
+                [key: string]: number;
+            };
+            /** By Directness */
+            by_directness: {
+                [key: string]: number;
+            };
+            /** Weakest Evidence */
+            weakest_evidence: ("evidence_backed" | "analyst_created" | "model_assumption" | "unverified") | null;
+            latest_impact: components["schemas"]["ImpactRead"] | null;
         };
         /** EquationRead */
         EquationRead: {
@@ -2531,6 +3553,60 @@ export interface components {
             /** Definition */
             definition: string;
         };
+        /** EvidenceStepRead */
+        EvidenceStepRead: {
+            /**
+             * Basis
+             * @enum {string}
+             */
+            basis: "observation" | "calculation" | "relationship" | "record" | "simulation" | "assumption" | "threshold";
+            /** Text */
+            text: string;
+            /** Refs */
+            refs: components["schemas"]["RefRead"][];
+            /**
+             * Evidence Status
+             * @description Relationship steps only.
+             */
+            evidence_status: ("evidence_backed" | "analyst_created" | "model_assumption" | "unverified") | null;
+            /**
+             * Value
+             * @description Exact decimal text, when the step has a value.
+             */
+            value: string | null;
+            /** Unit */
+            unit: string | null;
+        };
+        /** ExecutionChangeRead */
+        ExecutionChangeRead: {
+            entity: components["schemas"]["NodeRead"];
+            /** Line */
+            line: string;
+            /** Label */
+            label: string;
+            /** Currency */
+            currency: string;
+            previous: components["schemas"]["ExecutionRefRead"];
+            latest: components["schemas"]["ExecutionRefRead"];
+            /**
+             * Previous Change
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            previous_change: string;
+            /**
+             * Latest Change
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            latest_change: string;
+            /**
+             * Difference
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            difference: string;
+        };
         /** ExecutionErrorRead */
         ExecutionErrorRead: {
             /** Code */
@@ -2612,6 +3688,31 @@ export interface components {
              * @description While the execution is not final: when to ask again (milliseconds).
              */
             poll_after_ms: number | null;
+        };
+        /** ExecutionRefRead */
+        ExecutionRefRead: {
+            /** Id */
+            id: string;
+            /** Scenario Id */
+            scenario_id: string;
+            /** Scenario Name */
+            scenario_name: string;
+            /** Version */
+            version: number;
+            /** Finished At */
+            finished_at: string | null;
+            /** Currency */
+            currency: string;
+            /** Horizon Months */
+            horizon_months: number;
+            /** Graph Build Id */
+            graph_build_id: number | null;
+            /** Graph Freshness */
+            graph_freshness: string | null;
+            /** Inputs Hash */
+            inputs_hash: string | null;
+            /** Result Hash */
+            result_hash: string | null;
         };
         /** ExecutionRequest */
         ExecutionRequest: {
@@ -2848,6 +3949,90 @@ export interface components {
              */
             change: string;
         };
+        /** ExposureMapRead */
+        ExposureMapRead: {
+            entity: components["schemas"]["NodeRead"];
+            /** Build Id */
+            build_id: number | null;
+            /**
+             * Evidence Filter
+             * @enum {string}
+             */
+            evidence_filter: "any" | "evidence_backed";
+            /** Paths */
+            paths: components["schemas"]["ExposurePathRead"][];
+            /** Counterparties */
+            counterparties: components["schemas"]["CounterpartyRead"][];
+            /** Context */
+            context: components["schemas"]["ContextLinkRead"][];
+            /** Series */
+            series: components["schemas"]["SeriesCoverageRead"][];
+            /**
+             * Flagged
+             * @description Relationships the build flagged: listed, never used as exposure.
+             */
+            flagged: components["schemas"]["EdgeInfoRead"][];
+            /** Removed By Filter */
+            removed_by_filter: number;
+            /** Notes */
+            notes: string[];
+            summary: components["schemas"]["ExposureSummaryRead"];
+            /** Variables */
+            variables: components["schemas"]["NodeRead"][];
+        };
+        /** ExposureMatrixRead */
+        ExposureMatrixRead: {
+            /** Build Id */
+            build_id: number | null;
+            /** Companies */
+            companies: components["schemas"]["NodeRead"][];
+            /** Variables */
+            variables: components["schemas"]["NodeRead"][];
+            /** Cells */
+            cells: components["schemas"]["MatrixCellRead"][];
+            /** Truncated */
+            truncated: boolean;
+        };
+        /** ExposurePathRead */
+        ExposurePathRead: {
+            /** @description The variable the path starts from. */
+            origin: components["schemas"]["NodeRead"];
+            /** @description The variable that reaches the entity. */
+            variable: components["schemas"]["NodeRead"];
+            /**
+             * Channel
+             * @enum {string}
+             */
+            channel: "costs" | "revenue" | "financing";
+            /**
+             * Directness
+             * @enum {string}
+             */
+            directness: "direct" | "via_industry" | "upstream";
+            /**
+             * Base
+             * @enum {string}
+             */
+            base: "direct" | "via_industry";
+            industry: components["schemas"]["NodeRead"] | null;
+            /** Hops */
+            hops: components["schemas"]["NodeRead"][];
+            /** Edges */
+            edges: components["schemas"]["EdgeInfoRead"][];
+            /**
+             * Evidence Status
+             * @description The weakest along the path.
+             * @enum {string}
+             */
+            evidence_status: "evidence_backed" | "analyst_created" | "model_assumption" | "unverified";
+            /**
+             * Models
+             * @description Registered models that can simulate this path.
+             */
+            models: string[];
+            /** Group */
+            group: string;
+        };
         /** ExposureRead */
         ExposureRead: {
             /**
@@ -2860,6 +4045,59 @@ export interface components {
             via: components["schemas"]["GraphNodeSummary"] | null;
             /** Explanation */
             explanation: string;
+        };
+        /** ExposureSummaryRead */
+        ExposureSummaryRead: {
+            /** Paths */
+            paths: number;
+            /** Variables */
+            variables: number;
+            /** By Channel */
+            by_channel: {
+                [key: string]: number;
+            };
+            /** By Directness */
+            by_directness: {
+                [key: string]: number;
+            };
+            /** By Group */
+            by_group: {
+                [key: string]: number;
+            };
+            /** By Evidence */
+            by_evidence: {
+                [key: string]: number;
+            };
+        };
+        /** FactRead */
+        FactRead: {
+            /** Label */
+            label: string;
+            /**
+             * Value
+             * @description Exact decimal text for numbers; text otherwise.
+             */
+            value: string | null;
+            /** Unit */
+            unit: string | null;
+            /**
+             * Basis
+             * @enum {string}
+             */
+            basis: "observation" | "calculation" | "relationship" | "record" | "simulation" | "assumption" | "threshold";
+            /** Refs */
+            refs: components["schemas"]["RefRead"][];
+            /** Period */
+            period: string | null;
+        };
+        /** FigureRead */
+        FigureRead: {
+            /** Label */
+            label: string;
+            /** Value */
+            value: string;
+            /** Unit */
+            unit: string;
         };
         /**
          * Frequency
@@ -2875,6 +4113,18 @@ export interface components {
             status: "current" | "stale" | "not_built";
             /** Message */
             message: string;
+        };
+        /** GradeRead */
+        GradeRead: {
+            /**
+             * Id
+             * @enum {string}
+             */
+            id: "observed" | "documented" | "curated" | "simulated" | "assumed" | "unverified";
+            /** Strength */
+            strength: number;
+            /** Statement */
+            statement: string;
         };
         /** GraphBuildDetail */
         GraphBuildDetail: {
@@ -3352,6 +4602,32 @@ export interface components {
             /** Label */
             label: string;
         };
+        /** ImpactRead */
+        ImpactRead: {
+            execution: components["schemas"]["ExecutionRefRead"];
+            /** Line */
+            line: string;
+            /** Label */
+            label: string;
+            /** Currency */
+            currency: string;
+            /**
+             * Baseline
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            baseline: string;
+            /**
+             * Change
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            change: string;
+            /** Percent Change */
+            percent_change: string | null;
+            /** Changes */
+            changes: components["schemas"]["ChangeInputRead"][];
+        };
         /**
          * IndustryPage
          * @description A page of industries.
@@ -3462,6 +4738,97 @@ export interface components {
             sources: components["schemas"]["ObservationSourceRead"][];
             sensitivity: components["schemas"]["SensitivitySpecRead"] | null;
         };
+        /** InsightEvidenceRead */
+        InsightEvidenceRead: {
+            /**
+             * Grade
+             * @description The weakest step of the chain. Not a probability.
+             * @enum {string}
+             */
+            grade: "observed" | "documented" | "curated" | "simulated" | "assumed" | "unverified";
+            /**
+             * Conditional On Simulation
+             * @description True when a step is a simulation: the statement holds only under the scenario's inputs and assumptions.
+             */
+            conditional_on_simulation: boolean;
+            /** Includes Observations */
+            includes_observations: boolean;
+            /** Statement */
+            statement: string;
+            /**
+             * Weakest Step
+             * @description Index in `chain` of the step that set it.
+             */
+            weakest_step: number | null;
+        };
+        /** InsightListRead */
+        InsightListRead: {
+            /**
+             * Scope
+             * @enum {string}
+             */
+            scope: "entity" | "workspace";
+            subject: components["schemas"]["RefRead"] | null;
+            build: components["schemas"]["BuildRead"];
+            thresholds: components["schemas"]["ThresholdsRead"];
+            /** Items */
+            items: components["schemas"]["InsightRead"][];
+            /** Total */
+            total: number;
+        };
+        /** InsightRead */
+        InsightRead: {
+            /**
+             * Id
+             * @description Stable for the same rule, subject and facts.
+             */
+            id: string;
+            /** Rule */
+            rule: string;
+            /** Rule Title */
+            rule_title: string;
+            /** Kind */
+            kind: string;
+            /** Headline */
+            headline: string;
+            /**
+             * Statement
+             * @description A documented template filled with computed values.
+             */
+            statement: string;
+            subject: components["schemas"]["RefRead"];
+            /** Entities */
+            entities: components["schemas"]["RefRead"][];
+            /** Relationships */
+            relationships: components["schemas"]["RelationshipRefRead"][];
+            period: components["schemas"]["PeriodRead"];
+            /** Facts */
+            facts: components["schemas"]["FactRead"][];
+            /** Models */
+            models: components["schemas"]["ModelRefRead"][];
+            evidence: components["schemas"]["InsightEvidenceRead"];
+            /** Chain */
+            chain: components["schemas"]["EvidenceStepRead"][];
+            /** Assumptions */
+            assumptions: string[];
+            /** Limitations */
+            limitations: string[];
+            /** Next Steps */
+            next_steps: components["schemas"]["NextStepRead"][];
+            /** Sources */
+            sources: components["schemas"]["RefRead"][];
+        };
+        /** InsightRuleRead */
+        InsightRuleRead: {
+            /** Id */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Title */
+            title: string;
+            /** Purpose */
+            purpose: string;
+        };
         /** InstrumentDetail */
         InstrumentDetail: {
             /** Id */
@@ -3498,6 +4865,17 @@ export interface components {
              * @description Datasets holding prices for the instrument. Prices from different datasets are kept apart, never blended.
              */
             price_datasets: components["schemas"]["DatasetRef"][];
+        };
+        /** InstrumentIntelligenceRead */
+        InstrumentIntelligenceRead: {
+            thresholds: components["schemas"]["ThresholdsRead"];
+            /**
+             * Analyses
+             * @description One per price dataset.
+             */
+            analyses: components["schemas"]["SeriesAnalysisRead"][];
+            /** Insights */
+            insights: components["schemas"]["InsightRead"][];
         };
         /**
          * InstrumentPage
@@ -3566,6 +4944,69 @@ export interface components {
          * @enum {string}
          */
         InstrumentType: "equity" | "etf" | "index";
+        /** InterpretationRead */
+        InterpretationRead: {
+            /** Execution Id */
+            execution_id: string;
+            /** Scenario Name */
+            scenario_name: string;
+            /** Version */
+            version: number;
+            /** Variable Id */
+            variable_id: string;
+            /** Variable Name */
+            variable_name: string;
+            /** Series Id */
+            series_id: string;
+            /** Series Name */
+            series_name: string;
+            /** Stated Difference */
+            stated_difference: string | null;
+            observed: components["schemas"]["ChangeRead"];
+            /** Observed Unit */
+            observed_unit: string;
+            /**
+             * Applied
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            applied: string;
+            /** Applied Type */
+            applied_type: string;
+            /** Lines */
+            lines: components["schemas"]["InterpretedLineRead"][];
+            /** Headline */
+            headline: string | null;
+            /** Models */
+            models: string[];
+            /** Graph Build Id */
+            graph_build_id: number | null;
+            /** Note */
+            note: string;
+        };
+        /** InterpretedLineRead */
+        InterpretedLineRead: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Currency */
+            currency: string;
+            /**
+             * Baseline
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            baseline: string;
+            /**
+             * Change
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            change: string;
+            /** Percent Change */
+            percent_change: string | null;
+        };
         /** IssueCount */
         IssueCount: {
             /** Rule */
@@ -3646,6 +5087,25 @@ export interface components {
          * @enum {string}
          */
         IssueSeverity: "error" | "warning" | "info";
+        /** ItemDriversRead */
+        ItemDriversRead: {
+            /** Model Id */
+            model_id: string;
+            /** Item */
+            item: string;
+            /** Label */
+            label: string;
+            /**
+             * Value
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            value: string;
+            /** By Change */
+            by_change: {
+                [key: string]: string;
+            };
+        };
         /** JobDetail */
         JobDetail: {
             /**
@@ -4221,6 +5681,56 @@ export interface components {
             value: string;
             quality_status: components["schemas"]["QualityStatus"];
         };
+        /** LevelRead */
+        LevelRead: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+        };
+        /** LineDriversRead */
+        LineDriversRead: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Currency */
+            currency: string;
+            /**
+             * Baseline
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            baseline: string;
+            /**
+             * Change
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            change: string;
+            /**
+             * Scenario
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            scenario: string;
+            /** Percent Change */
+            percent_change: string | null;
+            /** Direction */
+            direction: string;
+            /** Effect */
+            effect: string;
+            /** Contributions */
+            contributions: components["schemas"]["DriverContributionRead"][];
+            /**
+             * Residual
+             * @description Change the contributions leave unattributed.
+             * @example 5.649
+             */
+            residual: string;
+            /** Items */
+            items: components["schemas"]["ItemDriversRead"][];
+        };
         /** LineItemRead */
         LineItemRead: {
             /** Line */
@@ -4322,6 +5832,27 @@ export interface components {
         MarketsRead: {
             fx_rate: components["schemas"]["ValueRead"] | null;
         };
+        /** MatrixCellRead */
+        MatrixCellRead: {
+            /** Company */
+            company: string;
+            /** Variable */
+            variable: string;
+            /** Paths */
+            paths: number;
+            /** Channels */
+            channels: string[];
+            /** Directness */
+            directness: string[];
+            /**
+             * Evidence Status
+             * @description The weakest of its paths.
+             * @enum {string}
+             */
+            evidence_status: "evidence_backed" | "analyst_created" | "model_assumption" | "unverified";
+            /** Models */
+            models: string[];
+        };
         /**
          * MeasureType
          * @description What a series' numbers are, so they are never read as something else.
@@ -4334,6 +5865,50 @@ export interface components {
          * @enum {string}
          */
         MeasureType: "level" | "change" | "rate" | "ratio" | "exchange_rate";
+        /** MethodsRead */
+        MethodsRead: {
+            /** Engine Version */
+            engine_version: string;
+            /** Modules */
+            modules: components["schemas"]["ModuleRead"][];
+            /** Signals */
+            signals: components["schemas"]["SignalSpecRead"][];
+            /** Rules */
+            rules: components["schemas"]["InsightRuleRead"][];
+            /**
+             * Kinds
+             * @description Insight kinds in display order.
+             */
+            kinds: string[];
+            /** Thresholds */
+            thresholds: components["schemas"]["ThresholdSpecRead"][];
+            defaults: components["schemas"]["ThresholdsRead"];
+            /** Grades */
+            grades: components["schemas"]["GradeRead"][];
+            /** Edge Grades */
+            edge_grades: {
+                [key: string]: "observed" | "documented" | "curated" | "simulated" | "assumed" | "unverified";
+            };
+            /** Notes */
+            notes: string[];
+        };
+        /** MetricChangeRead */
+        MetricChangeRead: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Unit */
+            unit: string;
+            /** Baseline */
+            baseline: string | null;
+            /** Scenario */
+            scenario: string | null;
+            /** Change */
+            change: string | null;
+            /** Change Unit */
+            change_unit: string | null;
+        };
         /** MetricDefinitionRead */
         MetricDefinitionRead: {
             /** Id */
@@ -4448,6 +6023,23 @@ export interface components {
             inputs: components["schemas"]["ResolvedInputRead"][];
             graph: components["schemas"]["GraphSnapshotRead"] | null;
         };
+        /** ModelRefRead */
+        ModelRefRead: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "execution" | "run";
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /**
+             * Models
+             * @description 'model_id version' of each model used.
+             */
+            models: string[];
+        };
         /** ModelResultRead */
         ModelResultRead: {
             /** Model Id */
@@ -4514,6 +6106,19 @@ export interface components {
                 [key: string]: string;
             };
         };
+        /** ModelUsedRead */
+        ModelUsedRead: {
+            /** Model Id */
+            model_id: string;
+            /** Version */
+            version: string;
+            /** Name */
+            name: string;
+            /** Run Id */
+            run_id: string;
+            /** Definition Hash */
+            definition_hash: string;
+        };
         /** ModelVersionRead */
         ModelVersionRead: {
             /** Model Id */
@@ -4531,6 +6136,25 @@ export interface components {
              * Format: date-time
              */
             registered_at: string;
+        };
+        /** ModuleRead */
+        ModuleRead: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Question */
+            question: string;
+            /** Reads */
+            reads: string[];
+            /** Method */
+            method: string;
+            /** Produces */
+            produces: string[];
+            /** Limitations */
+            limitations: string[];
+            /** Version */
+            version: string;
         };
         /** MonthlySeriesRead */
         MonthlySeriesRead: {
@@ -4649,6 +6273,17 @@ export interface components {
             /** Structural Edge Count */
             structural_edge_count: number;
         };
+        /** NextStepRead */
+        NextStepRead: {
+            /**
+             * Action
+             * @description run_template, run_scenario, run_sensitivity, ingest_series, find_evidence, model_gap, review_revision or open_execution.
+             */
+            action: string;
+            /** Text */
+            text: string;
+            target: components["schemas"]["RefRead"] | null;
+        };
         /**
          * NodeDataRead
          * @description Live data availability for series and instruments (read from the Phase 2 tables).
@@ -4680,6 +6315,21 @@ export interface components {
          * @enum {string}
          */
         NodeNature: "real" | "fictional" | "sample";
+        /** NodeRead */
+        NodeRead: {
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /** Node Type */
+            node_type: string;
+            /** Nature */
+            nature: string;
+            /** Attributes */
+            attributes: {
+                [key: string]: unknown;
+            };
+        };
         /** NodeSearchResult */
         NodeSearchResult: {
             /**
@@ -4733,6 +6383,15 @@ export interface components {
             description: string;
             /** Primary Identifier */
             primary_identifier: string | null;
+        };
+        /** NotInterpretedRead */
+        NotInterpretedRead: {
+            /** Variable Id */
+            variable_id: string;
+            /** Series Id */
+            series_id: string;
+            /** Reason */
+            reason: string;
         };
         /** NotModelledRead */
         NotModelledRead: {
@@ -4849,6 +6508,24 @@ export interface components {
          * @enum {string}
          */
         ObservationStatus: "reported" | "missing";
+        /** ObservedChangeRead */
+        ObservedChangeRead: {
+            subject: components["schemas"]["SubjectRead"];
+            change: components["schemas"]["ChangeRead"];
+            /** Threshold Name */
+            threshold_name: string;
+            /**
+             * Threshold
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            threshold: string;
+            /**
+             * Latest
+             * @description The most recent change of its series.
+             */
+            latest: boolean;
+        };
         /** OutputDefinitionRead */
         OutputDefinitionRead: {
             /** Id */
@@ -4892,6 +6569,51 @@ export interface components {
             description: string;
             /** Equation */
             equation: string;
+        };
+        /** OverviewRead */
+        OverviewRead: {
+            /** Engine Version */
+            engine_version: string;
+            build: components["schemas"]["BuildRead"];
+            thresholds: components["schemas"]["ThresholdsRead"];
+            coverage: components["schemas"]["CoverageRead"];
+            /** Insights */
+            insights: components["schemas"]["InsightRead"][];
+            /** Grades */
+            grades: {
+                [key: string]: number;
+            };
+            /** Kinds */
+            kinds: {
+                [key: string]: number;
+            };
+            /** Next Steps */
+            next_steps: components["schemas"]["NextStepRead"][];
+            exposure: components["schemas"]["ExposureMatrixRead"];
+            /** Series */
+            series: components["schemas"]["SeriesSummaryRead"][];
+            /** Instruments */
+            instruments: components["schemas"]["SeriesSummaryRead"][];
+            relationships: components["schemas"]["RelationshipChangesRead"];
+            /**
+             * Impacts
+             * @description The latest simulated headline per company.
+             */
+            impacts: components["schemas"]["ImpactRead"][];
+        };
+        /** Page[AnalysisSummaryRead] */
+        Page_AnalysisSummaryRead_: {
+            /** Items */
+            items: components["schemas"]["AnalysisSummaryRead"][];
+            /**
+             * Total
+             * @description Total number of items matching the query.
+             */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
         };
         /** Page[GraphBuildSummary] */
         Page_GraphBuildSummary_: {
@@ -5101,6 +6823,20 @@ export interface components {
             /** Links */
             links: components["schemas"]["PathwayEdgeRead"][];
         };
+        /** PeriodRead */
+        PeriodRead: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "observation" | "graph_build" | "scenario" | "analysis";
+            /** Label */
+            label: string;
+            /** Start */
+            start: string | null;
+            /** End */
+            end: string | null;
+        };
         /** PlanIssueRead */
         PlanIssueRead: {
             /** Code */
@@ -5142,6 +6878,40 @@ export interface components {
                 [key: string]: string;
             };
             affected: components["schemas"]["AffectedEntitiesRead"] | null;
+        };
+        /** PointRead */
+        PointRead: {
+            /** Label */
+            label: string;
+            /**
+             * Start
+             * Format: date
+             */
+            start: string;
+            /**
+             * Value
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            value: string;
+            /** Record Id */
+            record_id: number;
+            /** Revision */
+            revision: number;
+            /** Quality Status */
+            quality_status: string;
+            /** Flags */
+            flags: string | null;
+            /**
+             * Retrieved At
+             * Format: date-time
+             */
+            retrieved_at: string;
+            /**
+             * Last Confirmed At
+             * Format: date-time
+             */
+            last_confirmed_at: string;
         };
         /**
          * Polarity
@@ -5372,6 +7142,19 @@ export interface components {
          * @enum {string}
          */
         QualityStatus: "validated" | "warning";
+        /** RankedQuantityRead */
+        RankedQuantityRead: {
+            /** Target */
+            target: string;
+            /** Label */
+            label: string;
+            /**
+             * Spread
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            spread: string;
+        };
         /** ReadinessChecks */
         ReadinessChecks: {
             /**
@@ -5399,11 +7182,38 @@ export interface components {
             status: "ready" | "not_ready";
             checks: components["schemas"]["ReadinessChecks"];
         };
+        /** RefRead */
+        RefRead: {
+            /**
+             * Kind
+             * @description What is referred to: dataset, series, observation, instrument, price_bar, graph_build, graph_node, graph_edge, scenario, execution, run, sensitivity_analysis, template, threshold, catalogue or calculation.
+             */
+            kind: string;
+            /** Id */
+            id: string;
+            /** Label */
+            label: string | null;
+        };
         /**
          * RelationshipCategory
          * @enum {string}
          */
         RelationshipCategory: "economic" | "structural";
+        /** RelationshipChangesRead */
+        RelationshipChangesRead: {
+            build: components["schemas"]["BuildRefRead"] | null;
+            previous: components["schemas"]["BuildRefRead"] | null;
+            /** Edges */
+            edges: components["schemas"]["EdgeChangeRead"][];
+            /** Counts */
+            counts: {
+                [key: string]: number;
+            };
+            /** Truncated */
+            truncated: boolean;
+            /** Note */
+            note: string;
+        };
         /** RelationshipCount */
         RelationshipCount: {
             type: components["schemas"]["GraphEdgeType"];
@@ -5479,6 +7289,30 @@ export interface components {
              * @description False for symmetric types such as competes_with.
              */
             readonly directed: boolean;
+        };
+        /** RelationshipRefRead */
+        RelationshipRefRead: {
+            /** Edge Key */
+            edge_key: string;
+            /** Edge Type */
+            edge_type: string;
+            /** Label */
+            label: string;
+            /** Source */
+            source: string;
+            /** Source Name */
+            source_name: string;
+            /** Target */
+            target: string;
+            /** Target Name */
+            target_name: string;
+            /**
+             * Evidence Status
+             * @enum {string}
+             */
+            evidence_status: "evidence_backed" | "analyst_created" | "model_assumption" | "unverified";
+            /** Is Illustrative */
+            is_illustrative: boolean;
         };
         /**
          * RelationshipType
@@ -5647,6 +7481,35 @@ export interface components {
          * @enum {string}
          */
         ReviewStatus: "unreviewed";
+        /** RevisionChangeRead */
+        RevisionChangeRead: {
+            subject: components["schemas"]["SubjectRead"];
+            revision: components["schemas"]["RevisionRead"];
+        };
+        /** RevisionRead */
+        RevisionRead: {
+            /** Label */
+            label: string;
+            /**
+             * Start
+             * Format: date
+             */
+            start: string;
+            /** Previous */
+            previous: string | null;
+            /** Revised */
+            revised: string | null;
+            /** Previous Revision */
+            previous_revision: number;
+            /** Revised At */
+            revised_at: string | null;
+            /** Previous Id */
+            previous_id: number;
+            /** Revised Id */
+            revised_id: number;
+            /** Change */
+            change: string | null;
+        };
         /** RuleCount */
         RuleCount: {
             /** Rule */
@@ -6042,6 +7905,22 @@ export interface components {
              */
             spread: string;
         };
+        /** SensitivityRankingRead */
+        SensitivityRankingRead: {
+            /** Analysis Id */
+            analysis_id: string;
+            /** Metric */
+            metric: string;
+            /** Metric Label */
+            metric_label: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Ranking */
+            ranking: components["schemas"]["RankedQuantityRead"][];
+        };
         /** SensitivityRequest */
         SensitivityRequest: {
             /**
@@ -6068,6 +7947,54 @@ export interface components {
              * @example 5.649
              */
             step: string;
+        };
+        /** SeriesAnalysisRead */
+        SeriesAnalysisRead: {
+            subject: components["schemas"]["SubjectRead"];
+            /**
+             * Points
+             * @description The latest stored values (at most 400).
+             */
+            points: components["schemas"]["PointRead"][];
+            /** Points Total */
+            points_total: number;
+            /**
+             * Changes
+             * @description The latest changes (at most 60).
+             */
+            changes: components["schemas"]["ChangeRead"][];
+            /** Changes Total */
+            changes_total: number;
+            /** Threshold Name */
+            threshold_name: string;
+            /**
+             * Threshold
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            threshold: string;
+            /**
+             * Detected
+             * @description Changes of the latest window that meet the threshold.
+             */
+            detected: components["schemas"]["ChangeRead"][];
+            latest: components["schemas"]["ChangeRead"] | null;
+            trend: components["schemas"]["TrendRead"] | null;
+            volatility: components["schemas"]["VolatilityRead"] | null;
+            anomaly: components["schemas"]["AnomalyRead"] | null;
+            /** Revisions */
+            revisions: components["schemas"]["RevisionRead"][];
+            /** Signals */
+            signals: components["schemas"]["SignalRead"][];
+        };
+        /** SeriesCoverageRead */
+        SeriesCoverageRead: {
+            /** Variable */
+            variable: string;
+            /** Series Key */
+            series_key: string;
+            info: components["schemas"]["SeriesInfoRead"] | null;
+            edge: components["schemas"]["EdgeInfoRead"];
         };
         /** SeriesDetail */
         SeriesDetail: {
@@ -6165,6 +8092,39 @@ export interface components {
              */
             revised_period_count: number;
             last_job: components["schemas"]["JobRef"] | null;
+        };
+        /** SeriesInfoRead */
+        SeriesInfoRead: {
+            /** Series Id */
+            series_id: string;
+            /** Name */
+            name: string;
+            /** Unit */
+            unit: string;
+            /** Frequency */
+            frequency: string;
+            /** Measure Type */
+            measure_type: string;
+            /** Observation Count */
+            observation_count: number;
+            /** First Period */
+            first_period: string | null;
+            /** Last Period */
+            last_period: string | null;
+        };
+        /** SeriesIntelligenceRead */
+        SeriesIntelligenceRead: {
+            build: components["schemas"]["BuildRead"];
+            thresholds: components["schemas"]["ThresholdsRead"];
+            analysis: components["schemas"]["SeriesAnalysisRead"];
+            variable: components["schemas"]["NodeRead"] | null;
+            /**
+             * Reached
+             * @description Companies the related variable reaches through validated relationships.
+             */
+            reached: components["schemas"]["NodeRead"][];
+            /** Insights */
+            insights: components["schemas"]["InsightRead"][];
         };
         /**
          * SeriesPage
@@ -6279,6 +8239,39 @@ export interface components {
             frequency: components["schemas"]["Frequency"];
             measure_type: components["schemas"]["MeasureType"];
         };
+        /** SeriesSummaryRead */
+        SeriesSummaryRead: {
+            subject: components["schemas"]["SubjectRead"];
+            /** Points Total */
+            points_total: number;
+            /** First */
+            first: string | null;
+            /** Last */
+            last: string | null;
+            /** Latest Value */
+            latest_value: string | null;
+            latest: components["schemas"]["ChangeRead"] | null;
+            /** Threshold Name */
+            threshold_name: string;
+            /**
+             * Threshold
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            threshold: string;
+            /** Detected */
+            detected: number;
+            /** Latest Detected */
+            latest_detected: boolean;
+            /** Trend */
+            trend: string | null;
+            /** Volatility */
+            volatility: string | null;
+            /** Anomaly */
+            anomaly: string | null;
+            /** Revisions */
+            revisions: number;
+        };
         /** ShockInput */
         ShockInput: {
             /**
@@ -6318,6 +8311,68 @@ export interface components {
              * @constant
              */
             epistemic_category: "scenario_input";
+        };
+        /** SignalListRead */
+        SignalListRead: {
+            subject: components["schemas"]["RefRead"];
+            build: components["schemas"]["BuildRead"];
+            thresholds: components["schemas"]["ThresholdsRead"];
+            /** Items */
+            items: components["schemas"]["SignalRead"][];
+        };
+        /** SignalRead */
+        SignalRead: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            subject: components["schemas"]["RefRead"];
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "computed" | "insufficient_data" | "not_applicable";
+            /** Level */
+            level: string | null;
+            /** Level Label */
+            level_label: string | null;
+            /** Summary */
+            summary: string;
+            /** Values */
+            values: components["schemas"]["FactRead"][];
+            period: components["schemas"]["PeriodRead"];
+            /** Inputs */
+            inputs: components["schemas"]["RefRead"][];
+            /** Thresholds */
+            thresholds: {
+                [key: string]: string | number | null;
+            };
+            evidence: components["schemas"]["InsightEvidenceRead"];
+            /** Limitations */
+            limitations: string[];
+        };
+        /** SignalSpecRead */
+        SignalSpecRead: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Subjects */
+            subjects: string[];
+            /** Question */
+            question: string;
+            /** Definition */
+            definition: string;
+            /** Method */
+            method: string;
+            /** Inputs */
+            inputs: string;
+            /** Levels */
+            levels: components["schemas"]["LevelRead"][];
+            /** Thresholds */
+            thresholds: string[];
+            /** Limitations */
+            limitations: string[];
         };
         /** SimulationInputValue */
         SimulationInputValue: {
@@ -6820,6 +8875,39 @@ export interface components {
          * @enum {string}
          */
         StructuralLinkType: "in_industry" | "domiciled_in" | "measured_for";
+        /** SubjectRead */
+        SubjectRead: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "series" | "instrument";
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Unit */
+            unit: string;
+            /** Frequency */
+            frequency: string;
+            /**
+             * Measure
+             * @enum {string}
+             */
+            measure: "relative" | "points";
+            /** Variable Id */
+            variable_id: string | null;
+            /** Variable Relation */
+            variable_relation: string | null;
+            /** Country */
+            country: string | null;
+            dataset: components["schemas"]["DatasetInfoRead"];
+            /**
+             * Change Unit
+             * @enum {string}
+             */
+            change_unit: "percent" | "percentage_points";
+        };
         /** SupportingRelationshipRead */
         SupportingRelationshipRead: {
             /** Id */
@@ -7036,6 +9124,72 @@ export interface components {
             /** Unit */
             unit: string;
         };
+        /** ThresholdSpecRead */
+        ThresholdSpecRead: {
+            /** Name */
+            name: string;
+            /** Label */
+            label: string;
+            /** Unit */
+            unit: string;
+            /** Default */
+            default: string | null;
+            /** Minimum */
+            minimum: string | null;
+            /** Maximum */
+            maximum: string | null;
+            /** Choices */
+            choices: string[] | null;
+            /** Integer */
+            integer: boolean;
+            /** Rationale */
+            rationale: string;
+        };
+        /** ThresholdsRead */
+        ThresholdsRead: {
+            /**
+             * Relative Change Percent
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            relative_change_percent: string;
+            /**
+             * Point Change
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            point_change: string;
+            /**
+             * Price Move Percent
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            price_move_percent: string;
+            /**
+             * Anomaly Score
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            anomaly_score: string;
+            /** Trend Significance */
+            trend_significance: string;
+            /**
+             * Volatility High Percentile
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            volatility_high_percentile: string;
+            /**
+             * Dependency Share Percent
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            dependency_share_percent: string;
+            /** Min History */
+            min_history: number;
+            /** Window */
+            window: number | null;
+        };
         /** TimelineEventRead */
         TimelineEventRead: {
             /** Month */
@@ -7182,6 +9336,38 @@ export interface components {
             /** Max Nodes */
             max_nodes: number;
         };
+        /** TrendRead */
+        TrendRead: {
+            /** Window */
+            window: number;
+            /** N */
+            n: number;
+            /** First */
+            first: string;
+            /** Last */
+            last: string;
+            /**
+             * Slope
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            slope: string;
+            /** Relative Slope */
+            relative_slope: string | null;
+            /** T */
+            t: string | null;
+            /** Critical */
+            critical: string | null;
+            /** Significance */
+            significance: string;
+            /**
+             * Direction
+             * @enum {string}
+             */
+            direction: "rising" | "falling" | "no_clear_direction" | "exact_line";
+            /** Exact Fit */
+            exact_fit: boolean;
+        };
         /** TypeMapLink */
         TypeMapLink: {
             source_type: components["schemas"]["GraphNodeType"];
@@ -7231,6 +9417,17 @@ export interface components {
             target_name: string;
             /** Reason */
             reason: string;
+        };
+        /** UnstatedExposureRead */
+        UnstatedExposureRead: {
+            /** Model Id */
+            model_id: string;
+            /** Model Name */
+            model_name: string;
+            /** Variable Ids */
+            variable_ids: string[];
+            /** Message */
+            message: string;
         };
         /** UnsupportedTemplateRead */
         UnsupportedTemplateRead: {
@@ -7309,6 +9506,21 @@ export interface components {
          * @enum {string}
          */
         VariableCategory: "commodity" | "monetary_policy" | "exchange_rate" | "inflation";
+        /** VariableExposureRead */
+        VariableExposureRead: {
+            variable: components["schemas"]["NodeRead"];
+            build: components["schemas"]["BuildRead"];
+            /** Companies */
+            companies: components["schemas"]["VariableReachRead"][];
+            /** Note */
+            note: string;
+        };
+        /** VariableReachRead */
+        VariableReachRead: {
+            company: components["schemas"]["NodeRead"];
+            /** Paths */
+            paths: components["schemas"]["ExposurePathRead"][];
+        };
         /** VerificationRead */
         VerificationRead: {
             /**
@@ -7389,6 +9601,32 @@ export interface components {
             created_at: string;
             /** Executions */
             executions: number;
+        };
+        /** VolatilityRead */
+        VolatilityRead: {
+            /** Window */
+            window: number;
+            /**
+             * Latest
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            latest: string;
+            /** Windows */
+            windows: number;
+            /** Percentile */
+            percentile: string | null;
+            /** Median Earlier */
+            median_earlier: string | null;
+            /**
+             * Level
+             * @enum {string}
+             */
+            level: "high" | "not_high" | "insufficient_history";
+            /** First */
+            first: string;
+            /** Last */
+            last: string;
         };
         /** WindowRead */
         WindowRead: {
@@ -10993,6 +13231,917 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SensitivityAnalysisRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_overview: {
+        parameters: {
+            query?: {
+                /** @description Relative change (%) that counts as a change. */
+                relative_change_percent?: string | null;
+                /** @description Change in percentage points that counts. */
+                point_change?: string | null;
+                /** @description Price move (%) that counts. */
+                price_move_percent?: string | null;
+                /** @description Modified z-score called unusual. */
+                anomaly_score?: string | null;
+                /** @description 0.10, 0.05 or 0.01. */
+                trend_significance?: string | null;
+                /** @description Percentile called high. */
+                volatility_high_percentile?: string | null;
+                /** @description Share of paths called concentrated. */
+                dependency_share_percent?: string | null;
+                /** @description Earlier values a signal needs. */
+                min_history?: string | null;
+                /** @description Values in the latest window (default: by frequency). */
+                window?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OverviewRead"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_insights: {
+        parameters: {
+            query?: {
+                /** @description An entity. */
+                entity?: string | null;
+                /** @description A kind. */
+                kind?: string | null;
+                /** @description A rule id. */
+                rule?: string | null;
+                /** @description At least this evidence grade. */
+                grade?: ("observed" | "documented" | "curated" | "simulated" | "assumed" | "unverified") | null;
+                /** @description Relative change (%) that counts as a change. */
+                relative_change_percent?: string | null;
+                /** @description Change in percentage points that counts. */
+                point_change?: string | null;
+                /** @description Price move (%) that counts. */
+                price_move_percent?: string | null;
+                /** @description Modified z-score called unusual. */
+                anomaly_score?: string | null;
+                /** @description 0.10, 0.05 or 0.01. */
+                trend_significance?: string | null;
+                /** @description Percentile called high. */
+                volatility_high_percentile?: string | null;
+                /** @description Share of paths called concentrated. */
+                dependency_share_percent?: string | null;
+                /** @description Earlier values a signal needs. */
+                min_history?: string | null;
+                /** @description Values in the latest window (default: by frequency). */
+                window?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InsightListRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_changes: {
+        parameters: {
+            query?: {
+                /** @description Relative change (%) that counts as a change. */
+                relative_change_percent?: string | null;
+                /** @description Change in percentage points that counts. */
+                point_change?: string | null;
+                /** @description Price move (%) that counts. */
+                price_move_percent?: string | null;
+                /** @description Modified z-score called unusual. */
+                anomaly_score?: string | null;
+                /** @description 0.10, 0.05 or 0.01. */
+                trend_significance?: string | null;
+                /** @description Percentile called high. */
+                volatility_high_percentile?: string | null;
+                /** @description Share of paths called concentrated. */
+                dependency_share_percent?: string | null;
+                /** @description Earlier values a signal needs. */
+                min_history?: string | null;
+                /** @description Values in the latest window (default: by frequency). */
+                window?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChangesRead"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_methods: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MethodsRead"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_intelligence_entities: {
+        parameters: {
+            query?: {
+                /** @description Only one kind. */
+                kind?: ("company" | "industry") | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntityListRead"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_entity_intelligence: {
+        parameters: {
+            query?: {
+                /** @description `evidence_backed` keeps only relationships with a cited source. */
+                evidence?: "any" | "evidence_backed";
+                /** @description Relative change (%) that counts as a change. */
+                relative_change_percent?: string | null;
+                /** @description Change in percentage points that counts. */
+                point_change?: string | null;
+                /** @description Price move (%) that counts. */
+                price_move_percent?: string | null;
+                /** @description Modified z-score called unusual. */
+                anomaly_score?: string | null;
+                /** @description 0.10, 0.05 or 0.01. */
+                trend_significance?: string | null;
+                /** @description Percentile called high. */
+                volatility_high_percentile?: string | null;
+                /** @description Share of paths called concentrated. */
+                dependency_share_percent?: string | null;
+                /** @description Earlier values a signal needs. */
+                min_history?: string | null;
+                /** @description Values in the latest window (default: by frequency). */
+                window?: string | null;
+            };
+            header?: never;
+            path: {
+                /** @description A company or an industry (graph key). */
+                entity_key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntityAnalysisRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_entity_brief: {
+        parameters: {
+            query?: {
+                /** @description Relative change (%) that counts as a change. */
+                relative_change_percent?: string | null;
+                /** @description Change in percentage points that counts. */
+                point_change?: string | null;
+                /** @description Price move (%) that counts. */
+                price_move_percent?: string | null;
+                /** @description Modified z-score called unusual. */
+                anomaly_score?: string | null;
+                /** @description 0.10, 0.05 or 0.01. */
+                trend_significance?: string | null;
+                /** @description Percentile called high. */
+                volatility_high_percentile?: string | null;
+                /** @description Share of paths called concentrated. */
+                dependency_share_percent?: string | null;
+                /** @description Earlier values a signal needs. */
+                min_history?: string | null;
+                /** @description Values in the latest window (default: by frequency). */
+                window?: string | null;
+            };
+            header?: never;
+            path: {
+                /** @description A company or an industry (graph key). */
+                entity_key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BriefRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_entity_exposure: {
+        parameters: {
+            query?: {
+                /** @description `evidence_backed` keeps only relationships with a cited source. */
+                evidence?: "any" | "evidence_backed";
+            };
+            header?: never;
+            path: {
+                /** @description A company or an industry (graph key). */
+                entity_key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExposureMapRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_entity_signals: {
+        parameters: {
+            query?: {
+                /** @description Relative change (%) that counts as a change. */
+                relative_change_percent?: string | null;
+                /** @description Change in percentage points that counts. */
+                point_change?: string | null;
+                /** @description Price move (%) that counts. */
+                price_move_percent?: string | null;
+                /** @description Modified z-score called unusual. */
+                anomaly_score?: string | null;
+                /** @description 0.10, 0.05 or 0.01. */
+                trend_significance?: string | null;
+                /** @description Percentile called high. */
+                volatility_high_percentile?: string | null;
+                /** @description Share of paths called concentrated. */
+                dependency_share_percent?: string | null;
+                /** @description Earlier values a signal needs. */
+                min_history?: string | null;
+                /** @description Values in the latest window (default: by frequency). */
+                window?: string | null;
+            };
+            header?: never;
+            path: {
+                /** @description A company or an industry (graph key). */
+                entity_key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignalListRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_entity_drivers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A company or an industry (graph key). */
+                entity_key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DriversRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_variable_exposure: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                variable_key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VariableExposureRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_series_intelligence: {
+        parameters: {
+            query?: {
+                /** @description Relative change (%) that counts as a change. */
+                relative_change_percent?: string | null;
+                /** @description Change in percentage points that counts. */
+                point_change?: string | null;
+                /** @description Price move (%) that counts. */
+                price_move_percent?: string | null;
+                /** @description Modified z-score called unusual. */
+                anomaly_score?: string | null;
+                /** @description 0.10, 0.05 or 0.01. */
+                trend_significance?: string | null;
+                /** @description Percentile called high. */
+                volatility_high_percentile?: string | null;
+                /** @description Share of paths called concentrated. */
+                dependency_share_percent?: string | null;
+                /** @description Earlier values a signal needs. */
+                min_history?: string | null;
+                /** @description Values in the latest window (default: by frequency). */
+                window?: string | null;
+            };
+            header?: never;
+            path: {
+                series_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SeriesIntelligenceRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_instrument_intelligence: {
+        parameters: {
+            query?: {
+                /** @description Relative change (%) that counts as a change. */
+                relative_change_percent?: string | null;
+                /** @description Change in percentage points that counts. */
+                point_change?: string | null;
+                /** @description Price move (%) that counts. */
+                price_move_percent?: string | null;
+                /** @description Modified z-score called unusual. */
+                anomaly_score?: string | null;
+                /** @description 0.10, 0.05 or 0.01. */
+                trend_significance?: string | null;
+                /** @description Percentile called high. */
+                volatility_high_percentile?: string | null;
+                /** @description Share of paths called concentrated. */
+                dependency_share_percent?: string | null;
+                /** @description Earlier values a signal needs. */
+                min_history?: string | null;
+                /** @description Values in the latest window (default: by frequency). */
+                window?: string | null;
+            };
+            header?: never;
+            path: {
+                instrument_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InstrumentIntelligenceRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_analyses: {
+        parameters: {
+            query?: {
+                /** @description Only this scope. */
+                scope?: ("entity" | "workspace") | null;
+                /** @description An entity. */
+                entity?: string | null;
+                /** @description Maximum number of items to return. */
+                limit?: number;
+                /** @description Items to skip. */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_AnalysisSummaryRead_"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_analysis: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AnalysisRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalysisRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_analysis: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                analysis_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalysisRead"];
                 };
             };
             /** @description Resource not found. */

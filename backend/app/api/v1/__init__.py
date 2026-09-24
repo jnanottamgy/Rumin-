@@ -7,6 +7,7 @@ from app.api.v1 import (
     data,
     graph,
     ingestion,
+    intelligence,
     network,
     reference_data,
     scenario_lab,
@@ -27,4 +28,5 @@ router.include_router(ingestion.router)
 router.include_router(graph.router)
 router.include_router(simulations.models_router)
 router.include_router(simulations.router)
+router.include_router(intelligence.router)
 router.include_router(system.router)

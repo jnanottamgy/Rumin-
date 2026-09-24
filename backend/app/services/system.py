@@ -138,6 +138,17 @@ CAPABILITIES: tuple[Capability, ...] = (
         "not forecasts.",
     ),
     Capability(
+        id="financial_intelligence",
+        label="Financial intelligence",
+        available=True,
+        planned_phase=6,
+        note="Insights built by documented rules from stored values, validated graph "
+        "relationships and stored executions: detected changes, trends, volatility, unusual "
+        "moves, revisions, exposure, contributions and cross-entity links. Each carries its "
+        "evidence chain and grade; nothing is written by a language model and nothing is a "
+        "forecast.",
+    ),
+    Capability(
         id="probabilistic_simulation",
         label="Probabilistic simulation",
         available=False,
@@ -150,7 +161,8 @@ CAPABILITIES: tuple[Capability, ...] = (
         label="AI analyst",
         available=False,
         planned_phase=7,
-        note="No AI model is connected.",
+        note="No AI model is connected. The intelligence engine already prepares the "
+        "structured brief an analyst would narrate, with every number computed by RUMIN.",
     ),
     Capability(
         id="authentication",
