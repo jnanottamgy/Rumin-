@@ -224,7 +224,14 @@ def _execution_counts(session: Session, scenario_ids: Sequence[uuid.UUID]) -> di
 def execution_summary(row: ScenarioExecution) -> ExecutionSummaryRead:
     results = row.results or {}
     currency = results.get("currency", "")
-    headline_ids = ("operating_profit", "profit_before_tax", "operating_costs", "interest_expense")
+    # Profit before tax first: it is the line every included model reaches.
+    headline_ids = (
+        "profit_before_tax",
+        "operating_profit",
+        "operating_costs",
+        "interest_expense",
+        "revenue",
+    )
     lines = {line["id"]: line for line in results.get("lines", [])}
     headline = [
         HeadlineRead(

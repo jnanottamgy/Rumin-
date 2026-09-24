@@ -79,6 +79,22 @@ def test_sets_security_headers(client: TestClient) -> None:
     assert headers["Content-Security-Policy"] == "default-src 'none'; frame-ancestors 'none'"
 
 
+def test_compresses_large_responses_for_clients_that_accept_gzip(client: TestClient) -> None:
+    compressed = client.get("/api/v1/network", headers={"Accept-Encoding": "gzip"})
+    plain = client.get("/api/v1/network", headers={"Accept-Encoding": "identity"})
+    small = client.get("/health", headers={"Accept-Encoding": "gzip"})
+
+    assert compressed.headers["Content-Encoding"] == "gzip"
+    assert "Accept-Encoding" in compressed.headers["Vary"]
+    # The client decodes it: the same document either way, with the usual headers.
+    assert compressed.json() == plain.json()
+    assert compressed.headers["X-Request-ID"]
+    assert compressed.headers["X-Content-Type-Options"] == "nosniff"
+    assert "Content-Encoding" not in plain.headers
+    # Below 1 KiB nothing is gained: sent as it is.
+    assert "Content-Encoding" not in small.headers
+
+
 def test_docs_page_is_served_without_the_strict_api_csp(client: TestClient) -> None:
     response = client.get("/docs")
 

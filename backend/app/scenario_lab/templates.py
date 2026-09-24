@@ -60,7 +60,7 @@ TEMPLATES: tuple[Template, ...] = (
         title="Crude oil shock on an airline",
         category="commodity",
         question="What happens to an airline's fuel bill and operating profit if Brent crude "
-        "rises 20 %?",
+        "rises 20\u00a0%?",
         summary="Brent crude rises; the change reaches jet fuel through the pass-through the "
         "airline model assumes, then the fuel bill, hedges and fares.",
         shocks=(ShockSpec("var_brent_crude", P, Decimal(20)),),
@@ -71,7 +71,7 @@ TEMPLATES: tuple[Template, ...] = (
         id="jet_fuel_airline",
         title="Jet fuel price shock",
         category="energy_cost",
-        question="What happens to an airline if the jet fuel price rises 15 % with crude oil "
+        question="What happens to an airline if the jet fuel price rises 15\u00a0% with crude oil "
         "unchanged (a wider refining margin)?",
         summary="Jet fuel rises on its own; the airline model carries it to the fuel bill, "
         "hedges and fares.",
@@ -84,7 +84,7 @@ TEMPLATES: tuple[Template, ...] = (
         title="Rupee depreciation",
         category="currency",
         question="What happens to a company's revenue and costs invoiced in US dollars if the "
-        "rupee weakens 10 % against the dollar?",
+        "rupee weakens 10\u00a0% against the dollar?",
         summary="USD/INR rises; revenue and costs in US dollars are converted at the new rate, "
         "net of hedges.",
         shocks=(ShockSpec("var_usd_inr", P, Decimal(10)),),
@@ -107,7 +107,8 @@ TEMPLATES: tuple[Template, ...] = (
         id="crude_linked_costs",
         title="Crude oil shock on crude-linked costs",
         category="commodity",
-        question="What happens to a refiner's or a road haulier's costs if Brent crude rises 25 %?",
+        question="What happens to a refiner's or a road haulier's costs if Brent crude "
+        "rises 25\u00a0%?",
         summary="Brent rises; costs priced off crude (feedstock, diesel) follow with the stated "
         "pass-through and lag, net of hedges and price recovery.",
         shocks=(ShockSpec("var_brent_crude", P, Decimal(25)),),
@@ -119,7 +120,7 @@ TEMPLATES: tuple[Template, ...] = (
         title="Natural gas price shock",
         category="energy_cost",
         question="What happens to a company whose costs follow natural gas if Henry Hub rises "
-        "30 %?",
+        "30\u00a0%?",
         summary="Henry Hub rises; gas-linked costs follow with the stated pass-through and lag, "
         "net of hedges and price recovery.",
         shocks=(ShockSpec("var_henry_hub_gas", P, Decimal(30)),),
@@ -130,8 +131,8 @@ TEMPLATES: tuple[Template, ...] = (
         id="oil_rupee_rates",
         title="Oil, rupee and rates together",
         category="combined",
-        question="What happens to an airline if Brent rises 20 %, the rupee weakens 5 % and the "
-        "repo rate rises 0.5 percentage points at the same time?",
+        question="What happens to an airline if Brent rises 20\u00a0%, the rupee weakens "
+        "5\u00a0% and the repo rate rises 0.5 percentage points at the same time?",
         summary="Three changes, three models: the fuel bill (crude and the exchange rate), "
         "other US-dollar revenue and costs, and floating-rate interest.",
         shocks=(

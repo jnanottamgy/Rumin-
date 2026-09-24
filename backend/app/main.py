@@ -14,6 +14,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware import Middleware
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.routing import APIRoute
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -171,7 +172,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         generate_unique_id_function=_operation_id,
         lifespan=lifespan,
         # Listed outermost first: CORS wraps everything so even error responses carry
-        # CORS headers; the request context wraps the size limit so 413s get an ID too.
+        # CORS headers; responses over 1 KiB are compressed when the client accepts gzip
+        # (a Scenario Lab preview is ~115 KB of JSON); the request context wraps the size
+        # limit so 413s get an ID too.
         middleware=[
             Middleware(
                 CORSMiddleware,
@@ -182,6 +185,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 allow_credentials=False,
                 max_age=600,
             ),
+            Middleware(GZipMiddleware, minimum_size=1024),
             Middleware(RequestContextMiddleware),
             Middleware(BodySizeLimitMiddleware, max_bytes=settings.max_request_body_bytes),
         ],

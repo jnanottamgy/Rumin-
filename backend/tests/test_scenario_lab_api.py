@@ -237,8 +237,8 @@ def test_an_execution_is_accepted_and_followed_to_its_results(lab: TestClient) -
     ]
     assert execution["plan"]["executable"] and execution["lab_version"] == LAB_VERSION
     assert [item["id"] for item in execution["headline"]] == [
-        "operating_profit",
         "profit_before_tax",
+        "operating_profit",
     ]
 
     results = get(lab, f"/scenario-executions/{execution['id']}/results")
