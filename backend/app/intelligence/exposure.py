@@ -33,10 +33,13 @@ from app.intelligence.graphview import (
     GraphSlice,
     NodeInfo,
     SeriesInfo,
+    companies_reached,
+    load_companies,
     load_entity,
     load_industries,
     load_workspace,
     members,
+    query_nodes,
 )
 from app.intelligence.model import EDGE_GRADE, GRADE_STRENGTH
 from app.scenario_lab.graph import EdgeView, covered_by
@@ -430,13 +433,46 @@ def reach_index(
 def variable_exposure(
     workspace: WorkspaceExposure, variable_key: str
 ) -> list[tuple[NodeInfo, list[ExposurePath]]]:
-    """Companies with at least one path through ``variable_key`` (cross-entity)."""
+    """The listed companies with at least one path through ``variable_key``: what the
+    workspace's own findings (X01, D02) count. ``variable_reach`` searches the whole graph."""
     found: list[tuple[NodeInfo, list[ExposurePath]]] = []
     for company in workspace.companies:
         through = [p for p in workspace.paths[company.key] if variable_key in p.variable_keys]
         if through:
             found.append((company, through))
     return found
+
+
+@dataclass(frozen=True)
+class VariableReach:
+    companies: tuple[tuple[NodeInfo, tuple[ExposurePath, ...]], ...]  # the first ``limit`` by name
+    total: int  # every company the variable reaches
+    truncated: bool
+
+
+def variable_reach(
+    session: Session, build_id: int | None, variable_key: str, *, limit: int = WORKSPACE_LIMIT
+) -> VariableReach:
+    """Every company ``variable_key`` reaches in the whole graph (not only the workspace's
+    listing): found by walking downstream from the variable, then the first ``limit`` by name
+    with their paths through it. Each company's paths are those of its own analysis."""
+    reached = sorted(
+        (node for node in query_nodes(session, companies_reached(session, variable_key)).values()),
+        key=lambda node: (node.name, node.key),
+    )
+    listed = reached[:limit]
+    graph = load_companies(session, build_id, [node.key for node in listed])
+    membership = members(graph)
+    found: list[tuple[NodeInfo, tuple[ExposurePath, ...]]] = []
+    for company in listed:
+        through = tuple(
+            path
+            for path in paths_for(graph, company.key, membership.get(company.key, []))
+            if variable_key in path.variable_keys
+        )
+        if through:
+            found.append((company, through))
+    return VariableReach(tuple(found), total=len(reached), truncated=len(reached) > limit)
 
 
 def summary(paths: Sequence[ExposurePath]) -> dict[str, Any]:

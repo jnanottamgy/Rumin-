@@ -2,7 +2,7 @@
   "engine_version": "1.0.0",
   "build": {
     "id": 1,
-    "finished_at": "2026-09-24T10:33:40.090775Z",
+    "finished_at": "2026-09-24T10:57:27.969096Z",
     "freshness": "current",
     "message": "Built from the current sources (build #1)."
   },
@@ -36,7 +36,7 @@
   },
   "insights": [
     {
-      "id": "ins-b7ccc3e06f87d89e",
+      "id": "ins-2999f9d3f4a2918d",
       "rule": "S01",
       "rule_title": "Simulated impact",
       "kind": "impact",
@@ -115,7 +115,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
+              "id": "6659e28a-50be-4815-bd95-c5a9106127a5",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -129,7 +129,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
+              "id": "6659e28a-50be-4815-bd95-c5a9106127a5",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -147,7 +147,7 @@
       "models": [
         {
           "kind": "execution",
-          "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
+          "id": "6659e28a-50be-4815-bd95-c5a9106127a5",
           "label": "Oil, rupee and rates on Aerisca, version 1",
           "models": ["airline_fuel_cost 1.1.0", "fx_exposure 1.0.0", "floating_rate_interest 1.0.0"]
         }
@@ -222,7 +222,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
+              "id": "6659e28a-50be-4815-bd95-c5a9106127a5",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -236,22 +236,22 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
+              "id": "6659e28a-50be-4815-bd95-c5a9106127a5",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             },
             {
               "kind": "run",
-              "id": "ae4dbc3e-0a4a-47fa-b982-b58f3ff011ba",
+              "id": "93ff142d-c248-4abc-9832-0d7f3ab2ef74",
               "label": "airline_fuel_cost 1.1.0"
             },
             {
               "kind": "run",
-              "id": "5daea7cc-4b86-47a7-bbc9-c09ffdca4ce7",
+              "id": "81e2073e-f70a-42f2-807b-b6985de0b149",
               "label": "fx_exposure 1.0.0"
             },
             {
               "kind": "run",
-              "id": "d229516f-6ed4-49cd-bf9c-28319d8a1dc7",
+              "id": "febb3fce-4414-41bb-8e60-7ef3879a371a",
               "label": "floating_rate_interest 1.0.0"
             }
           ],
@@ -286,7 +286,7 @@
           "text": "Run a sensitivity analysis on the latest execution to see which inputs and assumptions move its result most.",
           "target": {
             "kind": "execution",
-            "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
+            "id": "6659e28a-50be-4815-bd95-c5a9106127a5",
             "label": "Oil, rupee and rates on Aerisca · version 1"
           }
         }
@@ -294,7 +294,7 @@
       "sources": [
         {
           "kind": "execution",
-          "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
+          "id": "6659e28a-50be-4815-bd95-c5a9106127a5",
           "label": "Oil, rupee and rates on Aerisca · version 1"
         }
       ]
@@ -2503,7 +2503,7 @@
       "text": "Run a sensitivity analysis on the latest execution to see which inputs and assumptions move its result most.",
       "target": {
         "kind": "execution",
-        "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
+        "id": "6659e28a-50be-4815-bd95-c5a9106127a5",
         "label": "Oil, rupee and rates on Aerisca · version 1"
       }
     },
@@ -3044,7 +3044,7 @@
   "relationships": {
     "build": {
       "id": 1,
-      "finished_at": "2026-09-24T10:33:40.090775Z",
+      "finished_at": "2026-09-24T10:57:27.969096Z",
       "status": "completed"
     },
     "previous": null,
@@ -3057,11 +3057,11 @@
     {
       "entity_key": "company:co_aerisca_airways",
       "execution": {
-        "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
-        "scenario_id": "03ae5ef9-1685-4178-8df4-3720a34c20bb",
+        "id": "6659e28a-50be-4815-bd95-c5a9106127a5",
+        "scenario_id": "91cb0fbc-a18e-4355-8b83-86f68b1b25af",
         "scenario_name": "Oil, rupee and rates on Aerisca",
         "version": 1,
-        "finished_at": "2026-09-24T10:33:42.269272Z",
+        "finished_at": "2026-09-24T10:57:30.184875Z",
         "currency": "INR",
         "horizon_months": 12,
         "graph_build_id": 1,

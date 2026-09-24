@@ -19,8 +19,13 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.graph.store import GraphReader
 from app.intelligence.engine import latest_executions
-from app.intelligence.exposure import WORKSPACE_LIMIT, entity_exposure, paths_for
-from app.intelligence.graphview import AFFECTS, load_workspace, members
+from app.intelligence.exposure import (
+    WORKSPACE_LIMIT,
+    entity_exposure,
+    paths_for,
+    variable_reach,
+)
+from app.intelligence.graphview import AFFECTS, listed_companies, load_workspace, members
 from app.intelligence.model import GRADE_STRENGTH, Grade
 from app.models import GraphEdge, IntelligenceAnalysis, ScenarioExecution, SimulationRun
 from app.openapi_export import build_openapi
@@ -189,8 +194,39 @@ def test_a_variable_lists_the_companies_it_reaches(intel: TestClient) -> None:
     reach = get(intel, "/intelligence/variables/variable:var_usd_inr/exposure")
 
     companies = [item["company"]["key"] for item in reach["companies"]]
-    assert AERISCA in companies and len(companies) == 7
+    assert AERISCA in companies and len(companies) == reach["total"] == 7
+    assert reach["truncated"] is False
     assert "never how much" in reach["note"]
+
+
+def test_a_variable_is_followed_through_the_whole_graph(built_graph: Session) -> None:
+    """The reach of a variable is found by walking downstream from it, not by searching the
+    workspace's listing: a short listing reports the total, and every company listed has the
+    paths through the variable that its own analysis finds."""
+    build = GraphReader(built_graph).latest_build()
+    assert build is not None
+    first_three, _ = listed_companies(built_graph, limit=3)
+    for variable in ("variable:var_usd_inr", "variable:var_brent_crude"):
+        full = variable_reach(built_graph, build.id, variable)
+        short = variable_reach(built_graph, build.id, variable, limit=2)
+
+        # Found beyond what a short workspace listing would show.
+        assert {company.key for company, _ in full.companies} - set(first_three)
+
+        assert not full.truncated and full.total == len(full.companies) > 2
+        assert short.truncated and short.total == full.total and len(short.companies) == 2
+        assert [c.key for c, _ in short.companies] == [c.key for c, _ in full.companies][:2]
+        names = [c.name for c, _ in full.companies]
+        assert names == sorted(names)
+        for company, paths in full.companies:
+            own = [
+                p
+                for p in entity_exposure(built_graph, company.key, build.id).paths
+                if variable in p.variable_keys
+            ]
+            assert [[e.key for e in p.edges] for p in paths] == [
+                [e.key for e in p.edges] for p in own
+            ], (variable, company.key)
 
 
 # --- Drivers -----------------------------------------------------------------------------------

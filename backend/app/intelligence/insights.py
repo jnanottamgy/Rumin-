@@ -1300,10 +1300,11 @@ def exposure_change_insight(
         return None
     variable_name = names.get(variable_key, history.subject.variable_id)
     companies = [company.name for company, _ in reached]
+    counted = "of the listed companies are" if workspace.truncated else "companies are"
     draft = InsightDraft(
         rule="D02",
         kind="exposure_change",
-        headline=f"{history.subject.name} moved; {len(companies)} companies are exposed to "
+        headline=f"{history.subject.name} moved; {len(companies)} {counted} exposed to "
         f"{variable_name}",
         statement=(
             f"{history.subject.name} moved {fmt.change(change.value, history.subject.change_unit)} "
@@ -1344,7 +1345,9 @@ def exposure_change_insight(
             Fact("Companies reached", str(len(companies)), "count", Basis.CALCULATION),
         ]
     )
-    draft.limitations.extend([*_data_limitations(history), NO_CAUSATION, NOT_SIZE])
+    draft.limitations.extend(
+        [*_data_limitations(history), NO_CAUSATION, NOT_SIZE, *listed_only(workspace)]
+    )
     draft.sources.append(history.subject.ref)
     return draft.build()
 
@@ -1603,6 +1606,16 @@ def relationship_change_insights(changes: RelationshipChanges) -> list[Insight]:
 MAX_SHARED_DRIVERS = 12
 
 
+def listed_only(workspace: WorkspaceExposure) -> list[str]:
+    """What a truncated workspace's counts cover (none when every company is listed)."""
+    if not workspace.truncated:
+        return []
+    return [
+        f"Counted among the companies the workspace lists (the first {len(workspace.companies)} "
+        "by name); the knowledge graph holds more, so other companies may be exposed too."
+    ]
+
+
 def shared_driver_insights(workspace: WorkspaceExposure, names: dict[str, str]) -> list[Insight]:
     """X01: variables that reach two or more companies — at most ``MAX_SHARED_DRIVERS``, those
     reaching the most companies (every variable stays in the exposure matrix)."""
@@ -1630,7 +1643,8 @@ def shared_driver_insights(workspace: WorkspaceExposure, names: dict[str, str]) 
         draft = InsightDraft(
             rule="X01",
             kind="cross_entity",
-            headline=f"{variable.name} reaches {len(reached)} companies",
+            headline=f"{variable.name} reaches {len(reached)} "
+            + ("of the listed companies" if workspace.truncated else "companies"),
             statement=f"Through validated relationships, {variable.name} reaches {reach}.",
             subject=Ref("graph_node", variable.key, variable.name),
             key={"variable": variable.key, "companies": [company.key for company, _ in reached]},
@@ -1655,6 +1669,7 @@ def shared_driver_insights(workspace: WorkspaceExposure, names: dict[str, str]) 
                 NO_CAUSATION,
                 "Companies can be exposed through opposite channels (costs "
                 "for one, revenue for another).",
+                *listed_only(workspace),
             ]
         )
         draft.sources.append(build)

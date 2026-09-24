@@ -26346,7 +26346,12 @@
             },
             "type": "array",
             "title": "Reached",
-            "description": "Companies the related variable reaches through validated relationships."
+            "description": "Companies the related variable reaches through validated relationships (the first 200 by name)."
+          },
+          "reached_total": {
+            "type": "integer",
+            "title": "Reached Total",
+            "description": "Every company the related variable reaches."
           },
           "insights": {
             "items": {
@@ -26363,6 +26368,7 @@
           "analysis",
           "variable",
           "reached",
+          "reached_total",
           "insights"
         ],
         "title": "SeriesIntelligenceRead"
@@ -30284,7 +30290,18 @@
               "$ref": "#/components/schemas/VariableReachRead"
             },
             "type": "array",
-            "title": "Companies"
+            "title": "Companies",
+            "description": "The companies the variable reaches, the first 200 by name, with the paths."
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "Every company the variable reaches in the current graph."
+          },
+          "truncated": {
+            "type": "boolean",
+            "title": "Truncated",
+            "description": "True when only the first 200 by name are listed."
           },
           "note": {
             "type": "string",
@@ -30296,6 +30313,8 @@
           "variable",
           "build",
           "companies",
+          "total",
+          "truncated",
           "note"
         ],
         "title": "VariableExposureRead"

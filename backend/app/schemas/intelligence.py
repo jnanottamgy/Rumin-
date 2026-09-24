@@ -762,7 +762,11 @@ class VariableReachRead(ApiModel):
 class VariableExposureRead(ApiModel):
     variable: NodeRead
     build: BuildRead
-    companies: list[VariableReachRead]
+    companies: list[VariableReachRead] = Field(
+        description="The companies the variable reaches, the first 200 by name, with the paths."
+    )
+    total: int = Field(description="Every company the variable reaches in the current graph.")
+    truncated: bool = Field(description="True when only the first 200 by name are listed.")
     note: str
 
 
@@ -772,8 +776,10 @@ class SeriesIntelligenceRead(ApiModel):
     analysis: SeriesAnalysisRead
     variable: NodeRead | None
     reached: list[NodeRead] = Field(
-        description="Companies the related variable reaches through validated relationships."
+        description="Companies the related variable reaches through validated relationships "
+        "(the first 200 by name)."
     )
+    reached_total: int = Field(description="Every company the related variable reaches.")
     insights: list[InsightRead]
 
 

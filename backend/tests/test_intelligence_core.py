@@ -5,6 +5,7 @@ hand-built graph (validated edges only). Values are SYNTHETIC and worked out by 
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import UTC, date, datetime
 from decimal import Decimal
 
@@ -411,3 +412,13 @@ def test_shared_drivers_are_capped_by_reach_and_never_invented() -> None:
     by_variable = reach_index(workspace)  # one pass, the same answer as asking per variable
     for variable in variables:
         assert by_variable.get(variable.key, []) == variable_exposure(workspace, variable.key)
+    assert all(item.headline.endswith(" companies") for item in found)
+
+    # A truncated listing says that its counts cover the listed companies only.
+    cut = shared_driver_insights(
+        replace(workspace, truncated=True), {n.key: n.name for n in [*companies, *variables]}
+    )
+    assert [item.id for item in cut] == [item.id for item in found]
+    for item in cut:
+        assert item.headline.endswith(" of the listed companies")
+        assert any("the first 20 by name" in note for note in item.limitations)

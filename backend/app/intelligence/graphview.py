@@ -306,11 +306,42 @@ def listed_companies(session: Session, *, limit: int) -> tuple[list[str], bool]:
 
 def load_workspace(session: Session, build_id: int | None, *, limit: int) -> GraphSlice:
     """What the listed companies' exposures are computed from: the first ``limit`` companies
-    by name and every validated edge their paths use — their industries, the variables that
-    affect either, and up to two `influences` hops upstream. Bounded by the companies, never
-    by the edges, so a listed company is never shown without an exposure it has."""
+    by name (see ``load_companies``). Bounded by the companies, never by the edges, so a
+    listed company is never shown without an exposure it has."""
+    companies, truncated = listed_companies(session, limit=limit)
+    graph = load_companies(session, build_id, companies)
+    graph.truncated = truncated
+    return graph
+
+
+def companies_reached(session: Session, variable_key: str) -> set[str]:
+    """Every current company that ``variable_key`` reaches through validated edges: directly,
+    through the company's industry, or through at most two `influences` hops downstream (the
+    mirror of the upstream hops an exposure path allows)."""
+    variables = {variable_key}
+    frontier = {variable_key}
+    for _ in range(MAX_INFLUENCE_HOPS):
+        frontier = {
+            edge.target
+            for edge in query_edges(session, types=(GraphEdgeType.INFLUENCES,), sources=frontier)
+        } - variables
+        if not frontier:
+            break
+        variables |= frontier
+    targets = query_nodes(
+        session, {edge.target for edge in query_edges(session, types=AFFECTS, sources=variables)}
+    )
+    companies = {key for key, node in targets.items() if node.node_type == "company"}
+    industries = {key for key, node in targets.items() if node.node_type == "industry"}
+    members_ = query_edges(session, types=(GraphEdgeType.IN_INDUSTRY,), targets=industries)
+    return companies | {edge.source for edge in members_}
+
+
+def load_companies(session: Session, build_id: int | None, companies: Iterable[str]) -> GraphSlice:
+    """What the exposures of ``companies`` are computed from: every validated edge their paths
+    use — their industries, the variables that affect either, and up to two `influences`
+    hops upstream — and the series recorded as related measures of those variables."""
     graph = GraphSlice(build_id=build_id)
-    companies, graph.truncated = listed_companies(session, limit=limit)
     listed = set(companies)
     graph.add(query_edges(session, types=(GraphEdgeType.IN_INDUSTRY,), sources=listed))
     industries = {edge.target for edge in graph.of_type(GraphEdgeType.IN_INDUSTRY)}

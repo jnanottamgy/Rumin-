@@ -40,7 +40,7 @@ from app.intelligence.exposure import (
     ExposurePath,
     entity_exposure,
     industry_exposure,
-    variable_exposure,
+    variable_reach,
     weakest,
     workspace_exposure,
 )
@@ -405,19 +405,25 @@ def variable_exposure_read(session: Session, variable_key: str) -> VariableExpos
             ],
         )
     build = build_info(session)
-    workspace = workspace_exposure(session, build.id)
-    reached = variable_exposure(workspace, variable_key)
+    reach = variable_reach(session, build.id, variable_key)
+    note = (
+        "Companies the graph states the variable reaches (directly, through their industry, or "
+        "upstream through at most two `influences` hops). This says who is exposed, never how "
+        "much."
+    )
+    if reach.truncated:
+        note += f" The first {len(reach.companies)} of {reach.total} by name are listed."
     return VariableExposureRead.model_validate(
         {
             "variable": serialize.data(node),
             "build": serialize.build(build),
             "companies": [
                 {"company": serialize.data(company), "paths": serialize.data(paths)}
-                for company, paths in reached
+                for company, paths in reach.companies
             ],
-            "note": "Companies the graph states the variable reaches (directly, through their "
-            "industry, or upstream through at most two `influences` hops). This says who is "
-            "exposed, never how much.",
+            "total": reach.total,
+            "truncated": reach.truncated,
+            "note": note,
         }
     )
 
@@ -434,12 +440,14 @@ def series_read(session: Session, series_id: str, used: Thresholds) -> SeriesInt
     found = intelligence.data_insights(analysis)
     variable = None
     reached: list[NodeInfo] = []
+    reached_total = 0
     if history.subject.variable_id:
         key = f"variable:{history.subject.variable_id}"
         variable = query_nodes(session, [key]).get(key)
         workspace = workspace_exposure(session, build.id)
-        reach = variable_exposure(workspace, key)
-        reached = [company for company, _ in reach]
+        reach = variable_reach(session, build.id, key)
+        reached = [company for company, _ in reach.companies]
+        reached_total = reach.total
         latest = analysis.latest
         if variable is not None and latest is not None and latest in analysis.detected:
             names = rules.names_of(workspace.companies, workspace.variables)
@@ -474,6 +482,7 @@ def series_read(session: Session, series_id: str, used: Thresholds) -> SeriesInt
             "analysis": serialize.series_analysis(analysis),
             "variable": serialize.data(variable),
             "reached": serialize.data(reached),
+            "reached_total": reached_total,
             "insights": serialize.insights(rules.order(found)),
         }
     )

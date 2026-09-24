@@ -8133,9 +8133,14 @@ export interface components {
             variable: components["schemas"]["NodeRead"] | null;
             /**
              * Reached
-             * @description Companies the related variable reaches through validated relationships.
+             * @description Companies the related variable reaches through validated relationships (the first 200 by name).
              */
             reached: components["schemas"]["NodeRead"][];
+            /**
+             * Reached Total
+             * @description Every company the related variable reaches.
+             */
+            reached_total: number;
             /** Insights */
             insights: components["schemas"]["InsightRead"][];
         };
@@ -9523,8 +9528,21 @@ export interface components {
         VariableExposureRead: {
             variable: components["schemas"]["NodeRead"];
             build: components["schemas"]["BuildRead"];
-            /** Companies */
+            /**
+             * Companies
+             * @description The companies the variable reaches, the first 200 by name, with the paths.
+             */
             companies: components["schemas"]["VariableReachRead"][];
+            /**
+             * Total
+             * @description Every company the variable reaches in the current graph.
+             */
+            total: number;
+            /**
+             * Truncated
+             * @description True when only the first 200 by name are listed.
+             */
+            truncated: boolean;
             /** Note */
             note: string;
         };

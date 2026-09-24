@@ -1,7 +1,7 @@
 {
   "build": {
     "id": 1,
-    "finished_at": "2026-09-24T10:33:40.090775Z",
+    "finished_at": "2026-09-24T10:57:27.969096Z",
     "freshness": "stale",
     "message": "The sources changed after build #1. The graph shows the data as it was then; run `make graph` to rebuild it."
   },
@@ -1118,6 +1118,7 @@
       }
     }
   ],
+  "reached_total": 7,
   "insights": [
     {
       "id": "ins-16b1edf860f6e628",
