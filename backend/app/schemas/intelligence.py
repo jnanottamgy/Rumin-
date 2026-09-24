@@ -90,7 +90,7 @@ class ModelRefRead(ApiModel):
 class NextStepRead(ApiModel):
     action: str = Field(
         description="run_template, run_scenario, run_sensitivity, ingest_series, "
-        "find_evidence, model_gap, review_revision or open_execution."
+        "find_evidence, model_gap or review_revision."
     )
     text: str
     target: RefRead | None

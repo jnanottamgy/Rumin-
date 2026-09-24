@@ -6290,7 +6290,7 @@ export interface components {
         NextStepRead: {
             /**
              * Action
-             * @description run_template, run_scenario, run_sensitivity, ingest_series, find_evidence, model_gap, review_revision or open_execution.
+             * @description run_template, run_scenario, run_sensitivity, ingest_series, find_evidence, model_gap or review_revision.
              */
             action: string;
             /** Text */

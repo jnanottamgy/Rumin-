@@ -405,6 +405,28 @@ def test_the_overview_leads_with_new_observations_and_simulations(with_history: 
     assert fx["latest_detected"] and fx["trend"] == "rising" and fx["revisions"] == 1
 
 
+def test_a_finding_reads_the_same_in_the_workspace_and_the_dossier(
+    with_history: TestClient,
+) -> None:
+    execute(with_history)
+
+    workspace = {
+        item["id"]: item for item in get(with_history, "/intelligence/overview")["insights"]
+    }
+    dossier = {
+        item["id"]: item
+        for item in get(with_history, f"/intelligence/entities/{AERISCA}")["insights"]
+    }
+
+    shared = workspace.keys() & dossier.keys()
+    assert {workspace[key]["rule"] for key in shared} >= {"D01", "D04", "D06", "S01"}
+    for key in shared:
+        assert workspace[key] == dossier[key], workspace[key]["rule"]
+    (impact,) = (dossier[key] for key in shared if dossier[key]["rule"] == "S01")
+    assert impact["evidence"]["grade"] == "assumed"  # the models apply through assumed edges
+    assert {step["basis"] for step in impact["chain"]} >= {"relationship", "simulation"}
+
+
 def test_insights_can_be_filtered(intel: TestClient) -> None:
     execute(intel)
 

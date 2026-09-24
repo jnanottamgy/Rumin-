@@ -150,8 +150,8 @@ class ModelRef:
 
 @dataclass(frozen=True)
 class NextStep:
-    action: str  # run_template | run_scenario | ingest_series | find_evidence | rebuild_graph |
-    #              run_sensitivity | review_revision | open_execution
+    action: str  # run_template | run_scenario | run_sensitivity | ingest_series |
+    #              find_evidence | model_gap | review_revision
     text: str
     target: Ref | None = None
 

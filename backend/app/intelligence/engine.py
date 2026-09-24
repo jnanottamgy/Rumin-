@@ -268,7 +268,9 @@ def analyse_entity(
     for analysis in series:
         found.extend(data_insights(analysis))
     if drivers is not None:
-        impact = rules.impact_insight(drivers, entity, exposure, names, list(drivers.not_modelled))
+        impact = rules.impact_insight(
+            drivers, entity, exposure.paths, names, list(drivers.not_modelled)
+        )
         if impact:
             found.append(impact)
         for line in drivers.lines:
@@ -470,7 +472,11 @@ def analyse_workspace(
     found.extend(rules.shared_driver_insights(exposure, names))
     for key, company_drivers in drivers.items():
         impact = rules.impact_insight(
-            company_drivers, companies[key], None, names, list(company_drivers.not_modelled)
+            company_drivers,
+            companies[key],
+            exposure.paths.get(key, ()),
+            names,
+            list(company_drivers.not_modelled),
         )
         if impact:
             found.append(impact)

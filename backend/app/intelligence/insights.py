@@ -761,15 +761,13 @@ def _figures_step(drivers: DriverAnalysis) -> Step | None:
 
 
 def _graph_steps(
-    exposure: ExposureMap | None, variables: Sequence[str], names: dict[str, str]
+    paths: Sequence[ExposurePath], variables: Sequence[str], names: dict[str, str]
 ) -> list[tuple[Step, RelationshipRef]]:
     """Exposure edges that tie the scenario's changed variables to the entity."""
-    if exposure is None:
-        return []
     wanted = {f"variable:{v}" for v in variables}
     found: list[tuple[Step, RelationshipRef]] = []
     seen: set[str] = set()
-    for path in exposure.paths:
+    for path in paths:
         if path.origin.key not in wanted:
             continue
         for edge in path.edges:
@@ -789,11 +787,13 @@ def size_of(change: ChangeInput) -> str:
 def impact_insight(
     drivers: DriverAnalysis,
     entity: NodeInfo,
-    exposure: ExposureMap | None,
+    paths: Sequence[ExposurePath],
     names: dict[str, str],
     not_modelled: Sequence[str],
 ) -> Insight | None:
-    """S01: the headline line of the latest stored execution."""
+    """S01: the headline line of the latest stored execution. ``paths`` are the entity's
+    exposure paths: the ones from the changed variables join the chain, so the finding is
+    the same in the workspace and in the entity's dossier."""
     if drivers.headline is None:
         return None
     line = drivers.line(drivers.headline)
@@ -817,7 +817,7 @@ def impact_insight(
         key={"execution": e.id, "line": line.id},
         period=Period("scenario", f"{e.horizon_months} simulated months"),
     )
-    for step, rel in _graph_steps(exposure, [c.variable_id for c in drivers.changes], names):
+    for step, rel in _graph_steps(paths, [c.variable_id for c in drivers.changes], names):
         draft.chain.append(step)
         draft.relationships.append(rel)
     _simulation_context(draft, drivers)

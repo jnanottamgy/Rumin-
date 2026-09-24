@@ -1,7 +1,7 @@
 {
   "build": {
     "id": 1,
-    "finished_at": "2026-09-24T10:09:06.171137Z",
+    "finished_at": "2026-09-24T10:20:51.248869Z",
     "freshness": "stale",
     "message": "The sources changed after build #1. The graph shows the data as it was then; run `make graph` to rebuild it."
   },

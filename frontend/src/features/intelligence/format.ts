@@ -144,7 +144,6 @@ export const NEXT_STEP: Record<string, string> = {
   find_evidence: "Find evidence",
   model_gap: "Model gap",
   review_revision: "Review a revision",
-  open_execution: "Open the execution",
 };
 
 export const NATURE: Record<string, string> = {

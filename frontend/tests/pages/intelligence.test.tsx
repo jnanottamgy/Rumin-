@@ -48,7 +48,8 @@ describe("Financial intelligence — the workspace", () => {
     const finding = within(simulations).getByRole("button", {
       name: /Profit before tax −6,700,000 INR \(−17\.63 %\)/,
     });
-    expect(within(finding).getByText("Simulated")).toBeInTheDocument();
+    // The models apply through relationships recorded as model assumptions: the weakest link.
+    expect(within(finding).getByText("Assumed")).toBeInTheDocument();
     expect(finding).toHaveAttribute("aria-expanded", "false");
 
     await user.click(finding);
@@ -56,9 +57,12 @@ describe("Financial intelligence — the workspace", () => {
     expect(finding).toHaveAttribute("aria-expanded", "true");
     const chain = screen.getByRole("list", { name: "Evidence chain" });
     expect(within(chain).getByText("Sets the grade")).toBeInTheDocument();
+    expect(within(chain).getAllByText("Relationship").length).toBeGreaterThan(0);
     expect(within(chain).getAllByText("Simulation").length).toBeGreaterThan(0);
     const block = chain.closest("div") as HTMLElement;
-    expect(within(block).getByText(/Rests on stored model outputs/)).toBeInTheDocument();
+    expect(
+      within(block).getByText(/recorded as a model assumption.*Its figures are simulated/),
+    ).toBeInTheDocument();
     expect(
       screen.getByText(
         "Simulated under the scenario's changes, figures and assumptions: not a forecast.",
@@ -80,11 +84,19 @@ describe("Financial intelligence — the workspace", () => {
 
     await user.click(screen.getByRole("radio", { name: /^All/ }));
     await user.selectOptions(screen.getByLabelText("Evidence at least"), "simulated");
-    expect(screen.getByRole("list", { name: "Findings: Simulations" })).toBeInTheDocument();
-    // Shared drivers rest on relationships recorded as model assumptions: weaker than simulated.
+    expect(screen.getByRole("list", { name: "Findings: Coverage" })).toBeInTheDocument();
+    // The simulated impact and the shared drivers rest on relationships recorded as model
+    // assumptions: weaker than simulated.
+    expect(screen.queryByRole("list", { name: "Findings: Simulations" })).not.toBeInTheDocument();
     expect(
       screen.queryByRole("list", { name: "Findings: Relationships and exposure" }),
     ).not.toBeInTheDocument();
+
+    await user.selectOptions(screen.getByLabelText("Evidence at least"), "assumed");
+    expect(screen.getByRole("list", { name: "Findings: Simulations" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("list", { name: "Findings: Relationships and exposure" }),
+    ).toBeInTheDocument();
   });
 
   it("reads the exposure map as text, cell by cell", async () => {

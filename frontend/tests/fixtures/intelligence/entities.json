@@ -1,7 +1,7 @@
 {
   "build": {
     "id": 1,
-    "finished_at": "2026-09-24T10:09:06.171137Z",
+    "finished_at": "2026-09-24T10:20:51.248869Z",
     "freshness": "current",
     "message": "Built from the current sources (build #1)."
   },
@@ -30,11 +30,11 @@
       "latest_impact": {
         "entity_key": "company:co_aerisca_airways",
         "execution": {
-          "id": "01115f99-0374-42ef-a944-bbe5e4904737",
-          "scenario_id": "707a929e-9636-4c39-b7a7-63b4859d0d42",
+          "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+          "scenario_id": "1f211e66-f8d4-4325-b812-c3c1c9b4445f",
           "scenario_name": "Oil, rupee and rates on Aerisca",
           "version": 1,
-          "finished_at": "2026-09-24T10:09:08.370771Z",
+          "finished_at": "2026-09-24T10:20:53.652675Z",
           "currency": "INR",
           "horizon_months": 12,
           "graph_build_id": 1,
