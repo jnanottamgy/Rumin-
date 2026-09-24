@@ -20,12 +20,12 @@ Regenerate after changing an endpoint or schema: `make api-types` (or
 | Versioning | Application endpoints live under `/api/v1`. Breaking changes will get a new prefix (`/api/v2`); additive changes (new fields, new endpoints) do not. Health probes are unversioned, as infrastructure expects. |
 | Format | Requests and responses are JSON (`application/json`). Request bodies with any other content type are rejected. |
 | Unknown fields | Request bodies with fields the contract does not define are rejected (422), so typos never pass silently. |
-| IDs | Reference-data IDs are readable slugs with a kind prefix: `co_…`, `ind_…`, `cty_…`, `var_…`, `rel_…` (pattern `^[a-z]{2,4}_[a-z0-9_]{2,59}$`). Datasets, series and instruments have lowercase slugs (`worldbank-wdi`, `wb-ind-fp-cpi-totl-zg`, `xnse-reliance`). Scenario, scenario-execution, sensitivity-analysis and ingestion-job IDs are UUIDs; scenario versions are numbered 1, 2, 3 … within their scenario; scenario templates have lowercase slugs (`crude_oil_airline`). Knowledge-graph keys are `type:record-id` for nodes and `e-` plus 16 hex characters for edges ([below](#knowledge-graph)). Path and query IDs are validated against their pattern (422 otherwise). |
-| Data values | Observation values, prices, review ranges and the numbers of simulation and Scenario Lab responses (scenario changes included) are **exact decimal strings in plain notation** (`"5.649"`, `"0.000000000000000001"`), never JSON numbers, so no digit is lost to floating point. A missing value is `null`, never `0`. Requests to the simulation and scenario endpoints may send a number as a decimal string or a JSON number. |
+| IDs | Reference-data IDs are readable slugs with a kind prefix: `co_…`, `ind_…`, `cty_…`, `var_…`, `rel_…` (pattern `^[a-z]{2,4}_[a-z0-9_]{2,59}$`). Datasets, series and instruments have lowercase slugs (`worldbank-wdi`, `wb-ind-fp-cpi-totl-zg`, `xnse-reliance`). Scenario, scenario-execution, sensitivity-analysis, stored-analysis and ingestion-job IDs are UUIDs; insight ids are `ins-` plus 16 hex characters, stable for the same rule, subject and facts; scenario versions are numbered 1, 2, 3 … within their scenario; scenario templates have lowercase slugs (`crude_oil_airline`). Knowledge-graph keys are `type:record-id` for nodes and `e-` plus 16 hex characters for edges ([below](#knowledge-graph)). Path and query IDs are validated against their pattern (422 otherwise). |
+| Data values | Observation values, prices, review ranges and the numbers of simulation, Scenario Lab and Financial Intelligence responses (scenario changes and thresholds included) are **exact decimal strings in plain notation** (`"5.649"`, `"0.000000000000000001"`), never JSON numbers, so no digit is lost to floating point. A missing value is `null`, never `0`. Requests to the simulation and scenario endpoints may send a number as a decimal string or a JSON number. |
 | Dates | Calendar dates (periods, trade dates, the provider's last update) are `YYYY-MM-DD`; they have no time zone. |
 | Pagination | List endpoints take `limit` (1–500, default 100) and `offset` (default 0) and return `{items, total, limit, offset}`. |
 | Time | Timestamps are ISO 8601 in UTC, e.g. `2026-09-23T11:46:58.387307Z`. |
-| Knowledge labels | Relationships carry `epistemic_category: "assumption"` and `evidence_level`; scenario shocks carry `epistemic_category: "scenario_input"`; economic series carry `epistemic_category: "observation"`. Simulation inputs carry `knowledge` (`scenario_input`, `historical_data`, `user_input`, `assumption`, `setting`) and `source` (`user`, `default`, `stored_observation`); simulation outputs carry `kind` (`derived` or `simulated`). Scenario Lab lines, metrics, months and stress cases carry `knowledge: "simulated"`. |
+| Knowledge labels | Relationships carry `epistemic_category: "assumption"` and `evidence_level`; scenario shocks carry `epistemic_category: "scenario_input"`; economic series carry `epistemic_category: "observation"`. Simulation inputs carry `knowledge` (`scenario_input`, `historical_data`, `user_input`, `assumption`, `setting`) and `source` (`user`, `default`, `stored_observation`); simulation outputs carry `kind` (`derived` or `simulated`). Scenario Lab lines, metrics, months and stress cases carry `knowledge: "simulated"`. Financial Intelligence insights carry an `evidence` block: `grade` (the weakest step of the chain: `observed`, `documented`, `curated`, `simulated`, `assumed`, `unverified`), `conditional_on_simulation` and the grade's statement. |
 | Request IDs | Every response has an `X-Request-ID` header (a safe incoming value is reused, otherwise one is generated). Error bodies repeat it, and every log line for the request includes it. |
 | Compression | A response body of 1 KiB (1,024 bytes) or more is gzip-compressed when the request's `Accept-Encoding` includes `gzip` (`Content-Encoding: gzip`, `Vary: Accept-Encoding`); smaller responses, and clients that do not accept gzip, get the body as it is. |
 
@@ -77,6 +77,9 @@ A scenario's versions, plans, previews and executions, comparisons of executions
 scenario templates are listed under [Scenario Lab](#scenario-lab) (Phase 5). An execution
 runs a scenario version through the model registry and stores each model's run as an
 ordinary run of the [simulation endpoints](#simulation).
+
+Findings about the workspace and each company, with their evidence, and stored analyses are
+listed under [Financial intelligence](#financial-intelligence) (Phase 6).
 
 ### Structural links in `/api/v1/network`
 
@@ -847,6 +850,103 @@ inputs, validation rules and expected outputs, all derived from the models' defi
 and `scenario`: a body to start from, with the template's changes, models and stress cases
 and no company figures (RUMIN never fills those in). An unknown or unsupported template
 answers 404.
+
+## Financial intelligence
+
+Structured, explainable findings from what RUMIN stores: observations, the knowledge graph,
+Scenario Lab executions and their runs (Phase 6). Every **insight** is produced by a
+documented rule and carries its evidence chain (ordered steps, each with a basis and
+references to stored records), facts, entities, relationships, period, models, assumptions,
+limitations, sources, next steps, and an evidence grade: the weakest step, not a
+probability. Reads compute from the current store and **write nothing**. Stored analyses are
+**append-only** (`DELETE` answers 405). No text is generated, nothing is ranked or
+recommended, and simulated values say they are not forecasts. How it works:
+[`docs/intelligence/`](intelligence/README.md); every field:
+[data dictionary](data-dictionary.md#financial-intelligence).
+
+| Method and path | Purpose | Success |
+|---|---|---|
+| `GET /api/v1/intelligence/overview` | The workspace: every finding in order (observed data, simulations, relationships and exposure, coverage), counts by grade and kind, the gathered next steps, the exposure matrix (the first 200 companies by name × variables), observed series with their signals, instruments, relationship changes, the latest simulated impact per company, and coverage (with `truncated`). | 200 / 422 |
+| `GET /api/v1/intelligence/insights` | The workspace's insights, or one entity's (`entity`), filtered by `kind`, `rule` and `grade` (at least this grade). `{scope, subject, build, thresholds, items, total}`. | 200 / 404 / 422 |
+| `GET /api/v1/intelligence/changes` | What changed, each in its own list: observed changes that meet their thresholds, revisions, relationship changes between the latest two builds, and execution changes (simulated), with notes. | 200 / 422 |
+| `GET /api/v1/intelligence/methods` | The modules (question, inputs, method, limitations), the signal definitions, the insight rules, the thresholds with defaults, bounds and reasons, the evidence grades and their statements. | 200 |
+| `GET /api/v1/intelligence/entities` | Companies (the first 200 by name) and industries with their stated exposure (paths, variables, channels, directness, weakest evidence) and each company's latest simulated headline; `kind` filters. | 200 / 422 |
+| `GET /api/v1/intelligence/entities/{entity_key}` | The dossier of a company or industry: its exposure map, stored executions, the drivers of the latest one and of the previous one of the same scenario, related series with their signals, model interpretations of observed changes (and those not interpreted, with the reason), signals, and every insight. `evidence=evidence_backed` keeps only cited relationships. | 200 / 404 / 422 |
+| `GET /api/v1/intelligence/entities/{entity_key}/brief` | The entity brief `rumin.intelligence.brief/1`: structured facts with references and narration rules, for a future AI Analyst ([brief](intelligence/brief.md)). | 200 / 404 / 422 |
+| `GET /api/v1/intelligence/entities/{entity_key}/exposure` | The exposure map alone: paths (direct, via the industry, upstream), counterparties, context, series coverage, flagged edges not used. | 200 / 404 / 422 |
+| `GET /api/v1/intelligence/entities/{entity_key}/signals` | Exposure breadth, dependency and scenario sensitivity, each with its definition, method, inputs, period, thresholds, evidence and limitations. | 200 / 404 / 422 |
+| `GET /api/v1/intelligence/entities/{entity_key}/drivers` | The latest completed execution's stored contributions per change (amounts, shares of the change, points of the baseline, effects per unit, unattributed), the stored sensitivity ranking, assumptions, entered figures, what is not modelled. | 200 / 404 / 422 |
+| `GET /api/v1/intelligence/variables/{variable_key}/exposure` | The companies the graph states the variable reaches, found by walking downstream from it through the whole graph: the first 200 by name with their paths through it, the `total` and whether the list is `truncated`. | 200 / 404 / 422 |
+| `GET /api/v1/intelligence/series/{series_id}` | A stored series: its latest values (at most 400), changes, detected changes, trend, volatility, unusual change and revisions; for a series recorded as a related measure, the variable and the companies it reaches (`reached`, the first 200 by name; `reached_total`). | 200 / 404 / 422 |
+| `GET /api/v1/intelligence/instruments/{instrument_id}` | The same for an instrument's closing prices, per price dataset (sources are never blended). | 200 / 404 / 422 |
+| `POST /api/v1/intelligence/analyses` | Compute an entity or workspace analysis and store it with its thresholds, a fingerprint of what it read and hashes of both. Returns it with a `Location` header. | 201 / 404 / 422 |
+| `GET /api/v1/intelligence/analyses` | Stored analyses, newest first; `scope` and `entity` filter. Paginated. | 200 / 422 |
+| `GET /api/v1/intelligence/analyses/{analysis_id}` | One stored analysis exactly as stored, with `freshness`: `current`, or `stale` with what changed since (`graph`, `data`, `executions`, `engine_version`, `subject`, `scope`). | 200 / 404 |
+
+`entity_key` is a graph key (`company:co_aerisca_airways`, `industry:ind_air_transport`); any
+other node type answers 422. `variable_key` must be an economic variable
+(`variable:var_usd_inr`).
+
+### Thresholds
+
+Every read that tests values accepts threshold overrides as query parameters:
+`relative_change_percent`, `point_change`, `price_move_percent`, `anomaly_score`,
+`trend_significance` (0.10, 0.05 or 0.01), `volatility_high_percentile`,
+`dependency_share_percent`, `min_history`, `window`. A stored analysis takes them in its body
+under `thresholds` (at most 20). Every result returns the thresholds it used, defaults
+included. Invalid values are all reported at once, as a 422 with code `validation_error`
+and one detail per problem (`location` `query` or `body`, `field` the threshold's name,
+prefixed `thresholds.` in a body, `type` `invalid_threshold`):
+
+```json
+{"error": {"code": "validation_error", "message": "Some thresholds are invalid.",
+  "details": [{"location": "query", "field": "relative_change_percent",
+               "message": "Change in a level or exchange rate must be between 0.1 and 100 (percent).",
+               "type": "invalid_threshold"}], "request_id": "…"}}
+```
+
+Defaults, bounds and reasons: `GET /api/v1/intelligence/methods`, or
+[signals and thresholds](intelligence/signals.md#thresholds).
+
+### An insight
+
+Abridged, from the sample's dossier of the fictional Aerisca Airways:
+
+```json
+{
+  "id": "ins-…", "rule": "E01", "kind": "exposure",
+  "headline": "Aerisca Airways is exposed to Brent crude oil price",
+  "statement": "The knowledge graph states that Brent crude oil price reaches Aerisca Airways's costs through Jet fuel price (U.S. Gulf Coast) (assumed to transmit), which reaches it through its industry, Air transport.",
+  "subject": {"kind": "graph_node", "id": "company:co_aerisca_airways", "label": "Aerisca Airways"},
+  "period": {"kind": "graph_build", "label": "Build #1", "start": null, "end": null},
+  "evidence": {"grade": "assumed", "conditional_on_simulation": false, "includes_observations": false,
+               "statement": "Rests on at least one relationship recorded as a model assumption: …",
+               "weakest_step": 1},
+  "chain": [
+    {"basis": "record", "text": "Knowledge-graph build #1", "refs": [{"kind": "graph_build", "id": "1", "label": "Build #1"}]},
+    {"basis": "relationship", "text": "Brent crude oil price influences Jet fuel price (U.S. Gulf Coast)",
+     "evidence_status": "model_assumption", "refs": [{"kind": "graph_edge", "id": "e-…"}]},
+    …
+  ],
+  "facts": [{"label": "Paths", "value": "1", "unit": "count", "basis": "calculation"}, …],
+  "limitations": ["… A connection is not evidence of causation.", …],
+  "next_steps": [{"action": "find_evidence", "text": "Recorded as model assumptions: “…”. Look for a cited source before relying on them.", "target": {"kind": "graph_edge", "id": "e-…"}}]
+}
+```
+
+Next-step actions are `run_template`, `run_scenario`, `run_sensitivity`, `ingest_series`,
+`find_evidence`, `model_gap` and `review_revision` ([rules](intelligence/rules.md#next-steps)).
+
+### Stored analyses
+
+`POST /api/v1/intelligence/analyses` takes `{"scope": "entity", "entity": "company:…"}` or
+`{"scope": "workspace"}`, and optionally `thresholds`, `evidence` and `label` (at most 200
+characters). An entity analysis without `entity`, or a workspace analysis with one, is
+refused (422); an unknown entity answers 404; nothing is stored in either case. The response
+is the analysis as stored: `entity` (the dossier) or `workspace` (the overview), with
+`thresholds`, `inputs` (the fingerprint), `inputs_hash`, `result_hash`, `insight_count`,
+`duration_ms` and `freshness`. Reading it back never recomputes it
+([stored analyses](intelligence/stored-analyses.md)).
 
 ## Provider data example
 

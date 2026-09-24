@@ -13,7 +13,10 @@ records**: model versions, runs, their calculation steps and sensitivity analyse
 append-only ([below](#phase-4-simulation-runs)). Phase 5 adds the **Scenario Lab**: a
 scenario becomes a stable identity with immutable, numbered versions, and each execution of
 a version stores its plan, the Phase 4 run of every model it used and the combined results
-([below](#phase-5-scenario-lab)). The same schema runs on SQLite (development) and
+([below](#phase-5-scenario-lab)). Phase 6 adds one table, **stored intelligence analyses**:
+snapshots of what Financial Intelligence concluded, from which inputs; everything else it
+computes from the tables above and changes none of them ([below](#phase-6-stored-intelligence-analyses)).
+The same schema runs on SQLite (development) and
 PostgreSQL (production), and is created only through Alembic migrations.
 
 Field-level definitions and the contents of the sample dataset are in the
@@ -583,6 +586,49 @@ The downgrade drops the three execution tables, keeps only each scenario's curre
 version (its changes, name and description; older versions and the rest of the content
 are lost) and removes the new columns. The Phase 4 runs that executions stored are kept.
 
+## Phase 6: stored intelligence analyses
+
+Financial Intelligence reads observations and their revisions, price bars, graph builds,
+nodes and edges, scenario versions and executions, their runs and sensitivity analyses. It
+computes every answer on request and writes nothing to those tables. The one table it adds
+keeps **stored analyses**: a snapshot of an entity's dossier or of the workspace overview,
+exactly as the API returned it, with the thresholds it used and a fingerprint of everything
+it read. See [stored analyses](intelligence/stored-analyses.md).
+
+```mermaid
+erDiagram
+    intelligence_analyses {
+        uuid id PK
+        string scope "entity | workspace"
+        string subject_key "graph key, entity scope only"
+        string subject_name
+        string label
+        string engine_version
+        json thresholds
+        int graph_build_id "no foreign key"
+        json inputs "the fingerprint"
+        string inputs_hash
+        json result "the analysis as returned"
+        string result_hash
+        int insight_count
+        int duration_ms
+        datetime created_at
+    }
+```
+
+- **Append-only.** No code path updates or deletes a row, and the API has no route that
+  could (`DELETE` answers 405).
+- **No foreign keys, on purpose.** `subject_key` and `graph_build_id` name a graph node and a
+  build, but graph rows are derived and can be rebuilt (decision 24), and a snapshot must
+  outlive them. When the entity is no longer in the current graph, reading the analysis
+  back says so (freshness `stale`, `subject`).
+- **Check constraints.** `scope` is `entity` or `workspace`; an entity analysis has a
+  `subject_key` and a workspace analysis has none.
+- **Indexes.** (`scope`, `created_at`) and (`subject_key`, `created_at`) serve the newest-first
+  list filtered by scope or entity.
+- **Hashes.** `inputs_hash` and `result_hash` are SHA-256 over the canonical JSON of `inputs`
+  and `result`, as everywhere in RUMIN.
+
 ## Enumerations
 
 Enumerations are stored as `VARCHAR` with a `CHECK` constraint, not native database enum
@@ -653,7 +699,10 @@ downgrade drops them, and with them every stored run); `0005_scenario_lab` adds 
 to `scenarios`, adds `scenario_versions`, moves `scenario_shocks` from scenarios to
 versions after turning every draft into its version 1, and adds the three execution tables
 ([above](#from-phase-1-drafts-to-versions); its downgrade keeps each scenario's current
-version, drops older versions and every execution, and keeps the Phase 4 runs).
+version, drops older versions and every execution, and keeps the Phase 4 runs);
+`0006_intelligence` adds `intelligence_analyses` and changes no existing table (its downgrade
+drops it, and with it every stored analysis; every other intelligence answer is computed
+and needs no table).
 
 - Every schema change is a new revision: edit the models, run
   `uv run alembic revision --autogenerate -m "…"`, **review the generated file**, apply it

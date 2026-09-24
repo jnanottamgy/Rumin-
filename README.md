@@ -7,9 +7,16 @@ runs documented, versioned models on those connections with every step explained
 reproducible, and labels everything it shows as one of five kinds of knowledge:
 observation, assumption, scenario input, simulated output or uncertainty.
 
-> **Status: Phase 5 — Scenario Lab** (on top of the Phase 1 foundation, the Phase 2 data
-> infrastructure, the Phase 3 knowledge graph and the Phase 4 simulation engine).
+> **Status: Phase 6 — Financial Intelligence** (on top of the Phase 1 foundation, the
+> Phase 2 data infrastructure, the Phase 3 knowledge graph, the Phase 4 simulation engine and
+> the Phase 5 Scenario Lab).
 >
+> - **Findings with their evidence, not summaries.** Financial Intelligence reads what RUMIN
+>   stores and answers what changed, who is exposed and through which relationships, what
+>   the stored simulations say and what drives them. Each answer is a finding from one of 19
+>   documented rules, with the chain of observations, calculations, relationships and
+>   simulations it rests on and an evidence grade (its weakest link, not a probability). No
+>   text is generated, nothing is ranked or recommended, and nothing is a forecast.
 > - **Scenarios are calculations, not forecasts.** The Scenario Lab asks *what happens if
 >   something changes?* and answers with the models that apply — five narrow models, chosen
 >   by what each declares and what the knowledge graph states — on figures you enter and
@@ -42,7 +49,7 @@ observation, assumption, scenario input, simulated output or uncertainty.
 | Module | State | What works |
 |---|---|---|
 | Landing page | Available | What RUMIN is, the five kinds of knowledge, what exists in this build, the roadmap |
-| Overview (dashboard) | Available | Live workspace figures from the API, network preview, recent scenarios, system and data status |
+| Overview (dashboard) | Available | Live workspace figures from the API, network preview, the latest findings with their grades, recent scenarios, system and data status |
 | Financial Universe | Available (2D) | Interactive network: selection, hover details, search, filters, legend, pan/zoom, deep links, keyboard access, table view |
 | **Knowledge Graph** | Available (Phase 3) | The graph of every record RUMIN holds (9 node types, 18 relationship types): aggregate map, search by name or code, neighbourhoods on a radial layout, step-by-step expansion, filters by type and evidence, the evidence behind every edge, shortest paths, history, table view |
 | **Graph build** | Available (command line) | Builds the graph from the stored records with entity resolution (flag, never merge), 26 validation rules and a validation report; rebuilding unchanged sources changes nothing |
@@ -50,10 +57,11 @@ observation, assumption, scenario input, simulated output or uncertainty.
 | **Data ingestion** | Available (command line) | World Bank series (throttled, retried, validated, versioned) and licensed price-file import, each recorded as a job |
 | **Simulation** | Preview (Phase 4) | The airline fuel-cost model: inputs labelled by kind of knowledge and checked on the server; results with the pathway through the knowledge graph, month-by-month figures, the accounting bridge, Shapley contributions, a sensitivity tornado, every calculation step, and provenance with a reproducibility check; stored runs reopened and varied |
 | **Simulation engine** | Available (API) | Five versioned, hashed models (airline fuel cost, foreign-currency revenue and costs, floating-rate interest, crude- and gas-linked costs); exact decimals; timed changes; propagation only along confirmed graph relationships; append-only runs with explanations, provenance and verification; one-at-a-time sensitivity |
+| **Financial Intelligence** | Available (Phase 6) | A ledger of findings from 19 documented rules, each opening into its evidence chain and grade; observed changes, revisions, trends, volatility and unusual moves against configurable thresholds; exposure through validated graph relationships (a companies × variables matrix); drivers of simulated results from stored contributions; model interpretation of observed changes; dossiers per company and industry; a structured brief for the future AI Analyst; stored, fingerprinted analyses that say when they are stale ([guide](docs/intelligence/README.md)) |
 | **Scenario Lab** | Available (Phase 5) | Templates built on implemented models; versioned scenarios; a plan saying which models apply and why; a live preview; background executions with recorded stages; the modelled pathway with graph context kept apart; baseline against scenario; months with a replay; stress cases; sensitivity; *what caused this?*; history, reproducibility checks and comparisons ([guide](docs/scenario-lab/README.md)) |
 | AI Analyst | Planned (Phase 7) | A page explaining what it will do; no model is connected |
 | System & settings | Available | API, database, migration and data status; capabilities; theme and motion preferences |
-| REST API | Available | Versioned (`/api/v1`), validated, consistent errors, OpenAPI docs, compressed responses; data and graph endpoints are read-only; scenario versions, executions and simulation runs are append-only |
+| REST API | Available | Versioned (`/api/v1`), validated, consistent errors, OpenAPI docs, compressed responses; data and graph endpoints are read-only; intelligence reads write nothing; scenario versions, executions, simulation runs and stored analyses are append-only |
 
 ## Quick start
 
@@ -76,7 +84,9 @@ make frontend           # terminal 2 → web client on http://127.0.0.1:5173
 the provider cannot be reached, the run is recorded as failed and the Data Explorer says so;
 nothing else is affected. To try the Scenario Lab, open <http://127.0.0.1:5173/scenarios>,
 start from a template, enter your (hypothetical) company figures and **Execute**
-([more](docs/setup.md#scenario-lab-phase-5)). To try one model on its own, open
+([more](docs/setup.md#scenario-lab-phase-5)). Then open <http://127.0.0.1:5173/intelligence> to
+see what RUMIN can say about the workspace and each company, finding by finding, with the
+evidence each one rests on ([more](docs/setup.md#financial-intelligence-phase-6)). To try one model on its own, open
 <http://127.0.0.1:5173/simulation>, choose **Fill a hypothetical example** and **Run
 simulation** ([more](docs/setup.md#simulation-phase-4)). To import prices from a file you are licensed to use, see
 [Price files](docs/data/price-files.md).
@@ -172,6 +182,9 @@ backend/            FastAPI application, SQLAlchemy models, Alembic migrations, 
                     persistence, build command, algorithms, read interface
   app/ingestion/    providers, HTTP (throttling, retries), normalisation, quality rules,
                     persistence with revisions, job tracking, command line
+  app/intelligence/ financial intelligence: exact statistics, thresholds, the evidence
+                    model, validated graph slices, exposure, changes and revisions, drivers,
+                    signals, the 19 insight rules, model interpretation, the brief
   app/models/       ORM models
   app/scenario_lab/ the Scenario Lab: scenario specification and validation, planner,
                     scenario profiles, executor and runner, aggregation, pathways,
@@ -187,13 +200,14 @@ frontend/           React + TypeScript web client (Vite)
   src/components/   shared UI primitives
   src/features/     network, graph (the explorer), data (chart, tables, provenance,
                     freshness), simulation (the preview: form, pathway, charts, panels),
-                    scenarioLab (builder, pathway, results, timeline, views)
+                    scenarioLab (builder, pathway, results, timeline, views), intelligence
+                    (the ledger, evidence chains, exposure matrix, drivers, signals, history)
   src/pages/        one component per route
   tests/            unit and page tests; tests/integration runs against a live API
 docs/               architecture, API, data model, data pipeline, testing, roadmap and more
   api/openapi.json  committed API contract (the frontend's types are generated from it)
-scripts/            smoke_test.sh (backend/scripts and frontend/scripts: graph and Scenario Lab
-                    benchmarks, the Lab's fixture capture)
+scripts/            smoke_test.sh (backend/scripts and frontend/scripts: graph, Scenario Lab and
+                    Financial Intelligence benchmarks, fixture capture from a real backend)
 ```
 
 ## Documentation
@@ -222,6 +236,13 @@ scripts/            smoke_test.sh (backend/scripts and frontend/scripts: graph a
   [architecture](docs/scenario-lab/architecture.md) · [the pathway](docs/scenario-lab/pathway.md) ·
   [the interface](docs/scenario-lab/interface.md) · [performance](docs/scenario-lab/performance.md) ·
   [limitations](docs/scenario-lab/limitations.md)
+- Financial Intelligence: [overview](docs/intelligence/README.md) ·
+  [architecture](docs/intelligence/architecture.md) · [evidence](docs/intelligence/evidence.md) ·
+  [insight rules](docs/intelligence/rules.md) · [signals and thresholds](docs/intelligence/signals.md) ·
+  [exposure](docs/intelligence/exposure.md) · [changes](docs/intelligence/changes.md) ·
+  [drivers](docs/intelligence/drivers.md) · [stored analyses](docs/intelligence/stored-analyses.md) ·
+  [the brief](docs/intelligence/brief.md) · [the interface](docs/intelligence/interface.md) ·
+  [performance](docs/intelligence/performance.md) · [limitations](docs/intelligence/limitations.md)
 - [Design system](docs/design-system.md)
 - [Testing](docs/testing.md)
 - [Security](docs/security.md)
@@ -231,7 +252,8 @@ scripts/            smoke_test.sh (backend/scripts and frontend/scripts: graph a
   [Phase 2 plan](docs/phases/phase-2-plan.md) · [Phase 2 report](docs/phases/phase-2-report.md) ·
   [Phase 3 plan](docs/phases/phase-3-plan.md) · [Phase 3 report](docs/phases/phase-3-report.md) ·
   [Phase 4 plan](docs/phases/phase-4-plan.md) · [Phase 4 report](docs/phases/phase-4-report.md) ·
-  [Phase 5 plan](docs/phases/phase-5-plan.md) · [Phase 5 report](docs/phases/phase-5-report.md)
+  [Phase 5 plan](docs/phases/phase-5-plan.md) · [Phase 5 report](docs/phases/phase-5-report.md) ·
+  [Phase 6 plan](docs/phases/phase-6-plan.md) · [Phase 6 report](docs/phases/phase-6-report.md)
 
 ## Licence
 

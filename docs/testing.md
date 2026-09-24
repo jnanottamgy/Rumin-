@@ -2,12 +2,13 @@
 
 | Suite | Tool | Tests | Runs against | Command |
 |---|---|---|---|---|
-| Backend | pytest | 712 | the FastAPI app, the ingestion pipeline, the graph build, the simulation engine and the Scenario Lab with a real, migrated database (SQLite; PostgreSQL optional); providers answered by scripted responses | `uv run pytest` in `backend/` |
-| Frontend unit and pages | Vitest + Testing Library (jsdom) | 264 | the real route table, with `fetch` replaced by a fake API serving recorded responses | `npm test` in `frontend/` |
-| Integration | Vitest (Node) | 49 | a live API: the frontend's real service layer over HTTP | `npm run test:integration` with `RUMIN_API_URL` |
+| Backend | pytest | 758 | the FastAPI app, the ingestion pipeline, the graph build, the simulation engine, the Scenario Lab and Financial Intelligence with a real, migrated database (SQLite; PostgreSQL optional); providers answered by scripted responses | `uv run pytest` in `backend/` |
+| Frontend unit and pages | Vitest + Testing Library (jsdom) | 294 | the real route table, with `fetch` replaced by a fake API serving recorded responses | `npm test` in `frontend/` |
+| Integration | Vitest (Node) | 53 | a live API: the frontend's real service layer over HTTP | `npm run test:integration` with `RUMIN_API_URL` |
 | End-to-end smoke | `scripts/smoke_test.sh` | — | fresh database → migrate → seed → load the catalogue → import a synthetic price file → build the knowledge graph, rebuild it and fail if anything changed → start API → integration suite (including a simulation run and a background scenario execution, both checked against hand calculations) | `make smoke` |
 | Graph benchmark | `backend/scripts/benchmark_graph.py`, `frontend/scripts/measure-graph.mjs` | — | synthetic networks up to 20,000 companies; not part of CI | see [performance](graph/performance.md#how-it-was-measured) |
 | Scenario Lab benchmark | `backend/scripts/benchmark_lab.py`, `frontend/scripts/measure-lab.mjs` | — | the reference scenario and a large one on SQLite and PostgreSQL; not part of CI | see [performance](scenario-lab/performance.md#how-it-was-measured) |
+| Intelligence benchmark | `backend/scripts/benchmark_intelligence.py` | — | the sample network with the reference execution, and synthetic networks up to 20,000 companies; not part of CI | see [performance](intelligence/performance.md#method) |
 
 **No automated test calls a real provider.** Provider behaviour is tested with scripted
 HTTP responses whose structure follows the providers' documentation and whose numbers are
@@ -86,6 +87,16 @@ Every figure asserted was calculated by hand.
 | `test_scenario_lab.py` | 52 | The specification's hash ignores how numbers were typed and round-trips through storage; malformed scenarios and stress cases that break the change rules **refused, not clipped**; every profile matches its model and **no item is claimed twice**; templates built only on implemented models; applicability — by default only when the graph states the exposure, never without it, only when included without a company; every change must be modelled; the evidence and stored-data constraints; cautions for models touching the same costs; the companies tied to the changes; **the lines add the models' items as worked out by hand**; one model agrees with the Lab; interest alone holds operating profit at its baseline; stress cases reuse the models and assumptions; the pathway shows only what the engine computed; timeline events; stages recorded and every model run stored; the same version twice gives the same hashes; cancellation stores nothing; the time limit stops an execution; a version that cannot run fails with its plan; a final execution never runs again, and **a final state is never overwritten** (a run whose execution another process made final stops and stores nothing; recovery leaves an execution that finished in the meantime); the runner refuses work beyond its capacity, recovers executions left by a stopped server and drops queued work when stopped; the threaded runner; one-at-a-time sensitivity across models, points skipped and limits enforced; comparisons difference only like with like; a changed stored result is detected |
 | `test_scenario_lab_api.py` | 25 | Saving adds versions and never rewrites one (409 on a stale base version); duplicates remember their origin; an executed scenario cannot be deleted; malformed scenarios refused with every field; bounded request shapes; a plan explains itself and stores nothing; a preview computes without storing; an execution accepted (202) and followed to its results; every line and metric explained, and a line no model produces cannot be; pathways; a scenario that cannot run refused with nothing stored; results only for a completed execution; a final execution cannot be cancelled; **429 beyond the worker pool**; an execution reproducible, its runs ordinary Phase 4 runs; sensitivity stored and listed; comparisons without ranking; templates; the system's capabilities |
 
+Phase 6 (Financial Intelligence). `tests/intelligence_support.py` stores **SYNTHETIC**
+exchange-rate and inflation histories (with one revision: 2024 from 83.7 to 84.2) through the
+real ingestion pipeline, from scripted responses; the reference execution comes from
+`tests/scenario_support.py`. Statistics are checked against values worked by hand.
+
+| Module | Tests | Covers |
+|---|---|---|
+| `test_intelligence_core.py` | 19 | **Least squares exact** (slope, standard error, *t*); a straight line has no *t*; Student's *t* critical values from the table, the stricter row between two; median, MAD, modified z-score and percentile rank; relative changes need a positive base; thresholds' defaults, overrides and **every invalid value reported at once**; **the grade is the weakest step**; **an insight without a chain cannot exist**; stable insight ids and chains holding each link once; changes relative for levels and in points for rates; a gap breaks the chain; thresholds select changes; a trend called only beyond the critical value; volatility and unusual changes by their definitions; short histories say so; only validated exposure edges make paths; numbers formatted for reading and kept exact as data; shared drivers capped by reach, never invented, the reach index consistent with the paths, and a truncated listing saying that its counts cover the listed companies |
+| `test_intelligence_api.py` | 27 | Exposure from validated relationships only (a flagged edge is never used; the evidence filter); **the workspace states each listed company's exposure in full** (for the full listing and a truncated one); a variable's reach, with its total; **a variable followed through the whole graph** (beyond a short listing, each company's paths equal to its own analysis, a short list reporting the total); **drivers are the stored contributions** (Brent 9,225,000 and USD/INR 4,025,000 of operating costs' +13,250,000), and none without an execution; the gathered next steps name each check once and quote the assumed relationships; **every insight rests on an evidence chain** (grade, conditional flag, not-a-forecast, no forbidden words) and every record it cites exists; an industry analysed; unsuitable subjects refused; observed changes detected against thresholds; a series' signals; an observed change interpreted through the stored scenario, labelled and not stored; the overview says what the data cannot support and leads with new observations; **a finding reads the same in the workspace and the dossier**; filters; thresholds validated with their fields; entities with their latest impact; **each company keeps its own latest execution**; the brief carries evidence and rules, not prose; methods document every rule, signal and threshold; **a stored analysis keeps what it read and knows when it is stale**; stored analyses listed and never rewritten (`DELETE` answers 405); invalid requests store nothing; without a graph nothing is invented; the system's capabilities |
+
 Run against PostgreSQL (use an empty, disposable database — the suite drops and recreates
 the schema):
 
@@ -111,6 +122,15 @@ databases: one filled through the real pipeline with **synthetic** responses and
 synthetic price file (every name says "SYNTHETIC"), and one holding the real series
 catalogue after a World Bank run that failed because the provider was unreachable.
 
+The Phase 6 fixtures (`tests/fixtures/intelligence/`) are written by
+`backend/scripts/capture_intelligence_fixtures.py` from a fresh database: the methods and the
+workspace before anything is simulated; after the reference execution, the overview, the
+entity list, Aerisca Airways' dossier and brief, an industry's dossier, a refused threshold
+and a stored analysis; then, after **SYNTHETIC** histories are stored through the real
+pipeline, the files named `synthetic-*` (overview, dossier, series, the stored analysis now
+stale) and the list of analyses. The script formats them with the frontend's formatter and
+edits nothing by hand. Recapture them whenever an intelligence response changes.
+
 The Phase 5 fixtures (`tests/fixtures/lab/`) are written by
 `backend/scripts/capture_lab_fixtures.py`, which builds a fresh database and drives the API
 in-process: the templates, the airline template before any figure, the reference scenario
@@ -122,7 +142,7 @@ pathway and checked against the contract like the others.
 | Area | Tests | Covers |
 |---|---|---|
 | `lib/apiClient` | 12 | Success, error envelope → typed `ApiError`, non-JSON, unreachable, timeout, caller cancellation, accepted non-2xx, 204, base URL |
-| `lib/contract` | 34 | Fixtures conform to the contract — the simulation fixtures (model, validation reports, run, explanation, provenance, verification, sensitivity, lists) and the Scenario Lab fixtures (templates, scenario and library, execution and history, results, pathway, explanation, sensitivity, verification, comparison, both previews, the included models' definitions); the checker catches missing fields, wrong types, bad enum values, nested unions |
+| `lib/contract` | 48 | Fixtures conform to the contract — the simulation fixtures (model, validation reports, run, explanation, provenance, verification, sensitivity, lists), the Scenario Lab fixtures (templates, scenario and library, execution and history, results, pathway, explanation, sensitivity, verification, comparison, both previews, the included models' definitions) and the Financial Intelligence fixtures (methods, three overviews, entities, three dossiers, the brief, a series, two stored analyses and their list, a refused threshold); the checker catches missing fields, wrong types, bad enum values, nested unions |
 | `lib/decimal` | 3 | Exact grouping of every digit, rounding for display half away from zero on the digits themselves (BigInt), plain-decimal recognition |
 | `data/chartMath` | 6 | Nice ticks; **no line drawn across a missing value or an absent period**; weekends contiguous but long trading gaps broken; nearest period; calendar-aligned time ticks |
 | `hooks/useApiResource` | 6 | Loading → success, request sharing, error and reload, refresh keeps data, no cross-key data, data from a save |
@@ -135,6 +155,8 @@ pathway and checked against the contract like the others.
 | `app/navigation` | 8 | Landing, navigation between modules, 404, live workspace status, AI Analyst inert, System capabilities, theme persistence |
 | `pages/universe` | 11 | Exactly the API's nodes and links drawn; selection highlights neighbours and dims the rest; Escape and close reset; keyboard selection; search; filters never leave dangling links; table view; phone layout; inconsistent data refused; unreachable API and retry |
 | `pages/scenarioLab` | 14 | Against fixtures captured from a real backend: the library — templates with names and units from the API, the ones not offered with the reason, saved scenarios with their headline; comparing two executions, differenced only like with like and not ranked; a saved scenario opened on its stored execution (headline, baseline against scenario, cash flow listed as not modelled, reading writes nothing but the unstored preview); the pathway drawn from what the engine computed, **graph context listed apart with the causation caveat**, a relationship's evidence, β and lag, Escape, not-modelled relationships, the list view; the month replay (values per month, dimmed until reached, metrics "Horizon only"); plan, months, stress (changes in their units, not ranked) and explanation tabs; sensitivity labelled as not Monte Carlo; verification; an edit previewed on the server and labelled, then discarded back to the saved version with nothing saved; an execution followed through the server's stages until final, polling then stopping; a failed execution explained; a missing scenario and an unreachable API; a template's missing figures shown as notes until a save is attempted |
+| `intelligence/format` | 3 | Rounding for display only, from the exact strings; grades strongest first and kinds of finding grouped; a cited record linked to the view that shows it, when there is one |
+| `pages/intelligence` | 13 | Against fixtures captured from a real backend: the ledger grouped by kind of knowledge, a finding opened into its **evidence chain** with the step that sets the grade; filters by group and by minimum grade, never ranking; the exposure matrix read as text, cell by cell; thresholds sent in the request and **a refusal shown beside its field**; an unreachable API; a dossier describing the entity without inventing anything; exposure paths with their relationships and models; drivers as stored contributions labelled simulated; every source and the brief; **observed values and the model interpretation kept apart** (synthetic values); a subject that is not an entity refused in the API's words; storing an analysis and reading it back stale, with the phone picker naming it; the dashboard's latest findings |
 | `pages/dashboard` | 4 | Loading state, live figures from the API, preview → Universe link, unreachable API and recovery |
 | `pages/dataExplorer` | 5 | A failed retrieval explained with counts and the command to retry; no bundled prices and how to import; datasets with licence links and attribution; recent runs; stored series with rounded latest values, search, country and "with values" filters |
 | `pages/economicSeries` | 6 | Honest labels (historical, sample, flagged); freshness facts; reading the chart from the keyboard, gaps included; the table shows the published literal (`14.250000`); revision history requested and shown; source, licence, review range as an assumption, quality issues; a failed retrieval explained; a missing series |
@@ -195,6 +217,14 @@ through its four recorded stages to `completed`, its lines matching the hand cal
 (profit before tax −6,700,000), its pathway, explanation and reproducibility check — after
 which the executed scenario cannot be deleted (409).
 
+Phase 6 adds four Financial Intelligence tests to `api.integration.test.ts`, each response
+checked against the contract. The first analyses the workspace, with every finding carrying a
+chain and the step that sets its grade; the smoke test's SYNTHETIC price file appears as an
+instrument, and its −1.57 % move is reported at a 1 % threshold but not at the default 5 %.
+The second builds a dossier whose every path edge is validated, and a brief listing exactly
+the dossier's insights. The third refuses an invalid threshold with its field. The fourth
+stores an analysis and reads it back unchanged, current and listed.
+
 It creates scenarios (deleting those it can) and adds simulation runs and executions, so
 point it only at a disposable database — which is what `scripts/smoke_test.sh` provides.
 
@@ -218,8 +248,12 @@ stored run reopened ([what the review changed](simulation/preview.md#review)). F
 every Scenario Lab screen — the library, a template before its figures, a saved scenario on
 its stored execution, the inspector, the month replay and every tab — was shot at 1440 ×
 1100 in both themes and at 390 × 900, reviewed and fixed until it read correctly; a script
-checked that no Lab page scrolls sideways at seven widths from 360 to 1,920 px. These
-checks are not automated yet (see [known-limitations.md](known-limitations.md)).
+checked that no Lab page scrolls sideways at seven widths from 360 to 1,920 px. For Phase 6,
+the Financial Intelligence views (the workspace with a finding opened, a dossier on each tab,
+the thresholds refusal, a stale stored analysis, the dashboard panel) were shot in both themes
+and at tablet and phone widths, each run checking for console errors and sideways scrolling
+([interface](intelligence/interface.md#accessibility-and-responsiveness)). These checks are
+not automated yet (see [known-limitations.md](known-limitations.md)).
 
 ## Conventions
 
@@ -238,5 +272,10 @@ checks are not automated yet (see [known-limitations.md](known-limitations.md)).
   without freeing its places; stress validation reported a change's own error twice; the
   pathway measured its own minimum width and never shrank to its frame; choosing a link in
   the pathway's details lost focus, so Escape stopped working; a model definition that failed
-  to load showed "Loading…" for ever.
+  to load showed "Loading…" for ever. Phase 6 examples: a coverage finding had a simulation
+  step without saying it was not a forecast (caught by the check every insight passes); the
+  workspace capped exposure edges, so a listed company could miss an exposure; the same
+  finding was graded differently in the workspace and the dossier; each company's latest
+  execution was read from the 500 most recent rows only; the same sensitivity step was
+  suggested twice in two wordings.
 - Never weaken a test to make it pass; never skip one.

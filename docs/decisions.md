@@ -1,10 +1,11 @@
 # Technology decisions
 
-Short records of the choices made in Phases 1 to 5, why, and what would make us revisit
+Short records of the choices made in Phases 1 to 6, why, and what would make us revisit
 them. Phase 2 decisions start at [13](#13-world-bank-indicators-as-the-first-provider-fred-rejected),
 Phase 3 decisions at [23](#23-the-knowledge-graph-lives-in-the-existing-relational-database),
 Phase 4 decisions at [33](#33-one-narrow-domain-first-an-airline-fuel-cost-shock),
-Phase 5 decisions at [43](#43-several-narrow-models-composed-by-line-items).
+Phase 5 decisions at [43](#43-several-narrow-models-composed-by-line-items),
+Phase 6 decisions at [54](#54-statements-come-only-from-numbered-rules-with-evidence-chains).
 
 ## 1. Monorepo with a Python API and a TypeScript web client
 
@@ -608,3 +609,142 @@ sensitivity are written in the project and tested; compression uses middleware F
 already ships.
 **Why.** As in 21, 32 and 42.
 **Revisit** with a shared job queue (see 47).
+
+## 54. Statements come only from numbered rules, with evidence chains
+
+**Decision.** Financial Intelligence states nothing except through one of 19 documented rules
+(D01–D06, S01–S06, G01, X01, E01–E03, C01–C02). A rule fills a sentence template with
+computed values and attaches the chain of steps that produced it, each with its basis and
+references. An insight without a chain cannot be built (`ChainError`), and a test checks
+every insight the API returns for its chain, grade, not-a-forecast limitation and forbidden
+words ("will", "caused", "guarantee", "recommend", …). No language model generates text.
+**Why.** The brief asks for intelligence that can be checked, not summaries. A template with
+computed values can be traced to records and tested. Free text cannot, and it invites
+causal and predictive language the data does not support.
+**Consequence.** RUMIN says nothing that no rule covers. Findings are fewer and plainer than a
+generated summary, and every one can be walked back to stored records.
+**Revisit** when an AI Analyst phrases findings (Phase 7): it may reword the brief (decision
+62) but must cite insight ids and quote only its numbers.
+
+## 55. The evidence grade is the weakest link, not a probability
+
+**Decision.** Every insight is graded by the weakest step of its chain: observed > documented >
+curated > simulated > assumed > unverified. Relationships are graded by their Phase 3
+evidence status, simulations as simulated, and observations, calculations and RUMIN's own
+records as observed. A chain with a simulation is marked conditional on it. The grade is
+shown as a word and a line pattern, never as a number.
+**Why.** As in 25: a confidence score would claim a precision nobody has. The weakest link says
+what a statement actually rests on. An exposure finding built on an assumed relationship is
+*assumed*, however exact the arithmetic around it.
+**Consequence.** On the sample network, every exposure finding is *assumed*, which is the honest
+grade of illustrative data.
+**Revisit** if evidence-backed relationships with measured effects become common, and the
+graph starts to carry effect sizes with uncertainty.
+
+## 56. Thresholds are configuration, recorded with every result; no composite score
+
+**Decision.** What counts as a change, a trend, high volatility, an unusual move or a
+concentrated dependency is decided by nine named thresholds. Each has a documented default,
+bounds and a reason, can be overridden per request (query parameters, or the body of a
+stored analysis), is validated with its field, and is recorded in every result. Signals
+report the quantities they compute. There is no composite or risk score.
+**Why.** A detected change is a test result, and a reader must see which test. Scores that
+combine unlike quantities (a count of relationships, a t statistic, a simulated amount)
+mean nothing definable.
+**Revisit** per-series thresholds when monthly and daily data arrive.
+
+## 57. Exact, descriptive statistics written in the project
+
+**Decision.** Changes, least-squares trends with a t test, sample standard deviations,
+percentile ranks, and the modified z-score (median and MAD) are computed in exact decimal
+arithmetic in `stats.py`. The critical values of Student's t come from the standard table,
+taking the stricter row between two. No statistics library is added.
+**Why.** The calculations are few and short, exactness makes results hashable and reproducible
+(as in 35), and hand-checked tests pin every one. A library would bring floating point and a
+dependency for no gain.
+**Consequence.** No estimation, forecasting or multiple-testing correction exists, and the
+documentation says so.
+**Revisit** with Phase 9 (probabilistic simulation, estimation), where a statistics library
+would be evaluated like any dependency.
+
+## 58. Exposure comes only from validated edges, and says *that*, never *how much*
+
+**Decision.** Exposure paths use only edges current in the latest completed build that passed
+every validation rule: direct, via the industry, and up to two `influences` hops upstream.
+Supply and credit relationships and context (industry, sector, country, currency,
+competitors) are listed apart, never as exposure. Every path keeps each edge's evidence
+status, and an `evidence_backed` filter keeps only cited ones.
+**Why.** The graph records that a company is exposed, not by how much (25, 45). Treating a
+connection as a size or a cause would invent numbers.
+**Revisit** when exposures carry measured sizes with provenance.
+
+## 59. Stored results are read, never recomputed; interpretations are labelled previews
+
+**Decision.** Contributions, sensitivities and results are read from stored executions and
+runs, and their residuals are reported. The one place Financial Intelligence runs models is
+S06, the *model interpretation* of an observed change. It applies the change alone to a
+stored scenario version, runs it as a preview, never stores it, and labels it an
+interpretation in its statement, chain and limitations.
+**Why.** Recomputing would duplicate the engine and could disagree with what was stored.
+Setting an observed change beside what the models make of it is useful only if the two are
+never confused.
+**Revisit** if interpretations should be kept; they would then need their own stored
+records and provenance, like executions.
+
+## 60. Reads recompute from the store; stored analyses are fingerprinted snapshots
+
+**Decision.** Every read computes its analysis from the current store and writes nothing.
+`POST /intelligence/analyses` stores a snapshot (the result as returned, its thresholds, a
+fingerprint of everything it read, and SHA-256 hashes of both) in `intelligence_analyses`
+(migration `0006`). Snapshots are never updated, recomputed or deleted. Reading one back
+compares its fingerprint with the store and reports it as current or stale, with what
+changed.
+**Why.** An analysis must always reflect the latest revision of every value, and a record of
+what was concluded must never silently change. A snapshot that knows it is stale serves
+both.
+**Revisit** retention and deletion with authentication (Phase 10); caching reads if they
+become slow.
+
+## 61. The workspace is bounded by companies, never by edges
+
+**Decision.** The workspace lists the first 200 companies by name, with every validated edge
+their paths use, and the latest execution of each (chosen in the database). The coverage
+reports the total and that the listing is truncated. Reads that could grow (values per
+series, revisions, executions per entity, graph changes, shared-driver findings) each have a
+stated bound.
+**Why.** An early version capped the edges, which could show a listed company without an
+exposure it has. Bounding the companies keeps each listed company complete, and a test
+compares each with its own analysis. Measured on SYNTHETIC networks of up to 20,000
+companies, the overview stays near 0.3 s.
+**Revisit** with search and paging over companies, or with precomputed exposure per build.
+
+## 62. A versioned brief for the AI Analyst; the model never calculates
+
+**Decision.** `GET /intelligence/entities/{key}/brief` returns `rumin.intelligence.brief/1`: the
+entity's observations, exposures, relationships, drivers, simulation results, entered
+figures, assumptions, every insight with its chain, limitations and next steps, and five
+narration rules. The first rule is to quote numbers only from the brief and never compute
+new ones.
+**Why.** Phase 7 will phrase findings with a language model. Giving it structured facts with
+references and rules, rather than asking it to analyse, keeps every number traceable, and
+lets its output be checked mechanically.
+**Revisit** the format with Phase 7; a breaking change needs `/2`.
+
+## 63. A ledger with evidence chains, not a dashboard of scores
+
+**Decision.** The interface lists findings as ruled rows grouped by kind of knowledge, each
+opening into its evidence chain (the module's signature element). Grades are line patterns
+with a word, reusing the graph's patterns, never colour alone. Exposure is a table of
+companies × variables, drivers are one-hue bars from zero with printed values, and
+thresholds, tabs and filters live in the URL. The sky-blue accent is kept for the subject in
+focus, the step that sets a grade and the entity at the end of a path.
+**Why.** Gauges, scores and equal cards are the generic answer and would present undefined
+numbers. The ledger fits a system whose rule is "no statement without evidence".
+**Revisit** never for the principle; the layout may change.
+
+## 64. Still no new dependencies
+
+**Decision.** Phase 6 adds no runtime or development dependency. The statistics, the evidence
+model, the rules, the brief and the interface are written in the project and tested.
+**Why.** As in 21, 32, 42 and 53.
+**Revisit** with Phase 9's statistical needs (see 57).

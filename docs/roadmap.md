@@ -10,8 +10,8 @@ uncertainty are never blurred.
 | **2** | **Financial data infrastructure** | **Done:** provider layer (World Bank), licensed price-file import, exact decimals, provenance and revisions, data-quality rules, job tracking, read-only data API, Data Explorer ([report](phases/phase-2-report.md)) |
 | **3** | **Financial knowledge graph** | **Done:** a graph of every record RUMIN holds (9 node types, 18 edge types) with evidence on every edge, conservative entity resolution, validation and build reports, neighbourhoods, shortest paths, components and metrics, a read-only graph API and the Knowledge Graph explorer ([report](phases/phase-3-report.md)). Centrality and propagation were deliberately left out ([why](decisions.md#30-no-centrality-weighted-paths-or-community-detection-yet)) |
 | **4** | **Simulation engine** | **Done:** a versioned model registry and its first model (an airline fuel-cost shock: crude oil, jet fuel and the exchange rate through hedging and a lagged fare pass-through), exact decimals, propagation only along confirmed graph relationships, Shapley contributions, one-at-a-time sensitivity, append-only runs with provenance and verification, the simulation API and the Simulation preview ([report](phases/phase-4-report.md)). Monte Carlo was deliberately deferred ([why](decisions.md#39-one-at-a-time-sensitivity-points-outside-a-range-are-skipped)) |
-| **5** | **Scenario Lab** | **Done in this build:** versioned scenarios executed through the model registry (five models, six versions), a planner that says which models apply and why, a bounded background runner with recorded stages, cancellation and time limits, the Lab's aggregation equations, the modelled pathway with graph context kept apart, baseline against scenario, months with a replay, stress cases, one-at-a-time sensitivity, explanations from stored runs, history, reproducibility checks and comparisons, templates built on implemented models, and the Scenario Lab interface ([report](phases/phase-5-report.md)). Demand and supply-chain shocks were deliberately left out ([why](decisions.md#43-several-narrow-models-composed-by-line-items)) |
-| 6 | Financial intelligence | Indicators, explanations and reports built on data and simulations |
+| **5** | **Scenario Lab** | **Done:** versioned scenarios executed through the model registry (five models, six versions), a planner that says which models apply and why, a bounded background runner with recorded stages, cancellation and time limits, the Lab's aggregation equations, the modelled pathway with graph context kept apart, baseline against scenario, months with a replay, stress cases, one-at-a-time sensitivity, explanations from stored runs, history, reproducibility checks and comparisons, templates built on implemented models, and the Scenario Lab interface ([report](phases/phase-5-report.md)). Demand and supply-chain shocks were deliberately left out ([why](decisions.md#43-several-narrow-models-composed-by-line-items)) |
+| **6** | **Financial intelligence** | **Done in this build:** findings from 19 documented rules over stored observations, validated graph relationships and stored executions, each with its evidence chain and grade (the weakest link); change detection, revisions, trends, volatility and unusual moves against configurable thresholds; exposure paths and a companies × variables matrix; drivers from stored contributions; model interpretations of observed changes; dossiers per company and industry; a structured brief for the AI Analyst; stored, fingerprinted analyses that know when they are stale; the Financial Intelligence interface ([report](phases/phase-6-report.md)). Exposure sizes and reports as documents were left for later ([why](phases/phase-6-report.md#10-verification-against-the-brief)) |
 | 7 | AI Analyst | Questions answered from the model's data, assumptions and runs, with citations |
 | 8 | 3D financial universe | A Three.js view of the same model and layout |
 | 9 | Advanced simulation & validation | Back-testing, calibration, model validation, evidence upgrades |
@@ -90,7 +90,48 @@ scenario profile in the Lab. Still open:
    API accepts them; the page runs the defaults).
 7. **Browser end-to-end tests** of the Lab's main flow in CI (see the platform follow-ups).
 
+## Intelligence follow-ups
+
+1. **Real observations.** Run the World Bank retrieval where it is reachable and review
+   the observed-data findings on real values (every one shown so far used SYNTHETIC
+   values). Then add monthly exchange and policy rates and fuel prices from licensed
+   sources, so windows, anomalies and volatility have enough history (data follow-ups 1–2).
+2. **Exposure sizes with provenance** (still open from the Phase 6 recommendations below):
+   shares of revenue in dollars, of costs in fuel, of debt at a floating rate, as sourced
+   records, so exposure can say *how much* where a source does.
+3. **Evidence-backed relationships** for the exposures that matter, so findings can be graded
+   better than *assumed* (graph follow-up 4).
+4. **Per-series thresholds and a multiple-testing control** once many series are stored.
+5. **Reports as documents**: a dossier or a stored analysis rendered as a document with every
+   figure traceable, still without generated narrative.
+6. **Search and paging over companies** instead of the first 200 by name, or exposure
+   precomputed per build.
+7. **Retention for stored analyses** with authentication (Phase 10).
+
+## Recommendations for Phase 7 (AI Analyst)
+
+Phase 7 should phrase what Phase 6 computes, never compute it:
+
+1. **The brief as the only input.** The Analyst receives `rumin.intelligence.brief/1` (and the
+   overview for workspace questions) and answers only from it, following its narration
+   rules.
+2. **Mechanical checking before display.** Every number in an answer must appear in the brief,
+   and every sentence must cite an insight id whose chain leads to stored records. An answer
+   that fails is not shown, and the check is tested.
+3. **Grades and labels carried into the answer**: *simulated, not a forecast*, *assumed*, and
+   what is not known, stated where they apply.
+4. **Questions mapped to rules**: *what changed*, *who is exposed*, *what drives this result*,
+   *what should I check next*, each answered by the rules and data that exist, and *cannot say*
+   otherwise.
+5. **A local or self-hosted model option** and a clear data policy before any external model
+   sees data, together with authentication (Phase 10).
+
 ## Recommendations for Phase 6 (financial intelligence)
+
+Written at the end of Phase 5. Items 1 and 3 were done in Phase 6 (indicators from executions
+became the drivers and signals; reports became dossiers, briefs and stored analyses, as
+structured records rather than documents); items 2 and 4 remain open (see the intelligence
+follow-ups above).
 
 Phase 6 should build on what Phase 5 stores rather than beside it:
 

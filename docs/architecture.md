@@ -11,8 +11,11 @@ stored data, with every run stored append-only in the same database
 ([the simulation architecture](simulation/architecture.md)). Phase 5 added the Scenario
 Lab: versioned scenarios executed through the model registry on a bounded background worker
 pool, with their results, pathways, explanations, sensitivity analyses and comparisons
-([the Scenario Lab architecture](scenario-lab/architecture.md)). Later phases — financial
-intelligence (6), the AI analyst (7), the 3D universe (8) — extend it without restructuring
+([the Scenario Lab architecture](scenario-lab/architecture.md)). Phase 6 added Financial
+Intelligence: a read-only analysis layer over the stored observations, the graph and the
+executions, whose findings each carry the evidence chain they rest on, with stored analyses
+as append-only snapshots ([the intelligence architecture](intelligence/architecture.md)).
+Later phases — the AI analyst (7), the 3D universe (8) — extend it without restructuring
 it.
 
 ```mermaid
@@ -28,6 +31,7 @@ flowchart LR
         SIM["Simulation engine<br/>registered models · validation ·<br/>propagation · sensitivity"]
         LAB["Scenario Lab<br/>plan · execute · aggregate ·<br/>pathways · explain · compare"]
         RUN["Execution runner<br/>bounded thread pool<br/>(2 running, 8 queued, 20 s)"]
+        INT["Financial Intelligence<br/>exposure · changes · signals ·<br/>drivers · rules · evidence chains"]
     end
     DB[("SQLite (dev)<br/>PostgreSQL (prod)")]
     SEED["Seed loader<br/>(validated JSON dataset)"]
@@ -48,6 +52,9 @@ flowchart LR
     S --> SIM
     S --> LAB
     LAB --> RUN
+    S --> INT
+    INT -- "reads observations, graph,<br/>executions; stores analyses<br/>(append-only)" --> DB
+    INT -- "interpretation previews" --> LAB
     RUN -- "runs each model" --> SIM
     LAB -- "versions, executions,<br/>results (append-only once final)" --> DB
     SIM -- "reads graph + stored data;<br/>stores runs (append-only)" --> DB
@@ -68,7 +75,9 @@ so no anonymous HTTP client can make RUMIN send requests or change data it did n
 (there is no authentication yet). The graph API is read-only. The API's writes are
 scenarios and their versions (a save never overwrites: it adds a version), and — since
 Phase 4 — simulation runs, scenario executions and sensitivity analyses, which are
-append-only once final and never change the data or the graph they read.
+append-only once final and never change the data or the graph they read. Phase 6 adds
+stored intelligence analyses, append-only snapshots; every other intelligence read writes
+nothing.
 
 ## Backend (`backend/app`)
 
@@ -78,13 +87,14 @@ Layered so that each layer depends only on the ones below it:
 |---|---|---|
 | HTTP | `api/` | Routes, parameters, status codes, OpenAPI descriptions. No SQL, no business rules. |
 | Contract | `schemas/` | Pydantic models for every request and response: validation, serialisation, the OpenAPI schema. |
-| Services | `services/` | Queries and use cases: reference data, the network projection, scenarios and their versions, the Scenario Lab (plans, previews, executions, results, pathways, explanations, sensitivity, comparisons, templates), system status, the graph's read logic (limits, filters, explanations) and the simulation API (runs, explanations, verification, sensitivity). |
+| Services | `services/` | Queries and use cases: reference data, the network projection, scenarios and their versions, the Scenario Lab (plans, previews, executions, results, pathways, explanations, sensitivity, comparisons, templates), system status, the graph's read logic (limits, filters, explanations), the simulation API (runs, explanations, verification, sensitivity) and Financial Intelligence (overview, dossiers, briefs, thresholds, stored analyses and their freshness). |
 | Domain | `domain/` | Pure definitions: enumerations, the relationship-type registry (what each edge type means and may connect), the graph's node, edge and evidence-status registry, scenario change limits. |
 | Persistence | `models/`, `db/` | SQLAlchemy ORM models, session management, portable column types (UTC datetimes, exact decimals), the seed loader. |
 | Ingestion | `ingestion/` | Providers, HTTP with throttling and retries, normalisation, quality rules, persistence with revisions, job tracking, the command line ([details](data/architecture.md)). |
 | Graph | `graph/` | The knowledge graph: construction rules, entity resolution, validation, persistence, the build command, algorithms (BFS, paths, components) and the typed read interface the API and the simulation engine use ([details](graph/architecture.md)). |
 | Simulation | `simulation/` | The simulation engine: the versioned model registry and five models, exact-decimal arithmetic, units, input validation, controlled propagation through confirmed graph relationships, timed changes and percentage-point shocks, execution with every step recorded, Shapley contributions, sensitivity analysis, explanations and append-only persistence ([details](simulation/architecture.md)). |
 | Scenario Lab | `scenario_lab/` | The scenario specification and its validation, the planner (which models apply and why), scenario profiles, the executor and its stages, the bounded runner, the Lab's aggregation equations, pathways, explanations, one-at-a-time sensitivity, comparison and templates ([details](scenario-lab/architecture.md)). |
+| Financial Intelligence | `intelligence/` | The read-only analysis layer: exact statistics, thresholds, the evidence model (steps, grades, `ChainError`), validated graph slices, exposure paths, changes and revisions, relationship changes, drivers from stored contributions, signals, the 19 insight rules, the model interpretation of observed changes, the module registry, the two scopes (entity, workspace) and the brief ([details](intelligence/architecture.md)). |
 | Cross-cutting | `core/` | Settings, logging, error envelope and handlers, middleware. |
 
 Request lifecycle: the **middleware** assigns a request ID, enforces the body-size limit
@@ -134,11 +144,12 @@ pages).
 |---|---|
 | `app/` | Route table, theme and motion preferences, the module registry (names, status, phase of each product area) |
 | `layouts/` | The application shell: header, navigation, live workspace status, footer |
-| `pages/` | One component per route: Landing, Overview, Universe, Knowledge Graph, Data Explorer (with series, instrument and ingestion-run pages), Simulation (with a stored run's page), Scenario Lab, AI Analyst, System, not-found and error pages |
+| `pages/` | One component per route: Landing, Overview, Universe, Knowledge Graph, Data Explorer (with series, instrument and ingestion-run pages), Simulation (with a stored run's page), Scenario Lab, Financial Intelligence (the workspace, a dossier, a stored analysis), AI Analyst, System, not-found and error pages |
 | `features/network/` | Everything about the financial network (below) |
 | `features/graph/` | The Knowledge Graph explorer: its state and history, the view model, deterministic layouts, encoding, canvas and panels ([details](graph/explorer.md)) |
 | `features/data/` | The time-series chart and its arithmetic, exact-value tables, provenance, freshness and quality components |
 | `features/scenarioLab/` | The Scenario Lab: the draft model and its conversion to the API body (pure), the builder, the live preview and execution hooks, the pathway layout (pure) and canvas, the results panel, execution strip, timeline and the analysis, explanation, history and comparison views ([details](scenario-lab/interface.md)) |
+| `features/intelligence/` | Financial Intelligence: the findings ledger and the evidence chain, grade marks, the exposure matrix and paths, drivers, signals, history, sources and the brief, the thresholds panel and subjects, the dashboard's latest findings, and display formatting that only rounds the API's exact strings ([details](intelligence/interface.md)) |
 | `features/simulation/` | The Simulation preview: the input form built from a model definition, exact-decimal formatting, the pathway layout, the result tables and charts, provenance and sensitivity panels ([details](simulation/preview.md)) |
 | `components/` | Shared UI primitives |
 | `hooks/` | `useApiResource` (shared request cache), element size, media queries |
@@ -210,4 +221,8 @@ shown with the simulated-output badge the UI already had. Scenario Lab execution
 5) keep the same labels: a scenario's changes are scenario inputs, its baselines are the
 user's figures held constant (inputs, not forecasts), every scenario value is simulated,
 and graph relationships the Lab only cites are served as `context_only`, apart from the
-ones the engine propagated along.
+ones the engine propagated along. Financial Intelligence (Phase 6) carries the categories
+into its findings: every step of an evidence chain has a basis (observation, calculation,
+relationship with its evidence status, record, simulation, assumption, threshold), and every
+finding is graded by its weakest step, so an observed change, a stated exposure, a simulated
+result and a model interpretation are never presented as the same kind of knowledge.

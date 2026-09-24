@@ -100,6 +100,9 @@ scale from `--text-2xs` (11 px) to `--text-display` (fluid, 40–68 px).
   system asks for reduced motion or the reader chooses *Reduced* on the System page.
 - Content is at most 90 rem wide with a fluid gutter; layouts adapt at 40 rem (phone),
   56 rem, 64 rem and 72 rem.
+- The header navigation holds nine modules. It stays in the header above 72 rem (below
+  90 rem the workspace status drops its detail text to make room) and collapses into the
+  menu at 72 rem and below.
 
 ## The financial network
 
@@ -198,6 +201,23 @@ bottom. Details: [the interface](scenario-lab/interface.md).
 | Status | The execution's stages as numbered chips with their recorded durations; ✓ when stored; the running stage's marker pulses only while the server reports it | Progress is the server's, never simulated |
 | Field messages | Red with an alert icon for an error; amber for a warning; neutral with a circle for a value still needed before the first save | A template's first view is a checklist, not a wall of errors |
 
+## Financial Intelligence (Phase 6)
+
+Financial Intelligence (`/intelligence`) is a ledger, not a dashboard: subjects on the left,
+findings as ruled rows on the right, each opening into the evidence it rests on. It adds no
+colour token. Details: [the interface](intelligence/interface.md).
+
+| What | Encoding | Why |
+|---|---|---|
+| Evidence grade | A short line sample and the grade's word: heavy solid (observed), thin solid (documented), dashes (curated), short dashes (simulated), dash-dot (assumed), dots (unverified) | The graph's own patterns for relationship evidence, extended to observations and simulations; never colour alone |
+| The evidence chain (the signature element) | An ordered list of steps on a thin rule; each step's basis as a small label, its sentence, its value in tabular figures and its records; the step that sets the grade outlined in sky blue and marked *Sets the grade* | One glance says what a statement rests on and which link limits it |
+| Findings | Ruled rows grouped by kind of knowledge (observed data, simulations, relationships and exposure, coverage), each with its kind, headline, grade and period; no cards, no scores, no ranking | Rows keep equal weight; the difference between an observation and an assumption lives in the grade |
+| Exposure matrix | A table of companies × variables; a cell names the channels (C, R, F) and its border says how the variable reaches the company: solid (directly), dashed (through its industry), dotted (only upstream); a legend under the table; every cell has a sentence for screen readers | A table answers "who is exposed to what" and reads as text |
+| Exposure paths | A line of hops from the variable to the entity, each hop drawn with its relationship's evidence pattern; the entity at the end outlined in sky blue | The path is the evidence |
+| Drivers | One-hue bars from zero (right for an increase, left for a decrease) in a table, the amount, share and effect per unit printed on every row | The dataviz rules: one hue, values printed, no legend to decode |
+| Accent | Sky blue only for the subject in focus in the rail, the chain step that sets the grade and the entity at the end of a path | Restraint: blue marks where to look, never a value |
+| Status | Red for a refused threshold field; amber for notices and a stale stored analysis; green for a current one | Status colours only mean status, always with words |
+
 ## Knowledge labels
 
 The five epistemic categories use one glyph each, everywhere (badges, legend, landing):
@@ -241,5 +261,6 @@ its source), `PageHeader`, `Icon`, `Wordmark`, and the loading, error and empty 
   save results; form errors are listed in a summary that links to each field.
 - Focus is always visible (sky-blue ring, ≥ 3 : 1).
 - Nothing relies on colour alone; contrast as above; reduced motion honoured.
-- Reviewed in Chromium at 1440 × 900, 1280 × 800 and 390 × 844 (the graph explorer also at
-  820 × 1180), in both themes; there are no automated visual or screen-reader tests yet.
+- Reviewed in Chromium at 1440 × 900, 1280 × 800 and 390 × 844 (the graph explorer and
+  Financial Intelligence also at tablet size), in both themes; there are no automated visual
+  or screen-reader tests yet.

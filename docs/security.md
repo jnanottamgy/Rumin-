@@ -183,6 +183,29 @@ those licences when sharing a database or its exports.
   it. RUMIN returns no secrets and has no sessions, so compression does not expose a secret
   to length-based attacks; this is to be reviewed with authentication (Phase 10).
 
+### Financial Intelligence (Phase 6)
+
+- **Reads write nothing.** Every intelligence read computes its analysis from the store and
+  changes no table. The only write is a stored analysis, `POST /intelligence/analyses`, and
+  stored analyses are **append-only**: no code path updates or deletes one, and the API has no
+  route that could (`DELETE` answers 405). Their hashes (`inputs_hash`, `result_hash`) let a
+  reader check that a snapshot is unchanged.
+- **Validated, bounded input.** Entity and variable keys are checked against the graph's key
+  pattern (at most 128 characters); a key that is not a company, industry or economic
+  variable is refused (422), an unknown one answers 404. Thresholds are exact decimals or
+  integers matched by pattern, then checked against their documented bounds; every problem is
+  reported with its field and nothing is clipped. A stored analysis takes at most 20
+  thresholds, a label of at most 200 characters of plain text, and no unknown fields.
+- **Bounded work.** The workspace reads the first 200 companies; values per series, revisions,
+  executions per entity, graph changes and served histories each have a stated limit
+  ([architecture](intelligence/architecture.md#bounds)). The one computation beyond reading,
+  the model interpretation of an observed change, runs the stored scenario's models once per
+  related series as an unstored preview, under the engine's own limits.
+- **No language model and no outbound requests.** No text is generated: rules fill templates
+  with computed values. Nothing contacts a provider or any external service. The entity
+  brief is prepared for a future AI Analyst but sent nowhere; before one is connected, a data
+  policy and authentication are needed (Phase 7, Phase 10).
+
 ### Secrets and supply chain
 
 - **No secrets exist yet**, and none are in the repository: `.env` files are git-ignored,
@@ -191,13 +214,13 @@ those licences when sharing a database or its exports.
   disposable databases. Future provider keys belong in the backend environment or a secret
   store (see [environment](environment.md#secrets)).
 - Dependencies are pinned by lock files (`backend/uv.lock`, `frontend/package-lock.json`)
-  and installed with `--frozen` / `npm ci`. **Phases 2, 3, 4 and 5 added no dependencies**
-  (HTTP, CSV, gzip, hashing, threads and exact decimals come from the Python standard
-  library, response compression from Starlette; the charts, the graph algorithms, the
-  layouts, the simulation engine and the Scenario Lab are written in the project). When
-  Phase 5 was built (2026-09-24), `npm audit` reported no known vulnerabilities, and
-  `pip-audit` (run through `uvx`, not a project dependency) found none in the locked Python
-  dependencies.
+  and installed with `--frozen` / `npm ci`. **Phases 2, 3, 4, 5 and 6 added no
+  dependencies** (HTTP, CSV, gzip, hashing, threads and exact decimals come from the Python
+  standard library, response compression from Starlette; the charts, the graph algorithms,
+  the layouts, the simulation engine, the Scenario Lab and the intelligence statistics are
+  written in the project). When Phase 5 was built (2026-09-24), `npm audit` reported no known
+  vulnerabilities, and `pip-audit` (run through `uvx`, not a project dependency) found none
+  in the locked Python dependencies; Phase 6 changed no lock file.
 - CI runs with read-only repository permissions.
 
 ## Not yet in place
@@ -212,7 +235,7 @@ These are deliberate gaps, listed so nobody assumes otherwise:
 | A formal security review | Before any hosted or multi-user use |
 | TLS termination, deployment hardening, a Content-Security-Policy for the web client's HTML (it needs a hash for the small inline theme script in `index.html`) | Phase 10, with deployment |
 | Audit log of changes | With authentication |
-| Limits on how many simulation runs, scenario versions, executions and analyses can be stored, and a retention policy for them | With authentication (Phase 10) |
+| Limits on how many simulation runs, scenario versions, executions, sensitivity analyses and stored intelligence analyses can be stored, and a retention policy for them | With authentication (Phase 10) |
 | Automated dependency and secret scanning in CI (e.g. `pip-audit`, `npm audit`, secret scanning) | Next: cheap to add once the repository's CI is running |
 | Backups and retention policy | With a production database |
 

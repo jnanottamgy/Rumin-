@@ -692,6 +692,39 @@ with `id`, `title` and `reason` (no registered model simulates it: demand, suppl
 | `expected_outputs` | object | The `lines` and items the models contribute to, the `derived` lines and metrics, and each model's own `model_outputs`. |
 | `scenario` | object | The template as a scenario body to start from. It holds no company figures: RUMIN never fills those in. |
 
+## Financial intelligence
+
+Financial Intelligence computes its answers from the tables above; its response fields are
+described in the OpenAPI contract and in [`docs/intelligence/`](intelligence/README.md).
+The one table it writes:
+
+### Stored analysis
+
+`intelligence_analyses`: a snapshot of an analysis of one entity or of the workspace, with
+what it read. Never updated or deleted.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `id` | UUID | The stored analysis. |
+| `scope` | `entity` \| `workspace` | What was analysed. |
+| `subject_key` | string (≤ 128) or null | The entity's graph key (`company:…`, `industry:…`); null for the workspace. Not a foreign key: graph rows are derived and rebuilt. |
+| `subject_name` | string (≤ 200) | The entity's name at the time, or `Workspace`. |
+| `label` | string (≤ 200) or null | The label given when storing it, as plain text. |
+| `engine_version` | string | `INTELLIGENCE_VERSION` at the time (`1.0.0`). |
+| `thresholds` | JSON | Every threshold as used (defaults included): decimals as exact strings, `min_history` and `window` as integers; `window` is null when it followed the series' frequency. |
+| `graph_build_id` | integer or null | The graph build the analysis read; null without a completed build. |
+| `inputs` | JSON | The fingerprint: `engine_version`, `scope`, `subject`; `graph` (the build's id, finish time and source fingerprint); `data` (per series read: the number of stored rows and the highest row id; for the workspace, the same per instrument's price bars; for an entity, `related_series`); `executions` (entity: the ids of its latest 20 completed executions and the sensitivity analyses of the latest; workspace: the latest completed execution of each listed company and the number of completed executions). |
+| `inputs_hash` | hex string | SHA-256 of `inputs` (canonical JSON). |
+| `result` | JSON | The analysis exactly as the API returned it: the dossier (entity) or the overview (workspace), with every insight and its chain. |
+| `result_hash` | hex string | SHA-256 of `result` (canonical JSON). |
+| `insight_count` | integer | Number of insights in the result. |
+| `duration_ms` | integer | Time taken to compute it. |
+| `created_at` | UTC timestamp | When it was stored. |
+
+Reading an analysis back adds `freshness`, computed each time and never stored: `status`
+(`current` or `stale`), `changed` (`graph`, `data`, `executions`, `engine_version`, `subject`,
+`scope`), `checked_at` and a `message`.
+
 ## Sample dataset catalogue
 
 `rumin-sample` v1.0.0 — `backend/app/data/sample_dataset.json`. Relationship rationales are

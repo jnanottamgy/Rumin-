@@ -121,6 +121,27 @@ short:
   process: a second one's start-up recovery would mark the first one's running executions
   interrupted (they stop and store nothing; no final execution changes).
 
+## Financial Intelligence (Phase 6)
+
+The module's own list is in [intelligence/limitations.md](intelligence/limitations.md). In
+short:
+
+- **No real observations yet.** The World Bank was unreachable where RUMIN was built, so every
+  observed-data finding shown so far (changes, revisions, trends, volatility, unusual moves,
+  model interpretations) was produced from SYNTHETIC test values, labelled as such.
+- **Assumed exposure, never size.** Every exposure relationship in the sample is a model
+  assumption, so every exposure finding is graded *assumed*. The graph says that a company is
+  exposed, never how much.
+- **Descriptive statistics only.** Trends, volatility and unusual moves describe the stored
+  history, are not forecasts, and are not corrected for testing many series at once. The trend
+  test's assumptions rarely hold for economic series.
+- **A fixed set of 19 rules.** Nothing is said outside them. There is no ranking, no score and
+  no recommendation; next steps are analytical checks.
+- **Bounded workspace.** The first 200 companies by name; beyond that the coverage says it is
+  truncated. A dossier has no such limit.
+- **Stored analyses are append-only**, with no retention or deletion until authentication
+  exists, and their fingerprint marks them stale conservatively.
+
 ## Product
 
 - **Deterministic results on stated inputs.** The Simulation page runs one model at a time;
@@ -131,6 +152,7 @@ short:
   modelling assumptions written for demonstration, each with a rationale, none estimated
   or validated. Do not use them to reason about real companies or markets.
 - **No AI analyst.** The page explains the planned feature; no model is connected. Phase 7.
+  Financial Intelligence prepares a structured brief for it, which nothing consumes yet.
 - **Graph analytics are limited on purpose.** The knowledge graph (Phase 3) offers
   neighbourhoods, shortest paths in hops, components, degree and density. There is no
   centrality, no weighted path and no community detection, and effects are propagated
@@ -144,7 +166,7 @@ short:
 ## Platform
 
 - **No authentication or authorisation.** Anyone who can reach the API can read all data,
-  save scenarios, execute them and add simulation runs. Local use only until Phase 10. For the same reason ingestion cannot
+  save scenarios, execute them, add simulation runs and store analyses. Local use only until Phase 10. For the same reason ingestion cannot
   be started over HTTP. See [security.md](security.md).
 - **No inbound rate limiting, audit log or backups.** Outbound requests to providers are
   throttled; the API itself is not.
@@ -158,9 +180,10 @@ short:
   also at tablet size, with a scripted walk-through that is not part of CI); behaviour is
   covered by the jsdom suite and the live integration suite.
 - **Browsers:** developed and checked in Chromium only.
-- **No load testing** (concurrent users). The knowledge graph was benchmarked on
-  synthetic data on one machine ([performance](graph/performance.md)); nothing else was
-  measured beyond query design, build size and layout time.
+- **No load testing** (concurrent users). The knowledge graph, the Scenario Lab and Financial
+  Intelligence were benchmarked on one machine, the graph and the intelligence reads on
+  synthetic networks of up to 20,000 companies ([graph](graph/performance.md),
+  [Lab](scenario-lab/performance.md), [intelligence](intelligence/performance.md)).
 
 ## Repository
 

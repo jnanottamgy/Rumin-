@@ -156,6 +156,41 @@ Its profit before tax changes by −6,700,000 INR over 12 months
 ([worked by hand](scenario-lab/README.md#the-reference-example)). See
 [the Scenario Lab](scenario-lab/README.md) and [the API](api.md#scenario-lab).
 
+### Financial Intelligence (Phase 6)
+
+Nothing to load or configure: migration `0006` creates the one table it writes (stored
+analyses), and every other answer is computed from what is already stored. What it can say
+depends on what is there. **Build the knowledge graph** for exposure findings, **execute a
+scenario** for simulated findings, and **retrieve series** (`make ingest`) for observed
+changes, revisions, trends, volatility and unusual moves. Without them, the workspace says
+exactly what it cannot compute and why.
+
+In the browser, open <http://127.0.0.1:5173/intelligence>: the findings ledger, the exposure
+map, observed series, simulated impacts and relationship changes. Choose a company in the
+left rail for its dossier. Open any finding to see the evidence chain it rests on. Change the
+thresholds with *Thresholds*: they go into the address, so the view can be linked. *Store
+this analysis* keeps a snapshot that later says whether it is still current.
+
+Through the API:
+
+```bash
+API=http://127.0.0.1:8000/api/v1
+curl -s $API/intelligence/methods                                  # rules, signals, thresholds, grades
+curl -s $API/intelligence/overview                                 # the workspace
+curl -s "$API/intelligence/overview?relative_change_percent=3&trend_significance=0.10"
+curl -s $API/intelligence/entities/company:co_aerisca_airways      # a dossier
+curl -s $API/intelligence/entities/company:co_aerisca_airways/brief
+curl -s -X POST $API/intelligence/analyses -H 'Content-Type: application/json' \
+  -d '{"scope": "entity", "entity": "company:co_aerisca_airways", "label": "First look"}'
+curl -s $API/intelligence/analyses/<analysis id>                   # as stored, with freshness
+```
+
+Two scripts in `backend/scripts/` support development. `benchmark_intelligence.py` times the
+API on the sample network and on SYNTHETIC networks of up to 20,000 companies
+([performance](intelligence/performance.md)). `capture_intelligence_fixtures.py` regenerates
+the frontend's fixtures from a fresh backend ([testing](testing.md)). See [Financial
+Intelligence](intelligence/README.md) and [the API](api.md#financial-intelligence).
+
 ## 3. Frontend
 
 ```bash
@@ -225,4 +260,7 @@ See [testing.md](testing.md).
 | The Knowledge Graph page says **"The knowledge graph has not been built yet"** | Run `uv run python -m app.graph build` in `backend/` (or `make graph`), then reload the page. |
 | The Knowledge Graph page says **"The graph is older than its sources"** | Data changed after the last build. Rebuild it with `make graph`. On a running API the notice can take up to 30 seconds to appear; it clears as soon as a new build finishes. |
 | `✗ Graph build #n … is still running` | Another build is in progress. Wait for it; a build whose process died is closed automatically after an hour. |
+| Financial Intelligence says **"No series or instrument has two or more stored values"** | Nothing observed can be compared yet. Retrieve series (`make ingest`) or import a licensed price file; exposure and simulated findings do not need them. |
+| Every exposure finding is graded **assumed**, and *Only relationships backed by a cited source* shows nothing | Expected with the sample network: every exposure relationship in it is a model assumption ([evidence](intelligence/evidence.md)). |
+| A stored analysis says **Stale** | Something it read has changed since (the graph, stored values or executions). It still shows what it concluded then; store a new one for the current state. |
 | Start again from scratch | Stop the API, delete `backend/rumin.db`, then migrate, seed, load the catalogue and build the graph again. |
