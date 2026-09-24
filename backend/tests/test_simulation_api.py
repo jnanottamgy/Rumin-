@@ -135,15 +135,19 @@ def store_fx_observation(session: Session, value: str) -> None:
 
 
 def test_models_are_listed_with_their_version_and_status(client: TestClient) -> None:
-    [model] = get(client, "/simulation-models")
+    models = get(client, "/simulation-models")
 
-    assert (model["id"], model["version"], model["status"]) == (
-        "airline_fuel_cost",
-        "1.0.0",
-        "preview",
-    )
-    assert model["definition_hash"] == MODEL.definition_hash
-    assert model["runs"] == 0
+    assert [(item["id"], item["version"], item["status"]) for item in models] == [
+        ("airline_fuel_cost", "1.1.0", "preview"),
+        ("crude_linked_costs", "1.0.0", "preview"),
+        ("floating_rate_interest", "1.0.0", "preview"),
+        ("fx_exposure", "1.0.0", "preview"),
+        ("gas_linked_costs", "1.0.0", "preview"),
+    ]
+    airline = models[0]
+    assert airline["definition_hash"] == MODEL.definition_hash
+    assert airline["versions"] == ["1.1.0", "1.0.0"]
+    assert all(item["runs"] == 0 for item in models)
 
 
 def test_a_model_shows_which_graph_relationship_confirms_each_rule(
@@ -229,7 +233,7 @@ def test_a_run_is_stored_with_everything_needed_to_explain_it(
     assert outputs(run)["operating_profit_change"] == Decimal(-6_000_000)
     assert "not a forecast" in run["note"]
     assert run["random_seed"] is None  # deterministic: nothing is drawn at random
-    assert run["monthly"][0]["id"] == "jet_fuel_relative"
+    assert [series["id"] for series in run["monthly"]][:2] == ["fx_relative", "jet_fuel_relative"]
     assert all(len(series["values"]) == 12 for series in run["monthly"])
 
     knowledge = {item["id"]: item["knowledge"] for item in run["inputs"]}
@@ -561,7 +565,8 @@ def test_a_deprecated_version_keeps_its_runs_but_no_longer_runs(
     deprecated = with_model(status=SimulationModelStatus.DEPRECATED)
     monkeypatch.setattr(simulation_service, "REGISTRY", ModelRegistry([deprecated]))
 
-    error = post(client, "/simulations", {**body(), "model_version": "1.0.0"}, 422)
+    version = MODEL.definition.version
+    error = post(client, "/simulations", {**body(), "model_version": version}, 422)
 
     assert details(error) == [("model_version", "deprecated_model")]
 
@@ -584,7 +589,7 @@ def test_the_database_protects_stored_history(
         db_session.add(
             SimulationModelVersion(
                 model_id="airline_fuel_cost",
-                version="1.0.0",
+                version=run["model_version"],
                 name="Duplicate",
                 status=SimulationModelStatus.PREVIEW,
                 definition={},

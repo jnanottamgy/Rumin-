@@ -41,7 +41,23 @@ RELEASED = {
     (
         "airline_fuel_cost",
         "1.0.0",
-    ): "5758b04209995f7c10e621443cc8c2275ef3bc00221df42423eda8d2c70c8090"
+    ): "5758b04209995f7c10e621443cc8c2275ef3bc00221df42423eda8d2c70c8090",
+    (
+        "airline_fuel_cost",
+        "1.1.0",
+    ): "1e6ddaac9f18fed44bab55dd1bb12f192ff50326438aa331c7cb295ada15ed6f",
+    (
+        "crude_linked_costs",
+        "1.0.0",
+    ): "ed8d535e7e31a81e4abe98b3f2b492fe5348c85febd16fa4b94fa0989c5a4b29",
+    ("floating_rate_interest", "1.0.0"): (
+        "e11b2df833e9dbe2cb7146b0c3d0719304260e8a5c74852127996c64979fbe2d"
+    ),
+    ("fx_exposure", "1.0.0"): "1d0da6e5da1964c8910696394f6c905b4c2d5016c4bb9ed70dd94253890492a3",
+    (
+        "gas_linked_costs",
+        "1.0.0",
+    ): "7749e5d0ab262415b35c274813951433f5977be81198ad7c588ae3a1e8ee112f",
 }
 
 
@@ -77,14 +93,18 @@ def test_the_definition_hash_is_stable_and_sensitive_to_every_change() -> None:
 
 def test_the_registry_serves_the_latest_runnable_version() -> None:
     assert REGISTRY.get("airline_fuel_cost") is MODEL
+    assert MODEL.definition.version == "1.1.0"
+    first = REGISTRY.get("airline_fuel_cost", "1.0.0")
+    assert first is not None and first.definition.version == "1.0.0"  # still re-executable
     assert REGISTRY.get("airline_fuel_cost", "9.9.9") is None
     assert REGISTRY.get("no_such_model") is None
     assert version_key("1.10.0") > version_key("1.9.0")
 
-    newer = with_model(version="1.1.0")
-    registry = ModelRegistry([MODEL, newer])
+    newer = with_model(version="1.2.0")
+    registry = ModelRegistry([first, MODEL, newer])
     assert registry.get("airline_fuel_cost") is newer
     assert [m.definition.version for m in registry.versions("airline_fuel_cost")] == [
+        "1.2.0",
         "1.1.0",
         "1.0.0",
     ]

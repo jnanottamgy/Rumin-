@@ -2,14 +2,18 @@
 
 A *link* is a knowledge-graph relationship that one of a model's transmission rules
 accepts and that the latest graph build confirms, carrying the coefficient and lag the
-model's parameters give it. A *shock* is a permanent step change in a node's level,
-expressed as a log-change, starting in a given month.
+model's parameters give it. A *shock* is a step change in a node's level that takes effect
+in a given month and lasts until the end of the horizon or for a stated number of months.
+A shock to a price or an exchange rate is a log-change (kind ``log``); a shock to a rate is
+a change in percentage points (kind ``level``), which is applied at its own node and never
+carried along a log-linear link.
 
 The form is log-linear. A shock reaches a node along every simple path of links from the
 shocked node, scaled by the product of the path's coefficients and delayed by the sum of
 its lags:
 
-    ℓₙ(m) = Σ over paths p from a shock s to n, with startₛ + lagₚ ≤ m, of (Π βₑ for e in p) · ℓₛ
+    ℓₙ(m) = Σ over paths p from a shock s to n, with startₛ + lagₚ ≤ m ≤ endₛ + lagₚ,
+            of (Π βₑ for e in p) · ℓₛ
 
 The shocked node itself is the zero-length path (coefficient 1, lag 0). Safeguards:
 
@@ -29,11 +33,15 @@ from collections import defaultdict
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from decimal import Decimal
+from typing import Literal
 
 from app.simulation.decimal_math import ONE, ZERO, arithmetic
 
 HARD_MAX_DEPTH = 6
 HARD_MAX_PATHS = 5_000
+
+
+ShockKind = Literal["log", "level"]
 
 
 class TransmissionLimitError(ValueError):
@@ -54,8 +62,12 @@ class Link:
 class Shock:
     input_id: str
     node: str
+    # The change: a log-change for kind "log", percentage points for kind "level".
     log_change: Decimal
     start: int = 1
+    # The last month the change lasts (inclusive); None: until the end of the horizon.
+    end: int | None = None
+    kind: ShockKind = "log"
 
 
 @dataclass(frozen=True)
@@ -68,8 +80,11 @@ class PathContribution:
     lag: int
     # The first month the contribution applies (start of the shock + the path's lags).
     first_month: int
-    # coefficient × the shock's log-change: the path's full effect on its last node.
+    # coefficient × the shock's change: the path's full effect on its last node.
     log_change: Decimal
+    # The last month it applies (end of the shock + the path's lags); None: to the horizon.
+    last_month: int | None = None
+    kind: ShockKind = "log"
 
     @property
     def target(self) -> str:
@@ -90,7 +105,8 @@ class Propagation:
         return values[month - 1]
 
     def final(self, node: str) -> Decimal:
-        """The node's log-change once every lag has elapsed (the steady state)."""
+        """The node's change once every lag has elapsed, while the shocks last (the run
+        rate): the sum of every path's full effect on it."""
         with arithmetic():
             return sum((path.log_change for path in self.paths if path.target == node), ZERO)
 
@@ -125,6 +141,8 @@ def propagate(
         for shock in sorted(shocks, key=lambda item: (item.input_id, item.node)):
             if shock.start < 1:
                 raise ValueError(f"Shock {shock.input_id} starts before month 1.")
+            if shock.end is not None and shock.end < shock.start:
+                raise ValueError(f"Shock {shock.input_id} ends before it starts.")
             if shock.log_change == ZERO:
                 continue
             # Depth-first over simple paths; an explicit stack keeps deep graphs safe.
@@ -143,6 +161,8 @@ def propagate(
                         lag=lag,
                         first_month=shock.start + lag,
                         log_change=coefficient * shock.log_change,
+                        last_month=None if shock.end is None else shock.end + lag,
+                        kind=shock.kind,
                     )
                 )
                 if len(found) > max_paths:
@@ -150,8 +170,8 @@ def propagate(
                         f"More than {max_paths} transmission paths: the model's relationships "
                         "are too densely connected to trace every path."
                     )
-                if len(via) >= max_depth:
-                    continue
+                if len(via) >= max_depth or shock.kind == "level":
+                    continue  # a level change is applied at its own node only
                 # Reversed so that paths come out in (target, rule) order.
                 for link in reversed(outgoing.get(nodes[-1], [])):
                     if link.target in nodes:
@@ -168,7 +188,8 @@ def propagate(
         series: dict[str, list[Decimal]] = {}
         for path in found:
             values = series.setdefault(path.target, [ZERO] * horizon)
-            for month in range(max(path.first_month, 1), horizon + 1):
+            last = horizon if path.last_month is None else min(path.last_month, horizon)
+            for month in range(max(path.first_month, 1), last + 1):
                 values[month - 1] += path.log_change
 
     return Propagation(

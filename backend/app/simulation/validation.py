@@ -129,8 +129,11 @@ def decimal_places(value: Decimal) -> int:
 
 def _bound_text(definition: InputDefinition, bound: Decimal) -> str:
     unit = definition.unit or ""
-    suffix = " %" if unit in ("percent", "percent_change") else ""
-    return f"{text(bound)}{suffix}"
+    if unit in ("percent", "percent_change"):
+        return f"{text(bound)} %"
+    if unit == "percentage_points":
+        return f"{text(bound)} percentage points"
+    return text(bound)
 
 
 def check_range(definition: InputDefinition, value: Decimal) -> str | None:

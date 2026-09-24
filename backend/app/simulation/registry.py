@@ -12,7 +12,13 @@ from dataclasses import dataclass
 from functools import cached_property
 
 from app.simulation.definitions import ModelDefinition, ModelStatus, definition_hash
-from app.simulation.models import airline_fuel_cost
+from app.simulation.models import (
+    airline_fuel_cost,
+    airline_fuel_cost_1_1,
+    commodity_linked_costs,
+    floating_rate_interest,
+    fx_exposure,
+)
 from app.simulation.runtime import CheckFunction, ComputeFunction
 
 # The engine's own version: recorded with every run, part of its inputs hash.
@@ -70,10 +76,36 @@ class ModelRegistry:
 
 REGISTRY = ModelRegistry(
     [
+        # 1.0.0 stays registered unchanged so that its runs remain re-executable.
         RegisteredModel(
             definition=airline_fuel_cost.DEFINITION,
             check=airline_fuel_cost.check,
             compute=airline_fuel_cost.compute,
+        ),
+        RegisteredModel(
+            definition=airline_fuel_cost_1_1.DEFINITION,
+            check=airline_fuel_cost_1_1.check,
+            compute=airline_fuel_cost_1_1.compute,
+        ),
+        RegisteredModel(
+            definition=fx_exposure.DEFINITION,
+            check=fx_exposure.check,
+            compute=fx_exposure.compute,
+        ),
+        RegisteredModel(
+            definition=floating_rate_interest.DEFINITION,
+            check=floating_rate_interest.check,
+            compute=floating_rate_interest.compute,
+        ),
+        RegisteredModel(
+            definition=commodity_linked_costs.CRUDE_DEFINITION,
+            check=commodity_linked_costs.crude_check,
+            compute=commodity_linked_costs.crude_compute,
+        ),
+        RegisteredModel(
+            definition=commodity_linked_costs.GAS_DEFINITION,
+            check=commodity_linked_costs.gas_check,
+            compute=commodity_linked_costs.gas_compute,
         ),
     ]
 )

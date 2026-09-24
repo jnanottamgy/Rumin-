@@ -11,7 +11,9 @@ A definition says everything a model *is*, without executing anything:
 
 Definitions are plain frozen data. Their canonical JSON form is hashed (SHA-256): a run
 records the hash of the definition it used, and a stored model version may never change
-its definition without a new version number.
+its definition without a new version number. Optional fields added after the first
+release (the shock timing inputs) are left out of the canonical form while unset, so the
+hash of every definition released before them stays exactly as it was.
 """
 
 from __future__ import annotations
@@ -29,6 +31,16 @@ from app.domain.enums import SimulationModelStatus
 
 VERSION_PATTERN = re.compile(r"^\d+\.\d+\.\d+$")
 MODEL_ID_PATTERN = re.compile(r"^[a-z][a-z0-9_]{2,63}$")
+
+# Units a scenario input (a shock on a graph variable) may have: a percentage change of a
+# level (a price, an exchange rate) or a change in percentage points of a rate.
+PERCENT_CHANGE = "percent_change"
+PERCENTAGE_POINTS = "percentage_points"
+SHOCK_UNITS = frozenset({PERCENT_CHANGE, PERCENTAGE_POINTS})
+
+# ModelDefinition fields added after the first release; omitted from the canonical JSON
+# while None, so earlier definitions keep their hashes.
+OPTIONAL_DEFINITION_FIELDS = ("shock_start_input", "shock_duration_input")
 
 
 ModelStatus = SimulationModelStatus
@@ -254,6 +266,11 @@ class ModelDefinition:
     time_step: Literal["month"] = "month"
     max_horizon_months: int = 36
     max_propagation_depth: int = 4
+    # Integer settings that time every shock of a run: the month the changes take effect
+    # and how many months they last (0: until the end of the horizon). Without them,
+    # changes are permanent from month 1.
+    shock_start_input: str | None = None
+    shock_duration_input: str | None = None
 
     def __post_init__(self) -> None:
         if not MODEL_ID_PATTERN.match(self.id):
@@ -280,6 +297,27 @@ class ModelDefinition:
             raise ValueError("The sensitivity metric must be an output.")
         if self.horizon_input not in known:
             raise ValueError(f"{self.id} has no horizon input '{self.horizon_input}'.")
+        for name in (self.shock_start_input, self.shock_duration_input):
+            if name is not None and (
+                name not in known or self.input(name).kind is not InputKind.INTEGER
+            ):
+                raise ValueError(f"Shock timing input '{name}' is not an integer input.")
+        level_nodes = set()
+        for item in self.inputs:
+            if item.category is InputCategory.SCENARIO_INPUT and item.variable:
+                if item.unit not in SHOCK_UNITS:
+                    raise ValueError(
+                        f"Scenario input {item.id} shocks a graph variable, so its unit must be "
+                        f"one of {sorted(SHOCK_UNITS)}."
+                    )
+                if item.unit == PERCENTAGE_POINTS:
+                    level_nodes.add(item.variable)
+        for rule in self.transmission_rules:
+            if {rule.source, rule.target} & level_nodes:
+                raise ValueError(
+                    f"Rule {rule.id} touches a node shocked in percentage points; log-linear "
+                    "rules carry percentage changes only."
+                )
         for step in self.bridge:
             if step.output not in outputs:
                 raise ValueError(f"Bridge step refers to unknown output '{step.output}'.")
@@ -344,7 +382,11 @@ def plain(value: Any) -> Any:
 
 def to_json(definition: ModelDefinition) -> dict[str, Any]:
     """The definition as JSON-ready data (the form stored with each model version)."""
-    return plain(definition)  # type: ignore[no-any-return]
+    data: dict[str, Any] = plain(definition)
+    for name in OPTIONAL_DEFINITION_FIELDS:
+        if data.get(name) is None:
+            data.pop(name, None)
+    return data
 
 
 def canonical_json(data: Any) -> str:

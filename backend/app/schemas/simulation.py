@@ -536,7 +536,19 @@ class TransmissionPathRead(ApiModel):
     coefficient: DecimalString
     lag: int
     first_month: int
-    log_change: DecimalString
+    last_month: int | None = Field(
+        default=None,
+        description="The last month the path's effect lasts; null: until the end of the horizon.",
+    )
+    kind: Literal["log", "level"] = Field(
+        default="log",
+        description="`log`: the change is a log-change (prices, exchange rates). `level`: the "
+        "change is in percentage points (rates), applied at its own node only.",
+    )
+    log_change: DecimalString = Field(
+        description="The change the path carries to its last node: a log-change for kind "
+        "`log`, percentage points for kind `level`."
+    )
 
 
 class ModelVersionRead(ApiModel):

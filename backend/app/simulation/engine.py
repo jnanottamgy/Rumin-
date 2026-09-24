@@ -35,7 +35,7 @@ from app.simulation.decimal_math import (
     text,
     to_output,
 )
-from app.simulation.definitions import InputCategory, sha256
+from app.simulation.definitions import PERCENTAGE_POINTS, InputCategory, sha256
 from app.simulation.graph_context import GraphContext, load_graph_context, needed_rules
 from app.simulation.registry import ENGINE_VERSION, RegisteredModel
 from app.simulation.runtime import (
@@ -240,14 +240,33 @@ def links_for(model: RegisteredModel, values: ResolvedValues, graph: GraphContex
     return links
 
 
+def shock_window(model: RegisteredModel, values: ResolvedValues) -> tuple[int, int | None]:
+    """The first and last month (None: the end of the horizon) the run's changes last.
+
+    Models that declare no timing inputs have permanent changes from month 1.
+    """
+    definition = model.definition
+    start = values.integer(definition.shock_start_input) if definition.shock_start_input else 1
+    duration = (
+        values.integer(definition.shock_duration_input) if definition.shock_duration_input else 0
+    )
+    return start, (start + duration - 1 if duration > 0 else None)
+
+
 def _shocks(model: RegisteredModel, values: ResolvedValues) -> list[Shock]:
     shocks: list[Shock] = []
+    start, end = shock_window(model, values)
     with arithmetic():
         for input_id in _shock_inputs(model):
-            variable = model.definition.input(input_id).variable
+            item = model.definition.input(input_id)
+            variable = item.variable
             change = values.number(input_id)
-            if variable and change != ZERO:
-                shocks.append(Shock(input_id, variable, ln(ONE + change / HUNDRED)))
+            if not variable or change == ZERO:
+                continue
+            if item.unit == PERCENTAGE_POINTS:
+                shocks.append(Shock(input_id, variable, change, start, end, kind="level"))
+            else:
+                shocks.append(Shock(input_id, variable, ln(ONE + change / HUNDRED), start, end))
     return shocks
 
 
@@ -273,13 +292,21 @@ def _evaluate(
     return propagation, result
 
 
+def evaluate_result(
+    model: RegisteredModel, values: ResolvedValues, links: list[Link], horizon: int
+) -> ModelResult:
+    """The model's outputs and monthly series for ``values``, unrounded and without
+    recording steps (used by the Scenario Lab's stress cases and sensitivity analysis)."""
+    _, result = _evaluate(model, values, links, horizon, StepRecorder(enabled=False))
+    return result
+
+
 def evaluate_outputs(
     model: RegisteredModel, values: ResolvedValues, links: list[Link], horizon: int
 ) -> dict[str, Decimal]:
     """The model's scalar outputs for ``values``, without recording steps (used by
     contribution and sensitivity analysis)."""
-    _, result = _evaluate(model, values, links, horizon, StepRecorder(enabled=False))
-    return result.scalars
+    return evaluate_result(model, values, links, horizon).scalars
 
 
 def shapley(
@@ -441,6 +468,8 @@ def execute(preparation: Preparation) -> Execution:
             "coefficient": to_output(path.coefficient),
             "lag": path.lag,
             "first_month": path.first_month,
+            "last_month": path.last_month,
+            "kind": path.kind,
             "log_change": to_output(path.log_change),
         }
         for path in propagation.paths

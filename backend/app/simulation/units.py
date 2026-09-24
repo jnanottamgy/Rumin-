@@ -101,6 +101,9 @@ def volume_conversion_factor(from_unit: VolumeUnit, to_unit: VolumeUnit) -> Deci
 UNIT_LABELS: dict[str, str] = {
     "percent": "%",
     "percent_change": "% change",
+    "percentage_points": "percentage points",
+    # A multiple, e.g. interest coverage (operating profit ÷ interest).
+    "times": "times",
     "ratio": "ratio",
     # A difference of two ratios, e.g. of margins: 0.01 is one percentage point.
     "ratio_points": "ratio points (0.01 = one percentage point)",
