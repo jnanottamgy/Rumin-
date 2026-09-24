@@ -748,3 +748,103 @@ numbers. The ledger fits a system whose rule is "no statement without evidence".
 model, the rules, the brief and the interface are written in the project and tested.
 **Why.** As in 21, 32, 42 and 53.
 **Revisit** with Phase 9's statistical needs (see 57).
+
+## 65. Two providers behind one tool layer; RUMIN's own composer by default
+
+**Decision.** The AI Analyst drafts answers through a provider interface with two real
+providers: RUMIN's **grounded composer** (per-intent templates filled from tool results; no
+language model) and an **Anthropic** provider (a Claude model through the official SDK). The
+grounded composer is the default, answers every clarification and refusal, and is the
+fallback whenever the model fails or its draft fails the check. A scripted provider exists
+for tests only.
+**Why.** The Analyst must be useful, testable and honest without a key, offline and on a
+fresh install, and a model's answer needs something safe to fall back to. One tool layer,
+one evidence ledger and one check for all providers mean a model can change how an answer is
+worded, never what it rests on.
+**Revisit** the default once a model has been measured on the evaluation set (see 70).
+
+## 66. Tools are an allowlist over existing services; one compute tool, never stored
+
+**Decision.** 17 tools, each a typed input model (unknown fields refused), a time limit and a
+renderer into evidence, over services Phases 2–6 built. 16 read; `preview_scenario` computes
+a what-if through the Scenario Lab's preview and stores nothing. No SQL, code, shell, file,
+network or write tool. Each call runs in its own thread and session; a transient database
+error is retried once.
+**Why.** A question should never be able to reach further than the API already does, and
+the Analyst should compute no figure of its own. Reusing the services keeps one definition of
+every number.
+**Revisit** with Phase 10's access control (the `Access` context is where per-user checks go).
+
+## 67. Every figure cites evidence, and one check decides what is shown
+
+**Decision.** Tool results become a numbered evidence ledger (kind of knowledge, source and
+link, period, units, provenance, exact values). Answer text cites ids inline. The grounding
+check requires every figure (at its displayed precision), date and version to be in the
+evidence its sentence cites, every citation to exist, no figures in interpretation, and no
+predictive, causal or advisory phrasing. A model's failing draft is replaced; failing parts of
+RUMIN's own draft are withheld with a notice.
+**Why.** Citations only help if they are true. A mechanical check makes "never fabricate" a
+property of the system rather than a request to a model. Holding RUMIN's own templates to the
+same check found a real defect when the suite ran on PostgreSQL
+([evaluation](analyst/evaluation.md#results)).
+**Revisit** if the check proves too strict for useful model answers; never to let an
+unsupported figure through.
+
+## 68. The model is configuration; the SDK never reads the environment
+
+**Decision.** No model identifier is written in the repository: `RUMIN_ANALYST_MODEL` names
+it. The SDK client is built with RUMIN's own key, base URL (`https://` only), timeout and
+retries, so `ANTHROPIC_*` variables in the process environment are never used; a set
+`ANTHROPIC_CUSTOM_HEADERS` stops the provider. The manual tool loop is bounded (model
+requests, tool calls, deadline, daily token budget), ends with a structured `submit_answer`,
+caches the system prompt and uses adaptive thinking unless turned off.
+**Why.** Model choice is a deployment decision that changes faster than code. A server
+process often inherits credentials meant for something else; picking them up silently would
+spend someone else's account or send data where it was not meant to go.
+**Revisit** when the SDK or the API changes the relevant defaults.
+
+## 69. Conversations are stored; turns are answered on a bounded pool and polled
+
+**Decision.** Migration `0007` stores sessions, turns and tool calls. Asking reserves a place
+in a bounded pool (the Scenario Lab's design: 2 answering, 8 waiting, 429 beyond, before
+anything is stored), stores the turn and answers 202; the reader polls. A turn is claimed and
+finished with conditional updates, never answered twice, final once answered. Tool calls are
+stored as they end, so the interface shows each step as it happens. Conversations can be
+deleted.
+**Why.** Answers take from milliseconds to tens of seconds with a model; polling reuses the
+Lab's proven pattern and works through any proxy. Storing every tool call is what lets the
+interface show how an answer was found, and lets a reviewer check it later.
+**Revisit** streaming (server-sent events) if model answers feel slow; a shared queue across
+processes with Phase 10.
+
+## 70. An evaluation set scores the Analyst, adversarial models included
+
+**Decision.** `app/analyst/evaluation.py` holds 33 cases (expected intent, statuses, tools,
+evidence kinds, notices, text), run in the tests for the grounded composer and for seven
+misbehaving scripted models, and from the command line for any provider.
+**Why.** "The Analyst works" needs a measurable meaning before a model is trusted with it, and
+the claim that no unsupported answer reaches a reader needs adversaries to test it.
+**Revisit** by adding real users' questions as they arrive.
+
+## 71. The evidence margin is the interface's signature element
+
+**Decision.** Each answer reads as a research note: the question, the headline, cited
+paragraphs and RUMIN's own displays (tables, the Data Explorer's chart, paths, scenario
+cards, notices), and beside it a margin of the sources it cites, in citation order, each
+with its kind of knowledge (label and shape, never colour alone), link and details. The
+method (tool calls with timings, the check, the provider) is one click away. No typing
+effect: steps appear as the server records them.
+**Why.** An analyst's answer is only as good as the reader's ability to check it; putting the
+sources beside the sentences makes checking the default, not an extra step. Generic chat
+bubbles would hide exactly that.
+**Revisit** never for the principle; the layout may change.
+
+## 72. One new dependency: the official Anthropic SDK
+
+**Decision.** Phase 7 adds `anthropic` (with `jiter`, `docstring-parser` and `sniffio`),
+imported only by the Anthropic provider. Everything else (router, tools, ledger, check,
+composer, interface) is written in the project.
+**Why.** The official SDK is the documented way to call Claude from Python: typed errors,
+retries with backoff, timeouts and the current request shapes. Writing an HTTP client for it
+would duplicate that and drift. `pip-audit` found no known vulnerability in the lock file.
+**Revisit** with each SDK major version.

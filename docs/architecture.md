@@ -15,8 +15,11 @@ pool, with their results, pathways, explanations, sensitivity analyses and compa
 Intelligence: a read-only analysis layer over the stored observations, the graph and the
 executions, whose findings each carry the evidence chain they rest on, with stored analyses
 as append-only snapshots ([the intelligence architecture](intelligence/architecture.md)).
-Later phases — the AI analyst (7), the 3D universe (8) — extend it without restructuring
-it.
+Phase 7 added the AI Analyst: questions answered through an allowlist of read-only tools over
+those services, every figure cited and checked against its evidence, on a second bounded
+worker pool, with conversations stored in the same database and an optional Claude model
+behind a provider interface ([the Analyst's architecture](analyst/architecture.md)). Later
+phases — the 3D universe (8) — extend it without restructuring it.
 
 ```mermaid
 flowchart LR
@@ -32,7 +35,10 @@ flowchart LR
         LAB["Scenario Lab<br/>plan · execute · aggregate ·<br/>pathways · explain · compare"]
         RUN["Execution runner<br/>bounded thread pool<br/>(2 running, 8 queued, 20 s)"]
         INT["Financial Intelligence<br/>exposure · changes · signals ·<br/>drivers · rules · evidence chains"]
+        AN["AI Analyst<br/>router · 17 read-only tools ·<br/>evidence ledger · grounding check"]
+        ARUN["Turn runner<br/>bounded thread pool<br/>(2 running, 8 queued, 90 s)"]
     end
+    CLAUDE(["Anthropic API<br/>(optional; off by default)"])
     DB[("SQLite (dev)<br/>PostgreSQL (prod)")]
     SEED["Seed loader<br/>(validated JSON dataset)"]
     MIG["Alembic migrations"]
@@ -55,6 +61,11 @@ flowchart LR
     S --> INT
     INT -- "reads observations, graph,<br/>executions; stores analyses<br/>(append-only)" --> DB
     INT -- "interpretation previews" --> LAB
+    S --> ARUN
+    ARUN -- "answers one turn" --> AN
+    AN -- "tools call the services<br/>(read-only; previews not stored)" --> S
+    AN -- "conversations, turns,<br/>tool calls" --> DB
+    AN -. "HTTPS, only when configured" .-> CLAUDE
     RUN -- "runs each model" --> SIM
     LAB -- "versions, executions,<br/>results (append-only once final)" --> DB
     SIM -- "reads graph + stored data;<br/>stores runs (append-only)" --> DB
@@ -77,7 +88,10 @@ scenarios and their versions (a save never overwrites: it adds a version), and �
 Phase 4 — simulation runs, scenario executions and sensitivity analyses, which are
 append-only once final and never change the data or the graph they read. Phase 6 adds
 stored intelligence analyses, append-only snapshots; every other intelligence read writes
-nothing.
+nothing. Phase 7's Analyst writes only its own conversations (a turn is final once
+answered); its tools read, and its one compute tool previews a scenario without storing it.
+The API contacts one outside service, and only when configured to: the Anthropic API, for
+the Analyst's optional language model.
 
 ## Backend (`backend/app`)
 
@@ -87,7 +101,7 @@ Layered so that each layer depends only on the ones below it:
 |---|---|---|
 | HTTP | `api/` | Routes, parameters, status codes, OpenAPI descriptions. No SQL, no business rules. |
 | Contract | `schemas/` | Pydantic models for every request and response: validation, serialisation, the OpenAPI schema. |
-| Services | `services/` | Queries and use cases: reference data, the network projection, scenarios and their versions, the Scenario Lab (plans, previews, executions, results, pathways, explanations, sensitivity, comparisons, templates), system status, the graph's read logic (limits, filters, explanations), the simulation API (runs, explanations, verification, sensitivity) and Financial Intelligence (overview, dossiers, briefs, thresholds, stored analyses and their freshness). |
+| Services | `services/` | Queries and use cases: reference data, the network projection, scenarios and their versions, the Scenario Lab (plans, previews, executions, results, pathways, explanations, sensitivity, comparisons, templates), system status, the graph's read logic (limits, filters, explanations), the simulation API (runs, explanations, verification, sensitivity), Financial Intelligence (overview, dossiers, briefs, thresholds, stored analyses and their freshness) and the AI Analyst (its runtime, conversations and turns). |
 | Domain | `domain/` | Pure definitions: enumerations, the relationship-type registry (what each edge type means and may connect), the graph's node, edge and evidence-status registry, scenario change limits. |
 | Persistence | `models/`, `db/` | SQLAlchemy ORM models, session management, portable column types (UTC datetimes, exact decimals), the seed loader. |
 | Ingestion | `ingestion/` | Providers, HTTP with throttling and retries, normalisation, quality rules, persistence with revisions, job tracking, the command line ([details](data/architecture.md)). |
@@ -95,6 +109,7 @@ Layered so that each layer depends only on the ones below it:
 | Simulation | `simulation/` | The simulation engine: the versioned model registry and five models, exact-decimal arithmetic, units, input validation, controlled propagation through confirmed graph relationships, timed changes and percentage-point shocks, execution with every step recorded, Shapley contributions, sensitivity analysis, explanations and append-only persistence ([details](simulation/architecture.md)). |
 | Scenario Lab | `scenario_lab/` | The scenario specification and its validation, the planner (which models apply and why), scenario profiles, the executor and its stages, the bounded runner, the Lab's aggregation equations, pathways, explanations, one-at-a-time sensitivity, comparison and templates ([details](scenario-lab/architecture.md)). |
 | Financial Intelligence | `intelligence/` | The read-only analysis layer: exact statistics, thresholds, the evidence model (steps, grades, `ChainError`), validated graph slices, exposure paths, changes and revisions, relationship changes, drivers from stored contributions, signals, the 19 insight rules, the model interpretation of observed changes, the module registry, the two scopes (entity, workspace) and the brief ([details](intelligence/architecture.md)). |
+| AI Analyst | `analyst/` | Question policy, vocabulary and parsing, the router and the conversation's focus, the tool registry and 17 tools over the services, the evidence ledger, answer blocks, the grounded composer, the grounding check, the providers (grounded, Anthropic, scripted), the orchestrator of one turn, the bounded turn runner and the evaluation set ([details](analyst/architecture.md)). |
 | Cross-cutting | `core/` | Settings, logging, error envelope and handlers, middleware. |
 
 Request lifecycle: the **middleware** assigns a request ID, enforces the body-size limit
@@ -134,6 +149,10 @@ uvicorn.
   tables from what it receives. No financial figure is calculated in the browser.
 - **Honesty** — capabilities (`services/system.py`) state what exists and what is planned
   for which phase; the UI reads them rather than hard-coding claims.
+- **What the Analyst may say** — `analyst/policy.py` holds the forbidden phrasings and every
+  refusal's text, `analyst/grounding.py` the one check every answer passes, and
+  `analyst/tools/__init__.py` the allowlist. A provider can draft; only these decide what is
+  shown.
 
 ## Frontend (`frontend/src`)
 
@@ -150,6 +169,7 @@ pages).
 | `features/data/` | The time-series chart and its arithmetic, exact-value tables, provenance, freshness and quality components |
 | `features/scenarioLab/` | The Scenario Lab: the draft model and its conversion to the API body (pure), the builder, the live preview and execution hooks, the pathway layout (pure) and canvas, the results panel, execution strip, timeline and the analysis, explanation, history and comparison views ([details](scenario-lab/interface.md)) |
 | `features/intelligence/` | Financial Intelligence: the findings ledger and the evidence chain, grade marks, the exposure matrix and paths, drivers, signals, history, sources and the brief, the thresholds panel and subjects, the dashboard's latest findings, and display formatting that only rounds the API's exact strings ([details](intelligence/interface.md)) |
+| `features/analyst/` | The AI Analyst: the conversation hook (ask, poll `poll_after_ms`, follow a pending turn), notes, answer blocks, the evidence margin and knowledge marks, the method trace, Markdown export, and figures written with the API's rounding ([details](analyst/interface.md)) |
 | `features/simulation/` | The Simulation preview: the input form built from a model definition, exact-decimal formatting, the pathway layout, the result tables and charts, provenance and sensitivity panels ([details](simulation/preview.md)) |
 | `components/` | Shared UI primitives |
 | `hooks/` | `useApiResource` (shared request cache), element size, media queries |

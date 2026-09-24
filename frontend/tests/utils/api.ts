@@ -6,6 +6,7 @@
 import { vi } from "vitest";
 import type { ErrorDetail } from "@/types/api";
 import { networkFixture, scenarioPageFixture, systemFixture, variablesFixture } from "../fixtures";
+import { analystFixtures } from "../fixtures/analyst";
 import { intelligenceFixtures } from "../fixtures/intelligence";
 import { labFixtures } from "../fixtures/lab";
 
@@ -53,6 +54,8 @@ export function defaultRoutes(): Record<string, Route> {
     "/api/v1/intelligence/overview": { body: intelligenceFixtures.overview() },
     "/api/v1/intelligence/entities": { body: intelligenceFixtures.entities() },
     "/api/v1/intelligence/methods": { body: intelligenceFixtures.methods() },
+    "/api/v1/analyst/capabilities": { body: analystFixtures.capabilities() },
+    "/api/v1/analyst/sessions": { body: analystFixtures.sessionsEmpty() },
   };
 }
 

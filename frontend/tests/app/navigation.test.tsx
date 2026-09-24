@@ -71,20 +71,24 @@ describe("application shell and routing", () => {
     expect(await screen.findAllByText("Illustrative sample v1.0.0")).not.toHaveLength(0);
   });
 
-  it("says plainly that the AI analyst is not connected", async () => {
+  it("opens the AI analyst, saying who answers, and asks nothing on its own", async () => {
     const api = mockApi();
     renderRoute("/analyst");
     expect(
-      await screen.findByRole("heading", { level: 1, name: "Ask questions about the model" }),
+      await screen.findByRole("heading", {
+        level: 1,
+        name: "Questions answered from RUMIN's records",
+      }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Not available in this build")).toBeInTheDocument();
-    expect(screen.getByText("No model connected · no requests are made")).toBeInTheDocument();
-    // The question box and the button are inert: there is nothing to send a question to.
-    expect(screen.getByLabelText(/Question for the AI Analyst/)).toBeDisabled();
+    expect(await screen.findByText("Grounded answers")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "RUMIN composes every answer itself from its tools; no language model is configured.",
+      ),
+    ).toBeInTheDocument();
+    // Nothing is sent until a person asks: the page only reads.
     expect(screen.getByRole("button", { name: "Ask" })).toBeDisabled();
-    expect(api.requests.some((request) => /analyst|chat|completion/.test(request.path))).toBe(
-      false,
-    );
+    expect(api.writes()).toEqual([]);
   });
 
   it("lists what the build cannot do yet on the system page", async () => {

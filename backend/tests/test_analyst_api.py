@@ -317,7 +317,8 @@ def test_capabilities_describe_the_provider_tools_limits_and_suggestions(
     questions = [item["question"] for item in found["suggestions"]]
     assert "What does RUMIN know about Aerisca Airways?" in questions
     assert "What did the latest scenario on Aerisca Airways show?" in questions
-    assert any(q.startswith("Show ") for q in questions)
+    assert "Which variables affect Aerisca Airways' costs?" in questions  # not "Airways's"
+    assert any(q.startswith("Show the stored history of ") for q in questions)
     assert {kind["id"] for kind in found["knowledge_kinds"]} >= {"observed", "simulated"}
 
 

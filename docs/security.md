@@ -4,12 +4,14 @@
 
 RUMIN is a **local, single-user application**. It has **no authentication or
 authorisation**: anyone who can reach the API can read all stored data, create scenarios
-and new versions of them, delete scenarios that were never executed, execute scenarios, and
-add simulation runs and analyses. Run it on your own machine (the dev servers bind to `127.0.0.1`) and
+and new versions of them, delete scenarios that were never executed, execute scenarios, add
+simulation runs and analyses, and read, ask in and delete AI Analyst conversations (and,
+when a language model is configured, spend its token budget). Run it on your own machine (the dev servers bind to `127.0.0.1`) and
 do not expose it to a network until Phase 10 adds access control. **This build has not had
 a security review and is not production-secure.**
 
-It stores no personal data and no credentials. Since Phase 2 it stores **third-party data
+It stores no credentials, and no personal data beyond what a person types into an AI
+Analyst question (kept with the conversation until it is deleted). Since Phase 2 it stores **third-party data
 under licences** — World Bank indicators (CC BY 4.0) and any price files a user imports
 under their own licence — together with the exact responses and files received. Respect
 those licences when sharing a database or its exports.
@@ -203,24 +205,70 @@ those licences when sharing a database or its exports.
   related series as an unstored preview, under the engine's own limits.
 - **No language model and no outbound requests.** No text is generated: rules fill templates
   with computed values. Nothing contacts a provider or any external service. The entity
-  brief is prepared for a future AI Analyst but sent nowhere; before one is connected, a data
-  policy and authentication are needed (Phase 7, Phase 10).
+  brief is prepared for an analyst but sent nowhere by Financial Intelligence itself.
+
+### AI Analyst (Phase 7)
+
+The details are in [guardrails](analyst/guardrails.md); in short:
+
+- **The model cannot act.** Whoever drafts an answer reaches RUMIN only through an
+  **allowlist** of 17 tools, each with a strict input model (unknown fields refused, keys
+  matched by pattern, bounded numbers and lists). 16 read; `preview_scenario` computes a
+  what-if that is **never stored**. There is no SQL, code, shell, file, network or write
+  tool. Tools call the same services the pages call, with the same limits, so the Analyst
+  reaches nothing the API does not already serve. Every call carries an access context for
+  Phase 10's per-user checks.
+- **Nothing unsupported is shown.** Every answer passes the grounding check (every figure,
+  date and version in the evidence its sentence cites; citations exist; no predictive,
+  causal or advisory phrasing). A language model's draft that fails is discarded and RUMIN
+  answers instead; a part of RUMIN's own draft that fails is withheld.
+- **Prompt injection.** Questions carrying instructions aimed at the Analyst (to ignore its
+  rules, reveal its prompt or configuration, act as another system, or containing SQL or
+  shell fragments) are declined before any tool runs. Stored text reaches a model only as
+  data inside a tool result, cleaned first: control and bidirectional characters removed,
+  length capped, instruction-like text withheld.
+- **The key.** `RUMIN_ANTHROPIC_API_KEY` is a secret value in the settings (never printed),
+  sent only to the configured base URL (`https://` only), never logged, never stored, never
+  returned: the capabilities endpoint says only whether a model is ready and which setting is
+  missing. RUMIN passes its own key, base URL, timeout and retry settings to the SDK, so the
+  process environment's `ANTHROPIC_*` variables are never used; if `ANTHROPIC_CUSTOM_HEADERS`
+  is set, the provider refuses to start rather than send headers RUMIN did not choose. Tests
+  prove each of these.
+- **Bounded work and cost.** Question length (2,000 characters by default), questions per
+  conversation (200), one pending question per conversation, a bounded pool (2 answering, 8
+  waiting; 429 beyond, before anything is stored), a deadline per question (90 s), tool
+  calls per question (12), a time limit per tool call, model requests per question (6),
+  output tokens per request (4,096) and model tokens per day (2,000,000; beyond it RUMIN
+  answers without the model).
+- **Privacy.** Conversations are stored so they can be reopened, and deleted with everything
+  in them. Logs record ids, intents, tool names, statuses, counts, tokens and timings, never
+  the question, the answer or a secret (a test reads the logs of a turn). A failed turn stores
+  a fixed message; the stack trace goes only to the server log.
+- **The browser.** Answers are rendered as text, never as HTML. Links in answers are
+  followed only when they are paths inside RUMIN. A what-if handed to the Scenario Lab
+  travels in the router's state (not the URL), is checked for shape before use, and is never
+  saved without the person's action.
+- **No model is called unless configured.** The default provider makes no outbound request.
+  No request to a language model was made while RUMIN was built (no key was available).
 
 ### Secrets and supply chain
 
-- **No secrets exist yet**, and none are in the repository: `.env` files are git-ignored,
-  `.env.example` holds placeholders only, and the World Bank needs no key. The local
-  PostgreSQL password (`change-me-local-only`) and the CI database password are for
-  disposable databases. Future provider keys belong in the backend environment or a secret
-  store (see [environment](environment.md#secrets)).
+- **One optional secret**: `RUMIN_ANTHROPIC_API_KEY`, for the Analyst's language model
+  (above). None is in the repository: `.env` files are git-ignored, `.env.example` holds
+  placeholders only, no model identifier or key appears in code, fixtures or docs, and the
+  World Bank needs no key. The local PostgreSQL password (`change-me-local-only`) and the CI
+  database password are for disposable databases. Future provider keys belong in the
+  backend environment or a secret store (see [environment](environment.md#secrets)).
 - Dependencies are pinned by lock files (`backend/uv.lock`, `frontend/package-lock.json`)
-  and installed with `--frozen` / `npm ci`. **Phases 2, 3, 4, 5 and 6 added no
-  dependencies** (HTTP, CSV, gzip, hashing, threads and exact decimals come from the Python
-  standard library, response compression from Starlette; the charts, the graph algorithms,
-  the layouts, the simulation engine, the Scenario Lab and the intelligence statistics are
-  written in the project). When Phase 5 was built (2026-09-24), `npm audit` reported no known
-  vulnerabilities, and `pip-audit` (run through `uvx`, not a project dependency) found none
-  in the locked Python dependencies; Phase 6 changed no lock file.
+  and installed with `--frozen` / `npm ci`. Phases 2 to 6 added no dependencies (HTTP, CSV,
+  gzip, hashing, threads and exact decimals come from the Python standard library, response
+  compression from Starlette; the charts, the graph algorithms, the layouts, the simulation
+  engine, the Scenario Lab and the intelligence statistics are written in the project).
+  **Phase 7 added one: the official `anthropic` SDK** (1.8.0), which brought `jiter`,
+  `docstring-parser` and `sniffio` into the lock file; it is imported only by the Anthropic
+  provider. When Phase 7 was built (2026-09-24), `pip-audit` (run through `uvx`, not a
+  project dependency) found no known vulnerabilities in the locked Python dependencies, and
+  `npm audit` reported none (the frontend's dependencies did not change).
 - CI runs with read-only repository permissions.
 
 ## Not yet in place
@@ -235,7 +283,8 @@ These are deliberate gaps, listed so nobody assumes otherwise:
 | A formal security review | Before any hosted or multi-user use |
 | TLS termination, deployment hardening, a Content-Security-Policy for the web client's HTML (it needs a hash for the small inline theme script in `index.html`) | Phase 10, with deployment |
 | Audit log of changes | With authentication |
-| Limits on how many simulation runs, scenario versions, executions, sensitivity analyses and stored intelligence analyses can be stored, and a retention policy for them | With authentication (Phase 10) |
+| Limits on how many simulation runs, scenario versions, executions, sensitivity analyses, stored intelligence analyses and Analyst conversations can be stored, and a retention policy for them | With authentication (Phase 10) |
+| Per-user Analyst conversations and token budgets; a budget shared across API processes | Phase 10 |
 | Automated dependency and secret scanning in CI (e.g. `pip-audit`, `npm audit`, secret scanning) | Next: cheap to add once the repository's CI is running |
 | Backups and retention policy | With a production database |
 

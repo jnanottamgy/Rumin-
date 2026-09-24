@@ -866,7 +866,7 @@ class BriefEvidenceRead(ApiModel):
 
 
 class BriefRead(ApiModel):
-    """What a future AI Analyst would receive about one entity. Numbers are computed by
+    """What a language-model analyst can be given about one entity. Numbers are computed by
     RUMIN, never by the model that narrates them (see `narration_rules`)."""
 
     format: Literal["rumin.intelligence.brief/1"]

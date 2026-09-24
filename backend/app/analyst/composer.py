@@ -28,6 +28,7 @@ from app.analyst.answer import (
     NoticeBlock,
     NoticeKind,
     PathsBlock,
+    SeriesBlock,
     TableBlock,
     TableRow,
     cite,
@@ -36,10 +37,18 @@ from app.analyst.answer import (
 from app.analyst.evidence import Knowledge, SourceRef
 from app.analyst.router import Route
 from app.analyst.tools.registry import ToolCall, ToolRunner
-from app.analyst.vocabulary import Term, Vocabulary
+from app.analyst.vocabulary import Term, Vocabulary, example_change, the
 from app.intelligence import fmt
 
 MINUS = fmt.MINUS
+SEARCH_LIMIT = 20
+SEARCH_NOUNS = {
+    "company": ("company", "companies"),
+    "industry": ("industry", "industries"),
+    "variable": ("economic variable", "economic variables"),
+    "series": ("stored series", "stored series"),
+    "instrument": ("instrument", "instruments"),
+}
 HOW = {
     "direct": "directly",
     "via_industry": "through its industry",
@@ -127,6 +136,8 @@ class Composer:
             values[f"year.{year}"] = year
         if route.periods.last:
             values["last"] = route.periods.last
+        for number, value in enumerate(route.untied_values, start=1):
+            values[f"figure.{number}"] = value
         if not values:
             return None
         return self.ledger.add(
@@ -200,6 +211,8 @@ class Composer:
             ClarificationOption(label=label, question=q)
             for label, q in (found.options if found else [])
         ]
+        # A figure repeated from the question ("change by 30%?") is the person's input.
+        self.question_evidence()
         return Draft(
             status="clarification",
             headline=question,
@@ -209,7 +222,7 @@ class Composer:
     def _injection(self) -> Draft:
         return Draft(
             status="declined",
-            headline="The Analyst answers questions about RUMIN's records only.",
+            headline="The Analyst answers questions about RUMIN's records only",
             blocks=[text("policy", policy.DECLINED_INJECTION)],
             follow_ups=self.starters(),
         )
@@ -217,7 +230,7 @@ class Composer:
     def _secrets(self) -> Draft:
         return Draft(
             status="declined",
-            headline="The Analyst has no access to keys, passwords or settings.",
+            headline="The Analyst has no access to keys, passwords or settings",
             blocks=[text("policy", policy.DECLINED_SECRETS)],
             follow_ups=self.starters(),
         )
@@ -225,7 +238,7 @@ class Composer:
     def _unsupported(self) -> Draft:
         return Draft(
             status="unsupported",
-            headline="This is outside what RUMIN's records can answer.",
+            headline="This is outside what RUMIN's records can answer",
             blocks=[text("policy", policy.UNSUPPORTED)],
             follow_ups=self.starters(),
         )
@@ -261,7 +274,7 @@ class Composer:
         if company is not None:
             found.append(f"What does RUMIN know about {company.label}?")
         if variable is not None:
-            found.append(f"Which companies does the {variable.label} reach?")
+            found.append(f"Which companies does {the(variable.label)} reach?")
         found.append("What data does RUMIN hold?")
         found.append("What changed recently?")
         return found
@@ -371,7 +384,7 @@ class Composer:
             f"What did the latest scenario on {entity.label} show?",
         ]
         if variable:
-            follow.append(f"How is {variable} connected to {entity.label}?")
+            follow.append(f"How is {the(variable)} connected to {entity.label}?")
         follow.append(f"What are the findings for {entity.label}?")
         return Draft(
             status="answered",
@@ -431,7 +444,7 @@ class Composer:
                 else ""
             )
             reach = (
-                f"the {variable.label} reaches {entity.label}"
+                f"{the(variable.label)} reaches {entity.label}"
                 + (f" (its {channel})" if channel else "")
                 if variable
                 else f"{plural(variables, 'economic variable')} reach {entity.label}{about}"
@@ -474,7 +487,7 @@ class Composer:
                 )
             status = "answered"
             headline = (
-                f"How the {variable.label} reaches {entity.label}: "
+                f"How {the(variable.label)} reaches {entity.label}: "
                 f"{plural(len(paths), 'stated path')}"
                 if variable
                 else f"{plural(variables, 'economic variable')} reach {entity.label}{about} "
@@ -492,8 +505,12 @@ class Composer:
         blocks.extend(self.focus_note())
         first = paths[0].origin if paths else None
         follow = [f"What did the latest scenario on {entity.label} show?"]
-        if first is not None:
-            follow.insert(0, f"What if {first.name} rises 20 %?")
+        origin = self.vocabulary.get(first.key) if first is not None else None
+        if origin is not None and origin.kind == "variable":
+            follow.insert(
+                0,
+                f"What if {the(origin.label)} rises {example_change(origin)} for {entity.label}?",
+            )
         for other in ("revenue", "financing", "costs"):
             if other != channel:
                 follow.append(f"And {possessive(entity.label)} {other} exposure?")
@@ -595,7 +612,7 @@ class Composer:
             blocks.append(
                 text(
                     "answer",
-                    f"The knowledge graph states that the {variable.label} reaches "
+                    f"The knowledge graph states that {the(variable.label)} reaches "
                     f"{plural(total, 'company', 'companies')}{cite(summary)}: "
                     f"{', '.join(names)}{more}.",
                 )
@@ -655,8 +672,8 @@ class Composer:
         first = companies[0]["name"] if companies else None
         follow = []
         if first:
-            follow.append(f"How is the {variable.label} connected to {first}?")
-            follow.append(f"What if the {variable.label} rises 10 %?")
+            follow.append(f"How is {the(variable.label)} connected to {first}?")
+            follow.append(f"What if {the(variable.label)} rises {example_change(variable)}?")
         if related:
             follow.append(f"Show {related[0]['name']}.")
         return Draft(
@@ -664,7 +681,7 @@ class Composer:
             headline=(
                 f"The {variable.label} reaches {plural(total, 'company', 'companies')}"
                 if total
-                else f"No company is stated to be reached by the {variable.label}"
+                else f"No company is stated to be reached by {the(variable.label)}"
             ),
             blocks=blocks,
             follow_ups=follow,
@@ -701,17 +718,27 @@ class Composer:
                     f"{plural(found.length or 0, 'relationship')} each{cite(data['evidence'])}.",
                 )
             )
-            for path in data["paths"]:
-                chain = " → ".join(path["nodes"])
-                blocks.append(
-                    text(
-                        "detail",
-                        f"{chain} ({', '.join(path['relationships'])}){cite(*path['evidence'])}.",
+            # The paths display draws each chain; without it, the chains are written out.
+            if not any(isinstance(item, PathsBlock) for item in call.output.display):
+                for path in data["paths"]:
+                    chain = " → ".join(path["nodes"])
+                    blocks.append(
+                        text(
+                            "detail",
+                            f"{chain} ({', '.join(path['relationships'])})"
+                            f"{cite(*path['evidence'])}.",
+                        )
                     )
-                )
             status = "answered"
-            headline = f"How {source.label} and {target.label} are connected"
-        blocks.extend(call.output.display)
+            headline = (
+                f"{source.label} and {target.label} are "
+                f"{plural(found.length or 0, 'relationship')} apart"
+            )
+        # The notice below says what a path is not; the display does not repeat it.
+        blocks.extend(
+            item.model_copy(update={"note": None}) if isinstance(item, PathsBlock) else item
+            for item in call.output.display
+        )
         blocks.append(
             notice(
                 "limitation",
@@ -750,7 +777,7 @@ class Composer:
         cited = call.output.data["variable"]["evidence"] if call.ok and call.output else None
         return Draft(
             status="no_data",
-            headline=f"RUMIN stores no series for the {variable.label}",
+            headline=f"RUMIN stores no series for {the(variable.label)}",
             blocks=[
                 text(
                     "answer",
@@ -766,7 +793,7 @@ class Composer:
             ],
             follow_ups=[
                 "What data does RUMIN hold?",
-                f"Which companies does the {variable.label} reach?",
+                f"Which companies does {the(variable.label)} reach?",
             ],
             focus={"subject": variable.key, "variable": variable.key},
         )
@@ -846,8 +873,15 @@ class Composer:
             )
         if data.get("trend"):
             blocks.append(text("detail", f"{data['trend']}{cite(cited)}"))
-        blocks.extend(call.output.display)
-        if data.get("relation_to_variable"):
+        relation = data.get("relation_to_variable")
+        # The notice below says it with a citation; the chart does not repeat it.
+        blocks.extend(
+            item.model_copy(update={"note": None})
+            if relation and isinstance(item, SeriesBlock)
+            else item
+            for item in call.output.display
+        )
+        if relation:
             blocks.append(
                 notice(
                     "limitation",
@@ -1199,7 +1233,7 @@ class Composer:
                 ),
             ],
             follow_ups=[
-                f"What if Brent crude rises 20 % for {entity.label}?",
+                f"What if Brent crude rises 20% for {entity.label}?",
                 "What scenario templates are there?",
             ],
             focus={"subject": entity.key, "entity": entity.key},
@@ -1265,7 +1299,7 @@ class Composer:
                 )
             )
             share = (
-                f", {fmt.percent(Decimal(top['share_of_change']), sign=False)} of its change"
+                f", {fmt.percent(Decimal(top['share_of_change']), sign=False)} of that change"
                 if top.get("share_of_change")
                 else ""
             )
@@ -1273,8 +1307,9 @@ class Composer:
             blocks.append(
                 text(
                     "detail",
-                    f"The largest credit in {top['line'].lower()} is {top['largest_contribution']}"
-                    f": {money(top['value'], execution.currency, sign=True)}{share}"
+                    f"The largest contribution to the change in {top['line'].lower()} comes from "
+                    f"{top['largest_contribution']}: "
+                    f"{money(top['value'], execution.currency, sign=True)}{share}"
                     f"{cite(*credit)}.",
                 )
             )
@@ -1418,9 +1453,10 @@ class Composer:
             blocks.append(
                 text(
                     "answer",
-                    "Credit per scenario change: "
+                    "Contribution of each scenario change: "
                     + "; ".join(parts)
-                    + f"{cite(cited)}. The credits add up to the line's change.",
+                    + f"{cite(cited)}. The contributions (the models' stored Shapley credits) "
+                    "add up to the line's change.",
                 )
             )
         blocks.append(
@@ -1752,18 +1788,31 @@ class Composer:
             query="",
             kinds=kinds or ["company"],
             country_key=country.key if country else None,
-            limit=20,
+            limit=SEARCH_LIMIT,
         )
         if not call.ok or call.output is None:
             return self.failure(call, "the records")
         data = call.output.data
         matches = data["matches"]
         where = f" in {country.label}" if country else ""
+        requested = kinds or ["company"]
+        one, many = (
+            SEARCH_NOUNS.get(requested[0], ("record", "records"))
+            if len(requested) == 1
+            else ("record", "records")
+        )
+        # The listing is capped: at the cap, it says it shows the first ones, not how many.
+        capped = len(matches) >= SEARCH_LIMIT
+        counted = f"{'the first ' if capped else ''}{plural(len(matches), one, many)}"
         blocks: list[Block] = [
             text(
                 "answer",
-                f"RUMIN holds {plural(len(matches), 'matching record')}{where}"
-                f"{cite(data['evidence'])}"
+                (
+                    f"Listed here: {counted} RUMIN holds{where}"
+                    if capped
+                    else f"RUMIN holds {counted}{where}"
+                )
+                + cite(data["evidence"])
                 + (f": {', '.join(m['name'] for m in matches[:12])}." if matches else "."),
             ),
         ]
@@ -1771,7 +1820,7 @@ class Composer:
         first = next((m for m in matches if m["kind"] in ("company", "industry")), None)
         return Draft(
             status="answered" if matches else "no_data",
-            headline=f"{plural(len(matches), 'record')}{where}",
+            headline=f"{counted[:1].upper()}{counted[1:]}{where}",
             blocks=blocks,
             follow_ups=[f"What does RUMIN know about {first['name']}?"]
             if first
@@ -1811,14 +1860,31 @@ class Composer:
             history.headline = "RUMIN does not forecast; here is what it has stored"
             if variable is not None:
                 history.follow_ups = [
-                    f"What if the {variable.label} rises 10 %?",
+                    f"What if {the(variable.label)} rises {example_change(variable)}?",
                     *history.follow_ups,
                 ]
             return history
+        related_series = [
+            term
+            for term in self.vocabulary.of_kind("series")
+            if variable is not None and term.variable == variable.record_id
+        ]
+        if variable is not None and related_series:
+            # What RUMIN has stored for the variable, instead of a forecast of it.
+            route.series = related_series[:1]
+            history = self._series_history()
+            history.blocks = blocks + history.blocks
+            history.status = "declined"
+            history.headline = "RUMIN does not forecast; here is what it has stored"
+            history.follow_ups = [
+                f"What if {the(variable.label)} rises {example_change(variable)}?",
+                *history.follow_ups,
+            ]
+            return history
         if variable is not None:
             follow = [
-                f"What if the {variable.label} rises 10 %?",
-                f"Which companies does the {variable.label} reach?",
+                f"What if {the(variable.label)} rises {example_change(variable)}?",
+                f"Which companies does {the(variable.label)} reach?",
             ]
             call = self.call("get_variable_reach", variable_key=variable.key)
             if call.ok and call.output is not None:
@@ -1827,7 +1893,7 @@ class Composer:
                     blocks.append(
                         text(
                             "detail",
-                            f"RUMIN stores no series for the {variable.label}"
+                            f"RUMIN stores no series for {the(variable.label)}"
                             f"{cite(call.output.data['variable']['evidence'])}; a "
                             "scenario can still simulate a stated change to it.",
                         )

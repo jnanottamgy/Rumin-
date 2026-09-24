@@ -1456,7 +1456,7 @@ export interface paths {
         };
         /**
          * The entity brief
-         * @description The structured object a future AI Analyst would receive: observations, drivers, relationships, simulation results, assumptions, evidence and limitations, with rules for narrating them. Every number is computed by RUMIN.
+         * @description The structured object a language-model analyst can be given: observations, drivers, relationships, simulation results, assumptions, evidence and limitations, with rules for narrating them. Every number is computed by RUMIN.
          */
         get: operations["get_entity_brief"];
         put?: never;
@@ -2136,7 +2136,7 @@ export interface components {
         };
         /**
          * BriefRead
-         * @description What a future AI Analyst would receive about one entity. Numbers are computed by
+         * @description What a language-model analyst can be given about one entity. Numbers are computed by
          *     RUMIN, never by the model that narrates them (see `narration_rules`).
          */
         BriefRead: {

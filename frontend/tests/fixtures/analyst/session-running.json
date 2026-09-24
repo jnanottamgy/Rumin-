@@ -1,0 +1,54 @@
+{
+  "id": "cd75ea01-6ff2-47ed-8197-297c6f57e006",
+  "title": "What does RUMIN know about Aerisca Airways?",
+  "turn_count": 1,
+  "last_question": "What does RUMIN know about Aerisca Airways?",
+  "created_at": "2026-09-24T18:20:57.013988Z",
+  "updated_at": "2026-09-24T18:20:57.025516Z",
+  "focus": {},
+  "turns": [
+    {
+      "id": "398236d0-c2c0-4702-acc2-d09d11ab1faf",
+      "session_id": "cd75ea01-6ff2-47ed-8197-297c6f57e006",
+      "position": 1,
+      "question": "What does RUMIN know about Aerisca Airways?",
+      "status": "running",
+      "intent": null,
+      "answer": null,
+      "error": null,
+      "configured_provider": "grounded",
+      "provider": null,
+      "model": null,
+      "fallback": null,
+      "usage": {
+        "requests": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0
+      },
+      "tool_calls": [
+        {
+          "position": 1,
+          "tool": "get_entity_dossier",
+          "arguments": {
+            "entity_key": "company:co_aerisca_airways"
+          },
+          "status": "ok",
+          "summary": "Aerisca Airways: 4 exposure paths, 1 stored execution, 20 findings",
+          "evidence": ["E1", "E2", "E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19"],
+          "error": null,
+          "attempts": 1,
+          "started_at": "2026-09-24T18:20:57.057405Z",
+          "duration_ms": 81
+        }
+      ],
+      "analyst_version": "1.0.0",
+      "requested_at": "2026-09-24T18:20:57.027450Z",
+      "started_at": "2026-09-24T18:20:57.035680Z",
+      "finished_at": null,
+      "duration_ms": null,
+      "poll_after_ms": 500
+    }
+  ]
+}

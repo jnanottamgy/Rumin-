@@ -58,6 +58,33 @@ class TurnResult:
     duration_ms: int = 0
 
 
+WITHHELD = NoticeBlock(
+    kind="limitation",
+    title="Part of this answer was withheld",
+    text="RUMIN's grounding check could not match every figure, date or citation in it to the "
+    "evidence it read, so those parts are not shown.",
+)
+
+
+def _withhold(draft: Draft, checked: GroundingRead) -> Draft:
+    """RUMIN's own draft without the parts the grounding check found a problem in: an
+    answer is never shown with a figure its evidence does not hold, whoever wrote it."""
+    bad = {problem.block for problem in checked.problems}
+    kept = [block for index, block in enumerate(draft.blocks) if index not in bad]
+    substance = any(not isinstance(block, NoticeBlock) for block in kept)
+    status = draft.status
+    if status == "answered":
+        status = "partial" if substance else "failed"
+    headline = "Part of this answer could not be verified" if None in bad else draft.headline
+    return Draft(
+        status=status,
+        headline=headline,
+        blocks=[*kept, WITHHELD],
+        follow_ups=draft.follow_ups,
+        focus=draft.focus,
+    )
+
+
 def _new_focus(previous: Focus, found: Route, draft: Draft) -> Focus:
     if found.intent in ("clarify", "injection", "secrets", "unsupported", "capabilities"):
         return previous
@@ -155,6 +182,14 @@ class Orchestrator:
                 )
                 draft = self.grounded.answer(context).draft
                 provider_name = "grounded"
+                checked = grounding.check(draft.headline, draft.blocks, ledger.items)
+            if not checked.passed:
+                # RUMIN's own composer is held to the same check as a model.
+                logger.warning(
+                    "event=analyst.grounding_failed provider=grounded problems=%d",
+                    len(checked.problems),
+                )
+                draft = _withhold(draft, checked)
                 checked = grounding.check(draft.headline, draft.blocks, ledger.items)
             if fallback:
                 reason = fallback[0].lower() + fallback[1:]

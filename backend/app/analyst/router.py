@@ -17,7 +17,7 @@ from app.analyst import parsing
 from app.analyst.context import Focus
 from app.analyst.parsing import Magnitude, Periods
 from app.analyst.policy import Screening, screen
-from app.analyst.vocabulary import Mention, Term, Vocabulary, normalise
+from app.analyst.vocabulary import Mention, Term, Vocabulary, normalise, the
 
 INTENTS = (
     "capabilities",
@@ -184,6 +184,8 @@ class Route:
     alternatives: list[Term] = field(default_factory=list)  # other series that also fit
     series_named: bool = False  # a series named as such, not only by what it measures
     untied: int = 0  # figures written but not tied to any variable
+    untied_figures: list[str] = field(default_factory=list)  # as written ("30%")
+    untied_values: list[Decimal] = field(default_factory=list)  # as read (30)
 
     @property
     def entity(self) -> Term | None:
@@ -331,11 +333,12 @@ def _changes(
     magnitudes: list[Magnitude],
     vocabulary: Vocabulary,
     focus: Focus,
-) -> tuple[list[Change], list[str], bool]:
+) -> tuple[list[Change], list[str], bool, list[parsing.Magnitude]]:
     """Tie each written change to the variable it is about (the nearest one before it in
     the same clause, else the nearest after it). A bare figure in a follow-up ("what about
     30 %?") resizes the conversation's single previous change. Returns the changes, notes
-    on what was left out, and whether the conversation's change was used."""
+    on what was left out, whether the conversation's change was used, and the figures tied
+    to no variable."""
     variables = [item for item in mentions if item.term.kind == "variable"]
     years = parsing.year_spans(text)
     written = [
@@ -343,6 +346,7 @@ def _changes(
     ]
     changes: list[Change] = []
     notes: list[str] = []
+    untied: list[parsing.Magnitude] = []
     if not variables and len(written) == 1 and len(focus.changes) == 1:
         previous = focus.changes[0]
         term = vocabulary.by_record(previous.get("variable_id", ""))
@@ -352,7 +356,7 @@ def _changes(
             except ArithmeticError:
                 before = None
             change, note = _change(text, term, written[0], None, None, before)
-            return ([change] if change else []), ([note] if note else []), True
+            return ([change] if change else []), ([note] if note else []), True, []
     for magnitude in written:
         before_it = [item for item in variables if item.end <= magnitude.start]
         after_it = [item for item in variables if item.start >= magnitude.end]
@@ -361,6 +365,7 @@ def _changes(
             notes.append(
                 f"'{magnitude.text}' is not tied to a variable RUMIN holds, so it was left out."
             )
+            untied.append(magnitude)
             continue
         change, note = _change(
             text, mention.term, magnitude, (mention.start, mention.end), mention.text
@@ -375,12 +380,50 @@ def _changes(
             )
             continue
         changes.append(change)
-    return changes, notes, False
+    return changes, notes, False, untied
+
+
+# Variables offered when a what-if names a size but no variable, by the size's unit; only
+# those RUMIN holds are offered. A rate in percent moves in points, a price in percent.
+EXAMPLE_VARIABLES = {
+    "percent": ("var_brent_crude", "var_usd_inr"),
+    "points": ("var_rbi_repo_rate",),
+}
+POINTS = _W(r"\bpp\b|percentage\s+points?|\bbps?\b|basis\s+points?")
+
+
+def _clarify_change(found: Route, vocabulary: Vocabulary) -> Clarification:
+    """A what-if without a variable: ask which one, keeping the size and company written."""
+    entity = next((term for term in found.entities if term.kind == "company"), None)
+    subject = f" for {entity.label}" if entity else ""
+    figure = found.untied_figures[0] if found.untied_figures else None
+    if figure is None:
+        return Clarification(
+            "Which change should be simulated? Name a variable and a size.",
+            [
+                ("Brent crude +20 %", f"What if Brent crude rises 20 %{subject}?"),
+                ("Rupee 10 % weaker", f"What if the rupee weakens 10 %{subject}?"),
+                (
+                    "Repo rate +1.5 pp",
+                    f"What if the RBI repo rate rises 1.5 percentage points{subject}?",
+                ),
+            ],
+        )
+    unit = "points" if POINTS.search(figure) else "percent"
+    options = [
+        (f"{term.label} by {figure}", f"What if {the(term.label)} changes by {figure}{subject}?")
+        for term in (vocabulary.by_record(record) for record in EXAMPLE_VARIABLES[unit])
+        if term is not None
+    ]
+    return Clarification(f"Which variable should change by {figure}?", options)
 
 
 def _clarify_subject(vocabulary: Vocabulary, kind: str, template: str) -> Clarification:
     terms = vocabulary.of_kind(kind)
-    options = [(term.label, template.format(name=term.label)) for term in terms[:6]]
+    options = [
+        (term.label, template.format(name=term.label, the_name=the(term.label)))
+        for term in terms[:6]
+    ]
     return Clarification(f"Which {kind} do you mean?", options)
 
 
@@ -422,16 +465,20 @@ def route(question: str, vocabulary: Vocabulary, focus: Focus | None = None) -> 
     found.horizon = parsing.horizon_months(text)
     found.line = _pick(text, LINES)
     found.channel = _pick(text, CHANNELS)
-    changes, notes, resized = _changes(text, mentions, parsing.magnitudes(text), vocabulary, focus)
+    changes, notes, resized, untied = _changes(
+        text, mentions, parsing.magnitudes(text), vocabulary, focus
+    )
     found.changes = changes
-    found.untied = sum(1 for note in notes if "not tied to a variable" in note)
+    found.untied = len(untied)
+    found.untied_figures = [item.text for item in untied]
+    found.untied_values = [item.value for item in untied]
     if resized:
         found.from_focus.append("changes")
     found.assumptions = [change.assumption for change in changes if change.assumption] + notes
 
     # A follow-up that names no subject ("and its revenue exposure?") is about the
     # conversation's subject.
-    named = found.entities or found.variables or found.series_named
+    named = found.entities or found.variables or found.series_named or found.countries
     follow_up = bool(PRONOUN.search(text) or FOLLOW_UP.search(text))
     if not named and follow_up and focus.subject:
         subject = vocabulary.get(focus.subject)
@@ -481,6 +528,9 @@ def _intent(found: Route, focus: Focus) -> str:
         return "what_if"
     if found.untied and WHAT_IF.search(text) and not found.changes:
         reasons.append("A conditional question with a figure tied to no variable.")
+        return "what_if"
+    if found.untied and FOLLOW_UP.search(text) and not found.changes and not has_series:
+        reasons.append("A follow-up with a figure tied to no variable and no change to resize.")
         return "what_if"
     if found.screening.has("advice"):
         reasons.append("Asks for an investment decision.")
@@ -559,6 +609,9 @@ def _intent(found: Route, focus: Focus) -> str:
     if COVERAGE.search(text):
         reasons.append("Asks what data RUMIN holds.")
         return "data_coverage"
+    if EXPOSURE.search(text) and REACH.search(text) and not (has_entity or has_series):
+        reasons.append("Asks which companies are exposed, without naming a variable.")
+        return "variable_reach"
     if SEARCH.search(text) and not has_entity:
         reasons.append("Asks for a list of records.")
         return "search"
@@ -654,7 +707,7 @@ def _resolve_subjects(found: Route, vocabulary: Vocabulary, focus: Focus) -> Non
     elif intent == "variable_reach" and not found.variables:
         found.intent = "clarify"
         found.clarification = _clarify_subject(
-            vocabulary, "variable", "Which companies does {name} reach?"
+            vocabulary, "variable", "Which companies are exposed to {the_name}?"
         )
         found.reasons.append("No economic variable is named, and none is in focus.")
     elif intent in ("series_history", "period_change") and not found.series:
@@ -663,14 +716,7 @@ def _resolve_subjects(found: Route, vocabulary: Vocabulary, focus: Focus) -> Non
         found.intent = "clarify"
     elif intent == "what_if" and not found.changes and not focus.changes:
         found.intent = "clarify"
-        found.clarification = Clarification(
-            "Which change should be simulated? Name a variable and a size.",
-            [
-                ("Brent crude +20 %", "What if Brent crude rises 20 %?"),
-                ("Rupee 10 % weaker", "What if the rupee weakens 10 %?"),
-                ("Repo rate +1.5 pp", "What if the RBI repo rate rises 1.5 percentage points?"),
-            ],
-        )
+        found.clarification = _clarify_change(found, vocabulary)
     elif intent == "connection" and (
         len(found.entities) + len(found.variables) + len(found.series) + len(found.countries) < 2
     ):

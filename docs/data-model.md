@@ -629,6 +629,86 @@ erDiagram
 - **Hashes.** `inputs_hash` and `result_hash` are SHA-256 over the canonical JSON of `inputs`
   and `result`, as everywhere in RUMIN.
 
+## AI Analyst (Phase 7)
+
+The AI Analyst reads every earlier table through the existing services and writes nothing
+to them. It adds three tables for its **conversations**: a session, its turns (one question
+and its answer each) and every tool call a turn made. See
+[architecture](analyst/architecture.md#storage).
+
+```mermaid
+erDiagram
+    analyst_sessions ||--o{ analyst_turns : "has (cascade)"
+    analyst_turns ||--o{ analyst_tool_calls : "made (cascade)"
+    analyst_sessions {
+        uuid id PK
+        string title "the first question, until renamed"
+        int turn_count
+        json focus "record keys: entity, variable, series, scenario, execution, changes"
+        datetime created_at
+        datetime updated_at
+    }
+    analyst_turns {
+        uuid id PK
+        uuid session_id FK
+        int position "unique per session"
+        text question
+        string status "queued | running | completed | failed"
+        string intent
+        string answer_status
+        string headline
+        json answer "headline, blocks, evidence, follow-ups, grounding"
+        string answer_hash
+        json route
+        json focus_after
+        bool grounded
+        string configured_provider
+        string provider "who answered"
+        string model "when a model answered"
+        text fallback
+        json rejected "a model draft's failed check"
+        json usage
+        int tokens
+        json error
+        string analyst_version
+        datetime requested_at
+        datetime started_at
+        datetime finished_at
+        int duration_ms
+    }
+    analyst_tool_calls {
+        int id PK
+        uuid turn_id FK
+        int position "unique per turn"
+        string tool
+        json arguments
+        string status "ok | invalid | refused | not_found | failed | timeout | skipped"
+        string summary
+        json result "kept up to 32,000 characters"
+        string result_hash
+        json evidence "the evidence ids it produced"
+        text error
+        int attempts
+        datetime started_at
+        int duration_ms
+    }
+```
+
+- **A final turn never changes.** A worker claims a turn with a conditional update
+  (`queued → running`) and finishes it with another (`running → completed | failed`), so a
+  turn is answered once, and a completed or failed turn is never written again.
+- **Deletion cascades.** Deleting a session deletes its turns and their tool calls (foreign
+  keys `ON DELETE CASCADE`, and the service deletes explicitly on both databases). A session
+  with a pending turn cannot be deleted (409).
+- **Check constraint.** `analyst_turns.status` is one of the four statuses.
+- **Indexes.** `analyst_sessions (updated_at)` for the newest-first list; `analyst_turns
+  (requested_at)` for the daily token count and `(status)` for recovery at start-up; the
+  unique `(session_id, position)` and `(turn_id, position)` keep order.
+- **Hashes.** `answer_hash` and `result_hash` are SHA-256 over canonical JSON, as elsewhere.
+- **No foreign keys into the records answered about.** An answer's evidence names nodes,
+  series, scenarios and executions by id inside JSON: the conversation is a record of what
+  was read then, and outlives graph rebuilds.
+
 ## Enumerations
 
 Enumerations are stored as `VARCHAR` with a `CHECK` constraint, not native database enum
@@ -677,6 +757,8 @@ migration.
 | Graph issue subject | `node`, `edge`, `identifier`, `resolution` |
 | Simulation model status | `preview`, `active`, `deprecated` |
 | Simulation run status | `completed` |
+| Analyst turn status | `queued`, `running`, `completed`, `failed` (the last two are final) |
+| Analyst tool-call status | `ok`, `invalid`, `refused`, `not_found`, `failed`, `timeout`, `skipped` |
 
 ## Conventions
 
@@ -702,7 +784,8 @@ versions after turning every draft into its version 1, and adds the three execut
 version, drops older versions and every execution, and keeps the Phase 4 runs);
 `0006_intelligence` adds `intelligence_analyses` and changes no existing table (its downgrade
 drops it, and with it every stored analysis; every other intelligence answer is computed
-and needs no table).
+and needs no table); `0007_analyst` adds the three AI Analyst tables and changes no existing
+table (its downgrade drops them, and with them every conversation).
 
 - Every schema change is a new revision: edit the models, run
   `uv run alembic revision --autogenerate -m "…"`, **review the generated file**, apply it

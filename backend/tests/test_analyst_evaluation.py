@@ -23,7 +23,7 @@ def test_the_grounded_composer_passes_every_case(
     scored = evaluation.run(session_factory)
     report = evaluation.summary(scored)
     assert report["failed"] == [], report["failed"]
-    assert report["passed"] == report["cases"] == len(evaluation.CASES) == 30
+    assert report["passed"] == report["cases"] == len(evaluation.CASES) == 33
     assert report["fallbacks"] == 0
 
 

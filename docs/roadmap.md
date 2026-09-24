@@ -11,8 +11,8 @@ uncertainty are never blurred.
 | **3** | **Financial knowledge graph** | **Done:** a graph of every record RUMIN holds (9 node types, 18 edge types) with evidence on every edge, conservative entity resolution, validation and build reports, neighbourhoods, shortest paths, components and metrics, a read-only graph API and the Knowledge Graph explorer ([report](phases/phase-3-report.md)). Centrality and propagation were deliberately left out ([why](decisions.md#30-no-centrality-weighted-paths-or-community-detection-yet)) |
 | **4** | **Simulation engine** | **Done:** a versioned model registry and its first model (an airline fuel-cost shock: crude oil, jet fuel and the exchange rate through hedging and a lagged fare pass-through), exact decimals, propagation only along confirmed graph relationships, Shapley contributions, one-at-a-time sensitivity, append-only runs with provenance and verification, the simulation API and the Simulation preview ([report](phases/phase-4-report.md)). Monte Carlo was deliberately deferred ([why](decisions.md#39-one-at-a-time-sensitivity-points-outside-a-range-are-skipped)) |
 | **5** | **Scenario Lab** | **Done:** versioned scenarios executed through the model registry (five models, six versions), a planner that says which models apply and why, a bounded background runner with recorded stages, cancellation and time limits, the Lab's aggregation equations, the modelled pathway with graph context kept apart, baseline against scenario, months with a replay, stress cases, one-at-a-time sensitivity, explanations from stored runs, history, reproducibility checks and comparisons, templates built on implemented models, and the Scenario Lab interface ([report](phases/phase-5-report.md)). Demand and supply-chain shocks were deliberately left out ([why](decisions.md#43-several-narrow-models-composed-by-line-items)) |
-| **6** | **Financial intelligence** | **Done in this build:** findings from 19 documented rules over stored observations, validated graph relationships and stored executions, each with its evidence chain and grade (the weakest link); change detection, revisions, trends, volatility and unusual moves against configurable thresholds; exposure paths and a companies × variables matrix; drivers from stored contributions; model interpretations of observed changes; dossiers per company and industry; a structured brief for the AI Analyst; stored, fingerprinted analyses that know when they are stale; the Financial Intelligence interface ([report](phases/phase-6-report.md)). Exposure sizes and reports as documents were left for later ([why](phases/phase-6-report.md#10-verification-against-the-brief)) |
-| 7 | AI Analyst | Questions answered from the model's data, assumptions and runs, with citations |
+| **6** | **Financial intelligence** | **Done:** findings from 19 documented rules over stored observations, validated graph relationships and stored executions, each with its evidence chain and grade (the weakest link); change detection, revisions, trends, volatility and unusual moves against configurable thresholds; exposure paths and a companies × variables matrix; drivers from stored contributions; model interpretations of observed changes; dossiers per company and industry; a structured brief for the AI Analyst; stored, fingerprinted analyses that know when they are stale; the Financial Intelligence interface ([report](phases/phase-6-report.md)). Exposure sizes and reports as documents were left for later ([why](phases/phase-6-report.md#10-verification-against-the-brief)) |
+| **7** | **AI Analyst** | **Done in this build:** questions answered from RUMIN's records through 17 allowlisted, read-only tools over the Phase 2–6 services (one compute tool: an unstored scenario preview); an evidence ledger with eight kinds of knowledge; every figure cited and checked mechanically against its evidence, unsupported parts never shown; RUMIN's grounded composer by default and an optional Claude model through the official SDK, held to the same check with fallback; conversations with focus, follow-ups and clarifications; guardrails for advice, forecasts, live data, injection and secrets; bounded work and cost; the evidence-margin workspace with the Scenario Lab hand-over; a 33-case evaluation set ([report](phases/phase-7-report.md)). A language model has **not** been measured: no key was available ([why](analyst/providers.md#not-verified-here)) |
 | 8 | 3D financial universe | A Three.js view of the same model and layout |
 | 9 | Advanced simulation & validation | Back-testing, calibration, model validation, evidence upgrades |
 | 10 | Productization, security & launch | Accounts and access control, deployment, monitoring, hardening |
@@ -108,7 +108,59 @@ scenario profile in the Lab. Still open:
    precomputed per build.
 7. **Retention for stored analyses** with authentication (Phase 10).
 
+## Analyst follow-ups
+
+1. **Measure a language model** on the evaluation set with a key (`python -m app.analyst.evaluation`
+   with `RUMIN_ANALYST_PROVIDER=anthropic`): pass rate, fallbacks, latency and tokens per
+   question. Decide the default provider from that, not before.
+2. **Real questions.** Log, with consent, the questions the router reads as `unsupported` or
+   `clarify`, and grow the evaluation set and the vocabulary from them.
+3. **Checking words, not only figures.** Superlatives and rankings ("the largest", "most
+   exposed") can be wrong without a figure; check them against the ordering in the cited
+   evidence.
+4. **Streaming** (server-sent events) if model answers feel slow; the polling contract can
+   stay for clients that prefer it.
+5. **Per-user conversations, budgets and retention** with authentication (Phase 10); a queue
+   and a token budget shared across API processes.
+6. **More questions**: comparing two stored scenarios, several subjects at once, questions
+   about a stored analysis, and a tool over the Phase 6 brief for a model that works better
+   from it.
+7. **Reports**: a conversation exported as a document whose every figure keeps its citation.
+
+## Recommendations for Phase 8 (3D financial universe)
+
+Phase 8 should add a view, not a new model of the economy:
+
+1. **Reuse the model and the layout.** The network's model, filters, selection and layout are
+   pure and renderer-agnostic (Phase 1); a Three.js renderer should consume them, keep the 2D
+   Universe as the default and accessible fallback (with its table view), and load lazily so
+   no other page pays for it. Three.js would be the first frontend dependency since Phase 1:
+   record the decision.
+2. **Encode only what exists.** Depth, height and glow must not suggest magnitudes RUMIN does
+   not hold. Keep the kinds of knowledge and evidence statuses readable by shape and pattern,
+   never colour alone, as in 2D and the graph explorer.
+3. **Budgets first.** Measure frame time and memory on the 20,000-company synthetic networks
+   the graph benchmarks use; instanced meshes, level of detail and a WebGL-unavailable
+   fallback before any visual polish.
+4. **Connect to the Analyst and the Lab.** *Show in the universe* from an answer's paths (the
+   paths block already carries node keys), *Ask about this* from a selected node into the
+   Analyst with that node as the subject, and *Open in the Scenario Lab* from an exposure.
+5. **Accessibility and motion.** Keyboard navigation between nodes, a screen-reader summary of
+   the selection, no motion until asked for and none under reduced motion.
+6. **Before or alongside it**: measure a Claude model on the evaluation set (Analyst
+   follow-up 1) and run the World Bank retrieval where it is reachable, so answers and views
+   are shown on real observations rather than SYNTHETIC ones.
+
 ## Recommendations for Phase 7 (AI Analyst)
+
+Written at the end of Phase 6. Items 2–4 were done in Phase 7 (a mechanical grounding check
+before display; grades and labels carried into answers as kinds of knowledge; questions mapped
+to intents answered by the rules and data that exist, *not held by RUMIN* otherwise). Item 1
+changed: the Analyst reads through tools over the same services the brief is built from
+(dossiers, exposure, drivers, findings), which also reach series, paths, scenarios and
+previews the brief does not hold. Item 5 is partly done: a language model is optional and off
+by default, its key never leaves the backend, and data sent to it is limited to tool results;
+a local model option and authentication remain open.
 
 Phase 7 should phrase what Phase 6 computes, never compute it:
 

@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 from app.analyst.answer import Block, Column, SeriesBlock, SeriesPoint, TableBlock, TableRow
 from app.analyst.evidence import Knowledge, SourceRef, exact, node_link, series_link
 from app.analyst.policy import data_text
-from app.analyst.tools.common import THRESHOLDS
+from app.analyst.tools.common import THRESHOLDS, counted
 from app.analyst.tools.registry import RenderContext, Tool, ToolOutput, ToolProblem
 from app.analyst.vocabulary import Vocabulary
 from app.intelligence import fmt, stats
@@ -242,7 +242,8 @@ def _series_render(
             if subject.variable_relation
             else None,
         },
-        summary=f"{len(shown)} of {len(history.points)} values, {shown[0].label}–{shown[-1].label}",
+        summary=f"{len(shown)} of {counted(len(history.points), 'value')}, "
+        f"{shown[0].label}–{shown[-1].label}",
         evidence=ids,
         display=[block],
         facts=found,
@@ -618,7 +619,7 @@ def _changes_render(
             },
             "notes": [data_text(note, 300) for note in found.notes],
         },
-        summary=f"{len(found.observed)} observed, {len(found.revisions)} revisions, "
+        summary=f"{len(found.observed)} observed, {counted(len(found.revisions), 'revision')}, "
         f"{len(found.executions)} simulated",
         evidence=ids,
         display=display,
@@ -745,7 +746,7 @@ def _findings_render(
                 for cited, insight in zip(ids, found.items, strict=False)
             ],
         },
-        summary=f"{found.total} findings",
+        summary=counted(found.total, "finding"),
         evidence=[summary, *ids],
         display=display,
         facts=found,

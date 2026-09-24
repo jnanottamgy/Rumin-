@@ -1,0 +1,31 @@
+{
+  "id": "c96e6304-a449-4c23-8146-7b2b2d0d4fc9",
+  "session_id": "70f97d83-8dae-4b19-87ae-bdfec3c2cfb2",
+  "position": 1,
+  "question": "What does RUMIN know about Anvaya Bank?",
+  "status": "failed",
+  "intent": null,
+  "answer": null,
+  "error": {
+    "code": "failed",
+    "message": "The question could not be answered; the error was logged."
+  },
+  "configured_provider": "grounded",
+  "provider": null,
+  "model": null,
+  "fallback": null,
+  "usage": {
+    "requests": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0
+  },
+  "tool_calls": [],
+  "analyst_version": "1.0.0",
+  "requested_at": "2026-09-24T18:20:57.655935Z",
+  "started_at": "2026-09-24T18:20:57.658250Z",
+  "finished_at": "2026-09-24T18:20:57.663917Z",
+  "duration_ms": 5,
+  "poll_after_ms": null
+}

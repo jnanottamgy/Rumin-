@@ -41,6 +41,31 @@ provider. See [providers](data/providers.md).
 
 Outbound requests honour the standard `HTTPS_PROXY` environment variable.
 
+### AI Analyst (Phase 7)
+
+Read by the API. None is needed: RUMIN's grounded composer answers by default, offline. See
+[providers](analyst/providers.md) and [guardrails](analyst/guardrails.md).
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `RUMIN_ANALYST_PROVIDER` | `grounded` | `grounded` (RUMIN composes every answer; no language model) or `anthropic` (a Claude model through the official SDK, held to the same grounding check; RUMIN answers whenever it fails or is not ready). |
+| `RUMIN_ANTHROPIC_API_KEY` | — | The API key for `anthropic`. **A secret**: never logged, never returned by the API. RUMIN reads only this variable: `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN` and `ANTHROPIC_BASE_URL` in the environment are ignored, and a set `ANTHROPIC_CUSTOM_HEADERS` stops the provider (RUMIN answers instead). |
+| `RUMIN_ANALYST_MODEL` | — | The model to call. RUMIN writes no model identifier into its code: choose one when deploying (100 characters at most). |
+| `RUMIN_ANTHROPIC_BASE_URL` | `https://api.anthropic.com` | Must use `https://` (plain `http://` only for `localhost`). |
+| `RUMIN_ANALYST_THINKING` | `adaptive` | `adaptive` or `off`. |
+| `RUMIN_ANALYST_MAX_TOKENS` | `4096` | Output tokens per model request (512 – 32,000). |
+| `RUMIN_ANALYST_REQUEST_TIMEOUT_SECONDS` | `60` | Per model request (5 – 300). |
+| `RUMIN_ANALYST_MAX_RETRIES` | `2` | Retries of a failed model request by the SDK (0 – 5). |
+| `RUMIN_ANALYST_MAX_MODEL_REQUESTS` | `6` | Model requests per question (1 – 12). |
+| `RUMIN_ANALYST_DAILY_TOKEN_BUDGET` | `2000000` | Input + output tokens a day across all questions; beyond it RUMIN answers (0 turns the model off). |
+| `RUMIN_ANALYST_DEADLINE_SECONDS` | `90` | Time allowed for one question (5 – 300). |
+| `RUMIN_ANALYST_MAX_TOOL_CALLS` | `12` | Tool calls per question (1 – 32). |
+| `RUMIN_ANALYST_MAX_QUESTION_CHARS` | `2000` | Longest question accepted (100 – 8,000); longer ones get 422 and are not stored. |
+| `RUMIN_ANALYST_MAX_TURNS_PER_SESSION` | `200` | Questions per conversation (1 – 1,000). |
+| `RUMIN_ANALYST_EXECUTION_MODE` | `thread` | `thread` (the bounded pool; asking answers 202) or `inline` (inside the request; the tests use it). |
+| `RUMIN_ANALYST_MAX_CONCURRENT` | `2` | Questions answered at once in one API process (1 – 8). |
+| `RUMIN_ANALYST_MAX_QUEUED` | `8` | Questions waiting (0 – 64); beyond that asking answers 429 and stores nothing. |
+
 ## Frontend
 
 | Variable | Default | Meaning |
@@ -66,11 +91,15 @@ Outbound requests honour the standard `HTTPS_PROXY` environment variable.
 
 ## Secrets
 
-RUMIN still has no secrets: the World Bank needs no API key, price files are local, and
-there is no authentication. The only credential anywhere is the local PostgreSQL password
-above, a placeholder for a disposable development database (and a CI-only password inside
-the CI job's throwaway database container). When providers that need keys arrive (MoSPI
-is next), their keys belong in the backend's environment (`RUMIN_<PROVIDER>_API_KEY`) or the
-deployment's secret store — never in `VITE_` variables, the catalogue, the database or the
-repository. The HTTP layer already strips credential-like query parameters from every URL
-it logs or stores.
+RUMIN's only secret is optional: `RUMIN_ANTHROPIC_API_KEY`, for a Claude model to answer the
+AI Analyst's questions. It belongs in the backend's environment or the deployment's secret
+store — never in `VITE_` variables, the database or the repository. It is held as a secret
+value (never printed in settings, logs or errors), sent only to the configured Anthropic
+base URL, and never returned by the API: the capabilities endpoint says only whether a model
+is ready and, if not, which setting is missing. The World Bank needs no API key, price files
+are local, and there is no authentication. The only other credential is the local
+PostgreSQL password above, a placeholder for a disposable development database (and a
+CI-only password inside the CI job's throwaway database container). When providers that
+need keys arrive (MoSPI is next), their keys follow the same rule
+(`RUMIN_<PROVIDER>_API_KEY`). The HTTP layer strips credential-like query parameters from
+every URL it logs or stores.

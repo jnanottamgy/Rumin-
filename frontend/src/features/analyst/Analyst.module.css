@@ -1,0 +1,986 @@
+/*
+ * The AI Analyst workspace. One idea carries the page: each answer is a research note with
+ * its sources in the margin beside it. Everything else stays quiet — hairlines, the
+ * existing type scale, sky blue only for citations, links and focus.
+ */
+
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+}
+
+/* The provider line under the page title: the status, then a note that wraps. */
+.provider {
+  display: grid;
+  gap: var(--space-1);
+  max-width: 46rem;
+}
+
+.providerNote {
+  margin: 0;
+  color: var(--color-ink-muted);
+  font-size: var(--text-sm);
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr);
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.muted {
+  margin: 0;
+  color: var(--color-ink-muted);
+  font-size: var(--text-sm);
+}
+
+.caption {
+  margin: var(--space-2) 0 0;
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+}
+
+.textLink {
+  color: var(--color-accent-ink);
+  font-size: var(--text-sm);
+}
+
+/* ── Conversations rail ─────────────────────────────────────────────── */
+
+.rail {
+  position: sticky;
+  top: calc(var(--header-height) + var(--space-4));
+  display: grid;
+  gap: var(--space-3);
+  align-content: start;
+  max-height: calc(100vh - var(--header-height) - var(--space-8));
+  padding-right: var(--space-4);
+  overflow-y: auto;
+  border-right: 1px solid var(--color-line);
+}
+
+.sessions {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sessionItem {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-left: 2px solid transparent;
+  background: none;
+  color: var(--color-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sessionItem:hover {
+  background: var(--color-surface-raised);
+}
+
+.sessionItem:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.sessionActive {
+  border-left-color: var(--color-accent);
+  background: var(--color-surface);
+}
+
+.sessionTitle {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.sessionMeta {
+  color: var(--color-ink-muted);
+  font-size: var(--text-2xs);
+}
+
+/* ── Conversation ───────────────────────────────────────────────────── */
+
+.conversation {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-8);
+  min-width: 0;
+}
+
+.conversationHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.conversationTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 500;
+  line-height: var(--leading-snug);
+}
+
+.conversationActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  align-items: center;
+}
+
+.renameForm {
+  display: flex;
+  flex: 1 1 20rem;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.renameForm input {
+  flex: 1 1 14rem;
+  min-width: 0;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-field-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font: inherit;
+}
+
+.confirm {
+  display: inline-flex;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+  font-size: var(--text-sm);
+}
+
+.headError {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--color-critical-ink);
+  font-size: var(--text-sm);
+}
+
+/* ── Welcome ─────────────────────────────────────────────────────────── */
+
+.welcome {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 46rem;
+}
+
+.welcomeTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 500;
+  line-height: var(--leading-snug);
+}
+
+.welcomeText {
+  margin: 0;
+  color: var(--color-ink-secondary);
+  line-height: var(--leading-normal);
+}
+
+.suggestions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.suggestion {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-3);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font: inherit;
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  text-align: left;
+  cursor: pointer;
+}
+
+.suggestion:hover:not(:disabled) {
+  border-color: var(--color-accent);
+}
+
+.suggestion:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.suggestion:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.suggestionLabel {
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+}
+
+/* ── A note: question, answer, margin ────────────────────────────────── */
+
+.note {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-line);
+}
+
+/* The head already rules off the conversation: its first note needs no second line. */
+.conversationHead + .note {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.question {
+  max-width: 46rem;
+  margin: 0;
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--color-line-strong);
+  color: var(--color-ink-secondary);
+  font-size: var(--text-md);
+  line-height: var(--leading-snug);
+}
+
+.body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 18rem;
+  gap: var(--space-8);
+  align-items: start;
+}
+
+.main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+  max-width: 46rem;
+  min-width: 0;
+}
+
+/* Wide blocks (tables, chains) scroll or wrap inside the column, never widen it. */
+.main > * {
+  min-width: 0;
+}
+
+.headline {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 500;
+  line-height: var(--leading-snug);
+}
+
+.status {
+  margin: calc(-1 * var(--space-2)) 0 0;
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+}
+
+.tone_caution {
+  color: var(--color-warning-ink);
+}
+
+.text p {
+  margin: 0;
+  line-height: var(--leading-normal);
+}
+
+.role_detail p {
+  color: var(--color-ink-secondary);
+}
+
+.role_interpretation,
+.role_general {
+  padding-left: var(--space-3);
+  border-left: 1px dashed var(--color-line-strong);
+}
+
+.roleLabel {
+  margin: 0 0 var(--space-1);
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+  font-style: italic;
+}
+
+.policy {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  margin: 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-sunken);
+  color: var(--color-ink-secondary);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.policy svg {
+  flex: none;
+  margin-top: 0.2em;
+}
+
+/* Citations: the only sky-blue marks in the text. */
+.citations {
+  white-space: nowrap;
+}
+
+.cite {
+  display: inline-block;
+  margin-left: 0.2em;
+  padding: 0 0.3em;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-xs);
+  color: var(--color-accent-ink);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  line-height: 1.45;
+  text-decoration: none;
+  vertical-align: 0.1em;
+}
+
+.cite:hover,
+.citeActive {
+  background: var(--color-accent-wash);
+}
+
+.cite:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.citeMissing {
+  border-color: var(--color-critical);
+  color: var(--color-critical-ink);
+}
+
+/* ── The margin ─────────────────────────────────────────────────────── */
+
+.margin {
+  position: sticky;
+  top: calc(var(--header-height) + var(--space-4));
+  display: grid;
+  gap: var(--space-3);
+  max-height: calc(100vh - var(--header-height) - var(--space-8));
+  padding-left: var(--space-4);
+  overflow-y: auto;
+  border-left: 1px solid var(--color-line);
+  font-size: var(--text-sm);
+}
+
+.marginTitle {
+  margin: 0;
+  color: var(--color-ink-secondary);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.count {
+  margin-left: var(--space-1);
+  color: var(--color-ink-muted);
+  font-family: var(--font-mono);
+  font-weight: 400;
+}
+
+.sources {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.source {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-2);
+  border-left: 2px solid transparent;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.source:focus {
+  outline: none;
+}
+
+.sourceActive,
+.source:focus-visible,
+.source:target {
+  border-left-color: var(--color-accent);
+  background: var(--color-accent-wash);
+}
+
+.sourceHead {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  margin: 0;
+}
+
+.sourceId {
+  color: var(--color-accent-ink);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+}
+
+.sourceKind {
+  display: inline-flex;
+  gap: 0.35em;
+  align-items: center;
+  color: var(--color-ink-muted);
+  font-size: var(--text-2xs);
+}
+
+.mark {
+  flex: none;
+  color: var(--color-ink-secondary);
+}
+
+.sourceTitle {
+  margin: 0;
+  line-height: var(--leading-snug);
+}
+
+.sourceFacts {
+  margin: 0;
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+}
+
+.sourceMore summary,
+.others summary,
+.tableToggle summary {
+  color: var(--color-accent-ink);
+  font-size: var(--text-xs);
+  cursor: pointer;
+}
+
+.sourceMore[open] {
+  display: grid;
+  gap: var(--space-2);
+  padding-top: var(--space-1);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+}
+
+.sourceMore p {
+  margin: 0;
+}
+
+.values {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  font-size: var(--text-xs);
+}
+
+.values div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-2);
+}
+
+.values dt {
+  overflow: hidden;
+  color: var(--color-ink-muted);
+  text-overflow: ellipsis;
+}
+
+.values dd {
+  margin: 0;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.assumptions {
+  margin: 0;
+  padding-left: var(--space-4);
+}
+
+.others {
+  font-size: var(--text-xs);
+}
+
+/* ── Displays ───────────────────────────────────────────────────────── */
+
+.blockTitle {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.tableWrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.table caption {
+  padding-bottom: var(--space-2);
+  font-weight: 600;
+  text-align: left;
+}
+
+.table th,
+.table td {
+  padding: var(--space-1) var(--space-2);
+  border-bottom: 1px solid var(--color-line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.table thead th {
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+  font-weight: 500;
+}
+
+.table tbody th {
+  font-weight: 500;
+}
+
+.table .end {
+  text-align: right;
+}
+
+.figure {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.figureHead {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.paths {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.pathList {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.path {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.chain {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 0;
+  align-items: baseline;
+  margin: 0;
+}
+
+.step {
+  display: inline-flex;
+  align-items: baseline;
+}
+
+.node {
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.link {
+  padding: 0 0.5em;
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+}
+
+.link::after {
+  content: " \2192";
+}
+
+.pathFacts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-3);
+  margin: 0;
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+}
+
+.scenario {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+}
+
+/* Not stored: the card's own edge says so, besides its label. */
+.scenario_preview {
+  border-style: dashed;
+}
+
+.scenario_plan {
+  border-style: dotted;
+}
+
+.scenarioHead {
+  display: grid;
+  gap: 2px;
+}
+
+.scenarioHead p {
+  margin: 0;
+}
+
+.scenarioStatus {
+  color: var(--color-ink-secondary);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.changes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  margin: 0;
+  padding: 0;
+  font-size: var(--text-sm);
+  list-style: none;
+}
+
+.missing {
+  font-size: var(--text-sm);
+}
+
+.missing p {
+  margin: 0;
+}
+
+.missing ul {
+  margin: var(--space-1) 0 0;
+  padding-left: var(--space-5);
+  color: var(--color-ink-secondary);
+}
+
+.scenarioActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.notice {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-2) var(--space-3);
+  border-left: 2px solid var(--color-line-strong);
+  background: var(--color-surface-sunken);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.notice p {
+  margin: 0;
+}
+
+.notice_fallback,
+.notice_missing_data,
+.notice_conflict {
+  border-left-color: var(--color-warning);
+}
+
+.noticeHead {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.noticeKind {
+  color: var(--color-ink-muted);
+  font-weight: 400;
+}
+
+.clarify {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.clarify p {
+  margin: 0;
+}
+
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* Suggested questions are sentences: on a narrow screen they wrap, never widen the column. */
+.options > button {
+  max-width: 100%;
+  padding-block: var(--space-1);
+  white-space: normal;
+  text-align: left;
+}
+
+.followUps {
+  display: grid;
+  gap: var(--space-2);
+}
+
+/* ── How it was answered ────────────────────────────────────────────── */
+
+.noteFoot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.method {
+  flex: 1 1 24rem;
+  font-size: var(--text-xs);
+}
+
+.method summary {
+  color: var(--color-ink-muted);
+  cursor: pointer;
+}
+
+.method[open] {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.calls {
+  display: grid;
+  gap: var(--space-1);
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  font-size: var(--text-xs);
+  list-style: none;
+}
+
+.call {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 4.5rem;
+  gap: 0 var(--space-3);
+  padding: var(--space-1) 0;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.callName {
+  overflow-wrap: anywhere;
+}
+
+.callStatus {
+  color: var(--color-ink-secondary);
+}
+
+.callProblem .callStatus {
+  color: var(--color-warning-ink);
+}
+
+.callTime {
+  text-align: right;
+}
+
+.callSummary {
+  grid-column: 1 / -1;
+  color: var(--color-ink-muted);
+}
+
+.methodFacts {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+}
+
+.methodFacts div {
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr);
+  gap: var(--space-3);
+}
+
+.methodFacts dt {
+  color: var(--color-ink-muted);
+}
+
+.methodFacts dd {
+  margin: 0;
+}
+
+/* ── Pending and failed ─────────────────────────────────────────────── */
+
+.progress {
+  display: grid;
+  gap: var(--space-2);
+  max-width: 46rem;
+}
+
+.failed {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+  max-width: 46rem;
+  color: var(--color-critical-ink);
+  font-size: var(--text-sm);
+}
+
+.failed p {
+  flex: 1 1 16rem;
+  margin: 0;
+}
+
+/* ── Composer ───────────────────────────────────────────────────────── */
+
+.composer {
+  position: sticky;
+  bottom: 0;
+  display: grid;
+  gap: var(--space-2);
+  max-width: 46rem;
+  padding: var(--space-3) 0 var(--space-4);
+  border-top: 1px solid var(--color-line);
+  background: var(--color-bg);
+}
+
+.composer textarea {
+  width: 100%;
+  min-height: 3.4rem;
+  padding: var(--space-3);
+  border: 1px solid var(--color-field-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font: inherit;
+  line-height: var(--leading-normal);
+  resize: vertical;
+}
+
+.composer textarea:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.composerFoot {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.composerFoot p {
+  font-size: var(--text-xs);
+}
+
+.over {
+  color: var(--color-critical-ink);
+}
+
+/* ── Narrower screens ───────────────────────────────────────────────── */
+
+@media (max-width: 78rem) {
+  .body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+  }
+
+  .margin {
+    position: static;
+    max-width: 46rem;
+    max-height: none;
+    padding: var(--space-3) 0 0;
+    border-top: 1px solid var(--color-line);
+    border-left: 0;
+  }
+}
+
+@media (max-width: 60rem) {
+  .workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rail {
+    position: static;
+    max-height: none;
+    padding: 0 0 var(--space-3);
+    border-right: 0;
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .sessions {
+    display: flex;
+    gap: var(--space-1);
+    overflow-x: auto;
+  }
+
+  .sessionItem {
+    width: 13rem;
+  }
+}
+
+@media (max-width: 40rem) {
+  .suggestions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .call {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .callTime {
+    grid-column: 2;
+  }
+
+  .methodFacts div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .source {
+    transition: none;
+  }
+}

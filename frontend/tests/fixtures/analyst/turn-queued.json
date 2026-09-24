@@ -1,0 +1,28 @@
+{
+  "id": "398236d0-c2c0-4702-acc2-d09d11ab1faf",
+  "session_id": "cd75ea01-6ff2-47ed-8197-297c6f57e006",
+  "position": 1,
+  "question": "What does RUMIN know about Aerisca Airways?",
+  "status": "queued",
+  "intent": null,
+  "answer": null,
+  "error": null,
+  "configured_provider": "grounded",
+  "provider": null,
+  "model": null,
+  "fallback": null,
+  "usage": {
+    "requests": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0
+  },
+  "tool_calls": [],
+  "analyst_version": "1.0.0",
+  "requested_at": "2026-09-24T18:20:57.027450Z",
+  "started_at": null,
+  "finished_at": null,
+  "duration_ms": null,
+  "poll_after_ms": 500
+}

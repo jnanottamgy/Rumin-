@@ -725,6 +725,71 @@ Reading an analysis back adds `freshness`, computed each time and never stored: 
 (`current` or `stale`), `changed` (`graph`, `data`, `executions`, `engine_version`, `subject`,
 `scope`), `checked_at` and a `message`.
 
+## AI Analyst
+
+The Analyst's conversations. Answers, evidence and blocks are described field by field in
+the OpenAPI contract (`Answer`, `Evidence`, the block schemas) and in
+[`docs/analyst/`](analyst/README.md).
+
+### Session
+
+`analyst_sessions`: a conversation.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `id` | UUID | The conversation. |
+| `title` | string (≤ 120) | Given when created or renamed; otherwise its first question, shortened. |
+| `turn_count` | integer | Questions asked in it, answered or not. |
+| `focus` | JSON | What it is about, as record keys: `subject`, `entity`, `variable`, `series`, `scenario_id`, `execution_id`, `changes` (a what-if's changes), `horizon`, and the last `intent`. Read against follow-up questions. |
+| `created_at`, `updated_at` | UTC timestamps | When it was created and last asked or renamed. |
+
+### Turn
+
+`analyst_turns`: one question and its answer. Final once `completed` or `failed`.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `id`, `session_id`, `position` | UUID, UUID, integer | The turn, its conversation and its place in it (1, 2 …). |
+| `question` | text | As asked (trimmed), at most `RUMIN_ANALYST_MAX_QUESTION_CHARS` characters. |
+| `status` | `queued` \| `running` \| `completed` \| `failed` | Its lifecycle. |
+| `intent` | string or null | How the router read it (24 intents, e.g. `entity_overview`, `what_if`, `clarify`). |
+| `answer_status` | string or null | `answered`, `partial`, `no_data`, `clarification`, `declined`, `unsupported` or `failed`. |
+| `headline` | string (≤ 300) or null | The answer's headline. |
+| `answer` | JSON or null | The answer: status, intent, headline, blocks, evidence (the ledger), follow-ups, provider and grounding result. |
+| `answer_hash` | hex string or null | SHA-256 of `answer` (canonical JSON). |
+| `route` | JSON or null | The reading: intent, records named, changes, periods, horizon, line, channel, screening flags, assumptions, reasons and what came from the focus. |
+| `focus_after` | JSON or null | The conversation's focus after this answer. |
+| `grounded` | boolean or null | Whether the stored answer passed the grounding check (always true for a stored answer; failing parts are withheld). |
+| `configured_provider` | `grounded` \| `anthropic` | The provider configured when it was asked. |
+| `provider` | string or null | The provider whose answer was stored (`grounded` after any fallback). |
+| `model` | string (≤ 100) or null | The model that answered, when one did. |
+| `fallback` | text or null | Why a configured model's answer was not used. |
+| `rejected` | JSON or null | A model draft's failed grounding check (problems), kept for review. |
+| `usage` | JSON | Model requests and tokens: `requests`, `input_tokens`, `output_tokens`, `cache_read_tokens`, `cache_write_tokens`. |
+| `tokens` | integer | Input + output tokens, counted against the daily budget. |
+| `error` | JSON or null | For a failed turn: `code` and a fixed `message`, never internals. |
+| `analyst_version` | string | `ANALYST_VERSION` at the time (`1.0.0`). |
+| `requested_at`, `started_at`, `finished_at` | UTC timestamps | Asked, claimed by a worker, finished. |
+| `duration_ms` | integer or null | From claim to finish. |
+
+### Tool call
+
+`analyst_tool_calls`: every tool call of a turn, recorded as it ends.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `id`, `turn_id`, `position` | integer, UUID, integer | The call, its turn and its order in the turn. |
+| `tool` | string (≤ 64) | The tool asked for (also when refused as unknown). |
+| `arguments` | JSON | The arguments as given. |
+| `status` | string | `ok`, `invalid` (arguments refused), `refused` (not allowed), `not_found`, `failed`, `timeout` or `skipped` (a limit was reached). |
+| `summary` | string (≤ 300) or null | What it found, in words ("Aerisca Airways: 4 exposure paths, 1 stored execution, 20 findings"). |
+| `result` | JSON or null | Its compact result; when that is longer than 32,000 characters, only `{"truncated": true, "characters": …}`. |
+| `result_hash` | hex string or null | SHA-256 of the full result (canonical JSON). |
+| `evidence` | JSON | The evidence ids it added to the turn's ledger (`["E1", "E2"]`). |
+| `error` | text or null | A safe message for a failed, refused or invalid call. |
+| `attempts` | integer | 1, or 2 after a transient database error. |
+| `started_at`, `duration_ms` | UTC timestamp, integer | When it ran and for how long. |
+
 ## Sample dataset catalogue
 
 `rumin-sample` v1.0.0 — `backend/app/data/sample_dataset.json`. Relationship rationales are

@@ -5,7 +5,7 @@ keeps its kind and id so a reader can follow a value back to its record. The sam
 produces the live response and the stored snapshot, so a stored analysis reads exactly like
 the analysis it records.
 
-The **brief** is the structured object a future AI Analyst would receive about one entity:
+The **brief** is the structured object a language-model analyst can be given about one entity:
 observations, drivers, relationships, simulation results, assumptions, evidence and
 limitations, each carrying its evidence grade, plus rules for narrating it. It holds no free
 text written by a model: every sentence in it comes from a documented rule, and every number
@@ -288,7 +288,7 @@ def _unique(items: Iterable[str]) -> list[str]:
 
 
 def brief(found: EntityAnalysis, generated_at: datetime) -> dict[str, Any]:
-    """The structured object a future AI Analyst would receive about one entity."""
+    """The structured object a language-model analyst can be given about one entity."""
     exposure = found.exposure
     relationships: dict[str, dict[str, Any]] = {}
     for edge in [

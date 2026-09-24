@@ -139,6 +139,20 @@ _PLAIN = str.maketrans(
 )
 
 
+MASS_NOUNS = frozenset({"inflation", "growth", "unemployment", "output"})
+
+
+def the(label: str) -> str:
+    """'the Brent crude oil price', but 'India CPI inflation': no article before a mass noun."""
+    words = label.lower().split()
+    return label if words and words[-1] in MASS_NOUNS else f"the {label}"
+
+
+def example_change(term: Term) -> str:
+    """A size for an example what-if: a rate in percent moves in points, a price in percent."""
+    return "1 percentage point" if (term.unit or "").startswith("percent") else "10%"
+
+
 def normalise(text: str) -> str:
     """Lower case, plain quotes and dashes, '&' as 'and', single spaces. Every reading of a
     question (names, figures, periods) works on this form, so positions agree."""

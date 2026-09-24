@@ -142,6 +142,25 @@ short:
 - **Stored analyses are append-only**, with no retention or deletion until authentication
   exists, and their fingerprint marks them stale conservatively.
 
+## AI Analyst (Phase 7)
+
+The module's own list is in [analyst/limitations.md](analyst/limitations.md). In short:
+
+- **No language model has been measured.** No API key was available where RUMIN was built, so
+  the optional Claude provider is tested only through the real SDK against a mocked transport.
+  By default RUMIN's grounded composer answers, and a model is held to the same check.
+- **It reads the phrasings it was written for.** The grounded composer understands 24 kinds of
+  question about the names RUMIN holds; others are asked to be clarified or answered as outside
+  RUMIN's records. The reading is always shown, but a misreading is possible.
+- **Figures are checked, words less so.** Every figure, date and version must be in the
+  evidence it cites and forbidden phrasing is refused, but a model could still misdescribe
+  evidence in words without figures ("the largest").
+- **No computation of its own**: no totals, weightings, conversions or forecasts; answers are
+  about the illustrative network and whatever data is stored (SYNTHETIC values where RUMIN was
+  built).
+- **Conversations are open to anyone who can reach the API** until authentication (Phase 10),
+  and the worker pool and token budget are per API process.
+
 ## Product
 
 - **Deterministic results on stated inputs.** The Simulation page runs one model at a time;
@@ -151,8 +170,6 @@ short:
 - **Illustrative network.** The 12 companies are fictional. The 41 relationships are
   modelling assumptions written for demonstration, each with a rationale, none estimated
   or validated. Do not use them to reason about real companies or markets.
-- **No AI analyst.** The page explains the planned feature; no model is connected. Phase 7.
-  Financial Intelligence prepares a structured brief for it, which nothing consumes yet.
 - **Graph analytics are limited on purpose.** The knowledge graph (Phase 3) offers
   neighbourhoods, shortest paths in hops, components, degree and density. There is no
   centrality, no weighted path and no community detection, and effects are propagated
@@ -166,7 +183,8 @@ short:
 ## Platform
 
 - **No authentication or authorisation.** Anyone who can reach the API can read all data,
-  save scenarios, execute them, add simulation runs and store analyses. Local use only until Phase 10. For the same reason ingestion cannot
+  save scenarios, execute them, add simulation runs, store analyses, and read, ask in and
+  delete AI Analyst conversations. Local use only until Phase 10. For the same reason ingestion cannot
   be started over HTTP. See [security.md](security.md).
 - **No inbound rate limiting, audit log or backups.** Outbound requests to providers are
   throttled; the API itself is not.
@@ -180,8 +198,8 @@ short:
   also at tablet size, with a scripted walk-through that is not part of CI); behaviour is
   covered by the jsdom suite and the live integration suite.
 - **Browsers:** developed and checked in Chromium only.
-- **No load testing** (concurrent users). The knowledge graph, the Scenario Lab and Financial
-  Intelligence were benchmarked on one machine, the graph and the intelligence reads on
+- **No load testing** (concurrent users), including of the AI Analyst's pool. The knowledge
+  graph, the Scenario Lab and Financial Intelligence were benchmarked on one machine, the graph and the intelligence reads on
   synthetic networks of up to 20,000 companies ([graph](graph/performance.md),
   [Lab](scenario-lab/performance.md), [intelligence](intelligence/performance.md)).
 

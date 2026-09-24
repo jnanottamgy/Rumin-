@@ -37,7 +37,7 @@ and a test checks every insight the API returns.
 4. **Open a dossier** for a company or an industry: its findings, exposure paths, drivers
    of its latest simulated result, signals, history (related series, revisions, the model
    interpretation of the latest observed change, stored executions), sources, and the
-   **brief** a future AI Analyst would receive.
+   **brief** a language-model analyst can be given.
 5. **Change the thresholds** that decide what counts as a change, a trend or high
    volatility. They are part of the URL, validated by the backend, and recorded in every
    result.
@@ -111,7 +111,7 @@ them the workspace leads with observed data:
   changes, execution changes, and the model interpretation of an observed change.
 - [Drivers](drivers.md): contributions from stored runs, effects per unit, sensitivity.
 - [Stored analyses](stored-analyses.md): snapshots, fingerprints and freshness.
-- [The entity brief](brief.md): the structured object for a future AI Analyst.
+- [The entity brief](brief.md): the structured object a language-model analyst can be given (the Phase 7 [AI Analyst](../analyst/README.md) reads the same services through its tools).
 - [The interface](interface.md): layout, the ledger, the evidence chain, the matrix, the
   dossier, design choices and accessibility.
 - [Performance](performance.md): measured times and sizes, up to 20,000 companies.

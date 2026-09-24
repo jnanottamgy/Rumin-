@@ -33,6 +33,8 @@ export RUMIN_DATABASE_URL="sqlite:///${WORKDIR}/smoke.db"
 export RUMIN_ENVIRONMENT="test"
 export RUMIN_LOG_LEVEL="WARNING"
 export RUMIN_CORS_ORIGINS="http://localhost:5173,http://127.0.0.1:5173"
+# The AI Analyst answers with RUMIN's grounded composer: the smoke test never calls a model.
+export RUMIN_ANALYST_PROVIDER="grounded"
 
 # The backend's Python: from uv when available, else from backend/.venv.
 if command -v uv >/dev/null 2>&1; then

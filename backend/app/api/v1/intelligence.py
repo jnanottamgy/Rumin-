@@ -238,7 +238,7 @@ def get_entity_intelligence(
     "/entities/{entity_key}/brief",
     response_model=BriefRead,
     summary="The entity brief",
-    description="The structured object a future AI Analyst would receive: observations, "
+    description="The structured object a language-model analyst can be given: observations, "
     "drivers, relationships, simulation results, assumptions, evidence and limitations, with "
     "rules for narrating them. Every number is computed by RUMIN.",
     responses=NOT_FOUND,

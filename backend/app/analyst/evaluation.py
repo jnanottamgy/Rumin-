@@ -144,7 +144,7 @@ CASES: tuple[Case, ...] = (
         "explain_line",
         tools=("get_execution", "explain_line"),
         kinds=("simulated",),
-        contains=("Credit per scenario change",),
+        contains=("Contribution of each scenario change",),
     ),
     Case(
         "what_if",
@@ -279,6 +279,33 @@ CASES: tuple[Case, ...] = (
         kinds=("preview",),
         notices=("assumption",),
         contains=("+30 %",),
+    ),
+    Case(
+        "follow_up_bare_figure",
+        "What about 30%?",
+        "clarify",
+        before=("How is Aerisca Airways connected to the USD/INR exchange rate?",),
+        statuses=("clarification",),
+        no_tools=True,
+        contains=("Which variable should change by 30%?",),
+    ),
+    Case(
+        "exposed_to_what",
+        "Which companies are exposed?",
+        "clarify",
+        statuses=("clarification",),
+        no_tools=True,
+        contains=("Which variable do you mean?",),
+    ),
+    Case(
+        "forecast_with_history",
+        "What will India's inflation be next year?",
+        "forecast",
+        statuses=("declined",),
+        tools=("get_series",),
+        kinds=("observed",),
+        contains=("does not forecast",),
+        excludes=(" will be ",),
     ),
 )
 

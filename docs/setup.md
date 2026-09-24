@@ -191,6 +191,48 @@ API on the sample network and on SYNTHETIC networks of up to 20,000 companies
 the frontend's fixtures from a fresh backend ([testing](testing.md)). See [Financial
 Intelligence](intelligence/README.md) and [the API](api.md#financial-intelligence).
 
+### AI Analyst (Phase 7)
+
+Nothing to configure: migration `0007` creates its three tables, and RUMIN's grounded composer
+answers offline, with no language model. Like Financial Intelligence, what it can answer
+depends on what is stored: **build the knowledge graph** for exposure and connections,
+**execute a scenario** for stored results (and so that a what-if can reuse its company's
+figures), and **retrieve series** for stored values.
+
+In the browser, open <http://127.0.0.1:5173/analyst> and ask, or pick a suggested question.
+Each answer shows its sources beside it; *How this was answered* lists the tool calls. A
+what-if offers *Open in the Scenario Lab*, where it opens as an unsaved draft.
+
+Through the API:
+
+```bash
+API=http://127.0.0.1:8000/api/v1
+curl -s $API/analyst/capabilities                                   # provider, tools, limits, suggestions
+SESSION=$(curl -s -X POST $API/analyst/sessions -H 'Content-Type: application/json' -d '{}' \
+  | python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])')
+curl -s -X POST $API/analyst/sessions/$SESSION/turns -H 'Content-Type: application/json' \
+  -d '{"question": "Which companies are exposed to the USD/INR exchange rate?"}'
+curl -s $API/analyst/sessions/$SESSION                              # the conversation, answered
+```
+
+To have a **Claude model** answer instead, set in `.env` (or the process environment):
+
+```bash
+RUMIN_ANALYST_PROVIDER=anthropic
+RUMIN_ANTHROPIC_API_KEY=…            # your key; a secret, never logged or returned
+RUMIN_ANALYST_MODEL=…                # a model your key can use; RUMIN names none in its code
+```
+
+and restart the API. The page's header then says *Language model configured*. Each answer is
+still checked against its evidence, and RUMIN answers whenever the model fails, a limit is
+reached or its draft does not pass. Only `RUMIN_`-prefixed settings are read:
+`ANTHROPIC_API_KEY` in the environment is ignored. Score the result with
+`uv run python -m app.analyst.evaluation` before relying on it ([evaluation](analyst/evaluation.md)).
+
+`backend/scripts/capture_analyst_fixtures.py` regenerates the frontend's fixtures from a fresh
+backend ([testing](testing.md)). See [the AI Analyst](analyst/README.md) and
+[the API](api.md#ai-analyst).
+
 ## 3. Frontend
 
 ```bash
@@ -263,4 +305,8 @@ See [testing.md](testing.md).
 | Financial Intelligence says **"No series or instrument has two or more stored values"** | Nothing observed can be compared yet. Retrieve series (`make ingest`) or import a licensed price file; exposure and simulated findings do not need them. |
 | Every exposure finding is graded **assumed**, and *Only relationships backed by a cited source* shows nothing | Expected with the sample network: every exposure relationship in it is a model assumption ([evidence](intelligence/evidence.md)). |
 | A stored analysis says **Stale** | Something it read has changed since (the graph, stored values or executions). It still shows what it concluded then; store a new one for the current state. |
+| The AI Analyst answers **"Which variable do you mean?"** or **"…outside what RUMIN's records can answer"** | It reads the phrasings it was written for ([limitations](analyst/limitations.md)). Pick a choice, name the company, variable or series as RUMIN does, or try a suggested question. |
+| The Analyst's header says **the configured language model is not ready** | `RUMIN_ANALYST_PROVIDER=anthropic` is set without `RUMIN_ANTHROPIC_API_KEY` or `RUMIN_ANALYST_MODEL` (the message names which). RUMIN answers meanwhile. |
+| An answer carries **"Answered by RUMIN's grounded composer"** | The language model's answer was not used; the notice says why (an API error, a refusal, a limit, or a draft that failed the grounding check). |
+| **429** when asking | Every worker is busy and the queue is full (`RUMIN_ANALYST_MAX_CONCURRENT`, `RUMIN_ANALYST_MAX_QUEUED`). Nothing was stored; ask again shortly. |
 | Start again from scratch | Stop the API, delete `backend/rumin.db`, then migrate, seed, load the catalogue and build the graph again. |

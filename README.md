@@ -7,10 +7,17 @@ runs documented, versioned models on those connections with every step explained
 reproducible, and labels everything it shows as one of five kinds of knowledge:
 observation, assumption, scenario input, simulated output or uncertainty.
 
-> **Status: Phase 6 — Financial Intelligence** (on top of the Phase 1 foundation, the
-> Phase 2 data infrastructure, the Phase 3 knowledge graph, the Phase 4 simulation engine and
-> the Phase 5 Scenario Lab).
+> **Status: Phase 7 — AI Analyst** (on top of the Phase 1 foundation, the Phase 2 data
+> infrastructure, the Phase 3 knowledge graph, the Phase 4 simulation engine, the Phase 5
+> Scenario Lab and Phase 6 Financial Intelligence).
 >
+> - **Answers that cite their evidence.** The AI Analyst answers questions about RUMIN's
+>   records in plain language, through 17 read-only tools over the services below, and every
+>   figure it writes cites the record it came from, shown beside the answer. An answer, or a
+>   part of one, whose figures are not in its evidence is not shown. By default RUMIN
+>   composes every answer itself, with no language model; a Claude model can be configured
+>   and is held to the same check. It does not forecast, hold live data or make investment
+>   decisions, and it never saves or executes a scenario.
 > - **Findings with their evidence, not summaries.** Financial Intelligence reads what RUMIN
 >   stores and answers what changed, who is exposed and through which relationships, what
 >   the stored simulations say and what drives them. Each answer is a finding from one of 19
@@ -35,8 +42,9 @@ observation, assumption, scenario input, simulated output or uncertainty.
 >   and revision history.
 > - The network's sample data is **illustrative**: its companies are fictional; countries,
 >   ISIC industries and variable definitions are real concepts with references.
-> - There is **no AI analyst** (Phase 7) and **no probabilistic simulation** (Phase 9):
->   stress cases and sensitivity move magnitudes, one at a time.
+> - There is **no probabilistic simulation** (Phase 9): stress cases and sensitivity move
+>   magnitudes, one at a time. A language model for the AI Analyst is optional and has **not
+>   been verified against the live API** (no key was available where RUMIN was built).
 > - There is **no authentication** yet (Phase 10): run it locally only. For that reason the
 >   API is read-only for data and for the graph, scenario versions, executions and
 >   simulation runs are append-only, and ingestion and graph builds start from the command
@@ -57,11 +65,11 @@ observation, assumption, scenario input, simulated output or uncertainty.
 | **Data ingestion** | Available (command line) | World Bank series (throttled, retried, validated, versioned) and licensed price-file import, each recorded as a job |
 | **Simulation** | Preview (Phase 4) | The airline fuel-cost model: inputs labelled by kind of knowledge and checked on the server; results with the pathway through the knowledge graph, month-by-month figures, the accounting bridge, Shapley contributions, a sensitivity tornado, every calculation step, and provenance with a reproducibility check; stored runs reopened and varied |
 | **Simulation engine** | Available (API) | Five versioned, hashed models (airline fuel cost, foreign-currency revenue and costs, floating-rate interest, crude- and gas-linked costs); exact decimals; timed changes; propagation only along confirmed graph relationships; append-only runs with explanations, provenance and verification; one-at-a-time sensitivity |
-| **Financial Intelligence** | Available (Phase 6) | A ledger of findings from 19 documented rules, each opening into its evidence chain and grade; observed changes, revisions, trends, volatility and unusual moves against configurable thresholds; exposure through validated graph relationships (a companies × variables matrix); drivers of simulated results from stored contributions; model interpretation of observed changes; dossiers per company and industry; a structured brief for the future AI Analyst; stored, fingerprinted analyses that say when they are stale ([guide](docs/intelligence/README.md)) |
+| **Financial Intelligence** | Available (Phase 6) | A ledger of findings from 19 documented rules, each opening into its evidence chain and grade; observed changes, revisions, trends, volatility and unusual moves against configurable thresholds; exposure through validated graph relationships (a companies × variables matrix); drivers of simulated results from stored contributions; model interpretation of observed changes; dossiers per company and industry; a structured brief for an analyst; stored, fingerprinted analyses that say when they are stale ([guide](docs/intelligence/README.md)) |
 | **Scenario Lab** | Available (Phase 5) | Templates built on implemented models; versioned scenarios; a plan saying which models apply and why; a live preview; background executions with recorded stages; the modelled pathway with graph context kept apart; baseline against scenario; months with a replay; stress cases; sensitivity; *what caused this?*; history, reproducibility checks and comparisons ([guide](docs/scenario-lab/README.md)) |
-| AI Analyst | Planned (Phase 7) | A page explaining what it will do; no model is connected |
+| **AI Analyst** | Available (Phase 7) | Questions answered from RUMIN's records through 17 allowlisted, read-only tools; every figure cited and checked against its evidence, sources shown in a margin beside the answer; tables, series charts, relationship paths and scenario cards; what-ifs previewed (never stored) and handed to the Scenario Lab; follow-ups and clarifications; conversations kept, exported or deleted. RUMIN's grounded composer answers by default; a Claude model is optional ([guide](docs/analyst/README.md)) |
 | System & settings | Available | API, database, migration and data status; capabilities; theme and motion preferences |
-| REST API | Available | Versioned (`/api/v1`), validated, consistent errors, OpenAPI docs, compressed responses; data and graph endpoints are read-only; intelligence reads write nothing; scenario versions, executions, simulation runs and stored analyses are append-only |
+| REST API | Available | Versioned (`/api/v1`), validated, consistent errors, OpenAPI docs, compressed responses; data and graph endpoints are read-only; intelligence reads write nothing; scenario versions, executions, simulation runs and stored analyses are append-only; the Analyst writes only its own conversations |
 
 ## Quick start
 
@@ -130,6 +138,7 @@ one origin and no API URL has to be configured.
 | Graph status (current or stale) | `make graph-status` | `uv run python -m app.graph status` |
 | What a build would do (writes nothing) | — | `uv run python -m app.graph validate` |
 | Recent builds, one build's report | — | `uv run python -m app.graph builds`, `… report [BUILD]` |
+| Score the AI Analyst on its evaluation set | — | `uv run python -m app.analyst.evaluation [--json]` (backend/) |
 | All unit and API tests | `make test` | `uv run pytest` (backend/), `npm test` (frontend/) |
 | End-to-end smoke test | `make smoke` | `scripts/smoke_test.sh` |
 | Lint and format checks | `make lint` | `uv run ruff check . && uv run ruff format --check .`, `npm run lint` |
@@ -153,6 +162,12 @@ If a run fails, `make ingest-jobs` and `… job <id>` show which series failed a
 fixes. Provider settings (base URL, pacing, timeouts, retries) are optional
 [environment variables](docs/environment.md#data-ingestion-phase-2); no provider needs a key.
 
+The AI Analyst needs no configuration: RUMIN's grounded composer answers by default, offline.
+To have a Claude model answer instead, set `RUMIN_ANALYST_PROVIDER=anthropic`,
+`RUMIN_ANTHROPIC_API_KEY` and `RUMIN_ANALYST_MODEL` (RUMIN writes no model identifier into its
+code; choose one when deploying) — see [the AI Analyst's settings](docs/environment.md#ai-analyst-phase-7).
+Its answers are held to the same grounding check, and RUMIN answers whenever one fails.
+
 ### Using PostgreSQL
 
 SQLite is the default for development; PostgreSQL is the production target. Both run the
@@ -173,6 +188,10 @@ Run the backend tests against PostgreSQL with an empty, disposable database:
 
 ```
 backend/            FastAPI application, SQLAlchemy models, Alembic migrations, pytest suite
+  app/analyst/      the AI Analyst: question policy, vocabulary and router, conversation
+                    focus, the tool registry and tools, evidence ledger, answer blocks,
+                    grounded composer, grounding check, providers, orchestrator, worker pool,
+                    evaluation set
   app/api/          HTTP routes (health, /api/v1/…)
   app/core/         settings, logging, errors, middleware
   app/data/         the illustrative sample network and the series catalogue (JSON)
@@ -201,13 +220,15 @@ frontend/           React + TypeScript web client (Vite)
   src/features/     network, graph (the explorer), data (chart, tables, provenance,
                     freshness), simulation (the preview: form, pathway, charts, panels),
                     scenarioLab (builder, pathway, results, timeline, views), intelligence
-                    (the ledger, evidence chains, exposure matrix, drivers, signals, history)
+                    (the ledger, evidence chains, exposure matrix, drivers, signals, history),
+                    analyst (notes, answer blocks, the evidence margin, conversations, export)
   src/pages/        one component per route
   tests/            unit and page tests; tests/integration runs against a live API
 docs/               architecture, API, data model, data pipeline, testing, roadmap and more
   api/openapi.json  committed API contract (the frontend's types are generated from it)
 scripts/            smoke_test.sh (backend/scripts and frontend/scripts: graph, Scenario Lab and
-                    Financial Intelligence benchmarks, fixture capture from a real backend)
+                    Financial Intelligence benchmarks, fixture capture from a real backend,
+                    including the Analyst's)
 ```
 
 ## Documentation
@@ -243,6 +264,12 @@ scripts/            smoke_test.sh (backend/scripts and frontend/scripts: graph, 
   [drivers](docs/intelligence/drivers.md) · [stored analyses](docs/intelligence/stored-analyses.md) ·
   [the brief](docs/intelligence/brief.md) · [the interface](docs/intelligence/interface.md) ·
   [performance](docs/intelligence/performance.md) · [limitations](docs/intelligence/limitations.md)
+- AI Analyst: [overview](docs/analyst/README.md) ·
+  [architecture](docs/analyst/architecture.md) · [tools](docs/analyst/tools.md) ·
+  [evidence and grounding](docs/analyst/evidence.md) · [providers](docs/analyst/providers.md) ·
+  [conversations](docs/analyst/conversations.md) · [guardrails](docs/analyst/guardrails.md) ·
+  [the interface](docs/analyst/interface.md) · [evaluation](docs/analyst/evaluation.md) ·
+  [limitations](docs/analyst/limitations.md)
 - [Design system](docs/design-system.md)
 - [Testing](docs/testing.md)
 - [Security](docs/security.md)
@@ -253,7 +280,8 @@ scripts/            smoke_test.sh (backend/scripts and frontend/scripts: graph, 
   [Phase 3 plan](docs/phases/phase-3-plan.md) · [Phase 3 report](docs/phases/phase-3-report.md) ·
   [Phase 4 plan](docs/phases/phase-4-plan.md) · [Phase 4 report](docs/phases/phase-4-report.md) ·
   [Phase 5 plan](docs/phases/phase-5-plan.md) · [Phase 5 report](docs/phases/phase-5-report.md) ·
-  [Phase 6 plan](docs/phases/phase-6-plan.md) · [Phase 6 report](docs/phases/phase-6-report.md)
+  [Phase 6 plan](docs/phases/phase-6-plan.md) · [Phase 6 report](docs/phases/phase-6-report.md) ·
+  [Phase 7 plan](docs/phases/phase-7-plan.md) · [Phase 7 report](docs/phases/phase-7-report.md)
 
 ## Licence
 

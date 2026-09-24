@@ -13,6 +13,12 @@ from app.analyst.tools.registry import RenderContext
 from app.intelligence.thresholds import DEFAULTS, Thresholds
 from app.schemas.intelligence import EdgeInfoRead, ExposurePathRead, NodeRead
 
+
+def counted(count: int, one: str, many: str | None = None) -> str:
+    """'1 path', '4 paths': a count with its noun, for tool summaries."""
+    return f"{count} {one if count == 1 else (many or one + 's')}"
+
+
 THRESHOLDS: Thresholds = DEFAULTS
 KIND_LABEL = {
     "company": "company",

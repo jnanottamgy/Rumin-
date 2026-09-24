@@ -2,9 +2,10 @@
 
 | Suite | Tool | Tests | Runs against | Command |
 |---|---|---|---|---|
-| Backend | pytest | 758 | the FastAPI app, the ingestion pipeline, the graph build, the simulation engine, the Scenario Lab and Financial Intelligence with a real, migrated database (SQLite; PostgreSQL optional); providers answered by scripted responses | `uv run pytest` in `backend/` |
-| Frontend unit and pages | Vitest + Testing Library (jsdom) | 294 | the real route table, with `fetch` replaced by a fake API serving recorded responses | `npm test` in `frontend/` |
-| Integration | Vitest (Node) | 53 | a live API: the frontend's real service layer over HTTP | `npm run test:integration` with `RUMIN_API_URL` |
+| Backend | pytest | 969 (one skipped without a key) | the FastAPI app, the ingestion pipeline, the graph build, the simulation engine, the Scenario Lab, Financial Intelligence and the AI Analyst with a real, migrated database (SQLite; PostgreSQL optional); providers answered by scripted responses; the Anthropic SDK over a mocked transport | `uv run pytest` in `backend/` |
+| Frontend unit and pages | Vitest + Testing Library (jsdom) | 320 | the real route table, with `fetch` replaced by a fake API serving recorded responses | `npm test` in `frontend/` |
+| Integration | Vitest (Node) | 57 | a live API: the frontend's real service layer over HTTP | `npm run test:integration` with `RUMIN_API_URL` |
+| Analyst evaluation | `python -m app.analyst.evaluation` | 33 cases | the configured provider on the configured database (in CI: the grounded composer and seven adversarial scripted models, inside the backend suite) | see [evaluation](analyst/evaluation.md) |
 | End-to-end smoke | `scripts/smoke_test.sh` | — | fresh database → migrate → seed → load the catalogue → import a synthetic price file → build the knowledge graph, rebuild it and fail if anything changed → start API → integration suite (including a simulation run and a background scenario execution, both checked against hand calculations) | `make smoke` |
 | Graph benchmark | `backend/scripts/benchmark_graph.py`, `frontend/scripts/measure-graph.mjs` | — | synthetic networks up to 20,000 companies; not part of CI | see [performance](graph/performance.md#how-it-was-measured) |
 | Scenario Lab benchmark | `backend/scripts/benchmark_lab.py`, `frontend/scripts/measure-lab.mjs` | — | the reference scenario and a large one on SQLite and PostgreSQL; not part of CI | see [performance](scenario-lab/performance.md#how-it-was-measured) |
@@ -13,7 +14,11 @@
 **No automated test calls a real provider.** Provider behaviour is tested with scripted
 HTTP responses whose structure follows the providers' documentation and whose numbers are
 **synthetic** (`backend/tests/fakes.py`); price-file tests use made-up prices for a made-up
-instrument. Nothing synthetic is shipped or loaded by default.
+instrument. Nothing synthetic is shipped or loaded by default. **No automated test calls a
+language model either**: the Anthropic provider is tested through the real SDK against a
+mocked HTTP transport, and `tests/test_analyst_live.py` (one test, skipped otherwise) calls
+the API only when `RUMIN_ANTHROPIC_API_KEY` and `RUMIN_ANALYST_MODEL` are set. The session
+running the tests may hold its own `ANTHROPIC_*` variables; tests prove RUMIN ignores them.
 
 `make check` runs linting, formatting checks, type checks, both unit suites and the
 OpenAPI snapshot check — everything CI runs except the smoke test. CI
@@ -97,6 +102,22 @@ real ingestion pipeline, from scripted responses; the reference execution comes 
 | `test_intelligence_core.py` | 19 | **Least squares exact** (slope, standard error, *t*); a straight line has no *t*; Student's *t* critical values from the table, the stricter row between two; median, MAD, modified z-score and percentile rank; relative changes need a positive base; thresholds' defaults, overrides and **every invalid value reported at once**; **the grade is the weakest step**; **an insight without a chain cannot exist**; stable insight ids and chains holding each link once; changes relative for levels and in points for rates; a gap breaks the chain; thresholds select changes; a trend called only beyond the critical value; volatility and unusual changes by their definitions; short histories say so; only validated exposure edges make paths; numbers formatted for reading and kept exact as data; shared drivers capped by reach, never invented, the reach index consistent with the paths, and a truncated listing saying that its counts cover the listed companies |
 | `test_intelligence_api.py` | 27 | Exposure from validated relationships only (a flagged edge is never used; the evidence filter); **the workspace states each listed company's exposure in full** (for the full listing and a truncated one); a variable's reach, with its total; **a variable followed through the whole graph** (beyond a short listing, each company's paths equal to its own analysis, a short list reporting the total); **drivers are the stored contributions** (Brent 9,225,000 and USD/INR 4,025,000 of operating costs' +13,250,000), and none without an execution; the gathered next steps name each check once and quote the assumed relationships; **every insight rests on an evidence chain** (grade, conditional flag, not-a-forecast, no forbidden words) and every record it cites exists; an industry analysed; unsuitable subjects refused; observed changes detected against thresholds; a series' signals; an observed change interpreted through the stored scenario, labelled and not stored; the overview says what the data cannot support and leads with new observations; **a finding reads the same in the workspace and the dossier**; filters; thresholds validated with their fields; entities with their latest impact; **each company keeps its own latest execution**; the brief carries evidence and rules, not prose; methods document every rule, signal and threshold; **a stored analysis keeps what it read and knows when it is stale**; stored analyses listed and never rewritten (`DELETE` answers 405); invalid requests store nothing; without a graph nothing is invented; the system's capabilities |
 
+Phase 7 (AI Analyst). `tests/analyst_support.py` provides the reference database for
+questions: the sample network built into a knowledge graph, the SYNTHETIC histories above,
+and the REFERENCE scenario executed on the fictional Aerisca Airways with HYPOTHETICAL
+figures. No test calls a language model.
+
+| Module | Tests | Covers |
+|---|---|---|
+| `test_analyst_router.py` | 95 | Figures (%, points, basis points, doubles and halves, amounts), periods and horizons; the policy screen (injection, secrets, advice, forecasts, live data) and ordinary questions raising nothing; forbidden phrasing; stored text cleaned and instruction-like text withheld; names found by name, alias and measure, the longest winning, *US* a country only in capitals; **every intent** read from representative questions; changes tied to the right variable, falls negative, a rate in percent read as points and said so, a figure tied to nothing left out and said so; series needing a country, a variable taking its related series; a missing subject asking with choices; follow-ups taking the subject from the focus, **a bare figure resizing the previous change or, with none, asking which variable** (offered by unit); an exposure question without a variable asking which; a named country or subject replacing the focus; articles and example sizes; the focus and recent turns bounded |
+| `test_analyst_grounding.py` | 35 | Figures extracted with signs, Western and Indian grouping, scales (lakh, crore, million) and units; matched **at the displayed precision** and only against the evidence the sentence cites; signs must match; years, dates and versions word for word; citations must exist; interpretation carries no figures; forbidden phrasing refused except inside a cited quotation; the headline checked against the whole ledger |
+| `test_analyst_tools.py` | 13 | The allowlist is exactly the 17 tools; schemas refuse unknown fields; unknown tools refused; invalid arguments refused with the field; the call limit and the deadline; compute tools follow the access context; a slow tool times out and adds no evidence; a transient database error retried once; an unexpected error reported without internals; **every tool answers with evidence that exists and writes nothing**; the period comparison exact; the preview reuses a person's figures and labels them; stored text that reads like an instruction withheld |
+| `test_analyst_answers.py` | 11 | Each fact said once (a connection drawn once with its limit once; a series' limitation a notice, not also a caption); a preview naming the lines no model covers once; a stored card explaining what is not modelled, and *contribution*, not *credit*; a declined forecast showing the stored history instead; a listing named by kind and country, saying when it is capped; a bare figure after a connection asking; tool summaries counted in words; **a failing grounded draft withheld in part** with a notice; a clarification repeating the question's figure; an identifier written in an answer is in its evidence |
+| `test_analyst_provider.py` | 24 | The Anthropic provider through the **real SDK over a mocked transport**: the request is RUMIN's own (its key and base URL, **`ANTHROPIC_*` variables in the environment ignored**, the cached system prompt, the tools and `submit_answer`) and the loop runs through the registry; thinking can be switched off; every API error class, a refusal and a cut-off answer fall back to the grounded answer with a safe reason; `ANTHROPIC_CUSTOM_HEADERS` stops the provider; the provider is used only when configured; a draft that fails the check is replaced; refused and invalid tool calls are reported back to the model; declined and unclear questions never reach it; the model is skipped when the budget says so; the loop is bounded; the context given to the model is data |
+| `test_analyst_api.py` | 23 | Conversations created, listed, renamed and deleted; bodies validated; unknown ids 404; **a question answered with evidence and recorded tool calls**; a follow-up read against the conversation; question length (schema and configured), the turn limit, one pending question and no deletion while answering; **a full pool refuses before storing** (429); a failure stored without internals; a final turn never changes; deleting removes everything; **logs carry ids and timings, never the question or the answer**; capabilities (provider, tools, limits, suggestions from the data); the system's capability; the contract |
+| `test_analyst_evaluation.py` | 9 | **The grounded composer passes all 33 cases**, with no fallback; the cases cover every intent; seven adversarial scripted models (inventing a figure, predicting, advising, figures in an interpretation, a forbidden tool, refusing, cut off) never reach the reader |
+| `test_analyst_live.py` | 1 | Skipped unless a key and a model are configured: one real question through the Anthropic API, grounded and cited |
+
 Run against PostgreSQL (use an empty, disposable database — the suite drops and recreates
 the schema):
 
@@ -152,7 +173,9 @@ pathway and checked against the contract like the others.
 | `scenarioLab/draft` | 11 | A saved scenario read into the builder's draft and written back unchanged; a fall kept negative and nothing rounded; empty figures left out, never filled in; a stored exchange rate sent by its series; a non-integer month sent as typed for the API to report; updates name their base version; what counts as an unsaved change; the reducer's limits (10 changes, 5 stress cases); model modes, inputs and assumptions edited independently; stress cases by scale or values; the browser checks presence only, never a domain rule |
 | `scenarioLab/pathwayLayout` | 9 | On the captured reference pathway: four columns with metrics under the lines; every step placed except graph context, whose links go to the lane header; every computed link drawn once; steps inside their model's lane and lanes apart; no overlaps in a column; lines in accounting order; fits the frame down to a minimum node width; a collapsed lane re-routes its links and hides the ones inside; a step's chain upstream and downstream |
 | `scenarioLab/format` | 7 | Compact and full money with signs; changes in the variable's unit (%, pp, its own); metrics and their changes; step values by unit; model unit identifiers read as a reader expects; stage durations from the server's timestamps |
-| `app/navigation` | 8 | Landing, navigation between modules, 404, live workspace status, AI Analyst inert, System capabilities, theme persistence |
+| `app/navigation` | 8 | Landing, navigation between modules, 404, live workspace status, the AI Analyst opened with who answers and nothing sent, System capabilities, theme persistence |
+| `analyst/format` | 8 | Citations split out of a paragraph; sources ordered by first citation, unknown ids dropped; **figures rounded half-even at fixed places as the API's sentences are**; percentages and amounts with signs and units; durations; Markdown answers with their cards and sources; table cells escaped and records linked; a failed question and a conversation's header |
+| `pages/analyst` | 18 | Against fixtures captured from a real backend (`backend/scripts/capture_analyst_fixtures.py`): starting with the provider stated and suggestions from the API; a model configured but not ready; **asking: the question stored, each recorded step shown (queued, running with its tool call), then the answer**, the URL naming the conversation; a suggestion asked in one click; Shift+Enter and the length limit; a stored conversation as notes with **citations linked to their sources in the margin**, paths, tables, the stored card and what is not modelled; a series as a chart with its table and its limitation said once; **a preview card whose figures read as its sentences do** (+3.60 %); a clarification's option and a follow-up asked; an injection declined; the method (tool calls, the check, who composed it); a question still being answered followed when the conversation opens; a failed question asked again; a refusal (429) shown and retried; rename; delete only after confirming; export and copy as Markdown with sources; **a what-if opened in the Scenario Lab as an unsaved draft**, with only an unstored preview asked for |
 | `pages/universe` | 11 | Exactly the API's nodes and links drawn; selection highlights neighbours and dims the rest; Escape and close reset; keyboard selection; search; filters never leave dangling links; table view; phone layout; inconsistent data refused; unreachable API and retry |
 | `pages/scenarioLab` | 14 | Against fixtures captured from a real backend: the library — templates with names and units from the API, the ones not offered with the reason, saved scenarios with their headline; comparing two executions, differenced only like with like and not ranked; a saved scenario opened on its stored execution (headline, baseline against scenario, cash flow listed as not modelled, reading writes nothing but the unstored preview); the pathway drawn from what the engine computed, **graph context listed apart with the causation caveat**, a relationship's evidence, β and lag, Escape, not-modelled relationships, the list view; the month replay (values per month, dimmed until reached, metrics "Horizon only"); plan, months, stress (changes in their units, not ranked) and explanation tabs; sensitivity labelled as not Monte Carlo; verification; an edit previewed on the server and labelled, then discarded back to the saved version with nothing saved; an execution followed through the server's stages until final, polling then stopping; a failed execution explained; a missing scenario and an unreachable API; a template's missing figures shown as notes until a save is attempted |
 | `intelligence/format` | 3 | Rounding for display only, from the exact strings; grades strongest first and kinds of finding grouped; a cited record linked to the view that shows it, when there is one |
@@ -225,8 +248,16 @@ The second builds a dossier whose every path edge is validated, and a brief list
 the dossier's insights. The third refuses an invalid threshold with its field. The fourth
 stores an analysis and reads it back unchanged, current and listed.
 
-It creates scenarios (deleting those it can) and adds simulation runs and executions, so
-point it only at a disposable database — which is what `scripts/smoke_test.sh` provides.
+Phase 7 adds `analyst.integration.test.ts` (4 tests), against the smoke test's API with the
+grounded composer (the script sets `RUMIN_ANALYST_PROVIDER=grounded`): the capabilities; a
+question asked and polled until answered, grounded, citing only evidence it read, with its
+tool call recorded and the conversation titled after it; a what-if previewed (not stored) and
+an injection declined without a tool; an over-long question refused before it is stored and
+a deleted conversation gone. Every response is checked against the contract.
+
+It creates scenarios (deleting those it can), adds simulation runs and executions, and
+creates conversations (deleting them), so point it only at a disposable database — which is
+what `scripts/smoke_test.sh` provides.
 
 ## Manual and visual checks
 
@@ -252,8 +283,17 @@ checked that no Lab page scrolls sideways at seven widths from 360 to 1,920 px. 
 the Financial Intelligence views (the workspace with a finding opened, a dossier on each tab,
 the thresholds refusal, a stale stored analysis, the dashboard panel) were shot in both themes
 and at tablet and phone widths, each run checking for console errors and sideways scrolling
-([interface](intelligence/interface.md#accessibility-and-responsiveness)). These checks are
-not automated yet (see [known-limitations.md](known-limitations.md)).
+([interface](intelligence/interface.md#accessibility-and-responsiveness)). For Phase 7, the
+AI Analyst was driven through twelve questions in a real browser (overview, reach, a series,
+a what-if, a stored result, a connection, a bare follow-up figure, a clarification, advice,
+an injection, what changed, a forecast), each answer shot at 1440 × 1000, then the
+conversation in dark mode, at 900 px and at 390 px, and the hand-over to the Scenario Lab;
+every run checked for console errors and sideways scrolling (none remain at 320, 390 and
+900 px). The review changed wording (possessives, articles, *contribution* for *credit*),
+removed repeated captions and notices, aligned table rounding with the sentences, let long
+suggestions wrap, and fixed a follow-up that answered a different question
+([interface](analyst/interface.md#accessibility-and-responsiveness)). These checks are not
+automated yet (see [known-limitations.md](known-limitations.md)).
 
 ## Conventions
 

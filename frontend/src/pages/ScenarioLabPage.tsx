@@ -52,6 +52,7 @@ import type {
   EconomicVariable,
   Scenario,
   ScenarioExecutionSummary,
+  ScenarioInput,
   ScenarioTemplate,
 } from "@/types/api";
 
@@ -75,11 +76,14 @@ function Workspace({
   scenario,
   template,
   executions,
+  handed = null,
 }: {
   variables: EconomicVariable[];
   scenario: Scenario | null;
   template: ScenarioTemplate | null;
   executions: ScenarioExecutionSummary[];
+  /** A draft handed over by the AI Analyst: shown for editing, never saved by itself. */
+  handed?: ScenarioInput | null;
 }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -88,10 +92,12 @@ function Workspace({
     () =>
       scenario
         ? draftFromScenario(scenario)
-        : template
-          ? draftFromInput(template.scenario)
-          : emptyDraft(),
-    [scenario, template],
+        : handed
+          ? draftFromInput(handed)
+          : template
+            ? draftFromInput(template.scenario)
+            : emptyDraft(),
+    [scenario, template, handed],
   );
   const [draft, dispatch] = useReducer(draftReducer, initial);
   const saved = useMemo(() => (scenario ? draftFromScenario(scenario) : null), [scenario]);
@@ -614,9 +620,21 @@ function SavedWorkspace({
   );
 }
 
+/** A scenario body handed over in the router's state (by the AI Analyst), if well formed. */
+function handedDraft(state: unknown): ScenarioInput | null {
+  const draft = (state as { draft?: unknown } | null)?.draft;
+  if (!draft || typeof draft !== "object") return null;
+  const body = draft as Partial<ScenarioInput>;
+  return typeof body.name === "string" && Array.isArray(body.shocks) && body.shocks.length > 0
+    ? (body as ScenarioInput)
+    : null;
+}
+
 function NewWorkspace({ variables }: { variables: EconomicVariable[] }) {
   const [searchParams] = useSearchParams();
-  const templateId = searchParams.get("template");
+  const location = useLocation();
+  const handed = useMemo(() => handedDraft(location.state), [location.state]);
+  const templateId = handed ? null : searchParams.get("template");
   const template = useApiResource(
     templateId ? `lab:template:${templateId}` : "lab:template:none",
     () => (templateId ? labApi.template(templateId) : Promise.resolve(null)),
@@ -627,11 +645,12 @@ function NewWorkspace({ variables }: { variables: EconomicVariable[] }) {
     return <ErrorState error={template.error} onRetry={template.reload} />;
   return (
     <Workspace
-      key={templateId ?? "blank"}
+      key={handed ? "handed" : (templateId ?? "blank")}
       variables={variables}
       scenario={null}
       template={template.data}
       executions={[]}
+      handed={handed}
     />
   );
 }

@@ -264,3 +264,24 @@ export type AnalysisRequest = Schemas["AnalysisRequest"];
 export type StoredAnalysis = Schemas["AnalysisRead"];
 export type StoredAnalysisSummary = Schemas["AnalysisSummaryRead"];
 export type StoredAnalysisPage = Schemas["Page_AnalysisSummaryRead_"];
+
+// --- AI Analyst (Phase 7) ------------------------------------------------------------------------
+export type AnalystCapabilities = Schemas["CapabilitiesRead"];
+export type AnalystSession = Schemas["SessionRead"];
+export type AnalystSessionSummary = Schemas["SessionSummaryRead"];
+export type AnalystSessionPage = Schemas["SessionPage"];
+export type AnalystTurn = Schemas["TurnRead"];
+export type AnalystToolCall = Schemas["ToolCallRead"];
+export type AnalystAnswer = Schemas["Answer"];
+export type AnalystEvidence = Schemas["Evidence"];
+export type AnalystKnowledge = Schemas["Knowledge"];
+export type AnalystBlock = AnalystAnswer["blocks"][number];
+export type AnalystTextBlock = Schemas["TextBlock"];
+export type AnalystTableBlock = Schemas["TableBlock"];
+export type AnalystSeriesBlock = Schemas["SeriesBlock"];
+export type AnalystPathsBlock = Schemas["PathsBlock"];
+export type AnalystPathItem = Schemas["PathItem"];
+export type AnalystScenarioBlock = Schemas["ScenarioBlock"];
+export type AnalystNoticeBlock = Schemas["NoticeBlock"];
+export type AnalystClarificationBlock = Schemas["ClarificationBlock"];
+export type AnalystGrounding = Schemas["GroundingRead"];

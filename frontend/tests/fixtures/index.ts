@@ -2,7 +2,8 @@
  * API fixtures captured from the running backend with the illustrative sample dataset
  * (`GET /api/v1/network`, `/api/v1/variables`, `/api/v1/system`). They are the real
  * contract, not hand-written approximations; the integration suite checks the live API
- * against the same code paths.
+ * against the same code paths. The AI Analyst's entry in `system.json` was refreshed from the
+ * live API when the Analyst was built (Phase 7); the rest is as first captured.
  */
 import { validateNetwork } from "@/features/network/model";
 import type {

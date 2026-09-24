@@ -42,6 +42,7 @@ from app.analyst.tools.common import (
     STATUS_LABEL,
     THRESHOLDS,
     compact_path,
+    counted,
     edge_evidence,
     node_evidence,
     path_item,
@@ -143,6 +144,34 @@ def _search(session: Session, args: SearchInput, vocabulary: Vocabulary) -> list
     return list(found.values())[: args.limit]
 
 
+KIND_PLURAL = {
+    "company": "companies",
+    "industry": "industries",
+    "variable": "economic variables",
+    "series": "stored series",
+    "instrument": "instruments",
+    "scenario": "scenarios",
+    "model": "models",
+    "template": "templates",
+}
+
+
+def search_title(args: SearchInput, vocabulary: Vocabulary) -> str:
+    """'Records matching "oil"', or for a listing 'Companies in India'."""
+    if args.query:
+        head = f"Records matching '{data_text(args.query, 80)}'"
+        if args.kinds:
+            head += f" ({', '.join(args.kinds)})"
+    else:
+        kinds = [KIND_PLURAL.get(kind, kind) for kind in args.kinds] or ["records"]
+        head = " and ".join(kinds)
+        head = head[:1].upper() + head[1:]
+    if args.country_key:
+        country = vocabulary.get(args.country_key)
+        head += f" in {country.label if country else args.country_key}"
+    return head
+
+
 def _search_render(
     ctx: RenderContext, args: SearchInput, matches: list[Match], read_at: datetime
 ) -> ToolOutput:
@@ -161,9 +190,7 @@ def _search_render(
         tool="search_records",
         call=ctx.call,
         kind=Knowledge.RECORD,
-        title=f"Records matching '{data_text(args.query, 80)}'"
-        + (f" in {args.country_key}" if args.country_key else "")
-        + (f" ({', '.join(args.kinds)})" if args.kinds else ""),
+        title=search_title(args, ctx.vocabulary),
         source=SourceRef(
             kind="catalogue",
             id=f"search:{args.query.lower()}:{args.country_key or ''}:{','.join(args.kinds)}",
@@ -185,11 +212,11 @@ def _search_render(
                 {"kind": m.kind, "key": m.key, "name": m.label, "matched_by": m.by} for m in matches
             ],
         },
-        summary=f"{len(matches)} records match '{args.query}'",
+        summary=f"{len(matches)} found: {search_title(args, ctx.vocabulary)}",
         evidence=[evidence],
         display=[
             TableBlock(
-                title=f"Records matching '{args.query}'",
+                title=search_title(args, ctx.vocabulary),
                 columns=[Column(key="name", label="Record"), Column(key="kind", label="Kind")],
                 rows=rows,
                 citations=[evidence],
@@ -334,7 +361,19 @@ def simulation_block(
         scenario_id=execution.scenario_id,
         execution_id=execution.id,
         link=link,
-        notes=[data_text(item, 300) for item in drivers.not_modelled[:6]],
+        notes=(
+            [
+                data_text(
+                    "Not modelled: "
+                    + ", ".join(drivers.not_modelled)
+                    + ". No included model covers these lines, and not modelled is not the "
+                    "same as unchanged.",
+                    400,
+                )
+            ]
+            if drivers.not_modelled
+            else []
+        ),
         citations=cited,
     )
     return block, cited
@@ -518,8 +557,9 @@ def _dossier_render(
     }
     return ToolOutput(
         data=data,
-        summary=f"{entity.name}: {summary.paths} exposure paths, "
-        f"{len(analysis.executions)} stored executions, {len(analysis.insights)} findings",
+        summary=f"{entity.name}: {counted(summary.paths, 'exposure path')}, "
+        f"{counted(len(analysis.executions), 'stored execution')}, "
+        f"{counted(len(analysis.insights), 'finding')}",
         evidence=[record, exposure_id, *simulation, findings_total, *finding_ids],
         display=display,
         facts=found,
@@ -678,7 +718,8 @@ def _exposure_render(
             "flagged_relationships": len(exposure.flagged),
             "notes": [data_text(note, 300) for note in exposure.notes[:4]],
         },
-        summary=f"{entity.name}: {len(paths)} paths from {len(variables)} variables",
+        summary=f"{entity.name}: {counted(len(paths), 'path')} from "
+        f"{counted(len(variables), 'variable')}",
         evidence=[summary_id, *(cited for item in items for cited in item.citations)],
         display=display,
         facts=(exposure, paths),
@@ -856,7 +897,7 @@ def _reach_render(
                 for (sid, name, count), cited in zip(found.series, series_ids, strict=True)
             ],
         },
-        summary=f"{variable.name} reaches {read.total} companies",
+        summary=f"{variable.name} reaches {counted(read.total, 'company', 'companies')}",
         evidence=[record, summary_id, *series_ids],
         display=display,
         facts=found,
@@ -995,7 +1036,7 @@ def _paths_render(
             ],
             "budget_exhausted": found.budget_exhausted,
         },
-        summary=f"{len(found.paths)} paths of {found.length} hops"
+        summary=f"{counted(len(found.paths), 'path')} of {counted(found.length or 0, 'hop')}"
         if found.found
         else "no path found",
         evidence=[summary_id, *(c for item in items for c in item.citations)],
@@ -1180,7 +1221,7 @@ def _models_render(
                 for m, cited in zip(found.models, ids, strict=True)
             ],
         },
-        summary=f"{len(found.models)} registered models",
+        summary=counted(len(found.models), "registered model"),
         evidence=[summary, *ids],
         display=[
             TableBlock(
@@ -1288,7 +1329,7 @@ def _templates_render(
                 {"title": u.title, "reason": data_text(u.reason, 200)} for u in found.unsupported
             ],
         },
-        summary=f"{len(found.items)} templates",
+        summary=counted(len(found.items), "template"),
         evidence=[summary, *ids],
         display=[
             TableBlock(
@@ -1406,6 +1447,7 @@ def _coverage_render(
             "datasets": len(found.datasets),
             "scenarios": found.scenarios,
             "executions": found.executions,
+            **({"graph_build": build_id} if build_id else {}),
         },
     )
     rows = []
@@ -1463,7 +1505,9 @@ def _coverage_render(
             "scenarios": found.scenarios,
             "executions": found.executions,
         },
-        summary=f"{len(with_data)} of {len(found.series)} series hold values",
+        summary=f"{len(with_data)} of {len(found.series)} series hold values"
+        if len(found.series) != 1
+        else f"{len(with_data)} of 1 series holds values",
         evidence=[summary, *ids],
         display=[
             TableBlock(

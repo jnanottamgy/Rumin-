@@ -79,7 +79,8 @@ runs a scenario version through the model registry and stores each model's run a
 ordinary run of the [simulation endpoints](#simulation).
 
 Findings about the workspace and each company, with their evidence, and stored analyses are
-listed under [Financial intelligence](#financial-intelligence) (Phase 6).
+listed under [Financial intelligence](#financial-intelligence) (Phase 6). Conversations with
+the AI Analyst are under [AI Analyst](#ai-analyst) (Phase 7).
 
 ### Structural links in `/api/v1/network`
 
@@ -872,7 +873,7 @@ recommended, and simulated values say they are not forecasts. How it works:
 | `GET /api/v1/intelligence/methods` | The modules (question, inputs, method, limitations), the signal definitions, the insight rules, the thresholds with defaults, bounds and reasons, the evidence grades and their statements. | 200 |
 | `GET /api/v1/intelligence/entities` | Companies (the first 200 by name) and industries with their stated exposure (paths, variables, channels, directness, weakest evidence) and each company's latest simulated headline; `kind` filters. | 200 / 422 |
 | `GET /api/v1/intelligence/entities/{entity_key}` | The dossier of a company or industry: its exposure map, stored executions, the drivers of the latest one and of the previous one of the same scenario, related series with their signals, model interpretations of observed changes (and those not interpreted, with the reason), signals, and every insight. `evidence=evidence_backed` keeps only cited relationships. | 200 / 404 / 422 |
-| `GET /api/v1/intelligence/entities/{entity_key}/brief` | The entity brief `rumin.intelligence.brief/1`: structured facts with references and narration rules, for a future AI Analyst ([brief](intelligence/brief.md)). | 200 / 404 / 422 |
+| `GET /api/v1/intelligence/entities/{entity_key}/brief` | The entity brief `rumin.intelligence.brief/1`: structured facts with references and narration rules, for a language-model analyst ([brief](intelligence/brief.md)). | 200 / 404 / 422 |
 | `GET /api/v1/intelligence/entities/{entity_key}/exposure` | The exposure map alone: paths (direct, via the industry, upstream), counterparties, context, series coverage, flagged edges not used. | 200 / 404 / 422 |
 | `GET /api/v1/intelligence/entities/{entity_key}/signals` | Exposure breadth, dependency and scenario sensitivity, each with its definition, method, inputs, period, thresholds, evidence and limitations. | 200 / 404 / 422 |
 | `GET /api/v1/intelligence/entities/{entity_key}/drivers` | The latest completed execution's stored contributions per change (amounts, shares of the change, points of the baseline, effects per unit, unattributed), the stored sensitivity ranking, assumptions, entered figures, what is not modelled. | 200 / 404 / 422 |
@@ -947,6 +948,66 @@ is the analysis as stored: `entity` (the dossier) or `workspace` (the overview),
 `thresholds`, `inputs` (the fingerprint), `inputs_hash`, `result_hash`, `insight_count`,
 `duration_ms` and `freshness`. Reading it back never recomputes it
 ([stored analyses](intelligence/stored-analyses.md)).
+
+## AI Analyst
+
+Questions answered from RUMIN's records through the Analyst's read-only tools, each figure
+citing the evidence it came from (Phase 7). A **session** is a conversation; a **turn** is one
+question and its answer. Asking answers `202` with the turn **queued**; read it again every
+`poll_after_ms` until its `status` is `completed` or `failed`. Its tool calls appear as they
+are recorded. The Analyst writes only its own conversations: it never saves or executes a
+scenario. How it works: [`docs/analyst/`](analyst/README.md).
+
+| Method and path | Purpose | Success |
+|---|---|---|
+| `GET /api/v1/analyst/capabilities` | The provider (`configured`, `active`, `ready`, the `reason` it is not ready, the `model` when one is configured), the 17 tools, the limits (and tokens used today), suggested questions built from the data, the kinds of knowledge and notes on what the Analyst does not do. Never the key. | 200 |
+| `GET /api/v1/analyst/sessions` | Conversations, most recently updated first, each with its title, number of questions and its latest question. Paginated (`limit`, `offset`). | 200 |
+| `POST /api/v1/analyst/sessions` | Start a conversation; `{"title": …}` is optional (≤ 120 characters; the first question titles it otherwise). Returns it with a `Location` header. | 201 / 422 |
+| `GET /api/v1/analyst/sessions/{session_id}` | One conversation: its focus and every turn, in order, with answers and tool calls. | 200 / 404 |
+| `PUT /api/v1/analyst/sessions/{session_id}` | Rename: `{"title": …}` (1–120 characters). | 200 / 404 / 422 |
+| `DELETE /api/v1/analyst/sessions/{session_id}` | Delete a conversation and everything in it; refused while one of its questions is being answered. | 204 / 404 / 409 |
+| `POST /api/v1/analyst/sessions/{session_id}/turns` | Ask: `{"question": …}` (1 to `RUMIN_ANALYST_MAX_QUESTION_CHARS` characters, 2,000 by default). Answers `202` with the queued turn and a `Location` header. `409` while the previous question is being answered or when the conversation is full; `429` (`rate_limited`) when every worker is busy and the queue is full, before anything is stored. | 202 / 404 / 409 / 422 / 429 |
+| `GET /api/v1/analyst/sessions/{session_id}/turns/{turn_id}` | One turn: `status` (`queued`, `running`, `completed`, `failed`), the answer when completed, the error when failed (a fixed message, never internals), the tool calls so far, the provider that answered and any fallback, token usage, timings and `poll_after_ms` while not final. | 200 / 404 |
+
+### An answer
+
+Abridged, from the frontend's fixtures (the grounded composer on the sample network, with the
+REFERENCE scenario's HYPOTHETICAL figures):
+
+```json
+{
+  "status": "answered",
+  "intent": "what_if",
+  "headline": "Operating profit −5,500,000 INR under Brent crude oil price +20 % (preview, not stored)",
+  "blocks": [
+    {"type": "text", "role": "answer",
+     "text": "Operating costs: +9,000,000 INR (+3.60 %) against a baseline of 250,000,000 INR [E2]."},
+    {"type": "scenario", "status": "preview", "title": "Preview: Brent crude oil price +20 %",
+     "lines": [{"id": "operating_costs", "label": "Operating costs", "currency": "INR",
+                "baseline": "250000000", "change": "9000000", "percent_change": "3.6",
+                "citations": ["E2"]}, …],
+     "draft": {"name": "Analyst preview", "shocks": [{"variable_id": "var_brent_crude", …}], …},
+     "notes": ["Computed on request and not stored. …", "Not modelled: Interest expense, Profit before tax. …"]},
+    {"type": "notice", "kind": "not_stored", "title": "Computed now, not stored", "text": "…"}
+  ],
+  "evidence": [
+    {"id": "E2", "tool": "preview_scenario", "call": 1, "kind": "preview",
+     "title": "Preview for Aerisca Airways: Brent crude oil price 20 %",
+     "period": "12 months simulated", "currency": "INR", "models": ["airline_fuel_cost 1.1.0"],
+     "values": {"operating_costs.change": "9000000", "operating_costs.percent_change": "3.6", …}, …}
+  ],
+  "follow_ups": ["What about 30%?", …],
+  "provider": "grounded",
+  "grounding": {"passed": true, "figures_checked": 14, "citations_checked": 12, "problems": []}
+}
+```
+
+Block types are `text` (roles `answer`, `detail`, `interpretation`, `general`, `policy`),
+`table`, `series`, `paths`, `scenario` (statuses `stored`, `preview`, `plan`), `notice` (kinds
+`missing_data`, `assumption`, `limitation`, `conflict`, `policy`, `not_stored`,
+`illustrative`, `fallback`) and `clarification`. Answer statuses are `answered`, `partial`,
+`no_data`, `clarification`, `declined`, `unsupported` and `failed`. Every value is an exact
+decimal string.
 
 ## Provider data example
 

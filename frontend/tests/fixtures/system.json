@@ -142,9 +142,9 @@
     {
       "id": "ai_analyst",
       "label": "AI analyst",
-      "available": false,
+      "available": true,
       "planned_phase": 7,
-      "note": "No AI model is connected. The intelligence engine already prepares the structured brief an analyst would narrate, with every number computed by RUMIN."
+      "note": "Answers questions from RUMIN's records through read-only tools and cites the record behind every figure; an answer whose figures are not in its evidence is not shown. RUMIN's grounded composer answers; no language model is configured. No forecasts, no live data, no investment decisions."
     },
     {
       "id": "authentication",

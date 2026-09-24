@@ -23,6 +23,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.analyst import ANALYST_VERSION
 from app.analyst.answer import Answer
+from app.analyst.composer import possessive
 from app.analyst.context import Focus
 from app.analyst.evidence import KNOWLEDGE_LABEL
 from app.analyst.orchestrator import Limits, Orchestrator, TurnResult
@@ -32,7 +33,7 @@ from app.analyst.providers.grounded import GroundedProvider
 from app.analyst.runner import AnalystBusy, TurnRunner
 from app.analyst.tools import TOOLS
 from app.analyst.tools.registry import ToolCall
-from app.analyst.vocabulary import load
+from app.analyst.vocabulary import load, the
 from app.core.config import Settings
 from app.core.errors import AppError, ConflictError, DomainValidationError, NotFoundError
 from app.db.base import utcnow
@@ -589,15 +590,16 @@ def _suggestions(session: Session) -> list[SuggestionRead]:
         )
         found.append(
             SuggestionRead(
-                label="Cost exposure", question=f"Which variables affect {subject.label}'s costs?"
+                label="Cost exposure",
+                question=f"Which variables affect {possessive(subject.label)} costs?",
             )
         )
     rupee = vocabulary.by_record("var_usd_inr") or next(iter(vocabulary.of_kind("variable")), None)
     if rupee is not None:
         found.append(
             SuggestionRead(
-                label=f"Who is exposed to the {rupee.label}",
-                question=f"Which companies are exposed to the {rupee.label}?",
+                label=f"Who is exposed to {the(rupee.label)}",
+                question=f"Which companies are exposed to {the(rupee.label)}?",
             )
         )
     series = session.scalars(
@@ -607,7 +609,11 @@ def _suggestions(session: Session) -> list[SuggestionRead]:
         .limit(1)
     ).first()
     if series is not None:
-        found.append(SuggestionRead(label="A stored series", question=f"Show {series.name}."))
+        found.append(
+            SuggestionRead(
+                label="A stored series", question=f"Show the stored history of {series.name}."
+            )
+        )
     else:
         found.append(
             SuggestionRead(label="What data is stored", question="What data does RUMIN hold?")
@@ -624,7 +630,7 @@ def _suggestions(session: Session) -> list[SuggestionRead]:
     if brent is not None and airline is not None:
         found.append(
             SuggestionRead(
-                label="A what-if", question=f"What if Brent crude rises 20 % for {airline.label}?"
+                label="A what-if", question=f"What if Brent crude rises 20% for {airline.label}?"
             )
         )
     found.append(SuggestionRead(label="What changed", question="What changed recently?"))

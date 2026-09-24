@@ -218,6 +218,22 @@ colour token. Details: [the interface](intelligence/interface.md).
 | Accent | Sky blue only for the subject in focus in the rail, the chain step that sets the grade and the entity at the end of a path | Restraint: blue marks where to look, never a value |
 | Status | Red for a refused threshold field; amber for notices and a stale stored analysis; green for a current one | Status colours only mean status, always with words |
 
+## The AI Analyst (Phase 7)
+
+The Analyst (`/analyst`) reads as a column of research notes, not a chat: no bubbles, no
+avatars, no typing effect. It adds no colour token. Details: [the interface](analyst/interface.md).
+
+| What | Encoding | Why |
+|---|---|---|
+| A note | The question set off by a rule in secondary ink; the headline in the display face (Newsreader); the status as a small word; paragraphs in the body face at reading width (46rem) | An answer is something to read and check, like a memo |
+| The evidence margin (the signature element) | Beside each answer, its sources in the order first cited: the id in the mono face, the kind of knowledge as a mark and a word, the title as a link to the record, the period and units, and *Details*. A citation chip (`E2`) in the text links to its source; hovering or focusing either highlights both | Checking an answer is the default, not an extra step |
+| Kinds of knowledge | The platform's glyphs ([below](#knowledge-labels)): filled circle observed, ring assumption, filled square a person's figure, hatched square simulated (dashed: a preview, not stored); plus open square a RUMIN record, linked dots a relationship, triangle a finding | The same shape means the same thing on every page |
+| Scenario cards | Stored execution: solid border. Preview computed now and not stored: dashed border. Plan that needs figures: the missing figures listed. Figures in the card use the sentences' rounding | Whether a result was stored is visible before it is read |
+| Notices | A left rule and a small kind word (*Assumption*, *Limitation*, *Not stored*, *Illustrative*, *Fallback*); refusals as a policy statement with an info icon | Disclosures are part of the answer, not footnotes |
+| Series and paths | The Data Explorer's chart (one line, end label, keyboard readout, values as a table); paths as chains of linked records with their evidence and channel | Reuse, so a series or a path reads the same everywhere |
+| The method | *How this was answered*, collapsed: tool calls with status and timing in the mono face, the grounding check, who composed the answer | Provenance of the answer itself |
+| Accent | Sky blue only for citation chips, links and focus | Blue marks where to look, never a value |
+
 ## Knowledge labels
 
 The five epistemic categories use one glyph each, everywhere (badges, legend, landing):

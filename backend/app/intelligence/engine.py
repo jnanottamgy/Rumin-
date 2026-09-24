@@ -4,7 +4,7 @@ Two scopes:
 
 * **an entity** (a company or an industry): its exposure map, the stored executions and their
   drivers, the series related to its exposure variables, its signals, and every insight about
-  it — the dossier, and the brief a future AI Analyst may phrase;
+  it — the dossier, and the brief a language-model analyst may phrase;
 * **the workspace**: the exposure of every company, the observed data and its signals,
   relationship changes, the latest simulated impact per company, shared drivers, and what
   RUMIN can and cannot say (coverage).

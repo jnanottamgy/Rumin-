@@ -27,6 +27,7 @@ from app.analyst.answer import (
 )
 from app.analyst.evidence import Knowledge, SourceRef, exact, node_link, scenario_link
 from app.analyst.policy import data_text
+from app.analyst.tools.common import counted
 from app.analyst.tools.records import simulation_block
 from app.analyst.tools.registry import RenderContext, Tool, ToolOutput, ToolProblem
 from app.analyst.vocabulary import Vocabulary
@@ -41,6 +42,7 @@ from app.schemas.common import InputModel
 from app.schemas.intelligence import DriverAnalysisRead, NodeRead
 from app.schemas.scenario import (
     LabExplanationRead,
+    NotModelledRead,
     PlanRead,
     PreviewRead,
     ScenarioInput,
@@ -150,7 +152,7 @@ def _scenarios_render(
                 for cited, item in zip(ids, items, strict=False)
             ],
         },
-        summary=f"{len(items)} stored scenarios",
+        summary=counted(len(items), "stored scenario"),
         evidence=ids,
         display=display,
         facts=items,
@@ -313,7 +315,7 @@ def _execution_render(
             "stored_executions_for_company": found.stored,
         },
         summary=f"'{drivers.execution.scenario_name}' v{drivers.execution.version}: "
-        f"{len(drivers.lines)} lines",
+        f"{counted(len(drivers.lines), 'line')}",
         evidence=[*cited, simulated],
         display=[block],
         facts=found,
@@ -430,7 +432,7 @@ def _explain_render(
             "models": models,
             "assumptions": assumptions[:8],
         },
-        summary=f"{found.label}: {len(found.by_change)} changes credited",
+        summary=f"{found.label}: contributions of {counted(len(found.by_change), 'change')}",
         evidence=[evidence],
         display=display,
         facts=found,
@@ -564,6 +566,21 @@ def _missing(plan: PlanRead) -> list[str]:
         if issue.severity == "error" and issue.message not in found:
             found.append(issue.message)
     return found[:10]
+
+
+def _not_modelled(items: list[NotModelledRead]) -> list[str]:
+    """One note per reason, naming every line it applies to, instead of the reason repeated."""
+    grouped: dict[str, list[str]] = {}
+    for item in items:
+        grouped.setdefault(item.reason, []).append(item.label)
+    return [
+        data_text(
+            f"Not modelled: {', '.join(labels)}. "
+            + (reason.replace("covers it.", "covers these lines.") if len(labels) > 1 else reason),
+            400,
+        )
+        for reason, labels in grouped.items()
+    ]
 
 
 def _preview_render(
@@ -700,7 +717,7 @@ def _preview_render(
                 notes=[
                     "Computed on request and not stored. Open it in the Scenario Lab to save "
                     "or execute it.",
-                    *(data_text(item.reason, 200) for item in results.not_modelled[:4]),
+                    *_not_modelled(results.not_modelled),
                 ],
                 citations=ids,
             )

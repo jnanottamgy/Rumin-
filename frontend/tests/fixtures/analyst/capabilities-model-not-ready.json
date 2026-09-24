@@ -1,0 +1,172 @@
+{
+  "version": "1.0.0",
+  "provider": {
+    "configured": "anthropic",
+    "active": "grounded",
+    "ready": false,
+    "reason": "RUMIN_ANTHROPIC_API_KEY and RUMIN_ANALYST_MODEL are not set.",
+    "model": null
+  },
+  "tools": [
+    {
+      "name": "search_records",
+      "description": "Find RUMIN records (companies, industries, countries, economic variables, data series, instruments, simulation models, scenario templates, stored scenarios) by name. Use it to turn a name into a record key before calling another tool.",
+      "kind": "read"
+    },
+    {
+      "name": "get_entity_dossier",
+      "description": "What RUMIN holds about one company or industry: its record, the economic variables that reach it through validated knowledge-graph relationships (counts and paths), counterparties, its latest stored scenario execution (simulated) and its Financial Intelligence findings with evidence grades.",
+      "kind": "read"
+    },
+    {
+      "name": "get_exposure",
+      "description": "The economic variables that reach one company or industry through validated knowledge-graph relationships: each path with its channel (costs, revenue, financing), how it reaches (directly, via the industry, upstream through another variable), the weakest evidence along it and the models that can simulate it. Optionally one channel or one variable. Exposure is stated, never sized.",
+      "kind": "read"
+    },
+    {
+      "name": "get_variable_reach",
+      "description": "Which companies one economic variable reaches through validated knowledge-graph relationships (directly, via their industry, or upstream through another variable), with the channel, the weakest evidence and the models that can simulate each; also the stored series recorded as related measures of the variable.",
+      "kind": "read"
+    },
+    {
+      "name": "find_paths",
+      "description": "The shortest chains of knowledge-graph relationships between two records (any kinds), up to 6 hops. A path shows how records are connected; it is not a causal chain.",
+      "kind": "read"
+    },
+    {
+      "name": "get_relationship",
+      "description": "One knowledge-graph relationship by its key: what it states, the source records and rule that built it, its evidence status and what it does not mean.",
+      "kind": "read"
+    },
+    {
+      "name": "get_series",
+      "description": "A stored data series: its values (optionally a year range or the last N), unit, frequency, dataset, licence and provider, when it was retrieved, its latest change, trend, volatility and revisions. Values are stored observations, not live data.",
+      "kind": "read"
+    },
+    {
+      "name": "compare_periods",
+      "description": "The exact change of a stored series between two stored periods (percent for levels, prices and exchange rates; percentage points for series already in percent), computed in exact decimals, with the two observations it rests on.",
+      "kind": "read"
+    },
+    {
+      "name": "list_changes",
+      "description": "What changed in RUMIN: stored values whose latest change meets the default thresholds (observed), revised values, relationships added or retired between graph builds, and headline changes between two executions of the same scenario (simulated).",
+      "kind": "read"
+    },
+    {
+      "name": "get_findings",
+      "description": "Financial Intelligence findings for the whole workspace or one company or industry: each with its headline, statement, kind, evidence grade (the weakest step of its chain, not a probability), whether it rests on a simulation, and its limitations.",
+      "kind": "read"
+    },
+    {
+      "name": "list_scenarios",
+      "description": "Stored scenarios (optionally only those for one company): name, company, version, how many times each was executed and its latest execution.",
+      "kind": "read"
+    },
+    {
+      "name": "get_execution",
+      "description": "A stored scenario execution (by id, or a company's latest): the changes it applied, each line's baseline, change and scenario value, the largest contributions (stored Shapley credits), the models and versions, their assumptions and the figures a person entered. Results are simulated under the scenario's inputs, not forecasts.",
+      "kind": "read"
+    },
+    {
+      "name": "explain_line",
+      "description": "Why one line or metric of a stored execution changed (by execution id, or a company's latest): its equation, the change in each term, the credit of each scenario change, the chain from the changes to the line, and the models' assumptions.",
+      "kind": "read"
+    },
+    {
+      "name": "preview_scenario",
+      "description": "Compute a what-if with the registered models WITHOUT storing it: the changes (each a variable, percent_change or absolute_change, and a value; rates in percentage points), optionally a company and a horizon. It reuses the figures a person entered in that company's latest stored scenario; without them it returns the plan (which models apply and which figures are missing). Results are simulated, not forecasts.",
+      "kind": "compute"
+    },
+    {
+      "name": "list_models",
+      "description": "The registered simulation models: what each covers, its version and status, the variables it responds to and how many runs are stored.",
+      "kind": "read"
+    },
+    {
+      "name": "list_templates",
+      "description": "The Scenario Lab's ready-made templates: the changes each applies, the models it uses and the companies the knowledge graph suggests for it; also the kinds of scenario no model supports yet.",
+      "kind": "read"
+    },
+    {
+      "name": "get_data_coverage",
+      "description": "What data RUMIN holds: every catalogued series with how many values are stored and for which periods, instruments, datasets with their licences, the knowledge graph's build and freshness, and how many scenarios and executions are stored.",
+      "kind": "read"
+    }
+  ],
+  "limits": {
+    "max_question_chars": 2000,
+    "max_turns_per_session": 200,
+    "max_tool_calls": 12,
+    "deadline_seconds": 90.0,
+    "max_model_requests": 6,
+    "daily_token_budget": 2000000,
+    "tokens_used_today": 0
+  },
+  "suggestions": [
+    {
+      "label": "About Aerisca Airways",
+      "question": "What does RUMIN know about Aerisca Airways?"
+    },
+    {
+      "label": "Cost exposure",
+      "question": "Which variables affect Aerisca Airways' costs?"
+    },
+    {
+      "label": "Who is exposed to the USD/INR exchange rate",
+      "question": "Which companies are exposed to the USD/INR exchange rate?"
+    },
+    {
+      "label": "A stored series",
+      "question": "Show the stored history of Official exchange rate (INR per US$, period average) — India."
+    },
+    {
+      "label": "A what-if",
+      "question": "What if Brent crude rises 20% for Aerisca Airways?"
+    },
+    {
+      "label": "What changed",
+      "question": "What changed recently?"
+    }
+  ],
+  "knowledge_kinds": [
+    {
+      "id": "observed",
+      "label": "Observed data"
+    },
+    {
+      "id": "record",
+      "label": "RUMIN record"
+    },
+    {
+      "id": "relationship",
+      "label": "Relationship"
+    },
+    {
+      "id": "finding",
+      "label": "Finding"
+    },
+    {
+      "id": "user_input",
+      "label": "Figure entered by a user"
+    },
+    {
+      "id": "assumption",
+      "label": "Model assumption"
+    },
+    {
+      "id": "simulated",
+      "label": "Simulated result"
+    },
+    {
+      "id": "preview",
+      "label": "Preview, not stored"
+    }
+  ],
+  "notes": [
+    "Answers come from RUMIN's records through read-only tools; every figure cites the evidence it comes from, and an answer that fails that check is not shown.",
+    "RUMIN does not forecast, does not hold live market data and does not make investment decisions.",
+    "A what-if is computed on request and never stored; saving or executing a scenario is done in the Scenario Lab.",
+    "Conversations are stored so they can be reopened, and can be deleted."
+  ]
+}

@@ -7,6 +7,10 @@ import { validateNetwork } from "@/features/network/model";
 import { apiRequest, type RequestOptions } from "@/lib/apiClient";
 import type {
   AnalysisRequest,
+  AnalystCapabilities,
+  AnalystSession,
+  AnalystSessionPage,
+  AnalystTurn,
   DatasetPage,
   EconomicSeriesDetail,
   EconomicSeriesPage,
@@ -327,6 +331,51 @@ export const dataApi = {
 };
 
 export type Api = typeof api;
+
+/**
+ * The AI Analyst (Phase 7): conversations and their turns. Asking answers 202 with the
+ * queued turn; `turn` is read again until it is final (`poll_after_ms`).
+ */
+export const analystApi = {
+  capabilities: (options?: Options) =>
+    apiRequest<AnalystCapabilities>("/api/v1/analyst/capabilities", options),
+
+  sessions: (options?: Options) =>
+    apiRequest<AnalystSessionPage>(`/api/v1/analyst/sessions${toQuery({ limit: 100 })}`, options),
+
+  session: (id: string, options?: Options) =>
+    apiRequest<AnalystSession>(`/api/v1/analyst/sessions/${segment(id)}`, options),
+
+  create: (title: string | null, options?: Options) =>
+    apiRequest<AnalystSession>("/api/v1/analyst/sessions", {
+      ...options,
+      method: "POST",
+      body: title ? { title } : {},
+    }),
+
+  rename: (id: string, title: string, options?: Options) =>
+    apiRequest<AnalystSession>(`/api/v1/analyst/sessions/${segment(id)}`, {
+      ...options,
+      method: "PUT",
+      body: { title },
+    }),
+
+  remove: (id: string, options?: Options) =>
+    apiRequest<void>(`/api/v1/analyst/sessions/${segment(id)}`, { ...options, method: "DELETE" }),
+
+  ask: (sessionId: string, question: string, options?: Options) =>
+    apiRequest<AnalystTurn>(`/api/v1/analyst/sessions/${segment(sessionId)}/turns`, {
+      ...options,
+      method: "POST",
+      body: { question },
+    }),
+
+  turn: (sessionId: string, turnId: string, options?: Options) =>
+    apiRequest<AnalystTurn>(
+      `/api/v1/analyst/sessions/${segment(sessionId)}/turns/${segment(turnId)}`,
+      options,
+    ),
+};
 export type { NetworkResponse };
 
 /** Filters shared by neighbourhood and path queries; empty lists mean "no filter". */

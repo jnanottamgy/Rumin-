@@ -16,7 +16,7 @@ from app.analyst import parsing
 from app.analyst.context import Focus, recent_turns
 from app.analyst.policy import data_text, phrasing_problems, screen
 from app.analyst.router import route
-from app.analyst.vocabulary import Vocabulary, load, normalise
+from app.analyst.vocabulary import Vocabulary, example_change, load, normalise, the
 
 D = Decimal
 AERISCA = "company:co_aerisca_airways"
@@ -292,6 +292,64 @@ def test_a_bare_figure_resizes_the_previous_change(vocabulary: Vocabulary) -> No
     assert found.intent == "what_if"
     assert [(c.variable.record_id, c.value) for c in found.changes] == [("var_brent_crude", D(30))]
     assert any("new size for the previous change" in note for note in found.assumptions)
+
+
+def test_a_bare_figure_without_a_previous_change_asks_which_variable(
+    vocabulary: Vocabulary,
+) -> None:
+    # After a question that simulated nothing, "30%" is not a change to anything yet.
+    focus = Focus(intent="connection", subject=AERISCA, entity=AERISCA)
+    found = route("What about 30%?", vocabulary, focus)
+    assert found.intent == "clarify"
+    assert found.clarification is not None
+    assert found.clarification.question == "Which variable should change by 30%?"
+    assert [question for _, question in found.clarification.options] == [
+        "What if the Brent crude oil price changes by 30% for Aerisca Airways?",
+        "What if the USD/INR exchange rate changes by 30% for Aerisca Airways?",
+    ]
+    # A size in points is offered for a rate, not for a price.
+    points = route("And 50 bps?", vocabulary, focus)
+    assert points.clarification is not None
+    assert [label for label, _ in points.clarification.options] == [
+        "RBI policy repo rate by 50 bps"
+    ]
+
+
+def test_an_exposure_question_without_a_variable_asks_which(vocabulary: Vocabulary) -> None:
+    found = route("Which companies are exposed?", vocabulary)
+    assert found.intent == "clarify"
+    assert found.clarification is not None
+    assert "Which companies are exposed to the Brent crude oil price?" in [
+        question for _, question in found.clarification.options
+    ]
+    # With a variable in the conversation, the question is about that variable.
+    focus = Focus(
+        intent="variable_reach", subject="variable:var_usd_inr", variable="variable:var_usd_inr"
+    )
+    followed = route("Which companies are exposed?", vocabulary, focus)
+    assert (followed.intent, [term.record_id for term in followed.variables]) == (
+        "variable_reach",
+        ["var_usd_inr"],
+    )
+
+
+def test_a_named_country_is_not_replaced_by_the_focus(vocabulary: Vocabulary) -> None:
+    focus = Focus(intent="connection", subject=AERISCA, entity=AERISCA)
+    found = route("What about India's GDP growth?", vocabulary, focus)
+    assert found.intent == "series_history"
+    assert found.entities == []
+    assert [term.key for term in found.series] == ["series:wb-ind-ny-gdp-mktp-kd-zg"]
+
+
+def test_articles_and_example_sizes_follow_the_name(vocabulary: Vocabulary) -> None:
+    brent = vocabulary.by_record("var_brent_crude")
+    inflation = vocabulary.by_record("var_india_cpi_inflation")
+    assert brent is not None and inflation is not None
+    assert (the(brent.label), example_change(brent)) == ("the Brent crude oil price", "10%")
+    assert (the(inflation.label), example_change(inflation)) == (
+        "India CPI inflation",
+        "1 percentage point",
+    )
 
 
 def test_a_new_subject_replaces_the_focus(vocabulary: Vocabulary) -> None:

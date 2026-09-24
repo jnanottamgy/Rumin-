@@ -97,9 +97,10 @@ export const APP_MODULES: readonly AppModule[] = [
     path: "/analyst",
     navLabel: "Analyst",
     title: "AI Analyst",
-    summary: "Ask questions about model assumptions and simulated outputs.",
-    status: "planned",
-    statusNote: "Not available · planned for Phase 7",
+    summary:
+      "Ask about exposure, relationships, stored data, scenarios and findings; every figure in an answer cites the record it comes from.",
+    status: "available",
+    statusNote: "Grounded answers with sources; an optional language model is checked the same way",
     phase: 7,
   },
   {
@@ -125,7 +126,7 @@ export interface RoadmapPhase {
   title: string;
 }
 
-export const CURRENT_PHASE = 6;
+export const CURRENT_PHASE = 7;
 
 export const ROADMAP: readonly RoadmapPhase[] = [
   { phase: 1, title: "Foundation & system architecture" },
