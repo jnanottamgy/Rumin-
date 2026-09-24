@@ -20,6 +20,10 @@ is optional**: the defaults run a local workspace on SQLite.
 | `RUMIN_LOG_LEVEL` | `INFO` | `DEBUG`, `INFO`, `WARNING` or `ERROR` for the `app` loggers. Each request is logged as `METHOD path -> status (ms)` with its request ID. |
 | `RUMIN_DOCS_ENABLED` | `true` | Serve `/docs`, `/redoc` and `/openapi.json`. Set to `false` for a public deployment if the API surface should not be browsable. |
 | `RUMIN_MAX_REQUEST_BODY_BYTES` | `65536` | Larger request bodies are rejected with 413 (limits 1 KiB – 10 MiB). |
+| `RUMIN_SCENARIO_EXECUTION_MODE` | `thread` | How Scenario Lab executions run: `thread` (on the bounded background pool; the request answers 202 at once) or `inline` (inside the request that creates them — the tests use it). |
+| `RUMIN_SCENARIO_MAX_CONCURRENT` | `2` | Executions running at once in one API process (1 – 8). |
+| `RUMIN_SCENARIO_MAX_QUEUED` | `8` | Executions waiting for a place (0 – 64); beyond that `POST …/executions` answers 429 and stores nothing. |
+| `RUMIN_SCENARIO_TIMEOUT_SECONDS` | `20` | Time limit of one execution, checked between stages and models (1 – 120). |
 
 ### Data ingestion (Phase 2)
 

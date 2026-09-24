@@ -180,6 +180,24 @@ review that shaped it: [the preview](simulation/preview.md).
 | Equations | The display serif, italic, set like a textbook | Formulas read as formulas, apart from interface text |
 | Motion | For a new run, nodes appear layer by layer and a sky-blue pulse runs once along each link (about 2.5 s); nothing moves for stored runs or under reduced motion | The one orchestrated moment shows how the change travelled |
 
+## The Scenario Lab (Phase 5)
+
+The Scenario Lab (`/scenarios`) uses the same instrument language at a larger scale:
+controls left, the pathway centre, results right, the execution and months along the
+bottom. Details: [the interface](scenario-lab/interface.md).
+
+| What | Encoding | Why |
+|---|---|---|
+| Changes | Sky-blue left rule on each change (in the builder and on the pathway's change steps), the scenario-input diamond | Sky blue is reserved for what the user changes, the relationships the engine propagated along, and the one emphasised series |
+| The pathway | Four columns (changes → variables → line items → lines and metrics); one lane per model as a pale surface with a hairline border and its title, version and the graph context it cites; steps as small labelled cards with the value in monospaced figures | Structure first; each model's part reads as one band |
+| Link kinds | Ink for applied and computed links, sky blue (thicker) for relationships propagated along the graph, a hairline for the Lab's additions with "−" where a line is subtracted; graph context never drawn as a step | What carried a number is visible at a glance; a drawn connection is never mistaken for a cited one |
+| Selection | The chain upstream and downstream stays at full strength, the rest drops to low opacity; the selected step has an accent ring | Follow one change through without losing the rest |
+| Replay | Steps not yet reached dim; values change in place; metrics read "Horizon only" | Motion follows the stored months, never an animation |
+| Results | A hero figure for the headline line; a table of baseline, scenario and change with the percentage and "raises/reduces profit" under each change; chevrons for disclosure | It reads like a financial statement: "+" and "−" only ever mean signs, never disclosure |
+| Charts | Stress bars and the timeline use `--viz-series` for the scenario (the emphasised series) and `--viz-baseline` grey for the other cases; the tornado spans each quantity's range around the execution's value (a hairline rule); every chart has its table | The dataviz rules: one emphasis, thin marks, hairline axes, no second y-scale |
+| Status | The execution's stages as numbered chips with their recorded durations; ✓ when stored; the running stage's marker pulses only while the server reports it | Progress is the server's, never simulated |
+| Field messages | Red with an alert icon for an error; amber for a warning; neutral with a circle for a value still needed before the first save | A template's first view is a checklist, not a wall of errors |
+
 ## Knowledge labels
 
 The five epistemic categories use one glyph each, everywhere (badges, legend, landing):

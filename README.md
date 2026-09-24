@@ -7,14 +7,16 @@ runs documented, versioned models on those connections with every step explained
 reproducible, and labels everything it shows as one of five kinds of knowledge:
 observation, assumption, scenario input, simulated output or uncertainty.
 
-> **Status: Phase 4 — simulation engine** (on top of the Phase 1 foundation, the Phase 2
-> data infrastructure and the Phase 3 knowledge graph).
+> **Status: Phase 5 — Scenario Lab** (on top of the Phase 1 foundation, the Phase 2 data
+> infrastructure, the Phase 3 knowledge graph and the Phase 4 simulation engine).
 >
-> - **Simulations are calculations, not forecasts.** The engine runs one model, an airline
->   fuel-cost shock, on figures you enter and assumptions it states. Each run stores every
->   step, where each input came from and the graph relationships it used, and identical
->   inputs give identical results. No parameter has been estimated from data and no result
->   has been back-tested.
+> - **Scenarios are calculations, not forecasts.** The Scenario Lab asks *what happens if
+>   something changes?* and answers with the models that apply — five narrow models, chosen
+>   by what each declares and what the knowledge graph states — on figures you enter and
+>   assumptions they state. It shows the modelled pathway from each change to each line,
+>   stores every execution with its model runs and hashes, and re-executes any execution to
+>   check it reproduces. No parameter has been estimated from data and no result has been
+>   back-tested.
 > - **The knowledge graph connects the records RUMIN holds, not the economy.** Every edge
 >   has an evidence status (evidence-backed, analyst-created, model assumption or
 >   unverified) and the records that explain it. No edge is a measured effect, a
@@ -26,11 +28,12 @@ observation, assumption, scenario input, simulated output or uncertainty.
 >   and revision history.
 > - The network's sample data is **illustrative**: its companies are fictional; countries,
 >   ISIC industries and variable definitions are real concepts with references.
-> - There is **no Scenario Lab workflow** yet (Phase 5: drafts are not connected to the
->   engine) and **no AI analyst** (Phase 7).
+> - There is **no AI analyst** (Phase 7) and **no probabilistic simulation** (Phase 9):
+>   stress cases and sensitivity move magnitudes, one at a time.
 > - There is **no authentication** yet (Phase 10): run it locally only. For that reason the
->   API is read-only for data and for the graph, simulation runs are append-only, and
->   ingestion and graph builds start from the command line.
+>   API is read-only for data and for the graph, scenario versions, executions and
+>   simulation runs are append-only, and ingestion and graph builds start from the command
+>   line.
 >
 > Nothing in RUMIN is investment advice.
 
@@ -39,18 +42,18 @@ observation, assumption, scenario input, simulated output or uncertainty.
 | Module | State | What works |
 |---|---|---|
 | Landing page | Available | What RUMIN is, the five kinds of knowledge, what exists in this build, the roadmap |
-| Overview (dashboard) | Available | Live workspace figures from the API, network preview, recent drafts, system and data status |
+| Overview (dashboard) | Available | Live workspace figures from the API, network preview, recent scenarios, system and data status |
 | Financial Universe | Available (2D) | Interactive network: selection, hover details, search, filters, legend, pan/zoom, deep links, keyboard access, table view |
 | **Knowledge Graph** | Available (Phase 3) | The graph of every record RUMIN holds (9 node types, 18 relationship types): aggregate map, search by name or code, neighbourhoods on a radial layout, step-by-step expansion, filters by type and evidence, the evidence behind every edge, shortest paths, history, table view |
 | **Graph build** | Available (command line) | Builds the graph from the stored records with entity resolution (flag, never merge), 26 validation rules and a validation report; rebuilding unchanged sources changes nothing |
 | **Data Explorer** | Available (Phase 2) | Stored series and prices with their source, licence, freshness and quality; exact-value tables; accessible charts; revision history; ingestion runs |
 | **Data ingestion** | Available (command line) | World Bank series (throttled, retried, validated, versioned) and licensed price-file import, each recorded as a job |
 | **Simulation** | Preview (Phase 4) | The airline fuel-cost model: inputs labelled by kind of knowledge and checked on the server; results with the pathway through the knowledge graph, month-by-month figures, the accounting bridge, Shapley contributions, a sensitivity tornado, every calculation step, and provenance with a reproducibility check; stored runs reopened and varied |
-| **Simulation engine** | Available (API) | Versioned, hashed models; exact decimals; propagation only along confirmed graph relationships; append-only runs with explanations, provenance and verification; one-at-a-time sensitivity |
-| Scenario Lab | Foundation | Named drafts with variable changes, validated against published limits; **not yet connected to the engine** (Phase 5) |
+| **Simulation engine** | Available (API) | Five versioned, hashed models (airline fuel cost, foreign-currency revenue and costs, floating-rate interest, crude- and gas-linked costs); exact decimals; timed changes; propagation only along confirmed graph relationships; append-only runs with explanations, provenance and verification; one-at-a-time sensitivity |
+| **Scenario Lab** | Available (Phase 5) | Templates built on implemented models; versioned scenarios; a plan saying which models apply and why; a live preview; background executions with recorded stages; the modelled pathway with graph context kept apart; baseline against scenario; months with a replay; stress cases; sensitivity; *what caused this?*; history, reproducibility checks and comparisons ([guide](docs/scenario-lab/README.md)) |
 | AI Analyst | Planned (Phase 7) | A page explaining what it will do; no model is connected |
 | System & settings | Available | API, database, migration and data status; capabilities; theme and motion preferences |
-| REST API | Available | Versioned (`/api/v1`), validated, consistent errors, OpenAPI docs; data and graph endpoints are read-only; simulation runs are append-only |
+| REST API | Available | Versioned (`/api/v1`), validated, consistent errors, OpenAPI docs, compressed responses; data and graph endpoints are read-only; scenario versions, executions and simulation runs are append-only |
 
 ## Quick start
 
@@ -71,7 +74,9 @@ make frontend           # terminal 2 → web client on http://127.0.0.1:5173
 
 `make ingest` contacts `api.worldbank.org` (two requests per series, at most one per second). If
 the provider cannot be reached, the run is recorded as failed and the Data Explorer says so;
-nothing else is affected. To try the simulation engine, open
+nothing else is affected. To try the Scenario Lab, open <http://127.0.0.1:5173/scenarios>,
+start from a template, enter your (hypothetical) company figures and **Execute**
+([more](docs/setup.md#scenario-lab-phase-5)). To try one model on its own, open
 <http://127.0.0.1:5173/simulation>, choose **Fill a hypothetical example** and **Run
 simulation** ([more](docs/setup.md#simulation-phase-4)). To import prices from a file you are licensed to use, see
 [Price files](docs/data/price-files.md).
@@ -168,6 +173,9 @@ backend/            FastAPI application, SQLAlchemy models, Alembic migrations, 
   app/ingestion/    providers, HTTP (throttling, retries), normalisation, quality rules,
                     persistence with revisions, job tracking, command line
   app/models/       ORM models
+  app/scenario_lab/ the Scenario Lab: scenario specification and validation, planner,
+                    scenario profiles, executor and runner, aggregation, pathways,
+                    explanations, sensitivity, comparison, templates
   app/schemas/      Pydantic request/response schemas (the API contract)
   app/services/     query and business logic
   app/simulation/   simulation engine: model registry and models, exact decimals, units,
@@ -177,14 +185,15 @@ backend/            FastAPI application, SQLAlchemy models, Alembic migrations, 
 frontend/           React + TypeScript web client (Vite)
   src/app/          router, theme, module registry
   src/components/   shared UI primitives
-  src/features/     network, graph (the explorer), scenarios, data (chart, tables,
-                    provenance, freshness), simulation (the preview: form, pathway,
-                    charts, panels)
+  src/features/     network, graph (the explorer), data (chart, tables, provenance,
+                    freshness), simulation (the preview: form, pathway, charts, panels),
+                    scenarioLab (builder, pathway, results, timeline, views)
   src/pages/        one component per route
   tests/            unit and page tests; tests/integration runs against a live API
 docs/               architecture, API, data model, data pipeline, testing, roadmap and more
   api/openapi.json  committed API contract (the frontend's types are generated from it)
-scripts/            smoke_test.sh (backend/scripts and frontend/scripts: graph benchmarks)
+scripts/            smoke_test.sh (backend/scripts and frontend/scripts: graph and Scenario Lab
+                    benchmarks, the Lab's fixture capture)
 ```
 
 ## Documentation
@@ -209,6 +218,10 @@ scripts/            smoke_test.sh (backend/scripts and frontend/scripts: graph b
   [provenance](docs/simulation/provenance.md) · [sensitivity](docs/simulation/sensitivity.md) ·
   [model registry](docs/simulation/registry.md) · [the preview](docs/simulation/preview.md) ·
   [limitations](docs/simulation/limitations.md)
+- Scenario Lab: [overview](docs/scenario-lab/README.md) ·
+  [architecture](docs/scenario-lab/architecture.md) · [the pathway](docs/scenario-lab/pathway.md) ·
+  [the interface](docs/scenario-lab/interface.md) · [performance](docs/scenario-lab/performance.md) ·
+  [limitations](docs/scenario-lab/limitations.md)
 - [Design system](docs/design-system.md)
 - [Testing](docs/testing.md)
 - [Security](docs/security.md)
@@ -217,7 +230,8 @@ scripts/            smoke_test.sh (backend/scripts and frontend/scripts: graph b
 - Phase reports: [Phase 1](docs/phases/phase-1-report.md) ·
   [Phase 2 plan](docs/phases/phase-2-plan.md) · [Phase 2 report](docs/phases/phase-2-report.md) ·
   [Phase 3 plan](docs/phases/phase-3-plan.md) · [Phase 3 report](docs/phases/phase-3-report.md) ·
-  [Phase 4 plan](docs/phases/phase-4-plan.md) · [Phase 4 report](docs/phases/phase-4-report.md)
+  [Phase 4 plan](docs/phases/phase-4-plan.md) · [Phase 4 report](docs/phases/phase-4-report.md) ·
+  [Phase 5 plan](docs/phases/phase-5-plan.md) · [Phase 5 report](docs/phases/phase-5-report.md)
 
 ## Licence
 

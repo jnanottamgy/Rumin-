@@ -1,9 +1,10 @@
 # Technology decisions
 
-Short records of the choices made in Phases 1 to 4, why, and what would make us revisit
+Short records of the choices made in Phases 1 to 5, why, and what would make us revisit
 them. Phase 2 decisions start at [13](#13-world-bank-indicators-as-the-first-provider-fred-rejected),
 Phase 3 decisions at [23](#23-the-knowledge-graph-lives-in-the-existing-relational-database),
-Phase 4 decisions at [33](#33-one-narrow-domain-first-an-airline-fuel-cost-shock).
+Phase 4 decisions at [33](#33-one-narrow-domain-first-an-airline-fuel-cost-shock),
+Phase 5 decisions at [43](#43-several-narrow-models-composed-by-line-items).
 
 ## 1. Monorepo with a Python API and a TypeScript web client
 
@@ -61,8 +62,9 @@ checksum, so what is in the database can always be traced to an exact file.
 numbers as results. Instead the capability list states what is planned and when, the
 Scenario Lab saves inputs only, and the AI Analyst page explains what it will do.
 **Since Phase 4** a simulation engine exists, built so that its results are calculations
-from stated inputs, never invented (decisions 33–42). Scenario drafts still save inputs
-only until the Phase 5 Scenario Lab connects them.
+from stated inputs, never invented (decisions 33–42). **Since Phase 5** scenarios are
+executed through the model registry (decisions 43–53); a change no registered model
+simulates is refused, not approximated.
 
 ## 8. React 19 + TypeScript + Vite + React Router
 
@@ -444,6 +446,9 @@ language, and is covered by the run's hashes. A figure calculated in the browser
 have no step, no provenance and no hash.
 **Revisit** when a second model arrives: its presentation (pairs, monthly series,
 headline) should be declared in its definition rather than inferred from names.
+**Since Phase 5** the Scenario Lab reads what each model contributes from its declared
+scenario profile (decision 46), and the Lab page calculates nothing either; the Simulation
+page's naming convention remains, as technical debt.
 
 ## 42. Still no new dependencies
 
@@ -455,3 +460,151 @@ verify by hand, and a numerical library would bring binary floating point back i
 path (see 35).
 **Revisit** with Monte Carlo or estimation (Phase 9), where a statistics library would be
 evaluated like any dependency.
+
+## 43. Several narrow models, composed by line items
+
+**Decision.** Composition in the Scenario Lab needs more than one model, so Phase 5 adds
+four narrow ones — foreign-currency revenue and costs, floating-rate interest, crude-oil-
+linked costs, natural-gas-linked costs — and a version 1.1.0 of the airline model (timed
+changes, a monthly exchange-rate factor), each exact, documented and anchored in
+relationships the knowledge graph already states. They combine only through the line items
+their profiles declare (decision 46). No demand or supply-chain model is added, and neither
+gets a template.
+**Why.** A narrow model can be checked by hand; a broad one hides its assumptions. Every
+model holds volumes fixed (fuel consumed, dollars invoiced, debt outstanding), so a demand
+change combined with them would contradict them, and the graph's supplier relationships
+carry no quantities. Offering those templates would present invented pathways.
+**Consequence.** `airline_fuel_cost` 1.0.0 stays registered unchanged, so its Phase 4 runs
+remain verifiable; the engine extensions (a change's start and duration; percentage-point
+shocks applied as level changes at their own node, never carried along log-linear rules)
+leave every existing result and definition hash unchanged, and the engine version stays
+1.0.0.
+**Revisit** when a volume model is designed — with the other models reading its volumes
+rather than holding them fixed.
+
+## 44. Scenarios are versioned; a save never overwrites
+
+**Decision.** A scenario has a stable identity and immutable, numbered versions. A save
+that changes anything adds a version, one that changes nothing adds none, and one made from
+an older version than the latest (`base_version`) is refused with 409. Restoring saves the
+old content as a new version. An execution refers to a version; an executed scenario cannot
+be deleted (409). Phase 1 drafts became version 1 in migration `0005`.
+**Why.** An execution's inputs must never change after the fact, or its results would stop
+describing a question anyone asked. Last-write-wins (the Phase 1 behaviour) silently loses
+edits.
+**Revisit** with authentication (Phase 10): ownership, retention and deletion by an
+authorised owner, with an audit record.
+
+## 45. The graph decides whether a model applies, never how much
+
+**Decision.** A model is included by default only when a company is chosen **and** the
+graph states the exposure the model requires (directly or through the company's industry).
+Otherwise it is *available* to include by hand, with the reason. The amounts always come
+from the user's figures and the model's equations. The relationships that made a model
+apply are served as `context_only` and drawn apart from the ones the engine propagated
+along.
+**Why.** The graph records that a company is exposed — as a curated fact or an assumption —
+not by how much (decision 25). Using it to choose models is what it can support; using it to
+size effects would invent numbers.
+**Revisit** when exposures carry measured sizes with provenance (Phase 6).
+
+## 46. Scenario profiles with a closed list of line items
+
+**Decision.** Each model declares a scenario profile: the variables it accepts, the line
+items it contributes to (from a closed list per line), the exposures that make it apply,
+and cautions for quantities another model already carries. No two models may claim the same
+item of the same line; the planner blocks such a plan. The Lab's equations (AG0–AG7) add the
+items into lines and check operating profit against each model's own figure.
+**Why.** Double counting is the classic error of composing models (the airline model already
+converts its fuel bill at the new exchange rate; the foreign-currency model must not count it
+again). A closed list makes the rule checkable by the planner rather than a note in the docs.
+**Revisit** when models overlap legitimately (a share of the same cost); the profile would
+then need explicit shares that sum to one.
+
+## 47. Executions run on a bounded in-process pool, in recorded stages
+
+**Decision.** `POST /scenarios/{id}/executions` answers 202 and runs the execution on a
+thread pool inside the API process: 2 at once, 8 waiting, 20 seconds each; a full queue
+answers 429 before anything is stored. The four stages are stored with their times as they
+happen; cancellation and the time limit are checked between stages and models; a failed,
+cancelled or timed-out execution stores only its state and reason; an execution left
+unfinished by a stopped server is marked failed at the next start. Every change of an
+execution's state is a conditional update that applies only while it is not final, so a
+final execution never changes, even when two processes disagree about it. Tests run
+executions inline.
+**Why.** Executions take milliseconds to a fraction of a second, so a job queue with its own
+broker and workers would add operations for no gain today; a bounded pool keeps the API
+responsive and refuses overload explicitly. Recording stages as they happen lets the page
+show real progress instead of an animation.
+Recovery assumes one API process: a process that starts cannot tell another live process's
+executions from abandoned ones, so it marks them interrupted too (the conditional updates
+make that run stop and store nothing, rather than overwrite the state).
+**Revisit** with several API processes or longer executions (Phase 9 Monte Carlo): a shared
+queue (for example PostgreSQL-backed) with the same states, and leases instead of
+start-up recovery.
+
+## 48. Previews are computed, never stored
+
+**Decision.** `POST /scenarios/preview` plans and computes a scenario exactly as an
+execution would, and stores nothing. The page asks for one 450 ms after the last edit,
+cancels older requests, keeps the previous figures dimmed while waiting, and labels what it
+shows as a live preview; stored executions are labelled as such.
+**Why.** Seeing the pathway and the result move while editing is what makes the Lab an
+instrument, but a stored record for every keystroke would bury the executions that matter.
+Labelling keeps a preview from being mistaken for a reproducible result.
+**Revisit** if previews become slow (they take 50–130 ms here): cache the plan per graph
+build.
+
+## 49. Stress cases and sensitivity move magnitudes; nothing is clipped or sampled
+
+**Decision.** Stress cases are other magnitudes of the same changes (a multiple, or values),
+evaluated with the same models and assumptions; a value outside a variable's limits is
+refused with its field. Sensitivity moves one quantity at a time around a stored execution
+(at most 8 quantities, 7 points, 60 evaluations) and skips, with the reason, points a model
+refuses. Neither is called Monte Carlo, and nothing is ranked or recommended.
+**Why.** As in 39: exact, explainable answers to "what if it were bigger?" and "what matters
+most?", without inventing distributions. Ranking cases would need an objective the user has
+not stated.
+**Revisit** with estimated distributions (Phase 9).
+
+## 50. The pathway draws only what the engine computed
+
+**Decision.** The pathway is assembled from each model's declared pathway and its run, joined
+by the Lab's equations. Links say what they are — applied, propagated along a graph
+relationship (with β and lag), computed by an equation, added by the Lab — and graph
+context is listed in the model's lane header, not drawn as a step. The graph's other
+relationships from the changed variables are listed apart as *not modelled*.
+**Why.** A drawn connection reads as causation. Showing only computed links, and keeping
+cited context visibly apart, lets the user see exactly which relationships carried numbers.
+**Revisit** never for the principle; the drawing may change.
+
+## 51. Lines nobody models are not shown
+
+**Decision.** A line appears only when an included model contributes to it. Profit before
+tax appears only when an interest model is included (it needs the interest baseline). Cash
+flow is never shown. Baselines are the user's annual figures × horizon ÷ 12, held
+constant, and labelled as inputs, not forecasts.
+**Why.** Showing an unmodelled line as unchanged would claim that nothing happens to it,
+which the Lab does not know. A cash-flow figure would need working capital, tax and
+investment, which no model covers.
+**Revisit** when models for those items exist.
+
+## 52. Responses are compressed
+
+**Decision.** Responses over 1 KiB are gzip-compressed when the client accepts it
+(Starlette's `GZipMiddleware`, part of FastAPI's dependencies).
+**Why.** A Scenario Lab preview is about 115 KB of JSON and is requested after every pause in
+editing; compressed it is 15 KB, for about 5 ms of server time. The API returns no secrets
+and there is no authentication, so compression does not expose a secret to
+length-based attacks.
+**Revisit** with authentication (Phase 10): compressed responses that mix secrets with
+attacker-controlled input would then need review.
+
+## 53. Still no new dependencies
+
+**Decision.** Phase 5 adds no runtime or development dependency. The runner uses the standard
+library's thread pool; the aggregation, pathway assembly and layout, comparison and
+sensitivity are written in the project and tested; compression uses middleware FastAPI
+already ships.
+**Why.** As in 21, 32 and 42.
+**Revisit** with a shared job queue (see 47).

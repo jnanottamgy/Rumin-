@@ -1,8 +1,20 @@
-# The airline fuel-cost model (`airline_fuel_cost` 1.0.0, preview)
+# The airline fuel-cost model (`airline_fuel_cost` 1.0.0 and 1.1.0, preview)
 
 What a change in crude oil, the jet fuel price and the exchange rate does to one airline's
 fuel bill and operating profit, month by month, with hedging and a lagged pass-through to
 fares. Everything else stays at its baseline.
+
+Two versions are registered, both `preview`:
+
+| Version | What it is | When it runs |
+|---|---|---|
+| 1.0.0 | Every change is a permanent step from month 1. Registered unchanged: its definition hash is pinned, and its runs can still be verified | When a request names it (`model_version`) |
+| 1.1.0 | 1.0.0 plus the timing of the changes (a start month and a duration) and a monthly exchange-rate factor | By default: it is the latest runnable version, and the version the Scenario Lab runs |
+
+The sections below describe 1.0.0; [version 1.1.0](#version-110) lists everything 1.1.0
+changes, and whatever it does not list is the same in both versions. Phase 5 also added
+four models that the Scenario Lab can run beside this one
+([the registry](registry.md#registered-models)).
 
 ## Why this domain
 
@@ -173,4 +185,101 @@ These numbers are asserted by the tests (`backend/tests/test_simulation_model.py
 hedges do not cover the exchange rate; the crude lag delays the effect but not the steady
 state; the elasticity scales the log-change (β = 0.5 gives √1.1); the margin change is
 refused when revenue over the horizon would fall to zero; and three simultaneous changes are
-attributed exactly.
+attributed exactly. Both suites run the default version, 1.1.0, with its default timing
+(from month 1 to the end of the horizon);
+`test_version_1_1_0_gives_1_0_0_s_results_when_changes_are_permanent`
+(`backend/tests/test_simulation_timing.py`) runs the same inputs on 1.0.0 and checks that
+the outputs are identical.
+
+## Version 1.1.0
+
+**What changed, and why.** A Scenario Lab scenario gives every model one timing: the month
+its changes take effect and how long they last. Version 1.0.0 cannot take it: its changes
+are permanent steps from month 1 (A4), and its exchange rate is one factor, q = 1 + x, for
+the whole horizon (E8). A released version never changes ([versions](registry.md#versions)),
+so the timing is a new version. In 1.1.0 every change, the exchange rate included, is
+carried by the transmission engine inside the run's window, so the exchange rate becomes a
+monthly factor q(m) that returns to 1 when the changes end. Everything else (the other
+equations, the defaults, the ranges, the output ids) is 1.0.0's:
+`backend/app/simulation/models/airline_fuel_cost_1_1.py` builds 1.1.0 from 1.0.0's
+definition and replaces only what this section lists.
+
+**1.0.0 stays registered unchanged**, with its own code, so its runs remain verifiable:
+`POST /api/v1/simulations/{id}/verify` re-executes a stored run with the version it names,
+and a test pins the definition hash of both versions (`RELEASED` in
+`backend/tests/test_simulation_model.py`). A request without `model_version` runs 1.1.0;
+one that names 1.0.0 runs 1.0.0. `ENGINE_VERSION` is unchanged (1.0.0).
+
+**New inputs.** Two settings, shared by every model the Scenario Lab runs:
+
+| Input | Kind of knowledge | Unit | Allowed | Default |
+|---|---|---|---|---|
+| Changes start in month (`shock_start_month`) | Setting | months | 1–36, within the horizon | 1 |
+| Changes last for (months) (`shock_duration_months`) | Setting | months | 0–36; 0 means to the end of the horizon | 0 |
+
+The definition names them as its timing inputs (`shock_start_input`,
+`shock_duration_input`). The descriptions of the three changes (`crude_oil_change`,
+`jet_fuel_margin_change`, `usd_change`) now say that each takes effect in the start month
+and lasts for the stated duration, instead of "a permanent step change from month 1"; their
+units, ranges and defaults are unchanged.
+
+**Changed equations.** S is the month the changes take effect and E the last month they
+last: S + D − 1 for a duration D of at least one month, the horizon's last month when D = 0.
+
+| | Equation in 1.1.0 | Scope | Rests on | Limits |
+|---|---|---|---|---|
+| E6 | ℓ(m) = β · ln(1 + c) · 𝟙[S + L ≤ m ≤ E + L] + ln(1 + s) · 𝟙[S ≤ m ≤ E]: jet fuel log-change; each change lasts from S to E, and the crude-driven part arrives L months later and ends L months later | monthly | A4, A5 | L5 |
+| E8 | q(m) = exp(ln(1 + x) · 𝟙[S ≤ m ≤ E]): exchange rate in month m relative to baseline, propagated by the transmission engine like every change | monthly | A4, A8 | — |
+| E10 | b₁(m) = b₀ × q(m) × [h(m) + (1 − h(m)) × r(m)]: scenario monthly fuel cost, at the month's exchange rate | monthly | A1, A3, A6, A8 | — |
+| E17 | ΔB* = B × [(1 + x) × exp(β·ln(1 + c) + ln(1 + s)) − 1]; ΔΠ* = (φ − 1) × ΔB*: run-rate annual effect, while the changes last, after every lag has passed and every hedge has expired; for changes that last the whole horizon it is the steady state | steady state | A4, A5, A7 | — |
+| E19 | G = Σₘ b₀ × (q(m) × r(m) − 1); hedging effect = ΣΔb − G | horizon | A6 | — |
+
+The bridge (ΣΔπ = −G − hedging effect + ΣΔr) is unchanged and is still checked before a
+run is stored.
+
+**Outputs.** The ids are unchanged. Three outputs are relabelled because they describe the
+run rate while the changes last, not a permanent steady state: `jet_fuel_price_change` is
+now *Jet fuel price change (run rate)*, `steady_state_fuel_cost_change` is *Run-rate annual
+fuel-cost change* and `steady_state_operating_profit_change` is *Run-rate annual
+operating-profit change*. One monthly series is added: `fx_relative`, the exchange rate
+relative to baseline (`price_relative`, simulated, E8).
+
+**Assumption A4** becomes: *Scenario changes are step changes: they take effect in the
+start month and last for the stated duration (to the end of the horizon unless one is set),
+after which the changed variables return to their baselines. Every change in a run shares
+this timing.* The other assumptions and every limitation are unchanged.
+
+**Validation.** One rule is added, and the timing warnings count from the start month:
+
+| Rule | Severity | What it checks |
+|---|---|---|
+| `start_within_horizon` | error | The changes must take effect within the horizon |
+| `timing_within_horizon` | warning | As in 1.0.0, with the fare and crude lags counted from the start month (flagged when S + L > H); hedges that end before the changes start (0 < M_h < S) are also flagged |
+
+**Timing checked by hand** (`backend/tests/test_simulation_timing.py`). The worked
+example's **hypothetical** inputs (crude oil +10 %, half the fuel hedged for three months,
+40 % of the change passed on to fares after two months, a fuel bill of 5,000,000 INR a
+month) with a timing:
+
+| Timing | By hand | The engine |
+|---|---|---|
+| From month 1 to the end of the horizon (the defaults) | The worked example above: ΣΔb = 5,250,000, ΣΔπ = −3,550,000 | 1.0.0's outputs, exactly |
+| Six months (`shock_duration_months` = 6) | Months 1–3: +250,000 (half hedged); months 4–6: +500,000; months 7–12: 0. ΣΔb = 2,250,000; fares 3 × 100,000 + 3 × 200,000 = 900,000; ΣΔπ = −1,350,000 | same |
+| From month 4 (`shock_start_month` = 4) | The hedges end in month 3, before the change: 9 × 500,000 = 4,500,000; fares in months 6–12: 7 × 200,000 = 1,400,000; ΣΔπ = −3,100,000; a `timing_within_horizon` warning | same |
+| The dollar +10 % for two months, no crude change, no hedges | q(m) = 1.1, 1.1, then 1: ΣΔb = 2 × 500,000 = 1,000,000; the run-rate fuel-cost change is 60,000,000 × 10 % = 6,000,000 a year | same |
+| From month 2, for three months | The crude path is in effect from month 2 to month 4 (`first_month` 2, `last_month` 4, kind `log`) | same |
+| From month 13 of a 12-month horizon | Refused (`start_within_horizon`) | refused |
+
+## In the Scenario Lab
+
+The Lab runs the latest runnable version, 1.1.0. Its scenario profile
+(`backend/app/scenario_lab/profiles.py`; [how profiles work](registry.md#scenario-lab-profiles)):
+
+| | |
+|---|---|
+| Responds to | Brent crude → `crude_oil_change`, jet fuel → `jet_fuel_margin_change` and USD/INR → `usd_change`, each as a percent change |
+| Lines | Operating costs: item `jet_fuel` from `fuel_cost_change`. Revenue: item `fuel_cost_recovery` (fare recovery of fuel costs) from `fare_recovery` |
+| Applies by default | when a company is chosen and the graph states that jet fuel *affects costs of* the company or its industry (in the sample network: air transport, the industry of Aerisca Airways and Skyvara Air) |
+| Without that statement | not applicable to that company, and including it by hand blocks the plan: `exposure_required` is true, since the model itself accepts only a company in air transport (S2) |
+| Cautions | With the currency model: leave jet fuel out of the US-dollar costs. With the crude-linked model: both respond to crude oil, so leave jet fuel out of the crude-linked costs |
+| Templates | *Crude oil shock on an airline*, *Jet fuel price shock*, *Oil, rupee and rates together* |

@@ -26,7 +26,7 @@ implementation is in [phase-4-plan.md](phase-4-plan.md); the full documentation 
 | **Derived and simulated outputs** | 19 outputs, each labelled: 7 `derived` (from the inputs alone, e.g. the baseline margin) and 12 `simulated` (under the scenario), plus 7 monthly series |
 | **Sample and hypothetical data** | The page's example is labelled hypothetical: round numbers chosen to be checked by hand, not market data or any airline's figures. The graph's airlines are fictional, and the relationship the model relies on is an illustrative model assumption. Test observations are synthetic and named so |
 | **Fabricated data** | **None.** No figure is invented. Missing inputs are refused, never filled in, and every default is an assumption labelled as one |
-| **Planned functionality** | Scenario drafts connected to models, run comparison and saved results (Phase 5); estimated parameters and Monte Carlo (Phase 9); retention and quotas with authentication (Phase 10) ([roadmap](../roadmap.md#simulation-follow-ups-before-or-alongside-phase-5)) |
+| **Planned functionality** | Scenario drafts connected to models, run comparison and saved results (Phase 5); estimated parameters and Monte Carlo (Phase 9); retention and quotas with authentication (Phase 10) ([roadmap](../roadmap.md#simulation-follow-ups)) |
 
 ## 1. Inspection of Phases 1–3
 
@@ -281,7 +281,7 @@ The full list is in [limitations](../simulation/limitations.md). In short:
   36).
 - The pathway layout is a simple layered layout without crossing minimisation.
 - Validating and running pay for the graph freshness check when its 30-second cache
-  expires ([graph follow-up 1](../roadmap.md#graph-follow-ups-before-or-alongside-phase-5)).
+  expires ([graph follow-up 1](../roadmap.md#graph-follow-ups)).
 - The browser review is manual; no end-to-end browser test runs in CI.
 
 ## 16. Recommendations for Phase 5

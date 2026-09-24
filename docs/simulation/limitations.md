@@ -24,12 +24,11 @@ this page covers the engine and the phase.
 | One model, one domain | Other questions (financing costs, other commodities) need their own models | New models in the same registry ([how](registry.md#adding-a-model)) |
 | Deterministic only | Uncertainty is shown by one-at-a-time sensitivity, never by distributions | Monte Carlo, with the stored `random_seed` (Phase 9) |
 | One-at-a-time sensitivity | No interactions between inputs; low and high are not a confidence interval | Two-way grids and probabilistic analysis |
-| Monthly time step, permanent step shocks | No intra-month timing, no seasonality, no temporary or phased shocks | Richer shock shapes in a later model version |
+| Monthly time step, step shocks | No intra-month timing, no seasonality, no phased shocks; since Phase 5 a change can start later and last a number of months (airline 1.1.0 and the Phase 5 models), at a constant size | Paths (gradual or decaying changes) in a later version |
 | One graph rule (T1) | Only crude → jet fuel travels through the graph; the currency and the jet fuel margin act directly | More rules as models need them; parameters never read from edges |
 | Coefficients are inputs | The engine never infers an elasticity or a lag from the graph or from data | Estimation from Phase 2 series, with its own provenance (Phase 9) |
 | Stored-observation inputs | Only the exchange rate can come from stored data, and only as the latest annual average; nothing is stored in this environment because the World Bank retrieval was blocked | More series (MoSPI, prices) as data sources arrive |
-| Scenario drafts are not connected | Phase 1 scenario drafts cannot be run; the Simulation page has its own inputs | The Scenario Lab (Phase 5) |
-| No comparison of runs | Runs are listed and reopened one at a time | Saved comparisons in the Scenario Lab (Phase 5) |
+| One model per run on the Simulation page | The Simulation page runs one model on its own inputs; composing models, versioned scenarios and comparisons are the Scenario Lab | Done in Phase 5: [the Scenario Lab](../scenario-lab/README.md) |
 
 ## Operations and security
 

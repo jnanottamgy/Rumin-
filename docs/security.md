@@ -3,8 +3,9 @@
 ## Posture
 
 RUMIN is a **local, single-user application**. It has **no authentication or
-authorisation**: anyone who can reach the API can read all stored data, create, change or
-delete scenarios, and add simulation runs and analyses. Run it on your own machine (the dev servers bind to `127.0.0.1`) and
+authorisation**: anyone who can reach the API can read all stored data, create scenarios
+and new versions of them, delete scenarios that were never executed, execute scenarios, and
+add simulation runs and analyses. Run it on your own machine (the dev servers bind to `127.0.0.1`) and
 do not expose it to a network until Phase 10 adds access control. **This build has not had
 a security review and is not production-secure.**
 
@@ -155,6 +156,33 @@ those licences when sharing a database or its exports.
   every run carries the note that it is a deterministic calculation from stated inputs,
   not a forecast or investment advice.
 
+### Scenario Lab (Phase 5)
+
+- **Nothing executable, nothing repaired.** A scenario is a typed specification: 1–10
+  changes on known variables within their published limits (at most four decimal places),
+  1–36 months, at most 10 models of known ids with at most 20 inputs and 20 assumptions
+  each, at most 5 stress cases (a multiple above 0 and at most 10, or values within the
+  variables' limits), names and notes of bounded length without control characters.
+  Unknown fields are refused. Every figure is an exact decimal checked against the model's
+  definition; nothing is clipped or filled in, and each problem is reported with its field.
+- **Bounded execution.** Executions run on a thread pool of 2 with at most 8 waiting
+  (`RUMIN_SCENARIO_MAX_CONCURRENT`, `RUMIN_SCENARIO_MAX_QUEUED`); a request beyond that is
+  refused with **429** before anything is stored. Each execution has a time limit (20 s,
+  `RUMIN_SCENARIO_TIMEOUT_SECONDS`) and can be cancelled; both are checked between stages
+  and models, and a failed, cancelled or timed-out execution stores nothing but its state
+  and reason. An execution interrupted by a server stop is marked failed at the next start.
+  Previews, plans, sensitivity analyses (≤ 8 quantities, ≤ 7 points, ≤ 60 evaluations and a
+  deadline) and comparisons (2–6 executions) are bounded in the same way.
+- **History cannot be rewritten.** Versions are immutable; a save from a stale version is
+  refused (409); an executed scenario cannot be deleted (409); executions, their model runs
+  and results never change once final; the model runs are protected by restricting foreign
+  keys. Verification re-executes from what an execution stored and stores nothing.
+- **No outbound requests.** Planning and executing read the graph and stored observations
+  from the database; nothing contacts a provider.
+- **Compressed responses.** Responses over 1 KiB are gzip-compressed when the client accepts
+  it. RUMIN returns no secrets and has no sessions, so compression does not expose a secret
+  to length-based attacks; this is to be reviewed with authentication (Phase 10).
+
 ### Secrets and supply chain
 
 - **No secrets exist yet**, and none are in the repository: `.env` files are git-ignored,
@@ -163,12 +191,13 @@ those licences when sharing a database or its exports.
   disposable databases. Future provider keys belong in the backend environment or a secret
   store (see [environment](environment.md#secrets)).
 - Dependencies are pinned by lock files (`backend/uv.lock`, `frontend/package-lock.json`)
-  and installed with `--frozen` / `npm ci`. **Phases 2, 3 and 4 added no dependencies**
-  (HTTP, CSV, gzip, hashing and exact decimals come from the Python standard library; the
-  charts, the graph algorithms, the layouts and the simulation engine are written in the
-  project). When Phase 4 was built (2026-09-23), `npm audit` reported no known
-  vulnerabilities, and `pip-audit` (run through `uvx`, not a project dependency) found
-  none in the locked Python dependencies.
+  and installed with `--frozen` / `npm ci`. **Phases 2, 3, 4 and 5 added no dependencies**
+  (HTTP, CSV, gzip, hashing, threads and exact decimals come from the Python standard
+  library, response compression from Starlette; the charts, the graph algorithms, the
+  layouts, the simulation engine and the Scenario Lab are written in the project). When
+  Phase 5 was built (2026-09-24), `npm audit` reported no known vulnerabilities, and
+  `pip-audit` (run through `uvx`, not a project dependency) found none in the locked Python
+  dependencies.
 - CI runs with read-only repository permissions.
 
 ## Not yet in place
@@ -178,12 +207,12 @@ These are deliberate gaps, listed so nobody assumes otherwise:
 | Gap | Planned |
 |---|---|
 | Authentication, user accounts, roles, per-user scenarios | Phase 10 |
-| Inbound rate limiting and abuse protection (outbound provider requests are throttled) | Phase 10 (and at the reverse proxy) |
+| Inbound rate limiting and abuse protection (outbound provider requests are throttled; scenario executions are bounded by the worker pool, 429 when full) | Phase 10 (and at the reverse proxy) |
 | An authenticated way to start ingestion or a graph build, or to edit relationships (with review and an audit trail) | Phase 10 |
 | A formal security review | Before any hosted or multi-user use |
 | TLS termination, deployment hardening, a Content-Security-Policy for the web client's HTML (it needs a hash for the small inline theme script in `index.html`) | Phase 10, with deployment |
 | Audit log of changes | With authentication |
-| Limits on how many simulation runs and analyses can be stored, and a retention policy for them | With authentication (Phase 10) |
+| Limits on how many simulation runs, scenario versions, executions and analyses can be stored, and a retention policy for them | With authentication (Phase 10) |
 | Automated dependency and secret scanning in CI (e.g. `pip-audit`, `npm audit`, secret scanning) | Next: cheap to add once the repository's CI is running |
 | Backups and retention policy | With a production database |
 

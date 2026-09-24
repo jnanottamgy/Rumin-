@@ -2,11 +2,12 @@
 
 | Suite | Tool | Tests | Runs against | Command |
 |---|---|---|---|---|
-| Backend | pytest | 596 | the FastAPI app, the ingestion pipeline, the graph build and the simulation engine with a real, migrated database (SQLite; PostgreSQL optional); providers answered by scripted responses | `uv run pytest` in `backend/` |
-| Frontend unit and pages | Vitest + Testing Library (jsdom) | 245 | the real route table, with `fetch` replaced by a fake API serving recorded responses | `npm test` in `frontend/` |
-| Integration | Vitest (Node) | 47 | a live API: the frontend's real service layer over HTTP | `npm run test:integration` with `RUMIN_API_URL` |
-| End-to-end smoke | `scripts/smoke_test.sh` | — | fresh database → migrate → seed → load the catalogue → import a synthetic price file → build the knowledge graph, rebuild it and fail if anything changed → start API → integration suite (including a simulation run checked against a hand calculation) | `make smoke` |
+| Backend | pytest | 712 | the FastAPI app, the ingestion pipeline, the graph build, the simulation engine and the Scenario Lab with a real, migrated database (SQLite; PostgreSQL optional); providers answered by scripted responses | `uv run pytest` in `backend/` |
+| Frontend unit and pages | Vitest + Testing Library (jsdom) | 264 | the real route table, with `fetch` replaced by a fake API serving recorded responses | `npm test` in `frontend/` |
+| Integration | Vitest (Node) | 49 | a live API: the frontend's real service layer over HTTP | `npm run test:integration` with `RUMIN_API_URL` |
+| End-to-end smoke | `scripts/smoke_test.sh` | — | fresh database → migrate → seed → load the catalogue → import a synthetic price file → build the knowledge graph, rebuild it and fail if anything changed → start API → integration suite (including a simulation run and a background scenario execution, both checked against hand calculations) | `make smoke` |
 | Graph benchmark | `backend/scripts/benchmark_graph.py`, `frontend/scripts/measure-graph.mjs` | — | synthetic networks up to 20,000 companies; not part of CI | see [performance](graph/performance.md#how-it-was-measured) |
+| Scenario Lab benchmark | `backend/scripts/benchmark_lab.py`, `frontend/scripts/measure-lab.mjs` | — | the reference scenario and a large one on SQLite and PostgreSQL; not part of CI | see [performance](scenario-lab/performance.md#how-it-was-measured) |
 
 **No automated test calls a real provider.** Provider behaviour is tested with scripted
 HTTP responses whose structure follows the providers' documentation and whose numbers are
@@ -29,12 +30,12 @@ the one production gets.
 | `test_health.py` | 5 | Liveness never touches the database; readiness is 200 when migrated and seeded, and 503 naming the failing check (migrations missing, no dataset, database unreachable) |
 | `test_reference_data.py` | 18 | Entities, industries, variables, relationships: ordering, kind filters, pagination and out-of-range limits, 404 envelope, malformed IDs rejected before querying, ISIC classifications, published scenario rules, relationships labelled as assumptions, the type registry |
 | `test_network.py` | 7 | Counts match the dataset, every edge connects existing nodes, structural links mirror entity records, degrees, the dataset labelled illustrative, undirected edges flagged, an empty but valid network without data |
-| `test_scenarios.py` | 36 | Create, read, list, replace, delete (a draft never has results); shape validation (blank, long or control-character names, 0 or 11 inputs, bad types, unknown fields such as `status`), non-finite numbers, invalid JSON, JSON content type required; domain rules (unknown or non-variable entities, duplicates, percent changes to rates, the five value limits); every problem reported at once; a rejected update changes nothing; oversized bodies, declared or chunked |
+| `test_scenarios.py` | 36 | Create, read, list, save a new version (the previous one kept), delete (a new scenario has no execution); shape validation (blank, long or control-character names, 0 or 11 inputs, bad types, unknown fields such as `status`), non-finite numbers, invalid JSON, JSON content type required; domain rules (unknown or non-variable entities, duplicates, percent changes to rates, the five value limits); every problem reported at once; a rejected update changes nothing; oversized bodies, declared or chunked |
 | `test_seed.py` | 19 | The sample passes every integrity rule and the honesty rules (labelled illustrative, companies fictional, real entities cite references, no evidence claimed, no numeric financial figures); each integrity rule catches its violation; unknown fields rejected; loading is idempotent and `--reset` replaces data |
 | `test_domain.py` | 21 | Every edge type is registered with a meaning; rates accept only percentage-point changes; limit checks, including decimal places despite binary floating point |
-| `test_errors_and_security.py` | 13 | Error envelope for unknown routes (404), wrong methods (405), crashes (500, no internals) and database outages (503); request IDs generated or safely reused; security headers and CSP; docs can be disabled; CORS allows configured origins and refuses others; unsafe CORS settings rejected |
-| `test_migrations.py` | 3 | Migrated schema equals the models exactly; downgrade to empty and upgrade again; foreign keys enforced on SQLite |
-| `test_openapi.py` | 5 | The committed `docs/api/openapi.json` matches the application; errors are documented with the shared envelope; scenario drafts still have no run endpoint; simulation runs cannot be replaced or deleted; **schema names are unique across modules** (two schemas with one name would silently rename a type in the contract) |
+| `test_errors_and_security.py` | 14 | Error envelope for unknown routes (404), wrong methods (405), crashes (500, no internals) and database outages (503); request IDs generated or safely reused; security headers and CSP; large responses gzip-compressed for clients that accept it (headers kept, small ones sent as they are); docs can be disabled; CORS allows configured origins and refuses others; unsafe CORS settings rejected |
+| `test_migrations.py` | 4 | Migrated schema equals the models exactly; downgrade to empty and upgrade again; foreign keys enforced on SQLite; **Phase 1 drafts become version 1 of themselves** in migration `0005` |
+| `test_openapi.py` | 5 | The committed `docs/api/openapi.json` matches the application; errors are documented with the shared envelope; scenario versions and executions are never rewritten (no `PUT`, `PATCH` or `DELETE` on them); simulation runs cannot be replaced or deleted; **schema names are unique across modules** (two schemas with one name would silently rename a type in the contract) |
 
 Phase 2 (financial data):
 
@@ -73,6 +74,18 @@ without a database. Every number asserted was calculated by hand
 | `test_simulation_model.py` | 78 | **The released definition's hash is pinned**; the hash notices any change; versions; inconsistent definitions refused; every equation documented and every statement cited; inputs labelled by kind of knowledge; every invalid input refused with its reason (17 cases); the cross-field rules; a stored observation used exactly with its provenance, and a missing or mismatched one **never filled in**; the graph-channel checks; explicit unit conversion; each mechanism checked by hand (the crude shock, its lag, β, the jet fuel margin, hedges and their expiry, hedges not covering the currency, fare recovery after its lag, the steady state); the bridge closes; an undefined margin refused; **Shapley contributions** (an interaction split evenly, three changes, always adding up); identical inputs give identical hashes, any change changes them, `10` and `10.00` hash the same; every step recorded; sensitivity (defaults, relative variation, points skipped not clipped, an unconfirmed relationship skipped, every limit, the evaluation cap, the deadline) |
 | `test_simulation_api.py` | 25 | Models listed and described with the graph relationship that confirms each rule; unknown models and versions; validation that explains every problem and stores nothing; a run stored with everything needed to explain it; **append-only and reproducible** (the same inputs twice: two runs, identical hashes; `PUT`, `PATCH` and `DELETE` answer 405); newest first; an impossible calculation refused and not stored; request sizes; no graph, the wrong airline, a stale graph, **a relationship the graph flagged is not followed**; the explanation and provenance; **a run reproduces from its snapshot after the graph is gone**; a stored exchange rate (ingested through the real pipeline from scripted responses) used with its provenance; sensitivity analyses stored and listed, custom and bounded; **a model changed under the same version refused (409)**; a deprecated version keeps its runs; the database refuses to delete history; the system's capabilities |
 
+Phase 5 (Scenario Lab). `tests/scenario_support.py` holds the reference scenario — "oil,
+rupee and rates" on the fictional Aerisca Airways with **hypothetical** round figures —
+and its hand-worked lines ([the example](scenario-lab/README.md#the-reference-example)).
+Every figure asserted was calculated by hand.
+
+| Module | Tests | Covers |
+|---|---|---|
+| `test_simulation_timing.py` | 14 | A change lasts from its start to its end month; a lag moves both ends of the window; windows outside the horizon refused; **a percentage-point change stays at its own node** and cannot travel along a log-linear rule; unset timing fields leave earlier definitions (and their hashes) unchanged; **airline 1.1.0 gives 1.0.0's results when changes are permanent**; a six-month change, a change starting in month four, a temporary dollar change as a monthly factor; the transmission record carries the window |
+| `test_simulation_models.py` | 23 | Every model defines the shared inputs identically, is timed and labels each output; foreign-currency exposure, floating-rate interest, crude- and gas-linked costs each **match their hand calculation**; a stronger currency reverses the signs; more dollar costs than revenue loses; pass-through and both benchmarks add up; a rate change recorded in percentage points; repricing after the horizon flagged; linked costs cannot exceed operating costs; inconsistent figures refused |
+| `test_scenario_lab.py` | 52 | The specification's hash ignores how numbers were typed and round-trips through storage; malformed scenarios and stress cases that break the change rules **refused, not clipped**; every profile matches its model and **no item is claimed twice**; templates built only on implemented models; applicability — by default only when the graph states the exposure, never without it, only when included without a company; every change must be modelled; the evidence and stored-data constraints; cautions for models touching the same costs; the companies tied to the changes; **the lines add the models' items as worked out by hand**; one model agrees with the Lab; interest alone holds operating profit at its baseline; stress cases reuse the models and assumptions; the pathway shows only what the engine computed; timeline events; stages recorded and every model run stored; the same version twice gives the same hashes; cancellation stores nothing; the time limit stops an execution; a version that cannot run fails with its plan; a final execution never runs again, and **a final state is never overwritten** (a run whose execution another process made final stops and stores nothing; recovery leaves an execution that finished in the meantime); the runner refuses work beyond its capacity, recovers executions left by a stopped server and drops queued work when stopped; the threaded runner; one-at-a-time sensitivity across models, points skipped and limits enforced; comparisons difference only like with like; a changed stored result is detected |
+| `test_scenario_lab_api.py` | 25 | Saving adds versions and never rewrites one (409 on a stale base version); duplicates remember their origin; an executed scenario cannot be deleted; malformed scenarios refused with every field; bounded request shapes; a plan explains itself and stores nothing; a preview computes without storing; an execution accepted (202) and followed to its results; every line and metric explained, and a line no model produces cannot be; pathways; a scenario that cannot run refused with nothing stored; results only for a completed execution; a final execution cannot be cancelled; **429 beyond the worker pool**; an execution reproducible, its runs ordinary Phase 4 runs; sensitivity stored and listed; comparisons without ranking; templates; the system's capabilities |
+
 Run against PostgreSQL (use an empty, disposable database — the suite drops and recreates
 the schema):
 
@@ -88,25 +101,40 @@ from the running API (`tests/fixtures/*.json`) and records every request, so tes
 exactly what the app sent. The fixtures are themselves checked against the OpenAPI
 contract, so they cannot silently drift from the API.
 
+A wait (`findBy…`, `waitFor`) allows 3 seconds and a test 15 (`tests/setup.ts`,
+`vite.config.ts`): a full page renders in jsdom in a few hundred milliseconds, and several
+times that on a busy CI runner. The longer limits change nothing when a page renders and
+still fail when it does not; the suite passes with the machine's CPUs saturated.
+
 The Phase 2 fixtures (`tests/fixtures/data/`) were captured the same way from two
 databases: one filled through the real pipeline with **synthetic** responses and a
 synthetic price file (every name says "SYNTHETIC"), and one holding the real series
 catalogue after a World Bank run that failed because the provider was unreachable.
 
+The Phase 5 fixtures (`tests/fixtures/lab/`) are written by
+`backend/scripts/capture_lab_fixtures.py`, which builds a fresh database and drives the API
+in-process: the templates, the airline template before any figure, the reference scenario
+saved, executed, explained, analysed and verified, a second scenario to compare with, and the
+definitions of the three models the reference includes. Nothing in them is edited by hand;
+the one assembled fixture, the reference preview, is made of the captured plan, results and
+pathway and checked against the contract like the others.
+
 | Area | Tests | Covers |
 |---|---|---|
 | `lib/apiClient` | 12 | Success, error envelope → typed `ApiError`, non-JSON, unreachable, timeout, caller cancellation, accepted non-2xx, 204, base URL |
-| `lib/contract` | 18 | Fixtures conform to the contract, the simulation fixtures included (model, validation reports, run, explanation, provenance, verification, sensitivity, lists); the checker catches missing fields, wrong types, bad enum values, nested unions |
+| `lib/contract` | 34 | Fixtures conform to the contract — the simulation fixtures (model, validation reports, run, explanation, provenance, verification, sensitivity, lists) and the Scenario Lab fixtures (templates, scenario and library, execution and history, results, pathway, explanation, sensitivity, verification, comparison, both previews, the included models' definitions); the checker catches missing fields, wrong types, bad enum values, nested unions |
 | `lib/decimal` | 3 | Exact grouping of every digit, rounding for display half away from zero on the digits themselves (BigInt), plain-decimal recognition |
 | `data/chartMath` | 6 | Nice ticks; **no line drawn across a missing value or an absent period**; weekends contiguous but long trading gaps broken; nearest period; calendar-aligned time ticks |
 | `hooks/useApiResource` | 6 | Loading → success, request sharing, error and reload, refresh keeps data, no cross-key data, data from a save |
 | `network/model` | 15 | Integrity validation (dangling edges, duplicates, self-loops, unknown types, malformed records), indexes, neighbourhoods, filters, search |
 | `network/layout` | 9 | Finite, deterministic positions (independent of input order), column order, spacing, empty graph, portrait transpose |
 | `network/panZoom` | 7 | Zoom keeps the cursor point fixed, limits, fit-to-view maths |
-| `scenarios/scenarioModel` | 29 | Number parsing, published limits, per-field validation, payload conversion, server-error mapping, editor state, unsaved-changes tracking |
+| `scenarioLab/draft` | 11 | A saved scenario read into the builder's draft and written back unchanged; a fall kept negative and nothing rounded; empty figures left out, never filled in; a stored exchange rate sent by its series; a non-integer month sent as typed for the API to report; updates name their base version; what counts as an unsaved change; the reducer's limits (10 changes, 5 stress cases); model modes, inputs and assumptions edited independently; stress cases by scale or values; the browser checks presence only, never a domain rule |
+| `scenarioLab/pathwayLayout` | 9 | On the captured reference pathway: four columns with metrics under the lines; every step placed except graph context, whose links go to the lane header; every computed link drawn once; steps inside their model's lane and lanes apart; no overlaps in a column; lines in accounting order; fits the frame down to a minimum node width; a collapsed lane re-routes its links and hides the ones inside; a step's chain upstream and downstream |
+| `scenarioLab/format` | 7 | Compact and full money with signs; changes in the variable's unit (%, pp, its own); metrics and their changes; step values by unit; model unit identifiers read as a reader expects; stage durations from the server's timestamps |
 | `app/navigation` | 8 | Landing, navigation between modules, 404, live workspace status, AI Analyst inert, System capabilities, theme persistence |
 | `pages/universe` | 11 | Exactly the API's nodes and links drawn; selection highlights neighbours and dims the rest; Escape and close reset; keyboard selection; search; filters never leave dangling links; table view; phone layout; inconsistent data refused; unreachable API and retry |
-| `pages/scenarioLab` | 9 | Validation before sending (no request made), published limits, exact save payload, "nothing was simulated", server 422 mapped to fields, network failure, worked example, edit and delete, missing scenario |
+| `pages/scenarioLab` | 14 | Against fixtures captured from a real backend: the library — templates with names and units from the API, the ones not offered with the reason, saved scenarios with their headline; comparing two executions, differenced only like with like and not ranked; a saved scenario opened on its stored execution (headline, baseline against scenario, cash flow listed as not modelled, reading writes nothing but the unstored preview); the pathway drawn from what the engine computed, **graph context listed apart with the causation caveat**, a relationship's evidence, β and lag, Escape, not-modelled relationships, the list view; the month replay (values per month, dimmed until reached, metrics "Horizon only"); plan, months, stress (changes in their units, not ranked) and explanation tabs; sensitivity labelled as not Monte Carlo; verification; an edit previewed on the server and labelled, then discarded back to the saved version with nothing saved; an execution followed through the server's stages until final, polling then stopping; a failed execution explained; a missing scenario and an unreachable API; a template's missing figures shown as notes until a save is attempted |
 | `pages/dashboard` | 4 | Loading state, live figures from the API, preview → Universe link, unreachable API and recovery |
 | `pages/dataExplorer` | 5 | A failed retrieval explained with counts and the command to retry; no bundled prices and how to import; datasets with licence links and attribution; recent runs; stored series with rounded latest values, search, country and "with values" filters |
 | `pages/economicSeries` | 6 | Honest labels (historical, sample, flagged); freshness facts; reading the chart from the keyboard, gaps included; the table shows the published literal (`14.250000`); revision history requested and shown; source, licence, review range as an assumption, quality issues; a failed retrieval explained; a missing series |
@@ -127,13 +155,13 @@ Runs the frontend's own service layer (`services/api.ts`) against a live API —
 
 - every response type matches the committed OpenAPI contract;
 - the live network passes the frontend's integrity check and yields a finite layout;
-- a scenario the Scenario Lab considers valid round-trips (create, read, list, replace,
-  delete, then 404);
+- a template's starting point, read into the Lab's draft, round-trips (create, read,
+  list, a new version that leaves version 1 intact, a stale edit refused with 409, delete,
+  then 404);
 - **eight invalid inputs** (a fall of 100 % or more, above the maximum, zero, too many
   decimals, a rate moved more than 25 points, a percent change on a rate, an unknown
-  variable, the same variable twice) plus a blank name are each rejected **both** by the
-  browser's validation and by the server, and the server's error lands on the same form
-  field;
+  variable, the same variable twice) are each refused by the server on the field the
+  builder shows the message on;
 - unknown fields and malformed JSON get the standard error envelope; CORS admits the dev
   origin and refuses others.
 
@@ -159,8 +187,16 @@ reproduced exactly, and identical inputs giving identical hashes; a stored sensi
 analysis; every invalid input named with nothing stored; no way to replace or delete a
 run.
 
-It creates and deletes scenarios and adds simulation runs, so point it only at a
-disposable database — which is what `scripts/smoke_test.sh` provides.
+Phase 5 adds three Scenario Lab tests to `api.integration.test.ts`: the templates are built
+only on registered models, with demand and supply-chain shocks listed as not offered; a
+template planned before its figures exist computes nothing; and the reference scenario,
+built through the builder's own draft code, **executed in the background** — followed
+through its four recorded stages to `completed`, its lines matching the hand calculation
+(profit before tax −6,700,000), its pathway, explanation and reproducibility check — after
+which the executed scenario cannot be deleted (409).
+
+It creates scenarios (deleting those it can) and adds simulation runs and executions, so
+point it only at a disposable database — which is what `scripts/smoke_test.sh` provides.
 
 ## Manual and visual checks
 
@@ -178,7 +214,11 @@ interactions ([UI review](graph/explorer.md#ui-quality-review)). For Phase 4, th
 Simulation page was checked at 1440 × 900 in both themes and at 390 × 844, with
 screenshots after each change: the form, checking and running, every results tab, the
 pathway's motion and reduced motion, keyboard use of the tabs and the monthly chart, and a
-stored run reopened ([what the review changed](simulation/preview.md#review)). These
+stored run reopened ([what the review changed](simulation/preview.md#review)). For Phase 5,
+every Scenario Lab screen — the library, a template before its figures, a saved scenario on
+its stored execution, the inspector, the month replay and every tab — was shot at 1440 ×
+1100 in both themes and at 390 × 900, reviewed and fixed until it read correctly; a script
+checked that no Lab page scrolls sideways at seven widths from 360 to 1,920 px. These
 checks are not automated yet (see [known-limitations.md](known-limitations.md)).
 
 ## Conventions
@@ -194,5 +234,9 @@ checks are not automated yet (see [known-limitations.md](known-limitations.md)).
   Phase 4 examples: three schema names collided with existing ones, which silently renamed
   types in the contract; a stored exchange rate was refused for having more decimal places
   than a typed value may; a numeric string longer than the length limit got through by
-  being read as a whole number.
+  being read as a whole number. Phase 5 examples: stopping the runner cancelled queued work
+  without freeing its places; stress validation reported a change's own error twice; the
+  pathway measured its own minimum width and never shrank to its frame; choosing a link in
+  the pathway's details lost focus, so Escape stopped working; a model definition that failed
+  to load showed "Loading…" for ever.
 - Never weaken a test to make it pass; never skip one.

@@ -8,8 +8,12 @@ Phase 3 added the knowledge graph, built from those records by another command a
 in the same database ([the graph architecture](graph/architecture.md)). Phase 4 added the
 simulation engine: registered, versioned models run through the API, reading the graph and
 stored data, with every run stored append-only in the same database
-([the simulation architecture](simulation/architecture.md)). Later phases — the Scenario
-Lab (5), the AI analyst (7), the 3D universe (8) — extend it without restructuring it.
+([the simulation architecture](simulation/architecture.md)). Phase 5 added the Scenario
+Lab: versioned scenarios executed through the model registry on a bounded background worker
+pool, with their results, pathways, explanations, sensitivity analyses and comparisons
+([the Scenario Lab architecture](scenario-lab/architecture.md)). Later phases — financial
+intelligence (6), the AI analyst (7), the 3D universe (8) — extend it without restructuring
+it.
 
 ```mermaid
 flowchart LR
@@ -17,11 +21,13 @@ flowchart LR
         UI["React web client<br/>(Vite build, static files)"]
     end
     subgraph API["FastAPI application"]
-        MW["Middleware<br/>request ID · security headers<br/>body limit · CORS · access log"]
+        MW["Middleware<br/>request ID · security headers<br/>body limit · CORS · gzip · access log"]
         R["Routes /health, /api/v1/*"]
         S["Services<br/>queries, network projection,<br/>scenario rules"]
         D["Domain<br/>enums, relationship registry,<br/>scenario limits"]
         SIM["Simulation engine<br/>registered models · validation ·<br/>propagation · sensitivity"]
+        LAB["Scenario Lab<br/>plan · execute · aggregate ·<br/>pathways · explain · compare"]
+        RUN["Execution runner<br/>bounded thread pool<br/>(2 running, 8 queued, 20 s)"]
     end
     DB[("SQLite (dev)<br/>PostgreSQL (prod)")]
     SEED["Seed loader<br/>(validated JSON dataset)"]
@@ -40,6 +46,10 @@ flowchart LR
     UI -- "JSON over HTTP<br/>(same origin via proxy)" --> MW --> R --> S
     S --> D
     S --> SIM
+    S --> LAB
+    LAB --> RUN
+    RUN -- "runs each model" --> SIM
+    LAB -- "versions, executions,<br/>results (append-only once final)" --> DB
     SIM -- "reads graph + stored data;<br/>stores runs (append-only)" --> DB
     S -- "SQLAlchemy 2.0" --> DB
     SEED --> DB
@@ -55,9 +65,10 @@ flowchart LR
 
 The API never contacts a provider and never writes the graph: only the command line does,
 so no anonymous HTTP client can make RUMIN send requests or change data it did not ask for
-(there is no authentication yet). The graph API is read-only. The API's writes are scenario
-drafts and, since Phase 4, simulation runs and sensitivity analyses, which are append-only
-and never change the data or the graph they read.
+(there is no authentication yet). The graph API is read-only. The API's writes are
+scenarios and their versions (a save never overwrites: it adds a version), and — since
+Phase 4 — simulation runs, scenario executions and sensitivity analyses, which are
+append-only once final and never change the data or the graph they read.
 
 ## Backend (`backend/app`)
 
@@ -67,12 +78,13 @@ Layered so that each layer depends only on the ones below it:
 |---|---|---|
 | HTTP | `api/` | Routes, parameters, status codes, OpenAPI descriptions. No SQL, no business rules. |
 | Contract | `schemas/` | Pydantic models for every request and response: validation, serialisation, the OpenAPI schema. |
-| Services | `services/` | Queries and use cases: reference data, the network projection, scenario validation and persistence, system status, the graph's read logic (limits, filters, explanations) and the simulation API (runs, explanations, verification, sensitivity). |
+| Services | `services/` | Queries and use cases: reference data, the network projection, scenarios and their versions, the Scenario Lab (plans, previews, executions, results, pathways, explanations, sensitivity, comparisons, templates), system status, the graph's read logic (limits, filters, explanations) and the simulation API (runs, explanations, verification, sensitivity). |
 | Domain | `domain/` | Pure definitions: enumerations, the relationship-type registry (what each edge type means and may connect), the graph's node, edge and evidence-status registry, scenario change limits. |
 | Persistence | `models/`, `db/` | SQLAlchemy ORM models, session management, portable column types (UTC datetimes, exact decimals), the seed loader. |
 | Ingestion | `ingestion/` | Providers, HTTP with throttling and retries, normalisation, quality rules, persistence with revisions, job tracking, the command line ([details](data/architecture.md)). |
 | Graph | `graph/` | The knowledge graph: construction rules, entity resolution, validation, persistence, the build command, algorithms (BFS, paths, components) and the typed read interface the API and the simulation engine use ([details](graph/architecture.md)). |
-| Simulation | `simulation/` | The simulation engine: the versioned model registry and the first model, exact-decimal arithmetic, units, input validation, controlled propagation through confirmed graph relationships, execution with every step recorded, Shapley contributions, sensitivity analysis, explanations and append-only persistence ([details](simulation/architecture.md)). |
+| Simulation | `simulation/` | The simulation engine: the versioned model registry and five models, exact-decimal arithmetic, units, input validation, controlled propagation through confirmed graph relationships, timed changes and percentage-point shocks, execution with every step recorded, Shapley contributions, sensitivity analysis, explanations and append-only persistence ([details](simulation/architecture.md)). |
+| Scenario Lab | `scenario_lab/` | The scenario specification and its validation, the planner (which models apply and why), scenario profiles, the executor and its stages, the bounded runner, the Lab's aggregation equations, pathways, explanations, one-at-a-time sensitivity, comparison and templates ([details](scenario-lab/architecture.md)). |
 | Cross-cutting | `core/` | Settings, logging, error envelope and handlers, middleware. |
 
 Request lifecycle: the **middleware** assigns a request ID, enforces the body-size limit
@@ -92,9 +104,14 @@ uvicorn.
   direction, whether it has a polarity, and which entity kinds it may connect. The seed
   loader, the API (`/api/v1/relationship-types`) and the frontend legend all read it.
 - **Scenario limits** — `domain/scenario_rules.py` defines what a variable accepts. The
-  server enforces the rules and publishes them on each variable (`scenario_rules`), and
-  the Scenario Lab validates with the published values. The integration tests prove that
-  browser and server reject the same inputs on the same fields.
+  server enforces the rules and publishes them on each variable (`scenario_rules`); the
+  Scenario Lab shows the published range and the server's message on the field it
+  concerns, and applies no domain rule of its own. The integration tests prove that the
+  server refuses each invalid input on the field the builder shows it.
+- **Scenario profiles** — `scenario_lab/profiles.py` declares, for each model, the
+  variables it accepts, the line items it contributes to (from a closed list, so no two
+  models can claim the same item) and the graph exposure that makes it apply. The planner,
+  the aggregation, the templates and the pathway all read it.
 - **Graph vocabulary** — `domain/graph_types.py` defines the 9 node types, 18 edge types
   (meaning, endpoints, direction, allowed evidence statuses, caveat) and 4 evidence
   statuses. The build validates against it and the API serves it (`/api/v1/graph/types`,
@@ -121,7 +138,7 @@ pages).
 | `features/network/` | Everything about the financial network (below) |
 | `features/graph/` | The Knowledge Graph explorer: its state and history, the view model, deterministic layouts, encoding, canvas and panels ([details](graph/explorer.md)) |
 | `features/data/` | The time-series chart and its arithmetic, exact-value tables, provenance, freshness and quality components |
-| `features/scenarios/` | Scenario editor state and rules (pure), the editor and its context panel |
+| `features/scenarioLab/` | The Scenario Lab: the draft model and its conversion to the API body (pure), the builder, the live preview and execution hooks, the pathway layout (pure) and canvas, the results panel, execution strip, timeline and the analysis, explanation, history and comparison views ([details](scenario-lab/interface.md)) |
 | `features/simulation/` | The Simulation preview: the input form built from a model definition, exact-decimal formatting, the pathway layout, the result tables and charts, provenance and sensitivity panels ([details](simulation/preview.md)) |
 | `components/` | Shared UI primitives |
 | `hooks/` | `useApiResource` (shared request cache), element size, media queries |
@@ -189,4 +206,8 @@ revision history. Review ranges on series are labelled as assumptions. Simulatio
 (Phase 4) are stored in their own tables: every input carries what it is (scenario input,
 historical data, the user's figure, assumption or setting) and where it came from, and
 every output is `derived` (from the inputs alone) or `simulated` (under the scenario),
-shown with the simulated-output badge the UI already had.
+shown with the simulated-output badge the UI already had. Scenario Lab executions (Phase
+5) keep the same labels: a scenario's changes are scenario inputs, its baselines are the
+user's figures held constant (inputs, not forecasts), every scenario value is simulated,
+and graph relationships the Lab only cites are served as `context_only`, apart from the
+ones the engine propagated along.

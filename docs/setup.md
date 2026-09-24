@@ -122,6 +122,40 @@ The run's change in operating profit is −3,550,000 INR over 12 months
 ([worked by hand](simulation/airline-fuel-cost.md#worked-example-checked-by-hand)). See
 [the simulation engine](simulation/README.md) and [the API](api.md#simulation).
 
+### Scenario Lab (Phase 5)
+
+Nothing else to load: migration `0005` creates the tables (and turns any Phase 1 drafts
+into version 1 of themselves), the five models are registered in code, and executions run
+on a background pool inside the API process (settings in
+[environment variables](environment.md#backend)). **Build the knowledge graph first**: the
+graph's stated exposures decide which models apply to a company, and the crude → jet fuel
+relationship carries a crude change to the airline model.
+
+In the browser, open <http://127.0.0.1:5173/scenarios>, start from a template (for example
+*Oil, rupee and rates together*), choose the company, enter the figures the plan asks for —
+hypothetical ones are fine — and **Save and execute**. The execution's stages, the
+pathway, the results and every tab are then available, and the execution has its own
+address.
+
+Through the API, with the backend tests' reference scenario (`backend/tests/scenario_support.py`,
+hypothetical round figures) saved as `reference.json`:
+
+```bash
+API=http://127.0.0.1:8000/api/v1
+curl -s $API/scenario-templates                                   # what can be started
+curl -s -X POST $API/scenarios/plan -H 'Content-Type: application/json' -d @reference.json
+curl -s -X POST $API/scenarios/preview -H 'Content-Type: application/json' -d @reference.json
+curl -s -X POST $API/scenarios -H 'Content-Type: application/json' -d @reference.json
+curl -s -X POST $API/scenarios/<scenario id>/executions -H 'Content-Type: application/json' -d '{}'
+curl -s $API/scenario-executions/<execution id>                   # poll: queued → … → completed
+curl -s $API/scenario-executions/<execution id>/results
+curl -s -X POST $API/scenario-executions/<execution id>/verify    # re-execute, compare hashes
+```
+
+Its profit before tax changes by −6,700,000 INR over 12 months
+([worked by hand](scenario-lab/README.md#the-reference-example)). See
+[the Scenario Lab](scenario-lab/README.md) and [the API](api.md#scenario-lab).
+
 ## 3. Frontend
 
 ```bash

@@ -20,13 +20,14 @@ Regenerate after changing an endpoint or schema: `make api-types` (or
 | Versioning | Application endpoints live under `/api/v1`. Breaking changes will get a new prefix (`/api/v2`); additive changes (new fields, new endpoints) do not. Health probes are unversioned, as infrastructure expects. |
 | Format | Requests and responses are JSON (`application/json`). Request bodies with any other content type are rejected. |
 | Unknown fields | Request bodies with fields the contract does not define are rejected (422), so typos never pass silently. |
-| IDs | Reference-data IDs are readable slugs with a kind prefix: `co_…`, `ind_…`, `cty_…`, `var_…`, `rel_…` (pattern `^[a-z]{2,4}_[a-z0-9_]{2,59}$`). Datasets, series and instruments have lowercase slugs (`worldbank-wdi`, `wb-ind-fp-cpi-totl-zg`, `xnse-reliance`). Scenario and ingestion-job IDs are UUIDs. Knowledge-graph keys are `type:record-id` for nodes and `e-` plus 16 hex characters for edges ([below](#knowledge-graph)). Path and query IDs are validated against their pattern (422 otherwise). |
-| Data values | Observation values, prices and review ranges are **exact decimal strings in plain notation** (`"5.649"`, `"0.000000000000000001"`), never JSON numbers, so no digit is lost to floating point. A missing value is `null`, never `0`. |
+| IDs | Reference-data IDs are readable slugs with a kind prefix: `co_…`, `ind_…`, `cty_…`, `var_…`, `rel_…` (pattern `^[a-z]{2,4}_[a-z0-9_]{2,59}$`). Datasets, series and instruments have lowercase slugs (`worldbank-wdi`, `wb-ind-fp-cpi-totl-zg`, `xnse-reliance`). Scenario, scenario-execution, sensitivity-analysis and ingestion-job IDs are UUIDs; scenario versions are numbered 1, 2, 3 … within their scenario; scenario templates have lowercase slugs (`crude_oil_airline`). Knowledge-graph keys are `type:record-id` for nodes and `e-` plus 16 hex characters for edges ([below](#knowledge-graph)). Path and query IDs are validated against their pattern (422 otherwise). |
+| Data values | Observation values, prices, review ranges and the numbers of simulation and Scenario Lab responses (scenario changes included) are **exact decimal strings in plain notation** (`"5.649"`, `"0.000000000000000001"`), never JSON numbers, so no digit is lost to floating point. A missing value is `null`, never `0`. Requests to the simulation and scenario endpoints may send a number as a decimal string or a JSON number. |
 | Dates | Calendar dates (periods, trade dates, the provider's last update) are `YYYY-MM-DD`; they have no time zone. |
 | Pagination | List endpoints take `limit` (1–500, default 100) and `offset` (default 0) and return `{items, total, limit, offset}`. |
 | Time | Timestamps are ISO 8601 in UTC, e.g. `2026-09-23T11:46:58.387307Z`. |
-| Knowledge labels | Relationships carry `epistemic_category: "assumption"` and `evidence_level`; scenario shocks carry `epistemic_category: "scenario_input"`; economic series carry `epistemic_category: "observation"`. Simulation inputs carry `knowledge` (`scenario_input`, `historical_data`, `user_input`, `assumption`, `setting`) and `source` (`user`, `default`, `stored_observation`); simulation outputs carry `kind` (`derived` or `simulated`). |
+| Knowledge labels | Relationships carry `epistemic_category: "assumption"` and `evidence_level`; scenario shocks carry `epistemic_category: "scenario_input"`; economic series carry `epistemic_category: "observation"`. Simulation inputs carry `knowledge` (`scenario_input`, `historical_data`, `user_input`, `assumption`, `setting`) and `source` (`user`, `default`, `stored_observation`); simulation outputs carry `kind` (`derived` or `simulated`). Scenario Lab lines, metrics, months and stress cases carry `knowledge: "simulated"`. |
 | Request IDs | Every response has an `X-Request-ID` header (a safe incoming value is reused, otherwise one is generated). Error bodies repeat it, and every log line for the request includes it. |
+| Compression | A response body of 1 KiB (1,024 bytes) or more is gzip-compressed when the request's `Accept-Encoding` includes `gzip` (`Content-Encoding: gzip`, `Vary: Accept-Encoding`); smaller responses, and clients that do not accept gzip, get the body as it is. |
 
 ## Endpoints
 
@@ -41,11 +42,11 @@ Regenerate after changing an endpoint or schema: `make api-types` (or
 | `GET /api/v1/relationships` | Curated relationships; filter with `?type=` and/or `?entity_id=` (either end). | 200 |
 | `GET /api/v1/relationship-types` | The relationship-type registry: labels, direction, polarity, allowed entity kinds. | 200 |
 | `GET /api/v1/network` | Graph projection for visualisation: nodes (entity + degree), economic edges, structural links derived from entity records, relationship types, dataset summary. | 200 |
-| `GET /api/v1/scenarios` | Saved scenario drafts, most recently updated first. | 200 |
-| `POST /api/v1/scenarios` | Create a draft. Returns it with a `Location` header. | 201 |
-| `GET /api/v1/scenarios/{scenario_id}` | One scenario. | 200 / 404 |
-| `PUT /api/v1/scenarios/{scenario_id}` | Replace a scenario's name, description and shocks. | 200 / 404 |
-| `DELETE /api/v1/scenarios/{scenario_id}` | Delete a scenario. | 204 / 404 |
+| `GET /api/v1/scenarios` | Scenarios, most recently updated first: each with its newest version's changes and company, its latest execution (or `null`) and its number of executions. Paginated. | 200 |
+| `POST /api/v1/scenarios` | Create a scenario: stores version 1 and simulates nothing. Returns it with a `Location` header. | 201 / 422 |
+| `GET /api/v1/scenarios/{scenario_id}` | One scenario: its newest version's content, every version (newest first), its latest execution and number of executions. | 200 / 404 |
+| `PUT /api/v1/scenarios/{scenario_id}` | Save the body as a **new version**; earlier versions never change. A body equal to the newest version adds none; a stale `base_version` is refused ([below](#versions)). | 200 / 404 / 409 / 422 |
+| `DELETE /api/v1/scenarios/{scenario_id}` | Delete a scenario that has never been executed; an executed one is kept (409). | 204 / 404 / 409 |
 | `GET /api/v1/system` | Service version and environment, database and migration state, reference-dataset provenance and counts, stored provider data (`data`: series, observations, instruments, price rows, flagged values, last job), and capabilities marked available or planned (with the phase). | 200 |
 
 **Provider data (Phase 2, read-only)**
@@ -72,9 +73,10 @@ There is deliberately **no endpoint that starts ingestion**: without authenticat
 would let anyone make the server call providers and write data. Ingestion runs from the
 command line ([ingestion](data/ingestion.md)); `POST /api/v1/ingestion-jobs` answers 405.
 
-Scenario **drafts** still cannot be run: they have `status: "draft"` and `latest_run:
-null` until the Scenario Lab connects them to the engine (Phase 5). Models are run through
-the separate, append-only [simulation endpoints](#simulation).
+A scenario's versions, plans, previews and executions, comparisons of executions and
+scenario templates are listed under [Scenario Lab](#scenario-lab) (Phase 5). An execution
+runs a scenario version through the model registry and stores each model's run as an
+ordinary run of the [simulation endpoints](#simulation).
 
 ### Structural links in `/api/v1/network`
 
@@ -274,18 +276,26 @@ Detail types: `unknown_input`, `required`, `input_range`, `unit_choice`,
 
 ## Scenarios
 
-A scenario is a name, an optional description and 1–10 **shocks** — changes to economic
-variables:
+A scenario is a stable identity with immutable, numbered **versions**. The body of
+`POST /scenarios`, `PUT /scenarios/{id}`, `POST /scenarios/plan` and
+`POST /scenarios/preview` is one version's content: a name, an optional description and
+1–10 **shocks** — changes to economic variables — and, optionally, the company, figures,
+timing, models, assumptions, constraints, stress cases and note that the
+[Scenario Lab](#scenario-lab) uses (field by field in the
+[data dictionary](data-dictionary.md#scenario-content)). The smallest body:
 
 ```json
 {
   "name": "Oil price shock",
   "description": "Brent crude rises 30 %.",
   "shocks": [
-    { "variable_id": "var_brent_crude", "change_type": "percent_change", "value": 30, "note": "" }
+    { "variable_id": "var_brent_crude", "change_type": "percent_change", "value": "30", "note": "" }
   ]
 }
 ```
+
+A value may be sent as a decimal string or as a JSON number (`30`); it is returned as an
+exact decimal string (`"30"`).
 
 What each variable accepts is published on the variable itself (`GET /api/v1/variables`),
 so a client can validate before sending, exactly as the server will:
@@ -304,38 +314,539 @@ so a client can validate before sending, exactly as the server will:
 | Other `absolute_change` values within ±1,000,000 of the variable's unit | Guards against nonsense input. |
 | A change of zero is rejected | It has no effect; remove the shock instead. |
 | At most 4 decimal places | Values are stored as `NUMERIC(14, 4)`; nothing is rounded silently. |
-| Each variable at most once per scenario | Two changes to one variable are ambiguous; combine them. |
+| Each variable at most once per version | Two changes to one variable are ambiguous; combine them. |
 | Names 1–120 characters, no control characters; description ≤ 2,000; note ≤ 500 | Storage and display limits. |
 
-Example exchange:
+Every other field and its limits are in the
+[data dictionary](data-dictionary.md#scenario-content).
+
+`POST /api/v1/scenarios` answers `201 Created` with a `Location` header and the scenario,
+which has `latest_execution: null` and `executions: 0` until it is executed. Example: the
+reference scenario of the backend tests (`backend/tests/scenario_support.py`) after one
+execution, abridged from `frontend/tests/fixtures/lab/scenario.json` (captured from a
+running backend). Aerisca Airways is a fictional company and its figures are hypothetical
+round numbers.
 
 ```http
-POST /api/v1/scenarios
+GET /api/v1/scenarios/f5a5b9a1-87b4-4fe8-8dc3-dc2979e4ba8e
+```
+
+```json
+{
+  "id": "f5a5b9a1-87b4-4fe8-8dc3-dc2979e4ba8e",
+  "name": "Oil, rupee and rates on Aerisca",
+  "description": "",
+  "status": "draft",
+  "template_id": null,
+  "current_version": 1,
+  "shocks": [
+    { "variable_id": "var_brent_crude", "change_type": "percent_change", "value": "20",
+      "note": "", "epistemic_category": "scenario_input" },
+    { "variable_id": "var_usd_inr", "change_type": "percent_change", "value": "5", "…": "…" },
+    { "variable_id": "var_rbi_repo_rate", "change_type": "absolute_change", "value": "0.5", "…": "…" }
+  ],
+  "spec": {
+    "entity": "company:co_aerisca_airways",
+    "timing": { "start_month": 1, "duration_months": 0, "horizon_months": 12 },
+    "company": { "reporting_currency": "INR", "annual_revenue": "300000000",
+                 "annual_operating_costs": "250000000" },
+    "markets": { "fx_rate": { "value": "80", "unit": null, "source": null, "series_id": null } },
+    "models": {
+      "floating_rate_interest": { "mode": "include", "inputs": { "…": "…" },
+                                  "assumptions": { "repo_repricing_lag": "3" } },
+      "…": "…"
+    },
+    "constraints": { "evidence": "any", "stored_market_data": false },
+    "stress_cases": [
+      { "name": "Half", "scale": "0.5", "changes": {} },
+      { "name": "Double", "scale": "2", "changes": {} }
+    ]
+  },
+  "versions": [
+    { "version": 1, "name": "Oil, rupee and rates on Aerisca",
+      "spec_hash": "c868ca0c9d2786aed631c6c651b935d099a22c88318a729d5a5e016a99725615",
+      "note": "", "derived_from": null, "created_at": "2026-09-24T03:27:57.079462Z",
+      "executions": 1 }
+  ],
+  "latest_execution": {
+    "id": "348bd1e1-ea11-4851-bbf6-78389f1512c1",
+    "version": 1,
+    "status": "completed",
+    "headline": [
+      { "id": "profit_before_tax", "label": "Profit before tax", "change": "-6700000",
+        "percent_change": "-17.6315789474", "currency": "INR" },
+      { "id": "operating_profit", "label": "Operating profit", "change": "-6325000",
+        "percent_change": "-12.65", "currency": "INR" }
+    ],
+    "models": ["airline_fuel_cost", "fx_exposure", "floating_rate_interest"],
+    "error": null,
+    "…": "…"
+  },
+  "executions": 1,
+  "created_at": "2026-09-24T03:27:57.078245Z",
+  "updated_at": "2026-09-24T03:27:57.078250Z"
+}
+```
+
+## Scenario Lab
+
+Versioned scenarios executed through the model registry (Phase 5). For a scenario version
+the Lab plans which registered models apply and why, runs each of them through the Phase 4
+engine, stores each model's run as an ordinary [simulation run](#simulation), and combines
+the models into lines, metrics, months, an impact pathway and stress cases. Results,
+pathways and explanations are read from what an execution and its runs stored; no text is
+generated. Executions and their sensitivity analyses are **append-only**: an execution
+never changes once final, and neither can be deleted (`DELETE` answers 405). How the Lab
+works: [`docs/scenario-lab/`](scenario-lab/README.md); every field:
+[data dictionary](data-dictionary.md#scenario-lab).
+
+Besides the five scenario endpoints [above](#endpoints):
+
+| Method and path | Purpose | Success |
+|---|---|---|
+| `POST /api/v1/scenarios/plan` | Plan a scenario body without saving it: which models apply and why, what each still needs, which changes no included model simulates, the stress cases and the companies the knowledge graph ties to the changes. Stores nothing; `executable` says whether it could run and `issues` say why not. | 200 / 422 |
+| `POST /api/v1/scenarios/preview` | The plan and, when it is executable, the results and pathway computed by the same engine — never stored ([below](#plans-and-previews)). | 200 / 422 |
+| `POST /api/v1/scenarios/{scenario_id}/duplicate` | A new scenario whose version 1 copies a version of this one (`version`, default the newest; `name`, default "*name* (copy)"), recording where it came from. Returns it with a `Location` header. | 201 / 404 / 422 |
+| `GET /api/v1/scenarios/{scenario_id}/versions` | Every version, newest first (a list, not paginated): number, name, spec hash, note, origin, number of executions. | 200 / 404 |
+| `GET /api/v1/scenarios/{scenario_id}/versions/{version}` | One version in full: its changes and content. | 200 / 404 |
+| `POST /api/v1/scenarios/{scenario_id}/versions/{version}/restore` | Save that version's content as the newest version. Nothing is deleted or rewritten. | 200 / 404 / 409 |
+| `GET /api/v1/scenarios/{scenario_id}/plan` | The plan of a saved version (`?version=`, default the newest). | 200 / 404 |
+| `POST /api/v1/scenarios/{scenario_id}/executions` | Execute a version (`{"version": n}`, or `{}` for the newest): refused with every reason if it cannot run (422) or when the runner is full (429); otherwise queued and followed at `Location` ([below](#executions)). | 202 / 404 / 422 / 429 |
+| `GET /api/v1/scenarios/{scenario_id}/executions` | The scenario's executions of every version, newest first, with their status and headline results. Paginated. | 200 / 404 |
+| `GET /api/v1/scenario-executions/{execution_id}` | An execution: its status and every stage with its times, the plan it ran, the Phase 4 runs it stored, headline, hashes, the error if it failed; `poll_after_ms` while it is not final. | 200 / 404 |
+| `GET /api/v1/scenario-executions/{execution_id}/results` | Baseline against scenario for every modelled line, the metrics, what is not modelled, each model's key outputs and hashes, the months and their events, the stress cases, the Lab's steps and equations. | 200 / 404 / 409 |
+| `GET /api/v1/scenario-executions/{execution_id}/pathways` | The impact pathway: typed nodes and links from each change to each line, grouped by model, and the graph relationships no included model simulates. | 200 / 404 / 409 |
+| `GET /api/v1/scenario-executions/{execution_id}/explanation` | What caused a line or metric (`?target=`, default `operating_profit`): the Lab's equation and terms, each change's contribution and, per model, its inputs, equations, worked steps, graph relationships, transmission paths, data snapshot, assumptions and limitations, from the stored runs. 404 when no included model produces the target. | 200 / 404 / 409 / 422 |
+| `POST /api/v1/scenario-executions/{execution_id}/cancel` | Ask a queued or running execution to stop ([below](#cancellation)). | 202 / 404 / 409 |
+| `POST /api/v1/scenario-executions/{execution_id}/verify` | Re-execute every model from its stored run (never from current data), recombine them and compare both hashes. Stores nothing. | 200 / 404 / 409 |
+| `POST /api/v1/scenario-executions/{execution_id}/sensitivity` | A one-at-a-time sensitivity analysis across the execution, stored, with a `Location` header ([below](#sensitivity)). | 201 / 404 / 409 / 422 |
+| `GET /api/v1/scenario-executions/{execution_id}/sensitivity` | The execution's analyses, newest first (`{"items": […]}`, not paginated). | 200 / 404 |
+| `GET /api/v1/scenario-executions/{execution_id}/sensitivity/{analysis_id}` | One analysis. | 200 / 404 |
+| `GET /api/v1/scenario-comparisons` | 2–6 completed executions side by side ([below](#comparisons)). | 200 / 404 / 409 / 422 |
+| `GET /api/v1/scenario-templates` | Templates built on implemented models, and those not offered, with the reason. | 200 |
+| `GET /api/v1/scenario-templates/{template_id}` | One template: its changes and models, required and optional inputs, validation rules, expected outputs and the scenario body to start from ([below](#templates)). | 200 / 404 |
+
+### Versions
+
+`PUT /api/v1/scenarios/{id}` saves the body as version *n* + 1; no version is ever changed.
+A body whose content equals the newest version's (the same spec hash; the `note` is not
+part of it) adds no version and returns the scenario as it is. Send `base_version`, the
+version the edit started from: if a newer version has been saved since, the save is
+refused with **409** instead of overwriting it.
+
+```http
+PUT /api/v1/scenarios/{scenario_id}
 Content-Type: application/json
 
-{"name": "Oil price shock", "description": "Brent crude rises 30 %.",
- "shocks": [{"variable_id": "var_brent_crude", "change_type": "percent_change", "value": 30}]}
+{"base_version": 1, "name": "Oil, rupee and rates on Aerisca", "shocks": ["…"], "…": "…"}
+```
+
+```http
+HTTP/1.1 409 Conflict
+
+{"error": {"code": "conflict",
+  "message": "Version 2 was saved after the version you edited (1). Reload the scenario before saving, so no change is lost.",
+  "details": [], "request_id": "…"}}
+```
+
+`POST …/versions/{version}/restore` saves an earlier version's content as the newest
+version (`derived_from: {"kind": "restore", …}`), and `POST …/duplicate` starts a new
+scenario from a version (`"kind": "duplicate"`). A scenario that has been executed cannot
+be deleted: `DELETE` answers **409** ("This scenario has been executed, so it is kept: its
+executions must stay reproducible. Duplicate it to start a new line of work."). A scenario
+that has never been executed is deleted with all its versions (204).
+
+### Plans and previews
+
+A **plan** (`POST /api/v1/scenarios/plan` for a body, `GET /api/v1/scenarios/{id}/plan`
+for a saved version) lists every Scenario Lab model with its status — `included`,
+`blocked`, `available`, `excluded` or `not_applicable` — and its reasons, which included
+models simulate each change, and every problem with the field it concerns. It answers 200
+for any well-formed body; whether the scenario could run is `executable`, and nothing is
+filled in to make it so.
+
+A **preview** (`POST /api/v1/scenarios/preview`) returns the plan and, when the scenario is
+executable, the results and pathway, computed by the same code as an execution. It is
+computed for each request and **never stored**: no version, execution or run is written,
+`stored` is `false` and `results.execution_id` is `null`. It is meant for live values while
+editing; execute the scenario to keep a reproducible record. A well-formed body that cannot
+be calculated (a numerical limit) is refused with 422. The airline template as the Lab
+opens it, before any figure is entered (abridged from
+`frontend/tests/fixtures/lab/preview-needs-figures.json`):
+
+```http
+POST /api/v1/scenarios/preview
+Content-Type: application/json
+
+{"name": "Crude oil shock on an airline", "template_id": "crude_oil_airline",
+ "shocks": [{"variable_id": "var_brent_crude", "change_type": "percent_change", "value": "20"}],
+ "entity": "company:co_aerisca_airways"}
+```
+
+```json
+{
+  "plan": {
+    "executable": false,
+    "errors": 7,
+    "issues": [
+      "…",
+      { "code": "required", "message": "Annual revenue is required.", "severity": "error",
+        "field": "company.annual_revenue", "model_id": "airline_fuel_cost" },
+      "…"
+    ],
+    "models": [
+      { "model_id": "airline_fuel_cost", "mode": "auto", "status": "blocked", "…": "…" },
+      "…",
+      { "model_id": "crude_linked_costs", "mode": "auto", "status": "available", "…": "…" },
+      "…"
+    ],
+    "…": "…"
+  },
+  "results": null,
+  "pathway": null,
+  "stored": false,
+  "note": "Computed from the scenario as it stands and not stored. Execute the scenario to keep a reproducible record."
+}
+```
+
+### Executions
+
+`POST /api/v1/scenarios/{id}/executions` first rebuilds the plan of the version. If the
+plan is not executable, the request is refused with **422**, one detail per reason, and
+nothing is stored:
+
+```json
+{"error": {"code": "validation_error",
+  "message": "The scenario cannot be executed as it stands; nothing was stored.",
+  "details": [
+    "…",
+    {"location": "body", "field": "company.annual_revenue", "message": "Annual revenue is required.", "type": "required"},
+    "…"
+  ], "request_id": "…"}}
+```
+
+It then reserves a place on the runner. When every worker is busy and the queue is full,
+it answers **429** (`rate_limited`) and stores nothing; try again when an execution has
+finished. Otherwise the execution is stored as `queued` and handed to a worker, and the
+answer is **202 Accepted** with its `Location`:
+
+```http
+POST /api/v1/scenarios/{scenario_id}/executions
+Content-Type: application/json
+
+{}
+```
+
+```http
+HTTP/1.1 202 Accepted
+Location: /api/v1/scenario-executions/{execution_id}
+
+{"status": "queued", "stages": [], "plan": null, "runs": [], "headline": [],
+ "results_available": false, "poll_after_ms": 400, "…": "…"}
+```
+
+Follow it with `GET` at `Location`, waiting `poll_after_ms` milliseconds between requests:
+400 while the execution is not final, `null` once it is. The 202 body is the execution as
+stored at that moment: normally `queued` with the default thread runner (a worker may
+already have moved it on), and already final in `inline` mode. The status moves forward
+through the stages and ends `completed`, `failed` or `cancelled`; `stages` records each
+stage's start and end as it happens:
+
+| Stage | Work |
+|---|---|
+| `validating` | The plan is rebuilt; every included model's inputs are validated, stored data resolved and graph relationships confirmed. All or nothing. |
+| `simulating` | Each model is executed by the Phase 4 engine; the stress cases are evaluated with the same models and assumptions. |
+| `propagating` | Each change is followed through the models' runs, month by month. |
+| `aggregating` | The Lab's equations combine the models into lines, metrics, the timeline and the stress cases; each model's run is stored as a Phase 4 run, and the results with their hashes, in one transaction. |
+
+A completed execution of the reference scenario (abridged from
+`frontend/tests/fixtures/lab/execution.json`):
+
+```json
+{
+  "id": "348bd1e1-ea11-4851-bbf6-78389f1512c1",
+  "scenario_id": "f5a5b9a1-87b4-4fe8-8dc3-dc2979e4ba8e",
+  "version": 1,
+  "status": "completed",
+  "duration_ms": 95,
+  "inputs_hash": "f6de3e60b25529da5405788ece8ab094fcbb2ff65a19f20c96c66310e77cd15b",
+  "result_hash": "45fe9f3bf9a5d69b0f49f5e01ae5f6ebf291fc8e3f94635f5d6072c8e8dce622",
+  "headline": [
+    { "id": "profit_before_tax", "label": "Profit before tax", "change": "-6700000",
+      "percent_change": "-17.6315789474", "currency": "INR" },
+    "…"
+  ],
+  "error": null,
+  "lab_version": "1.0.0",
+  "stages": [
+    { "stage": "validating", "started_at": "2026-09-24T03:27:57.129892Z",
+      "finished_at": "2026-09-24T03:27:57.160953Z",
+      "detail": "Rebuilding the plan and validating every model's inputs" },
+    { "stage": "simulating", "…": "…", "detail": "Executing 3 models and 2 stress cases" },
+    "…"
+  ],
+  "plan": { "executable": true, "…": "…" },
+  "runs": [
+    { "position": 0, "model_id": "airline_fuel_cost", "model_version": "1.1.0",
+      "run_id": "39413e33-5972-4106-b818-6a92770b59bc" },
+    "…"
+  ],
+  "results_available": true,
+  "poll_after_ms": null,
+  "…": "…"
+}
+```
+
+Each run is an ordinary Phase 4 run: `GET /api/v1/simulations/{run_id}` reads it and
+`POST /api/v1/simulations/{run_id}/verify` re-executes it. A failed execution has an
+`error` (`code`, `message`, `details`): `plan_blocked` (the plan rebuilt at `validating`
+was not executable; `details` lists why), `timeout`, `interrupted`,
+`model_version_conflict`, `internal_error` or a numerical code. A failed or cancelled
+execution stores no runs and no results.
+
+**Limits.** Executions run on a bounded pool of worker threads in each API process, at
+most `RUMIN_SCENARIO_MAX_CONCURRENT` at once with at most `RUMIN_SCENARIO_MAX_QUEUED`
+waiting. A request beyond that is refused with 429 before anything is stored, so nothing
+waits without bound. When an API process starts, it marks every execution that is not
+final as `failed` (`interrupted`). Run **one API process**: with several, each has its own
+pool and limits, and a process that starts would also mark another live process's
+executions interrupted. That run then stops and stores nothing; every change of state
+applies only while an execution is not final, so a final execution never changes.
+
+| Setting | Default | Allowed | Meaning |
+|---|---|---|---|
+| `RUMIN_SCENARIO_EXECUTION_MODE` | `thread` | `thread`, `inline` | `thread`: executions run on the pool. `inline`: in the request that creates them (the tests use it), so the 202 body is already final. |
+| `RUMIN_SCENARIO_MAX_CONCURRENT` | 2 | 1–8 | Executions running at once, per API process. |
+| `RUMIN_SCENARIO_MAX_QUEUED` | 8 | 0–64 | Executions waiting for a worker, per API process. |
+| `RUMIN_SCENARIO_TIMEOUT_SECONDS` | 20 | 1–120 | Time limit of one execution, checked between stages and between models; past it, the execution fails (`timeout`). |
+
+With the defaults, the eleventh execution requested while ten are running or waiting is
+refused:
+
+```json
+{"error": {"code": "rate_limited",
+  "message": "10 executions are running or waiting (the limit is 10). Try again when one has finished.",
+  "details": [], "request_id": "…"}}
+```
+
+### Cancellation
+
+`POST /api/v1/scenario-executions/{id}/cancel` sets `cancel_requested` and answers **202**
+with the execution. The execution stops at its next checkpoint (between stages and between
+models) and ends `cancelled`, with `error.code: "cancelled"`; it stores no runs and no
+results. A request that arrives after the last checkpoint cannot stop it: the execution
+completes. Cancelling an execution that is already final is refused with **409** (for
+example "The execution is already completed; it cannot change.").
+
+### Results, pathways and explanations
+
+Results, pathways, explanations, verification, new sensitivity analyses and comparisons
+need a **completed** execution; for any other they answer **409** (for example "The
+execution is queued: results exist only for a completed execution."). They are read from
+what the execution and its runs stored, so they cannot drift from the calculation. The
+results of the reference scenario (abridged from
+`frontend/tests/fixtures/lab/results.json`; amounts in INR over 12 months):
+
+```json
+{
+  "execution_id": "348bd1e1-ea11-4851-bbf6-78389f1512c1",
+  "currency": "INR",
+  "horizon_months": 12,
+  "lines": [
+    "…",
+    { "id": "profit_before_tax", "label": "Profit before tax", "equation": "AG5",
+      "baseline": "38000000", "change": "-6700000", "scenario": "31300000",
+      "percent_change": "-17.6315789474", "direction": "down", "effect": "reduces_profit",
+      "by_change": { "var_brent_crude": "-5637500", "var_rbi_repo_rate": "-375000",
+                     "var_usd_inr": "-687500" },
+      "monthly": ["-150000", "-780000", "-655000", "-381666.6666666667", "…"],
+      "knowledge": "simulated", "…": "…" }
+  ],
+  "metrics": [
+    { "id": "operating_margin", "baseline": "0.1666666667", "scenario": "0.1422986072",
+      "change": "-0.0243680595", "change_unit": "ratio_points", "knowledge": "simulated",
+      "…": "…" },
+    "…"
+  ],
+  "not_modelled": [
+    { "id": "cash_flow", "label": "Cash flow",
+      "reason": "No model covers working capital, tax or investment, so a cash-flow figure would be invented." }
+  ],
+  "timeline": {
+    "events": [
+      { "month": 1, "label": "The changes take effect", "model_id": "scenario" },
+      { "month": 2, "label": "The crude oil change reaches jet fuel (1-month lag)",
+        "model_id": "airline_fuel_cost" },
+      "…"
+    ],
+    "…": "…"
+  },
+  "stress_cases": [
+    { "name": "Half", "scale": "0.5",
+      "changes": { "var_brent_crude": "10", "var_usd_inr": "2.5", "var_rbi_repo_rate": "0.25" },
+      "lines": ["…"], "metrics": ["…"], "knowledge": "simulated" },
+    "…"
+  ],
+  "note": "Simulated values: deterministic calculations from the changes, figures and assumptions shown, holding everything else constant. They are not forecasts, not guaranteed and not investment advice.",
+  "…": "…"
+}
+```
+
+The **pathway** (`GET …/pathways`) has typed nodes — `change`, `variable`, `context`,
+`driver`, `line`, `metric` — and typed links — `applies`, `transmission`, `equation`,
+`aggregation`, `cited` — each saying how it was used (`simulation`: `applied`,
+`propagated`, `computed`, `aggregated` or `context_only`). A `context_only` link is a
+relationship the knowledge graph states and the Lab cites as the reason a model applies; it
+carries no value. The graph's other relationships from the changed variables are listed in
+`unmodelled`, never followed. A transmission link (abridged from
+`frontend/tests/fixtures/lab/pathway.json`):
+
+```json
+{ "id": "airline_fuel_cost:variable:var_brent_crude→airline_fuel_cost:variable:var_jet_fuel",
+  "kind": "transmission", "simulation": "propagated", "label": "influences (β, lag)",
+  "group": "airline_fuel_cost", "rule": "T1", "coefficient": "1", "lag_months": 1,
+  "edge": { "edge_key": "e-ea305310288a3f88", "edge_type": "influences",
+            "evidence_status": "model_assumption", "is_illustrative": true, "…": "…" },
+  "window": { "first_month": 2, "last_month": null }, "…": "…" }
+```
+
+The **explanation** (`GET …/explanation?target=`) takes one of `revenue`,
+`operating_costs`, `operating_profit`, `interest_expense`, `profit_before_tax`,
+`operating_margin` or `interest_coverage` (422 otherwise; 404 when no included model
+produces it). **Verification** (`POST …/verify`) re-executes each model from its stored run
+— its stored inputs, observations and graph snapshot, never current data — recombines them
+and compares the inputs and result hashes (`reproduced`). A model version that is no longer
+registered with the same definition cannot be re-executed; the answer says so.
+
+### Stress cases
+
+A version may carry up to five stress cases: alternative magnitudes of **the same
+changes**. Each is named (1–60 characters, unique ignoring case) and has **either** a
+`scale` — every change × a multiple above 0 and at most 10, at most 4 decimal places —
+**or** explicit `changes` for some of the scenario's own changes (the others keep their
+value; a stress case cannot add a variable). Every resulting value must satisfy the
+variable's change rules, checked when the version is saved (422), and each included
+model's input ranges and rules, checked by the plan (a plan error, so the scenario cannot
+be executed). An invalid case is refused with its field, never clipped:
+
+```json
+{"location": "body", "field": "stress_cases[0].scale",
+ "message": "The multiple must be above 0 and at most 10.", "type": "stress_case"}
+```
+
+Stress cases are evaluated in the `simulating` stage with the same models and assumptions,
+and reported beside the scenario in `results.stress_cases`, each with its own lines and
+metrics. They are not ranked.
+
+### Sensitivity
+
+`POST /api/v1/scenario-executions/{id}/sensitivity` analyses a completed execution **one
+quantity at a time**. Each chosen quantity — a change (`change:<variable>`), a figure
+shared by every model (`shared:<input>`, e.g. `shared:fx_rate`) or one model's input or
+assumption (`model:<model>:<input>`) — is moved on its own while everything else keeps the
+execution's value; every model that uses it is re-evaluated and the chosen `metric` is
+recombined: a line's change or a metric's value, by default profit before tax when interest
+is modelled and operating profit otherwise. The quantities are then ranked by the spread
+they cause. This is sensitivity analysis, **not** a stochastic or Monte Carlo simulation:
+no probabilities are involved, and a spread says how much the result depends on a quantity,
+not how likely any value is.
+
+Each item names its `target` and a `mode`: `default` (the variation the model defines for
+that input), `absolute` or `relative` (± `step`; a relative step must be below 100 %), or
+`values` (up to 7 explicit values). An empty body analyses the scenario's changes and then
+the models' default assumptions, up to eight. At most 8 quantities, 7 points each and 60
+evaluations, within 10 seconds: a request beyond these limits is refused with 422
+(`sensitivity_limit`). A point outside an input's range, or one that breaks a model's own
+rules, is skipped with the reason, never clipped. The analysis is stored and never
+changed; 409 if a model version the execution used is no longer registered with the same
+definition.
+
+```http
+POST /api/v1/scenario-executions/348bd1e1-ea11-4851-bbf6-78389f1512c1/sensitivity
+Content-Type: application/json
+
+{"metric": null, "inputs": []}
 ```
 
 ```http
 HTTP/1.1 201 Created
-Location: /api/v1/scenarios/fc32a422-91e1-4d5f-8797-ddedfcbf79f9
-X-Request-ID: 8bea91f6743f4e19aaa1313c4c8255c6
+Location: /api/v1/scenario-executions/348bd1e1-ea11-4851-bbf6-78389f1512c1/sensitivity/79ea15c4-f849-47de-8ea2-a29b7cec7d7d
 
 {
-  "id": "fc32a422-91e1-4d5f-8797-ddedfcbf79f9",
-  "name": "Oil price shock",
-  "description": "Brent crude rises 30 %.",
-  "status": "draft",
-  "shocks": [
-    { "variable_id": "var_brent_crude", "change_type": "percent_change", "value": 30.0,
-      "note": "", "epistemic_category": "scenario_input" }
+  "id": "79ea15c4-f849-47de-8ea2-a29b7cec7d7d",
+  "metric": "profit_before_tax",
+  "metric_kind": "line_change",
+  "base": "-6700000",
+  "items": [
+    { "target": "change:var_brent_crude", "label": "Crude oil price change", "kind": "change",
+      "base_value": "20", "mode": "absolute", "step": "10",
+      "points": [
+        { "role": "low", "value": "10", "metric": "-3812500", "delta": "2887500", "skipped": null },
+        { "role": "high", "value": "30", "metric": "-9587500", "delta": "-2887500", "skipped": null }
+      ],
+      "range": { "low": "-9587500", "high": "-3812500", "spread": "5775000" }, "…": "…" },
+    "…"
   ],
-  "latest_run": null,
-  "created_at": "2026-09-23T11:46:58.387307Z",
-  "updated_at": "2026-09-23T11:46:58.387317Z"
+  "ranking": [
+    { "target": "change:var_brent_crude", "label": "Crude oil price change", "spread": "5775000" },
+    { "target": "model:airline_fuel_cost:fare_pass_through",
+      "label": "Fare pass-through (Airline fuel cost)", "spread": "3940000" },
+    "…"
+  ],
+  "evaluations": 15,
+  "method": "one_at_a_time",
+  "note": "One quantity is moved at a time while everything else keeps the execution's value. The spread shows how much the result depends on it, not how likely any value is. This is sensitivity analysis, not a stochastic (Monte Carlo) simulation.",
+  "…": "…"
 }
 ```
+
+### Comparisons
+
+`GET /api/v1/scenario-comparisons?execution_id=…&execution_id=…` compares 2–6 completed
+executions (`reference`: the one to difference against, by default the first). It returns
+their changes and models, every line and metric side by side, the inputs and assumptions
+that differ, the pathway links that differ and each execution's latest sensitivity
+ranking. Differences against the reference are computed only between executions with the
+same currency and horizon (`comparable`); the others are shown side by side, not
+differenced. **A comparison never ranks or recommends executions**: which result is
+preferable depends on an objective the user has not stated. It is computed for each request
+and not stored. Fewer than two different executions or more than six, or a `reference` that
+is not one of them: 422; an unknown execution: 404; one that has not completed: 409.
+
+The reference execution against the same scenario with the Brent change alone and the
+airline model only (abridged from `frontend/tests/fixtures/lab/comparison.json`):
+
+```json
+{
+  "reference": "348bd1e1-ea11-4851-bbf6-78389f1512c1",
+  "comparable": { "348bd1e1-ea11-4851-bbf6-78389f1512c1": true,
+                  "7aefb335-44f1-4765-9de7-979353449061": true },
+  "lines": [
+    { "id": "revenue", "label": "Revenue", "values": [
+        { "execution_id": "348bd1e1-ea11-4851-bbf6-78389f1512c1", "change": "6925000",
+          "modelled": true, "difference": null, "…": "…" },
+        { "execution_id": "7aefb335-44f1-4765-9de7-979353449061", "change": "3500000",
+          "modelled": true, "difference": { "absolute": "-3425000", "percent": "-49.4584837545" },
+          "…": "…" } ] },
+    "…"
+  ],
+  "note": "Executions are shown side by side and differenced against the reference only when their currency and horizon match. Nothing is ranked or recommended: which result is preferable depends on an objective you have not stated.",
+  "…": "…"
+}
+```
+
+### Templates
+
+`GET /api/v1/scenario-templates` lists seven templates, each built on implemented models —
+`crude_oil_airline`, `jet_fuel_airline`, `rupee_depreciation`, `policy_rate_rise`,
+`crude_linked_costs`, `natural_gas` and `oil_rupee_rates` — with the companies the
+knowledge graph suggests for each, and under `unsupported` the templates that are not
+offered, with the reason (`demand` and `supply_chain`: no registered model simulates
+them). `GET /api/v1/scenario-templates/{template_id}` adds the required and optional
+inputs, validation rules and expected outputs, all derived from the models' definitions,
+and `scenario`: a body to start from, with the template's changes, models and stress cases
+and no company figures (RUMIN never fills those in). An unknown or unsupported template
+answers 404.
 
 ## Provider data example
 
@@ -404,15 +915,16 @@ saying where the value came from (`body`, `query`, `path`).
 |---|---|---|
 | 400 | `bad_request` | Malformed request that is not a validation problem |
 | 404 | `not_found` | Unknown route or ID |
-| 405 | `method_not_allowed` | E.g. `PATCH /api/v1/network`, `DELETE /api/v1/simulations/{id}` |
-| 409 | `conflict` | A simulation model version whose code no longer matches its stored definition |
+| 405 | `method_not_allowed` | E.g. `PATCH /api/v1/network`, `DELETE /api/v1/simulations/{id}`, `DELETE /api/v1/scenario-executions/{id}` |
+| 409 | `conflict` | The request conflicts with stored state: a scenario save based on an older version than the newest (`base_version`) or made at the same moment as another save; deleting an executed scenario; cancelling a final execution; results, pathways, explanations, verification, sensitivity analysis or comparison of an execution that has not completed; a sensitivity analysis of an execution whose model version is no longer registered with the same definition; a simulation model version whose code no longer matches its stored definition |
 | 413 | `payload_too_large` | Body larger than `RUMIN_MAX_REQUEST_BODY_BYTES` (64 KiB) |
-| 422 | `validation_error` | Invalid body, query or path values, invalid JSON, wrong content type, unknown fields |
+| 422 | `validation_error` | Invalid body, query or path values, invalid JSON, wrong content type, unknown fields; a scenario that cannot be executed as it stands |
+| 429 | `rate_limited` | `POST /api/v1/scenarios/{id}/executions` while every execution worker is busy and the queue is full; nothing is stored ([Scenario Lab](#executions)) |
 | 500 | `internal_error` | Unexpected failure. The response never contains a stack trace; the log has it under the request ID. |
 | 503 | `service_unavailable` | The database is unreachable |
 
-The codes 401, 403 and 429 (`unauthorized`, `forbidden`, `rate_limited`) are reserved in
-the envelope for later phases; no endpoint returns them yet.
+The codes 401 and 403 (`unauthorized`, `forbidden`) are reserved in the envelope for later
+phases; no endpoint returns them yet.
 
 ## Security headers and limits
 
@@ -423,5 +935,7 @@ origins listed in `RUMIN_CORS_ORIGINS`, never `*` and never with credentials. Se
 [security.md](security.md).
 
 There is **no authentication** yet: anyone who can reach the API can read all stored data,
-create and delete scenarios, and create simulation runs and analyses (which cannot be
-changed or deleted). Do not expose it beyond your own machine.
+create scenarios (and delete those never executed), start or cancel scenario executions
+(bounded per process, [above](#executions)), and create simulation runs and sensitivity
+analyses. Runs, analyses and final executions cannot be changed, and none of them can be
+deleted through the API. Do not expose it beyond your own machine.

@@ -85,23 +85,65 @@ the illustrative sample dataset. For tables, keys and constraints see
 
 ## Scenario
 
+A scenario is a stable identity with numbered, immutable versions (Phase 5): a save that
+changes anything adds a [version](#version). `GET /api/v1/scenarios/{id}` returns the
+scenario with its newest version's content; `GET /api/v1/scenarios` returns a summary of
+each. Results are never part of a scenario: they belong to its [executions](#execution).
+
 | Field | Type | Meaning |
 |---|---|---|
 | `id` | UUID | Assigned by the server. |
-| `name` | string, 1–120 | Required; no control characters. |
-| `description` | string, ≤ 2,000 | The question the scenario explores. Optional. |
-| `status` | `draft` | The only status in Phase 1. |
-| `shocks` | list, 1–10 | The changes, in order. |
-| `latest_run` | null | Always null: drafts are not yet connected to the simulation engine (the Phase 5 Scenario Lab). Model runs are [a separate record](#run). |
-| `created_at`, `updated_at` | UTC timestamp | Bookkeeping. |
+| `name` | string, 1–120 | The newest version's name. Required; no control characters. |
+| `description` | string, ≤ 2,000 | The newest version's description: the question the scenario explores. Optional. |
+| `status` | `draft` | Always: a scenario holds inputs only. |
+| `template_id` | slug or null | The [template](#template) the newest version started from. |
+| `current_version` | integer | The newest version's number (1, 2, 3 …). |
+| `shocks` | list, 1–10 | The newest version's changes, in order ([below](#scenario-shock)). |
+| `spec` | object | The newest version's other content ([below](#scenario-content)). Full scenario only. |
+| `entity` | graph key or null | Summaries only: the newest version's company (`spec.entity`). |
+| `versions` | list | Every version, newest first, as [version](#version) summaries. Full scenario only. |
+| `latest_execution` | object or null | The most recent execution of any version, as an [execution](#execution) summary; `null` until the scenario is executed: RUMIN never shows results that were not computed. |
+| `executions` | integer | Executions of all its versions. |
+| `created_at`, `updated_at` | UTC timestamp | Bookkeeping; `updated_at` moves when a version is added. |
+
+Two fields exist only in requests: `note` (≤ 500 characters: what this version changes,
+stored with the version) and, for `PUT`, `base_version` — the version the edit started
+from; if a newer version has been saved since, the save is refused (409).
+
+### Scenario content
+
+A version's content besides its name, description, template and changes: `spec` in
+responses, and the same fields at the top level of a request body (`POST` and `PUT
+/api/v1/scenarios`, the plan, the preview). Every part is optional in a request; the
+defaults are shown. A draft may be incomplete — the [plan](#plan) says what an execution
+still needs — but not malformed. Numbers are sent as decimal strings or JSON numbers and
+returned as decimal strings.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `entity` | `company:…` graph key, or null | A company in the current knowledge graph. Models in `auto` mode whose exposure the graph states for it, directly or through its industry, are included by default. Refused while the graph has not been built. |
+| `timing.start_month` | integer 1–36; default 1 | The month the changes take effect; at most the horizon. |
+| `timing.duration_months` | integer 0–36; default 0 | How many months the changes last; 0 = to the end of the horizon. |
+| `timing.horizon_months` | integer 1–36; default 12 | Months simulated. |
+| `company.reporting_currency` | ISO 4217 code or null | The currency of the figures and of every result. |
+| `company.annual_revenue`, `company.annual_operating_costs` | decimal or null | Per year, in the reporting currency; at least 0 and below 10¹⁵. Stated once for every model. |
+| `markets.fx_rate` | value or null | The exchange rate (reporting currency per US dollar) every model that needs it uses: typed, or `source: "stored_observation"` for the latest stored World Bank annual average. |
+| `models` | map, ≤ 10 entries | By model ID: `mode` — `auto` (default: included when a company is chosen and the graph states its exposure), `include` or `exclude`; the model's own `inputs` (≤ 20, values as below; figures shared by every model are stated once, above); its `assumptions` (≤ 20, decimals; omitted ones take the model's stated default). |
+| `constraints.evidence` | `any` or `evidence_backed`; default `any` | `evidence_backed`: rely only on knowledge-graph relationships backed by evidence, for transmission and for exposure. |
+| `constraints.stored_market_data` | boolean; default false | Market baselines must be stored observations, not typed values. |
+| `stress_cases` | list, ≤ 5 | Alternative magnitudes of the same changes: a `name` (1–60 characters, unique ignoring case) and **either** `scale` (every change × a multiple above 0 and at most 10, at most 4 decimal places) **or** `changes` (explicit values for some of the scenario's own changes, by variable ID; the others keep their value). Every resulting value must satisfy the variable's change rules: an invalid case is refused, never clipped. |
+
+A **value** (`markets.fx_rate`, a model input) has `value` (a decimal string, or a code for
+text inputs), `unit` (for quantities: one of the model's units, e.g. `kilolitre`),
+`source` (`user` or `stored_observation`) and `series_id` (the stored series to use).
 
 ### Scenario shock
 
 | Field | Type | Meaning |
 |---|---|---|
-| `variable_id` | entity ID | The economic variable changed. At most once per scenario. |
+| `variable_id` | entity ID | The economic variable changed. At most once per version. |
 | `change_type` | enum | `percent_change`: relative change, `value` in percent (30 = +30 %). `absolute_change`: `value` in the variable's unit; for rates, **percentage points** (0.25 = +25 basis points). |
-| `value` | decimal, ≤ 4 places | Non-zero; within the variable's published limits. Stored exactly as `NUMERIC(14, 4)`. |
+| `value` | decimal string | Non-zero; within the variable's published limits; at most 4 decimal places. Sent as a decimal string or a JSON number; returned as an exact decimal string in plain notation (`"30"`, `"0.5"`), never a JSON number. Stored as `NUMERIC(14, 4)`. |
 | `note` | string, ≤ 500 | Why this change. Optional. |
 | `epistemic_category` | `scenario_input` | Always: a shock is a value the user chose, not data. |
 
@@ -385,6 +427,270 @@ One entry of a run's `inputs`.
 | `evaluations`, `duration_ms` | Model evaluations performed (≤ 60) and time taken. |
 | `result_hash` | SHA-256 over the results, timing excluded. |
 | `created_at` | Bookkeeping. |
+
+## Scenario Lab
+
+Versions of [scenarios](#scenario), plans, executions and what is read from them (Phase 5).
+The tables are in [data-model.md](data-model.md#phase-5-scenario-lab), the endpoints in
+[api.md](api.md#scenario-lab), and how the Lab works in
+[`docs/scenario-lab/`](scenario-lab/README.md). Numbers are exact decimal strings in plain
+notation; results are rounded half to even to 10 decimal places. Every value in results,
+pathways and stress cases is simulated from stated inputs: none is a forecast.
+
+### Version
+
+`scenario_versions`: one saved state of a scenario, never updated. `GET
+/api/v1/scenarios/{id}/versions` lists summaries, newest first; `…/versions/{n}` returns
+one version in full.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `version` | integer | 1, 2, 3 … within the scenario. |
+| `name` | string | The version's name. |
+| `spec_hash` | hex string | SHA-256 over the whole version in canonical form — name, description, template, changes and content, keys sorted, decimals in plain form — so equal content hashes the same however its numbers were typed. The note is not part of it. |
+| `note` | string | What this version changes, as the request said; for a restored or duplicated version, where it came from (`Restored from version 1.`). |
+| `derived_from` | object or null | The version this one copies: `kind` (`restore` or `duplicate`), `scenario_id`, `version`. |
+| `created_at` | UTC timestamp | When it was saved. |
+| `executions` | integer (API) | Executions of this version. |
+| `scenario_id`, `description`, `template_id`, `shocks`, `spec` | | Full version only: its scenario and its content ([scenario](#scenario), [content](#scenario-content)). |
+
+### Plan
+
+What `POST /api/v1/scenarios/plan`, `GET /api/v1/scenarios/{id}/plan` and a preview
+return, and what an execution stores as `plan`: which models apply to the scenario and why,
+and whether it can be executed. A plan fills nothing in; it lists what is missing.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `spec_hash` | hex string | The planned content's hash ([version](#version)). |
+| `executable` | boolean | True when at least one model is included and there is no error: every change is simulated by an included model, no model is blocked, no two included models claim the same item of the same line, and every stress case is valid. |
+| `errors` | integer | Issues of severity `error`. |
+| `issues` | list | Every problem and caution: `code` (e.g. `required`, `unmodelled_change`, `double_counting`, `stress_case_invalid`, `cross_effect`, `graph_stale`, `fictional_entity`), `message`, `severity` (`error` or `warning`), `field` (its path in the scenario body, e.g. `company.annual_revenue`) and `model_id`. |
+| `graph` | object | The knowledge graph used: `build_id` and `freshness` (`current`, `stale` or `not_built`). |
+| `entity` | object or null | The chosen company: `key`, `name`, `nature` and its `industries`. |
+| `changes` | list | Per change: `index`, `variable_id`, `name`, `change_type`, `value`, `unit` (`%`, `percentage points` or the variable's unit), `modelled`, the included `models` that simulate it and, when none does, the `reason`. |
+| `models` | list | Every Scenario Lab model ([model plan](#model-plan)); empty when the scenario is malformed (an unknown variable, a change outside its limits …), whose problems are then the `issues`. |
+| `stress_cases` | list | Per case: `index`, `name`, the resulting `changes` by variable, `valid` and its `issues`. |
+| `ties` | list | The graph's relationships from the changed variables (`influences`, `affects_costs`, `affects_revenue`, `affects_financing`): `edge_key`, `edge_type`, `source`, `target`, `evidence_status`, `is_illustrative`. |
+| `names` | map | Display names of the graph nodes the plan mentions, by key. |
+| `affected` | object or null | Companies the graph ties to the changed variables — through up to two `influences` hops, then an exposure of the company or its industry. `entities`: each company (`key`, `name`, `type`, `nature`) with its `exposures`, each giving the `changed_variable`, the variables it passes `via`, the `relationship` and the `exposed_variable`, the `industry` it goes through (if any), the `edges` and the `models` that simulate it (empty: none does). Also `variables` (their names), `limit` (200 companies), `truncated` (whether more were found) and a `note` that ties are not measured effects. `null` when the graph is not built or the scenario is malformed. |
+
+### Model plan
+
+One entry of a plan's `models`.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `model_id`, `version`, `name`, `title`, `covers` | strings | The model version the Lab runs (the latest runnable one), its names and what it covers. |
+| `definition_hash`, `profile_hash` | hex strings | The model definition's hash, and the hash of its scenario profile: what it declares about scenarios (the changes it responds to, the line items it contributes, the exposure it needs). |
+| `mode` | enum | `auto`, `include` or `exclude`, as the scenario sets it. |
+| `status` | enum | `included` (it will run), `blocked` (it would run, but an input is missing or invalid, a relationship is not confirmed or a constraint is not met), `available` (a change reaches it but it is not included by default: no company is chosen, or the graph does not state the company's exposure), `excluded` (by the user) or `not_applicable` (no change reaches it, or the graph does not state the exposure the model requires). |
+| `reasons` | list of strings | Why it has that status. |
+| `changes` | list | The scenario's changes (variable IDs) it responds to. |
+| `responds_to` | list | Every change it accepts: `variable_id`, `change_type` and the model `input` it sets. A change of another type is never converted. |
+| `lines` | list | The line items it contributes to: `line`, `item`, `label`, `output`. |
+| `exposure` | object | `checked` (a company is chosen, so the graph was consulted), `required` (the model only simulates companies with this exposure), `stated`, and the `chains` of graph edges that state it. |
+| `issues` | list | Its own issues, as in the plan. |
+| `inputs` | list | Its inputs, resolved and labelled as for a simulation run ([resolved input](#resolved-input)); empty when the model was not prepared for running. |
+| `graph` | object or null | The graph snapshot of its preparation, as a run records it. |
+
+### Execution
+
+`scenario_executions`: one execution of one version, updated while it runs and never again
+once final. `GET /api/v1/scenario-executions/{id}` returns every field; a scenario's list
+of executions and its `latest_execution` return the summary (the fields down to `error`).
+
+| Field | Type | Meaning |
+|---|---|---|
+| `id` | UUID | Assigned when the execution is accepted. |
+| `scenario_id`, `version` | UUID, integer | The scenario and the version executed. |
+| `status` | enum | `queued` (accepted, waiting for a worker); then the stage in progress: `validating`, `simulating`, `propagating`, `aggregating`; finally `completed`, `failed` or `cancelled`. |
+| `requested_at`, `started_at`, `finished_at` | UTC timestamps | Accepted; picked up by a worker; final. |
+| `duration_ms` | integer or null | From start to finish. |
+| `inputs_hash` | hex string or null | SHA-256 over the Lab version, the version's `spec_hash` and, per model, its version, definition hash, profile hash and its run's inputs hash. Set on completion. |
+| `result_hash` | hex string or null | SHA-256 over every line (baseline, change, months), every metric (baseline, scenario), every stress case and each model run's result hash. Set on completion. |
+| `headline` | list | Up to two lines of the results, the first that exist of profit before tax, operating profit, operating costs, interest expense and revenue: `id`, `label`, `change`, `percent_change`, `currency`. Empty until completed. |
+| `models` | list | The models whose runs it stored, in order. Empty until completed. |
+| `error` | object or null | Why it did not complete: `code`, `message`, `details`. Codes: `plan_blocked` (`details` holds the plan's errors), `timeout`, `cancelled`, `interrupted` (the server stopped before it finished), `model_version_conflict`, `internal_error`, or a numerical code (`numerical_limit`, `transmission_limit`, `aggregation_inconsistent`). |
+| `scenario_name` | string | The scenario's current name. |
+| `lab_version` | string | The Lab's version (`1.0.0`), part of the inputs hash. |
+| `cancel_requested` | boolean | Cancellation was requested; the execution stops at its next checkpoint. |
+| `stages` | list | Each stage entered, in order: `stage`, `started_at`, `finished_at` (`null` while it runs) and `detail` (e.g. "Executing 3 models and 2 stress cases"). |
+| `plan` | object or null | The [plan](#plan) rebuilt at `validating`; `null` before. |
+| `runs` | list | The Phase 4 [run](#run) of each model: `position`, `model_id`, `model_version`, `run_id`. Empty until completed. |
+| `results_available` | boolean | True once completed with results. |
+| `poll_after_ms` | integer or null | While not final: when to ask again, in milliseconds (400). `null` once final. |
+
+### Results
+
+`GET /api/v1/scenario-executions/{id}/results`, and `results` in a preview. Stored in the
+execution's `results` together with its [pathway](#pathway), which is served separately.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `execution_id` | UUID or null | `null` in a preview, which is not stored. |
+| `lab_version`, `engine_version` | strings | The Lab's and the Phase 4 engine's versions. |
+| `currency` | ISO 4217 code | The reporting currency of every amount. |
+| `horizon_months` | integer | Months simulated. |
+| `timing` | object | `start_month`, `end_month` (the last month the changes last, within the horizon) and `duration_months`. |
+| `entity` | object or null | The company, as in the plan. |
+| `lines` | list | The [lines](#line) the included models reach, in the order revenue, operating costs, operating profit, interest expense, profit before tax. Revenue and operating costs come together: a side no model changes carries a `note`. |
+| `metrics` | list | [Metrics](#metric): `operating_margin` when the revenue and operating-cost lines are present and revenue is positive; `interest_coverage` when an interest model is included and interest expense is positive. |
+| `not_modelled` | list | The lines the results do not cover, each with `id`, `label` and `reason` (not modelled is not the same as unchanged), and always `cash_flow`: no model covers working capital, tax or investment. |
+| `models` | list | Per model: `model_id`, `version`, `name`, `title`, `definition_hash`, `profile_hash`, `run_id` (`null` in a preview), its run's `inputs_hash` and `result_hash`, `key_outputs` (`id`, `label`, `value`, `unit`, `kind`: `derived` or `simulated`), its accounting `bridge` and `warnings`. |
+| `timeline` | object | `months`, `start_month`, `end_month`, each line's monthly `values`, and `events` (`month`, `label`, `model_id` — `scenario` for the changes themselves): the changes taking effect and ending, lags elapsing, hedges expiring, fares, selling prices and loans starting to move. Months of the simulation, not calendar dates. |
+| `stress_cases` | list | Per case: `name`, `scale`, the `changes` used, and its `lines` and `metrics` (fields as below; `by_change` is empty: changes are attributed for the scenario only). |
+| `steps` | list | The Lab's own calculation steps, in order: `sequence`, `equation` (AG1–AG7), `label`, `output` and `inputs` (each a `symbol`, `value` and `unit`). |
+| `equations` | list | The Lab's equations AG0–AG7: `id`, `name`, `formula`, `explanation`. |
+| `configuration` | map | The Lab and engine versions, the time step (`month`), the horizon, the rounding (34 significant digits; results rounded half to even to 10 decimal places) and how changes are attributed. |
+| `note` | string | What the values are: simulated, not forecasts, not investment advice. |
+
+### Line
+
+One entry of `lines` in results and in stress cases. Amounts are over the horizon, in the
+reporting currency.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `id`, `label`, `equation` | strings | `revenue` (AG1), `operating_costs` (AG2), `operating_profit` (AG3), `interest_expense` (AG4) or `profit_before_tax` (AG5). |
+| `unit`, `currency` | strings | `currency`, and the reporting currency. |
+| `baseline` | decimal | The line over the horizon from the user's annual figures (× horizon ÷ 12), held constant: an input, not a forecast. |
+| `change` | decimal | The simulated change over the horizon. |
+| `scenario` | decimal | `baseline` + `change`. |
+| `percent_change` | decimal or null | The change as a percentage of the baseline's absolute value; `null` when the baseline is zero. |
+| `direction` | enum | `up`, `down` or `none`. |
+| `effect` | enum | `raises_profit`, `reduces_profit` or `none`: how the change moves profit (higher costs or interest reduce it). |
+| `items` | list | The model outputs that make up the change: `model_id`, `item`, `label`, `output`, `monthly_output`, `value`, `by_change`. Empty for operating profit and profit before tax, which are computed from other lines. |
+| `by_change` | map | The change attributed to each scenario change, by variable ID: Shapley values within each model, added across models. |
+| `monthly`, `cumulative` | lists of decimals | The change in each month of the horizon, and its running total. |
+| `baseline_monthly` | decimal | The baseline for one month. |
+| `note` | string or null | E.g. "No included model changes it." |
+| `knowledge` | `simulated` | Always. |
+
+### Metric
+
+One entry of `metrics`.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `id`, `label`, `equation` | strings | `operating_margin` (AG6: operating profit as a share of revenue over the horizon) or `interest_coverage` (AG7: how many times operating profit covers interest expense). |
+| `unit` | string | `ratio` (the margin) or `times` (coverage). |
+| `baseline`, `scenario` | decimals | Before and under the scenario. |
+| `change`, `change_unit` | decimal, string | `scenario` − `baseline`, in `ratio_points` (the margin) or `times`. |
+| `direction` | enum | `up`, `down` or `none`. |
+| `knowledge` | `simulated` | Always. |
+
+### Pathway
+
+`GET /api/v1/scenario-executions/{id}/pathways`, and `pathway` in a preview: how each
+change travelled to each line, as the engine computed it. Only links that carried the
+scenario's changes are included; nothing is drawn that the engine did not compute, apart
+from the graph relationships the Lab cites as context (`context_only`).
+
+| Field | Type | Meaning |
+|---|---|---|
+| `nodes` | list | [Pathway nodes](#pathway-node). |
+| `links` | list | [Pathway links](#pathway-link). |
+| `groups` | list | One per included model: `id` (the model), `title`, `version` and the `nodes` that belong to it. |
+| `unmodelled` | list | The graph's relationships from the changed variables that no included model simulates: `edge_key`, `edge_type`, `relationship`, `source` and `target` (keys) with `source_name` and `target_name`, `evidence_status`, `is_illustrative` and the `reason`. Listed, never followed: a connection is not evidence of causation. |
+| `note` | string | What `context_only` means. |
+
+### Pathway node
+
+| Field | Type | Meaning |
+|---|---|---|
+| `id` | string | E.g. `change:var_brent_crude`, `airline_fuel_cost:variable:var_jet_fuel`, `airline_fuel_cost:output:fuel_cost_change`, `industry:ind_air_transport`, `line:revenue`, `metric:operating_margin`. |
+| `kind` | enum | `change` (a scenario change), `variable` (a graph variable as one model moved it), `context` (the company or industry whose exposure the graph states), `driver` (a model output that is a line item), `line` or `metric`. |
+| `label` | string | Display name. |
+| `group` | string or null | The model the node belongs to; `null` for changes, context, lines and metrics. |
+| `knowledge` | string | `scenario_input` (changes), `graph_relationship` (context) or `simulated` (the others). |
+| `value`, `unit` | strings or null | Changes: the value in its unit (`%`, `percentage points` …). Variables: the change while the scenario lasts, once every lag has elapsed (`ratio`, or `percentage_points` for rates). Drivers and lines: the change over the horizon (`currency`). Metrics: the change from the baseline (`ratio_points` or `times`). `null` for context. |
+| `first_month` | integer or null | The first month it changes. |
+| `monthly` | list or null | Its value in each month (variables, drivers, lines). |
+| `detail` | string or null | A short description, e.g. "Months 1–12 of 12". |
+| `line`, `item` | strings or null | Drivers: the line and the item they contribute to. |
+
+### Pathway link
+
+| Field | Type | Meaning |
+|---|---|---|
+| `id`, `source`, `target` | strings | `<source>→<target>`, and the two node IDs. |
+| `kind` | enum | `applies` (a change is applied to a model's variable), `transmission` (a model carries the change along a knowledge-graph relationship), `equation` (model equations compute a driver), `aggregation` (the Lab's equations add drivers into lines, and lines into lines and metrics) or `cited` (a graph relationship that made a model apply). |
+| `simulation` | enum | How the link was used: `applied`, `propagated`, `computed`, `aggregated`, or `context_only` — a relationship the graph states that decided which models apply and carries no value. |
+| `label` | string | E.g. "influences (β, lag)", "adds to", "is deducted from", "enters". |
+| `group` | string or null | The model the link belongs to. |
+| `equations` | list | The equations used on it (`id`, `name`, `formula`): the model's own, or the Lab's AG1–AG7. |
+| `rule` | string or null | Transmission: the model's rule (e.g. `T1`). |
+| `edge` | object or null | Transmission and cited links: the graph edge (`edge_key`, `edge_type`, `relationship`, `evidence_status`, `is_illustrative`). |
+| `coefficient`, `lag_months` | decimal string, integer, or null | Transmission: the coefficient (β) and the lag in months. |
+| `window` | object or null | Applies and transmission: the months the link acts, `first_month` and `last_month` (`null`: to the end of the horizon). |
+| `assumptions` | list | The assumption inputs that act on the link: `id`, `label`, `value`, `unit`, `source`, `default`. |
+| `statements` | list | The model's written assumptions its equations cite (`id`, `text`). |
+| `sign` | integer or null | Aggregation into a line: `1` adds, `-1` is deducted. |
+| `active` | boolean | `false` when the driver the link leads to, or comes from, never changes within the horizon. |
+
+### Scenario sensitivity analysis
+
+`scenario_sensitivity_analyses`: one **one-at-a-time** analysis of a completed execution.
+Each chosen quantity is moved on its own while everything else keeps the execution's
+value; every model that uses it is re-evaluated and the Lab's lines recombined. It is not a
+stochastic (Monte Carlo) simulation: no probabilities are involved. The API never changes
+or deletes an analysis.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `id`, `execution_id` | UUIDs | The analysis and the execution analysed. |
+| `metric`, `metric_label`, `metric_kind` | strings | What the quantities are ranked by: a line (its change, `line_change`) or a metric (its scenario value, `metric_value`). Default: `profit_before_tax` when interest is modelled, otherwise `operating_profit`. |
+| `base` | decimal | The metric in the execution. |
+| `items` | list | Per quantity: `target` (`change:<variable>`, `shared:<input>` or `model:<model>:<input>`), `label`, `kind` (`change`, `shared`, `company`, `market` or `assumption`), the `models` that use it, `unit`, `base_value`, `mode` (`absolute`, `relative` or `values`) and `step`; the `points` (`role`: `low`, `high` or `value n`; `value`; the `metric` and its `delta` from `base`, or why the point was `skipped`); and the `range` (`low`, `high`, `spread`), `null` when no point could be evaluated. |
+| `ranking` | list | The quantities by spread, largest first: `target`, `label`, `spread`. It ranks inputs by how much the result depends on them, not results by preference. |
+| `evaluations` | integer | Evaluations performed: every point evaluated, plus the execution's own values once. |
+| `duration_ms` | integer | Time taken. |
+| `result_hash` | hex string | SHA-256 over the results, without the evaluation count and duration. |
+| `created_at` | UTC timestamp | Bookkeeping. |
+| `method` | `one_at_a_time` | Always. |
+| `note` | string | What the spread means, and that this is not a Monte Carlo simulation. |
+
+The table also stores the `request`: each quantity as resolved (`target`, `mode`, `step`,
+`values`).
+
+### Comparison
+
+`GET /api/v1/scenario-comparisons`: 2–6 completed executions side by side, computed on
+request and not stored. Nothing is ranked or recommended: which result is preferable
+depends on an objective the user has not stated.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `reference` | UUID | The execution the others are differenced against (default: the first). |
+| `executions` | list | Per execution, in the order requested: `execution_id`, `scenario_id`, `scenario_name`, `version`, `requested_at`, `currency`, `horizon_months`, `timing`, `entity`, its `changes` (as in its plan), its `models` (`model_id`, `version`, `title`) and `result_hash`. |
+| `comparable` | map | By execution ID: whether its currency and horizon match the reference's. Nothing is converted, so only comparable executions are differenced. |
+| `lines`, `metrics` | lists | Per line or metric (`id`, `label`), one cell per execution: `baseline`, `change`, `scenario`, `percent_change`, `modelled` (`false` when that execution does not cover it) and the `difference` from the reference — of the change for a line, of the scenario value for a metric: `absolute`, and `percent` of the reference's absolute value (`null` when that is zero). `difference` is `null` for the reference itself and for executions that are not comparable. |
+| `inputs` | list | The inputs and assumptions whose values differ between the executions that use them: `model_id` (`scenario` for a figure every model shares), `input`, `label`, `category`, and per execution its `value`, `unit` and `source` (`null` where it is not used). |
+| `pathways` | list | The pathway links (`link`, its ID) present in some executions but not all, with `present` per execution; cited context links are left out. |
+| `sensitivity` | list | Per execution: the `metric` and `ranking` of its latest [sensitivity analysis](#scenario-sensitivity-analysis) (`null` and empty when it has none). Each ranks one execution's inputs; executions are never ranked against each other. |
+| `note` | string | Why nothing is ranked. |
+
+### Template
+
+`GET /api/v1/scenario-templates` returns the summaries (the fields down to
+`suggested_entities`) and, under `unsupported`, the templates that are not offered, each
+with `id`, `title` and `reason` (no registered model simulates it: demand, supply chain).
+`GET /api/v1/scenario-templates/{id}` returns every field.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `id` | slug | E.g. `crude_oil_airline`. |
+| `title`, `question`, `summary` | strings | What the template asks, in words. |
+| `category` | enum | `commodity`, `currency`, `interest_rate`, `energy_cost` or `combined`. |
+| `changes` | list | Its changes: `variable_id`, `change_type`, `value`. |
+| `models` | list | The models it is built on: `model_id`, `title`, `version`. |
+| `stress_cases` | list | Suggested stress cases: `name`, `scale`, `changes`. |
+| `suggested_entities` | list | Companies whose exposure the knowledge graph states for the template's models: `key`, `name`, `type`, `nature`. Empty when the graph is not built. |
+| `required_inputs`, `optional_inputs` | lists | Derived from the models' definitions: `path` in the scenario body (e.g. `company.annual_revenue`), `input`, `label`, `kind` (`entity`, `change`, `market`, `company`, `assumption` or `setting`), `unit`, `unit_label`, the `units` accepted, `default`, `description`, `shared` (stated once for every model) and the `models` that use it. |
+| `validation_rules` | list | The models' validation rules: `model_id`, `id`, `description`, `severity`. |
+| `expected_outputs` | object | The `lines` and items the models contribute to, the `derived` lines and metrics, and each model's own `model_outputs`. |
+| `scenario` | object | The template as a scenario body to start from. It holds no company figures: RUMIN never fills those in. |
 
 ## Sample dataset catalogue
 

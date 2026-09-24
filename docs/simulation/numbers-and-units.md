@@ -49,10 +49,12 @@ and another) are never converted into each other.
 
 - The reporting currency is an ISO 4217-style code (three capital letters). RUMIN keeps no
   copy of the ISO list, so only the format is checked.
-- Jet fuel is priced in US dollars. The conversion to the reporting currency uses the
-  **baseline exchange rate**, which is always an input — entered, or taken from a stored
-  observation — never assumed (E3).
-- A USD reporting currency needs a rate of exactly 1.
+- Amounts in US dollars — the airline model's jet fuel, the currency model's dollar
+  revenue and costs — are converted to the reporting currency at the **baseline exchange
+  rate**, which is always an input — entered, or taken from a stored observation — never
+  assumed (airline E3; currency E1–E2).
+- In the airline model a USD reporting currency needs a rate of exactly 1; the currency
+  model refuses a USD reporting currency, which has no US-dollar exposure.
 - A stored exchange rate can be used only when its currency pair matches: the World Bank
   series gives INR per USD, so it is refused for a EUR reporting currency, with the
   message that RUMIN does not convert between currencies without a rate you provide.
@@ -62,15 +64,23 @@ and another) are never converted into each other.
 Scenario changes and assumption percentages are entered in percent (`10` means 10 %) and
 converted to fractions exactly (moving the decimal point). Changes must be above −100 %
 (a price cannot fall by all of itself) and at most +1,000 %, with at most four decimals —
-the same limits Phase 1 publishes for scenario inputs. Ratios in results are fractions
-(`0.24`); the page shows them as percentages, and a change of a ratio (the margin change)
-in percentage points.
+the same limits Phase 1 publishes for scenario inputs. Rates move in percentage points
+(`percentage_points`), never in percent of the rate: the interest model's changes to the
+repo rate and US short-term rates are limited to ±25 points with four decimals, and the
+engine applies them as level changes at their own node
+([timing and rate changes](README.md#timing-and-rate-changes-phase-5)). Ratios in results
+are fractions (`0.24`); the page shows them as percentages, and a change of a ratio (the
+margin change) in percentage points.
 
 ## Frequency and time
 
-Figures are entered per year and simulated on a monthly grid: the annual fuel bill, revenue
-and costs are spread evenly over twelve months (E5, E15; assumption A2). Scenario changes
-are permanent steps from month 1 (A4). Lags are whole months. The horizon is 1–36 months;
+Figures are entered per year and simulated on a monthly grid: annual amounts are spread
+evenly over twelve months (assumption A2 in every model; E5 and E15 in the airline model).
+In the airline model's version 1.0.0, scenario changes are permanent steps from month 1
+(A4); every later model version takes a start month and a duration, shared by all of a
+run's changes (a duration of 0 lasts to the end of the horizon;
+[timing and rate changes](README.md#timing-and-rate-changes-phase-5)). Lags are whole
+months. The horizon is 1–36 months;
 effects that begin after it are listed in the transmission paths and counted in the steady
 state, not in the horizon totals, and the run carries a note saying so.
 

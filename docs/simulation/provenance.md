@@ -14,7 +14,7 @@ never re-derived from current code or data.
 | Assumptions and limitations | The model's statements, as they were |
 | Graph snapshot | The build, its freshness, the relationships confirmed or missing, the entity, the relationships not used ([graph integration](graph-integration.md)) |
 | Data snapshot | Each stored observation used: series, period, value as published, quality status, revision, last confirmed, capture and job, dataset version, licence, attribution |
-| Steps | Every evaluated equation in order (`simulation_run_steps`): equation ID, label, month, output symbol, exact value and unit, and each input's symbol, value and unit — 99 steps for a 12-month run |
+| Steps | Every evaluated equation in order (`simulation_run_steps`): equation ID, label, month, output symbol, exact value and unit, and each input's symbol, value and unit — 99 steps for the airline example's 12-month run under version 1.0.0, 110 under 1.1.0 (which records the exchange rate for each month) |
 | Outputs | Every output: value (10 decimal places), unit, `derived` or `simulated` |
 | Monthly series | Each month's values of the model's monthly outputs |
 | Contributions | Shapley credits of every attributable output across the non-zero changes |

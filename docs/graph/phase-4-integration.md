@@ -90,7 +90,7 @@ This is a proposal for Phase 4, not a design decision:
 | Proposal | What the engine does |
 |---|---|
 | 1. Pin the build | Every run stores a graph snapshot: the build ID, its finish time, source fingerprint and freshness, and each edge it relied on. A stale graph is reported on the run with the build used. Verification re-uses the snapshot, never the current graph |
-| 2. Start from the scenario's shocks | Each scenario input of a model names the variable node it changes (Brent crude, jet fuel, the exchange rate). Phase 1 scenario drafts are not connected yet (Phase 5) |
+| 2. Start from the scenario's shocks | Each scenario input of a model names the variable node it changes (Brent crude, jet fuel, the exchange rate). Since Phase 5 a Scenario Lab scenario's changes name the same variable nodes, and the graph's stated exposures decide which models apply ([the Lab](../scenario-lab/architecture.md#the-plan)) |
 | 3. Candidate channels, not answers | Nothing is discovered by traversal. A model **declares** its transmission rules; only those are followed. The graph's other relationships around the model's variables are listed as "not used by this model" |
 | 4. Choose by evidence status, explicitly | A rule is followed only along a current edge that passed the graph's validation (a flagged edge is refused). The one rule, T1, follows an `influences` edge, which the graph records only as a model assumption, so every run that depends on it carries the warning `assumption_based_channel`. No status is upgraded |
 | 5. Parameterise outside the graph | The elasticity and the lag are model inputs (assumptions with defaults and rationales) stored with the run. Nothing is written back to the graph, and `strength` is never read |

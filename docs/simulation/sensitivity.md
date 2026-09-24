@@ -23,7 +23,13 @@ any value is**. No probabilities are estimated.
 
 An empty body uses the model's defaults: the airline model varies crude oil, the exchange
 rate, β, the hedge ratio, fare pass-through, the jet fuel price and consumption, ranked by
-the change in operating profit.
+the change in operating profit. Every model declares its own defaults and the output that
+ranks them, listed on its page: [currency](fx-exposure.md#headline-outputs-and-sensitivity-defaults),
+[interest](floating-rate-interest.md#headline-outputs-and-sensitivity-defaults),
+[crude-linked](crude-linked-costs.md#headline-outputs-and-sensitivity-defaults) and
+[gas-linked costs](gas-linked-costs.md#headline-outputs-and-sensitivity-defaults). The
+Scenario Lab runs the same one-at-a-time method across all the models of an execution
+([Lab sensitivity](../scenario-lab/architecture.md#sensitivity)).
 
 | Mode | Points |
 |---|---|

@@ -2,7 +2,8 @@
 
 The page at `/simulation` (and `/simulation/runs/{id}` for a stored run) is the first
 interface to the engine. It is a **preview**, not the Scenario Lab: one model at a time, one
-run at a time, no saved comparisons (that is Phase 5). It collects inputs and shows what the
+run at a time, no saved comparisons — composing models, versioned scenarios and comparisons
+are the [Scenario Lab](../scenario-lab/README.md) (Phase 5). It collects inputs and shows what the
 engine returned; **no financial figure is calculated in the browser**.
 
 ## What a reader can do

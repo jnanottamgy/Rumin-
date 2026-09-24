@@ -10,8 +10,11 @@ adds the **knowledge graph**: builds, nodes and their identifiers, edges and the
 evidence, entity-resolution decisions and validation issues, all derived from the tables
 above ([below](#phase-3-knowledge-graph)). Phase 4 adds the **simulation engine's
 records**: model versions, runs, their calculation steps and sensitivity analyses, all
-append-only ([below](#phase-4-simulation-runs)). The same schema runs on SQLite
-(development) and PostgreSQL (production), and is created only through Alembic migrations.
+append-only ([below](#phase-4-simulation-runs)). Phase 5 adds the **Scenario Lab**: a
+scenario becomes a stable identity with immutable, numbered versions, and each execution of
+a version stores its plan, the Phase 4 run of every model it used and the combined results
+([below](#phase-5-scenario-lab)). The same schema runs on SQLite (development) and
+PostgreSQL (production), and is created only through Alembic migrations.
 
 Field-level definitions and the contents of the sample dataset are in the
 [data dictionary](data-dictionary.md).
@@ -31,7 +34,8 @@ erDiagram
     countries |o--o{ economic_variables : "is measured for"
     entities ||--o{ relationships : "source"
     entities ||--o{ relationships : "target"
-    scenarios ||--|{ scenario_shocks : "contains"
+    scenarios ||--|{ scenario_versions : "has (immutable)"
+    scenario_versions ||--|{ scenario_shocks : "contains"
     economic_variables ||--o{ scenario_shocks : "is changed by"
 
     datasets {
@@ -64,10 +68,18 @@ erDiagram
         uuid id PK
         string name
         string status
+        int current_version
+    }
+    scenario_versions {
+        int id PK
+        uuid scenario_id FK
+        int version
+        json spec
+        string spec_hash
     }
     scenario_shocks {
         int id PK
-        uuid scenario_id FK
+        int scenario_version_id FK
         string variable_id FK
         string change_type
         numeric value
@@ -133,18 +145,24 @@ industry), `domiciled_in` (company → country) and `measured_for` (variable →
 
 ## Scenarios
 
-`scenarios` holds a draft's `name`, `description`, `status` and timestamps;
-`scenario_shocks` holds its 1–10 changes, in order (`position`):
+Since Phase 5 a scenario is a stable identity with numbered, **immutable versions**: saving
+a change adds a version and never rewrites one. A scenario holds inputs only; its results
+live in its executions and their Phase 4 runs ([below](#phase-5-scenario-lab)).
 
-- `variable_id` → `economic_variables.id` (`RESTRICT`: a variable in use cannot vanish);
-- `change_type` (`percent_change` | `absolute_change`) and `value` as `NUMERIC(14, 4)` —
-  exact decimals, never binary floating point;
-- `UNIQUE (scenario_id, variable_id)`: a variable is changed at most once per scenario.
-
-`status` can only be `draft` (enforced by a CHECK constraint). Drafts are **not connected
-to the simulation engine** yet (that is the Phase 5 Scenario Lab): nothing links a draft
-to a run, and the API reports `latest_run: null`. Model runs are stored separately
-([below](#phase-4-simulation-runs)).
+- `scenarios` holds the identity (`id`), a copy of the newest version's `name`,
+  `description` and `template_id`, that version's number (`current_version`), `status` and
+  timestamps. `status` can only be `draft` (enforced by a CHECK constraint): results are
+  never stored on a scenario.
+- `scenario_versions` holds each saved state: its number, name, description, template, the
+  rest of its content as validated JSON (`spec`) and the SHA-256 of the whole version
+  (`spec_hash`).
+- `scenario_shocks` holds a version's 1–10 changes, in order (`position`):
+  - `scenario_version_id` → `scenario_versions.id` (`CASCADE`);
+  - `variable_id` → `economic_variables.id` (`RESTRICT`: a variable in use cannot vanish);
+  - `change_type` (`percent_change` | `absolute_change`) and `value` as `NUMERIC(14, 4)`,
+    read back as an exact decimal and served as a decimal string;
+  - `UNIQUE (scenario_version_id, variable_id)`: a variable is changed at most once per
+    version.
 
 ## Datasets and provenance
 
@@ -416,6 +434,155 @@ erDiagram
 and stored observations it used inside its snapshots, so rebuilding the graph or ingesting
 new data never changes or blocks a stored run.
 
+Scenario Lab executions store the run of each model they use in these same tables, linked
+through `scenario_execution_runs` ([below](#phase-5-scenario-lab)).
+
+## Phase 5: Scenario Lab
+
+Scenarios, their versions, and the executions of those versions through the model
+registry. A version is never changed once saved, and an execution never changes once it
+has finished, so every result can be traced to the exact inputs it was calculated from. See
+[`docs/scenario-lab/`](scenario-lab/README.md).
+
+```mermaid
+erDiagram
+    scenarios ||--|{ scenario_versions : "has (immutable)"
+    scenario_versions ||--|{ scenario_shocks : "contains"
+    scenarios ||--o{ scenario_executions : "is executed as"
+    scenario_versions ||--o{ scenario_executions : "is executed as"
+    scenario_executions ||--o{ scenario_execution_runs : "stored"
+    simulation_runs ||--o{ scenario_execution_runs : "is linked by"
+    scenario_executions ||--o{ scenario_sensitivity_analyses : "is analysed by"
+
+    scenarios {
+        uuid id PK
+        string name
+        string status
+        int current_version
+        string template_id
+    }
+    scenario_versions {
+        int id PK
+        uuid scenario_id FK
+        int version
+        json spec
+        string spec_hash
+        json derived_from
+        datetime created_at
+    }
+    scenario_executions {
+        uuid id PK
+        uuid scenario_id FK
+        int scenario_version_id FK
+        int version
+        string status
+        json stages
+        json plan
+        json results
+        json error
+        string inputs_hash
+        string result_hash
+        bool cancel_requested
+    }
+    scenario_execution_runs {
+        uuid execution_id PK, FK
+        uuid simulation_run_id PK, FK
+        int position
+        string model_id
+        string model_version
+    }
+    simulation_runs {
+        uuid id PK
+        string model_id
+        string inputs_hash
+        string result_hash
+    }
+    scenario_sensitivity_analyses {
+        uuid id PK
+        uuid execution_id FK
+        string metric
+        json request
+        json results
+        string result_hash
+    }
+```
+
+| Table | Purpose | Keys and constraints |
+|---|---|---|
+| `scenarios` (extended) | The identity. Adds `current_version` (the newest version's number, `NOT NULL`, default 1) and `template_id` (the template the newest version started from); `name` and `description` are copies of the newest version's | `id` (UUID) |
+| `scenario_versions` | One saved state: `version` (1, 2, 3 … within the scenario), `name`, `description`, `template_id`; `spec`, everything else as validated JSON (the company chosen in the knowledge graph, its figures and market baselines, timing, models with their inputs and assumptions, constraints, stress cases); `spec_hash`, the SHA-256 of the whole version's canonical form, changes included; `derived_from` (`{"kind": "duplicate" \| "restore", "scenario_id", "version"}` or null); `note`; `created_at` | `UNIQUE (scenario_id, version)`; `scenario_id` → `scenarios` with `CASCADE` |
+| `scenario_shocks` (changed) | A version's changes ([above](#scenarios)); until migration `0005` they belonged to the scenario | `scenario_version_id` → `scenario_versions` with `CASCADE`; `UNIQUE (scenario_version_id, variable_id)` |
+| `scenario_executions` | One execution of one version: its `version` number; `status` (`queued`, `validating`, `simulating`, `propagating`, `aggregating`, `completed`, `failed`, `cancelled`); `stages`, each stage entered with its start, end and a short detail; the `plan` it ran; the `results` (lines, metrics, months and events, pathway, stress cases, the Lab's calculation steps); the `error` if it did not complete; `inputs_hash`, `result_hash`, `lab_version`; `cancel_requested`; `requested_at`, `started_at`, `finished_at`, `duration_ms` | `id` (UUID); `scenario_id` → `scenarios` and `scenario_version_id` → `scenario_versions`, both with `RESTRICT`; `CHECK` on `status` |
+| `scenario_execution_runs` | The Phase 4 run each model of a completed execution stored, in order (`position`), with the run's `model_id` and `model_version` | primary key (`execution_id`, `simulation_run_id`); `execution_id` → `scenario_executions` and `simulation_run_id` → `simulation_runs`, both with `RESTRICT` |
+| `scenario_sensitivity_analyses` | One one-at-a-time analysis of a completed execution: the `metric`, the `request` (each quantity varied, as resolved), the `results` (every point, the ranges, the ranking), `evaluations`, `duration_ms`, `result_hash` (over the results, without the evaluation count and duration), `created_at` | `id` (UUID); `execution_id` → `scenario_executions` with `RESTRICT` |
+
+**Versions never change.** Saving a body that differs from the newest version inserts
+version *n* + 1 with its changes and updates the scenario's copy of the name, description,
+template and `current_version`; a body with the same `spec_hash` as the newest version (the
+note is not part of the hash) adds nothing. No code path updates a version or its changes.
+Restoring version *k* inserts a copy of it as the newest version (`derived_from.kind:
+"restore"`), unless its content already equals the newest; duplicating creates a new
+scenario whose version 1 copies the chosen version (`"duplicate"`). A version and its
+changes are deleted only with their scenario, which is possible only while nothing has
+executed it.
+
+**Executions are append-only once final.** An execution is inserted as `queued` and moves
+forward through `validating`, `simulating`, `propagating` and `aggregating` to
+`completed`, or ends `failed` or `cancelled`; each stage is added to `stages` with its
+times as it happens. A completed execution's model runs, the rows linking them, its
+`results` and both hashes are written in the same transaction as its final status. A
+failed or cancelled execution stores no runs and no results; its `error` says why. Once the
+status is final nothing updates the row: a request to cancel it is refused (409), and the
+API has no way to delete an execution. When an API process starts, it marks every
+execution that is not final as `failed` (error `interrupted`): the process that was
+running it has stopped.
+
+**An executed scenario cannot be deleted.** `DELETE /api/v1/scenarios/{id}` answers 409
+once any version has an execution, and the database enforces the same: executions refer to
+their scenario and version with `RESTRICT`. The only exception is `python -m app.db.seed
+--reset`, which replaces the reference data and deletes every scenario with its versions,
+executions, run links and sensitivity analyses; the Phase 4 runs themselves are kept.
+
+**Link to Phase 4 runs.** Each model of a completed execution is stored as an ordinary run
+in `simulation_runs`, with its steps, its input, graph and data snapshots and its hashes,
+and the label `<version name> · v<version> · execution <first 8 characters of the
+execution ID>` (cut to 120 characters). It can be read and re-executed through the
+[simulation endpoints](api.md#simulation) on its own. `scenario_execution_runs` records
+which runs an execution stored; with `RESTRICT` on both sides, neither can be deleted from
+under the other. The execution's `results` repeat each model's run ID, inputs hash and
+result hash. Its own `inputs_hash` covers the Lab version, the version's `spec_hash` and,
+for each model, its version, definition hash, scenario profile hash and its run's inputs
+hash; its `result_hash` covers every line, metric, monthly value and stress case, and each
+run's result hash.
+
+**Sensitivity analyses** are append-only too: inserted by `POST
+/api/v1/scenario-executions/{id}/sensitivity`, never updated or deleted by the API.
+
+**Indexes.** Executions by (`scenario_id`, `requested_at`), which serves a scenario's
+newest-first list of executions, and by `status`; versions by `scenario_id`; changes by
+`scenario_version_id`; sensitivity analyses by `execution_id`.
+
+### From Phase 1 drafts to versions
+
+Migration `0005_scenario_lab` adds `current_version` (default 1) and `template_id` to
+`scenarios` and creates `scenario_versions`. Its data step then makes every existing draft
+**version 1 of itself**: the same name and description, no template, the draft's changes
+and every Phase 5 section at its default — no company, changes from month 1 to the end of
+a 12-month horizon, no figures, no model settings, constraints `evidence: any` and
+`stored_market_data: false`, no stress cases — with an empty note, `created_at` set to the
+draft's `updated_at`, and a `spec_hash` computed exactly as the application computes one.
+The existing change rows are then pointed at their new version (`scenario_version_id`),
+and `scenario_shocks.scenario_id` is dropped with its foreign key, unique constraint and
+index; the new column gets the equivalents (`CASCADE`, `UNIQUE (scenario_version_id,
+variable_id)`, an index). Finally it creates `scenario_executions`,
+`scenario_execution_runs` and `scenario_sensitivity_analyses`.
+`backend/tests/test_migrations.py` checks that a Phase 1 draft becomes version 1 with the
+application's hash, and that the downgrade keeps its changes.
+
+The downgrade drops the three execution tables, keeps only each scenario's current
+version (its changes, name and description; older versions and the rest of the content
+are lost) and removes the new columns. The Phase 4 runs that executions stored are kept.
+
 ## Enumerations
 
 Enumerations are stored as `VARCHAR` with a `CHECK` constraint, not native database enum
@@ -435,6 +602,7 @@ migration.
 | Variable category | `commodity`, `monetary_policy`, `exchange_rate`, `inflation` |
 | Change type | `percent_change`, `absolute_change` |
 | Scenario status | `draft` |
+| Scenario execution status | `queued`, `validating`, `simulating`, `propagating`, `aggregating`, `completed`, `failed`, `cancelled` (the last three are final) |
 | Epistemic category | `observation`, `assumption`, `scenario_input`, `simulated_output`, `uncertainty` |
 | Dataset kind | `curated`, `provider` |
 | Provider kind / authentication | `api`, `file` / `none`, `api_key`, `not_applicable` |
@@ -481,7 +649,11 @@ Alembic, in `backend/migrations/`. `0001_initial_schema` creates the nine Phase 
 `0003_knowledge_graph` adds the seven graph tables and changes no existing table (its
 downgrade drops them, and the graph can be rebuilt from the sources at any time);
 `0004_simulation_engine` adds the four simulation tables and changes no existing table (its
-downgrade drops them, and with them every stored run).
+downgrade drops them, and with them every stored run); `0005_scenario_lab` adds two columns
+to `scenarios`, adds `scenario_versions`, moves `scenario_shocks` from scenarios to
+versions after turning every draft into its version 1, and adds the three execution tables
+([above](#from-phase-1-drafts-to-versions); its downgrade keeps each scenario's current
+version, drops older versions and every execution, and keeps the Phase 4 runs).
 
 - Every schema change is a new revision: edit the models, run
   `uv run alembic revision --autogenerate -m "…"`, **review the generated file**, apply it
@@ -489,6 +661,6 @@ downgrade drops them, and with them every stored run).
 - Migrations run in batch mode so the same revision works on SQLite (which cannot alter
   most constraints in place) and PostgreSQL.
 - Tests build their database with the real migrations (not `create_all`), check that the
-  migrated schema matches the models exactly, and check that downgrading to empty and
-  upgrading again works.
+  migrated schema matches the models exactly, check that downgrading to empty and
+  upgrading again works, and check that `0005` turns a Phase 1 draft into its version 1.
 - `/health/ready` reports "not ready" until the database is at the latest revision.

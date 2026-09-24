@@ -82,31 +82,51 @@ The full list, with reasons, is in [`docs/simulation/limitations.md`](simulation
   estimated from data and no result has been back-tested: the crude-to-jet-fuel
   elasticity, the lags, the hedge terms and the fare pass-through are assumptions with
   neutral defaults.
-- **One narrow model.** An airline's fuel cost, operating profit and margin under changes
-  in crude oil, jet fuel and the exchange rate. RUMIN holds no company accounts, so the
-  airline's figures come from the user. The sample airlines are fictional, and the graph
+- **Narrow models.** Phase 4's model: an airline's fuel cost, operating profit and margin
+  under changes in crude oil, jet fuel and the exchange rate. Phase 5 adds four more, each as
+  narrow (foreign-currency revenue and costs, floating-rate interest, crude- and
+  gas-linked costs). RUMIN holds no company accounts, so every company figure comes from the
+  user. The sample airlines are fictional, and the graph
   relationship the model relies on is an illustrative model assumption.
 - **Deterministic only.** Uncertainty is shown by one-at-a-time sensitivity, which shows
   no interactions and is not a confidence interval. No Monte Carlo (Phase 9).
-- **Simple dynamics.** Monthly steps; changes are permanent steps from month 1; no
-  seasonality or temporary shocks; hedging and fare pass-through are a share and a number
-  of months each.
+- **Simple dynamics.** Monthly steps; a change is a step of constant size (since Phase 5 it
+  can start later and last a number of months, but it cannot follow a path); no
+  seasonality; hedging and fare pass-through are a share and a number of months each.
 - **One relationship travels through the graph** (crude oil → jet fuel). Coefficients and
   lags are inputs, never inferred from the graph or from data.
 - **Little stored data is used.** Only the exchange rate can come from stored data (the
   latest annual World Bank average), and none is stored where Phase 4 was built, because
   the World Bank retrieval was blocked.
-- **Scenario drafts are not connected, and runs cannot be compared side by side.** Both
-  are the Scenario Lab (Phase 5).
-- **Storage grows without limit.** Runs and analyses are append-only, there is no retention
-  policy, and anyone who can reach the API can add them.
+- **Storage grows without limit.** Runs, scenario versions, executions and analyses are
+  append-only, there is no retention policy, and anyone who can reach the API can add them.
+
+## Scenario Lab (Phase 5)
+
+The Lab's own list is in [scenario-lab/limitations.md](scenario-lab/limitations.md). In
+short:
+
+- **Five narrow models, fixed volumes.** A change no model simulates cannot be executed;
+  there is no demand or supply-chain model, so no such template.
+- **Partial statements.** Revenue, operating costs, operating profit, interest expense,
+  profit before tax, operating margin and interest coverage — only the lines an included
+  model reaches. No cash flow, tax, working capital or balance sheet.
+- **Constant baselines.** The user's annual figures × horizon ÷ 12: inputs, not forecasts.
+- **Deterministic and one-at-a-time.** Stress cases and sensitivity move magnitudes; there
+  are no probabilities (Phase 9).
+- **No second-round effects.** Relationships the graph states beyond what the included
+  models declare are listed as not modelled, never followed.
+- **An in-process worker pool.** 2 executions at once and 8 waiting per API process; a
+  stopped server's executions are marked failed, not resumed; the page polls. Run one API
+  process: a second one's start-up recovery would mark the first one's running executions
+  interrupted (they stop and store nothing; no final execution changes).
 
 ## Product
 
-- **A simulation preview, not the Scenario Lab.** The engine runs one model (an airline
-  fuel-cost shock) on inputs entered on the Simulation page. Scenario drafts are still
-  saved as inputs only and are not connected to the engine (Phase 5). No result is a
-  forecast ([above](#simulation-phase-4)).
+- **Deterministic results on stated inputs.** The Simulation page runs one model at a time;
+  the Scenario Lab composes the five registered models for one company. Every figure comes
+  from the user's figures and the models' stated assumptions; no result is a forecast
+  ([above](#simulation-phase-4), [the Lab](#scenario-lab-phase-5)).
 - **Illustrative network.** The 12 companies are fictional. The 41 relationships are
   modelling assumptions written for demonstration, each with a rationale, none estimated
   or validated. Do not use them to reason about real companies or markets.
@@ -124,13 +144,12 @@ The full list, with reasons, is in [`docs/simulation/limitations.md`](simulation
 ## Platform
 
 - **No authentication or authorisation.** Anyone who can reach the API can read all data,
-  change scenarios and add simulation runs. Local use only until Phase 10. For the same reason ingestion cannot
+  save scenarios, execute them and add simulation runs. Local use only until Phase 10. For the same reason ingestion cannot
   be started over HTTP. See [security.md](security.md).
 - **No inbound rate limiting, audit log or backups.** Outbound requests to providers are
   throttled; the API itself is not.
 - **Not containerised.** `docker-compose.yml` provides PostgreSQL only. Deployment is
   Phase 10.
-- **Scenario history.** Replacing a scenario overwrites it (last write wins).
 
 ## Verification (general)
 
