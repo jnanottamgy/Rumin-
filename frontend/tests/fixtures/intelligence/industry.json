@@ -1,0 +1,1346 @@
+{
+  "engine_version": "1.0.0",
+  "entity": {
+    "key": "industry:ind_air_transport",
+    "name": "Air transport",
+    "node_type": "industry",
+    "nature": "real",
+    "attributes": {
+      "classification_system": "ISIC Rev. 4",
+      "classification_code": "51",
+      "reference": "UN Statistics Division, ISIC Rev. 4, Division 51: Air transport."
+    }
+  },
+  "build": {
+    "id": 1,
+    "finished_at": "2026-09-24T09:50:08.752819Z",
+    "freshness": "current",
+    "message": "Built from the current sources (build #1)."
+  },
+  "thresholds": {
+    "relative_change_percent": "5",
+    "point_change": "1",
+    "price_move_percent": "5",
+    "anomaly_score": "3.5",
+    "trend_significance": "0.05",
+    "volatility_high_percentile": "80",
+    "dependency_share_percent": "50",
+    "min_history": 8,
+    "window": null
+  },
+  "exposure": {
+    "entity": {
+      "key": "industry:ind_air_transport",
+      "name": "Air transport",
+      "node_type": "industry",
+      "nature": "real",
+      "attributes": {
+        "classification_system": "ISIC Rev. 4",
+        "classification_code": "51",
+        "reference": "UN Statistics Division, ISIC Rev. 4, Division 51: Air transport."
+      }
+    },
+    "build_id": 1,
+    "evidence_filter": "any",
+    "paths": [
+      {
+        "origin": {
+          "key": "variable:var_jet_fuel",
+          "name": "Jet fuel price (U.S. Gulf Coast)",
+          "node_type": "economic_variable",
+          "nature": "real",
+          "attributes": {
+            "unit": "USD per gallon",
+            "frequency": "daily",
+            "category": "commodity",
+            "value_kind": "price",
+            "reference": "U.S. Energy Information Administration, U.S. Gulf Coast kerosene-type jet fuel spot price FOB (FRED series DJFUELUSGULF).",
+            "reference_url": "https://fred.stlouisfed.org/series/DJFUELUSGULF"
+          }
+        },
+        "variable": {
+          "key": "variable:var_jet_fuel",
+          "name": "Jet fuel price (U.S. Gulf Coast)",
+          "node_type": "economic_variable",
+          "nature": "real",
+          "attributes": {
+            "unit": "USD per gallon",
+            "frequency": "daily",
+            "category": "commodity",
+            "value_kind": "price",
+            "reference": "U.S. Energy Information Administration, U.S. Gulf Coast kerosene-type jet fuel spot price FOB (FRED series DJFUELUSGULF).",
+            "reference_url": "https://fred.stlouisfed.org/series/DJFUELUSGULF"
+          }
+        },
+        "channel": "costs",
+        "directness": "direct",
+        "base": "direct",
+        "industry": null,
+        "hops": [
+          {
+            "key": "variable:var_jet_fuel",
+            "name": "Jet fuel price (U.S. Gulf Coast)",
+            "node_type": "economic_variable",
+            "nature": "real",
+            "attributes": {
+              "unit": "USD per gallon",
+              "frequency": "daily",
+              "category": "commodity",
+              "value_kind": "price",
+              "reference": "U.S. Energy Information Administration, U.S. Gulf Coast kerosene-type jet fuel spot price FOB (FRED series DJFUELUSGULF).",
+              "reference_url": "https://fred.stlouisfed.org/series/DJFUELUSGULF"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "key": "e-df536e008d0660a5",
+            "edge_type": "affects_costs",
+            "label": "affects costs of",
+            "source": "variable:var_jet_fuel",
+            "target": "industry:ind_air_transport",
+            "evidence_status": "model_assumption",
+            "is_illustrative": true,
+            "quality_status": "validated",
+            "description": "The jet fuel price affects the costs of air transport.",
+            "caveat": "An assumed effect, not a measured one: it says nothing about size or timing, and entities of the same kind can be affected very differently. A connection is not evidence of causation.",
+            "polarity": "positive",
+            "strength": "strong",
+            "rationale": "Fuel is typically one of the largest operating costs for airlines.",
+            "evidence_level": "illustrative",
+            "stated_difference": null
+          }
+        ],
+        "evidence_status": "model_assumption",
+        "models": ["airline_fuel_cost"],
+        "group": "Commodities"
+      },
+      {
+        "origin": {
+          "key": "variable:var_brent_crude",
+          "name": "Brent crude oil price",
+          "node_type": "economic_variable",
+          "nature": "real",
+          "attributes": {
+            "unit": "USD per barrel",
+            "frequency": "daily",
+            "category": "commodity",
+            "value_kind": "price",
+            "reference": "U.S. Energy Information Administration, Europe Brent spot price FOB (FRED series DCOILBRENTEU).",
+            "reference_url": "https://fred.stlouisfed.org/series/DCOILBRENTEU"
+          }
+        },
+        "variable": {
+          "key": "variable:var_jet_fuel",
+          "name": "Jet fuel price (U.S. Gulf Coast)",
+          "node_type": "economic_variable",
+          "nature": "real",
+          "attributes": {
+            "unit": "USD per gallon",
+            "frequency": "daily",
+            "category": "commodity",
+            "value_kind": "price",
+            "reference": "U.S. Energy Information Administration, U.S. Gulf Coast kerosene-type jet fuel spot price FOB (FRED series DJFUELUSGULF).",
+            "reference_url": "https://fred.stlouisfed.org/series/DJFUELUSGULF"
+          }
+        },
+        "channel": "costs",
+        "directness": "upstream",
+        "base": "direct",
+        "industry": null,
+        "hops": [
+          {
+            "key": "variable:var_brent_crude",
+            "name": "Brent crude oil price",
+            "node_type": "economic_variable",
+            "nature": "real",
+            "attributes": {
+              "unit": "USD per barrel",
+              "frequency": "daily",
+              "category": "commodity",
+              "value_kind": "price",
+              "reference": "U.S. Energy Information Administration, Europe Brent spot price FOB (FRED series DCOILBRENTEU).",
+              "reference_url": "https://fred.stlouisfed.org/series/DCOILBRENTEU"
+            }
+          },
+          {
+            "key": "variable:var_jet_fuel",
+            "name": "Jet fuel price (U.S. Gulf Coast)",
+            "node_type": "economic_variable",
+            "nature": "real",
+            "attributes": {
+              "unit": "USD per gallon",
+              "frequency": "daily",
+              "category": "commodity",
+              "value_kind": "price",
+              "reference": "U.S. Energy Information Administration, U.S. Gulf Coast kerosene-type jet fuel spot price FOB (FRED series DJFUELUSGULF).",
+              "reference_url": "https://fred.stlouisfed.org/series/DJFUELUSGULF"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "key": "e-ea305310288a3f88",
+            "edge_type": "influences",
+            "label": "influences",
+            "source": "variable:var_brent_crude",
+            "target": "variable:var_jet_fuel",
+            "evidence_status": "model_assumption",
+            "is_illustrative": true,
+            "quality_status": "validated",
+            "description": "The Brent crude oil price influences the jet fuel price.",
+            "caveat": "Assumed transmission between two variables, not a statistical or causal estimate. A connection is not evidence of causation.",
+            "polarity": "positive",
+            "strength": "strong",
+            "rationale": "Jet fuel is refined from crude oil, so benchmark jet fuel prices generally move with crude prices. Refining margins (the crack spread) cause the two to diverge at times.",
+            "evidence_level": "illustrative",
+            "stated_difference": null
+          },
+          {
+            "key": "e-df536e008d0660a5",
+            "edge_type": "affects_costs",
+            "label": "affects costs of",
+            "source": "variable:var_jet_fuel",
+            "target": "industry:ind_air_transport",
+            "evidence_status": "model_assumption",
+            "is_illustrative": true,
+            "quality_status": "validated",
+            "description": "The jet fuel price affects the costs of air transport.",
+            "caveat": "An assumed effect, not a measured one: it says nothing about size or timing, and entities of the same kind can be affected very differently. A connection is not evidence of causation.",
+            "polarity": "positive",
+            "strength": "strong",
+            "rationale": "Fuel is typically one of the largest operating costs for airlines.",
+            "evidence_level": "illustrative",
+            "stated_difference": null
+          }
+        ],
+        "evidence_status": "model_assumption",
+        "models": ["airline_fuel_cost"],
+        "group": "Commodities"
+      }
+    ],
+    "counterparties": [
+      {
+        "relationship": "supplies_to",
+        "role": "supplier",
+        "counterparty": {
+          "key": "industry:ind_petroleum_refining",
+          "name": "Refined petroleum products",
+          "node_type": "industry",
+          "nature": "real",
+          "attributes": {
+            "classification_system": "ISIC Rev. 4",
+            "classification_code": "19",
+            "reference": "UN Statistics Division, ISIC Rev. 4, Division 19: Manufacture of coke and refined petroleum products."
+          }
+        },
+        "level": "company",
+        "edge": {
+          "key": "e-99232bd7d6028997",
+          "edge_type": "supplies_to",
+          "label": "supplies",
+          "source": "industry:ind_petroleum_refining",
+          "target": "industry:ind_air_transport",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true,
+          "quality_status": "validated",
+          "description": "Refined petroleum products supplies jet fuel to air transport.",
+          "caveat": "A recorded supply relationship. It does not say how large or how important it is.",
+          "polarity": "not_applicable",
+          "strength": "strong",
+          "rationale": "Airlines buy jet fuel produced by refiners.",
+          "evidence_level": "illustrative",
+          "stated_difference": null
+        }
+      }
+    ],
+    "context": [],
+    "series": [],
+    "flagged": [],
+    "removed_by_filter": 0,
+    "notes": [
+      "A stated exposure says that the entity is exposed, not how much: sizes come only from simulations with the user's own figures.",
+      "A connection in the graph is not evidence of causation.",
+      "None of these exposures is evidence-backed: each rests on at least one relationship recorded as a model assumption."
+    ],
+    "summary": {
+      "paths": 2,
+      "variables": 2,
+      "by_channel": {
+        "costs": 2
+      },
+      "by_directness": {
+        "direct": 1,
+        "upstream": 1
+      },
+      "by_group": {
+        "Commodities": 2
+      },
+      "by_evidence": {
+        "model_assumption": 2
+      }
+    },
+    "variables": [
+      {
+        "key": "variable:var_jet_fuel",
+        "name": "Jet fuel price (U.S. Gulf Coast)",
+        "node_type": "economic_variable",
+        "nature": "real",
+        "attributes": {
+          "unit": "USD per gallon",
+          "frequency": "daily",
+          "category": "commodity",
+          "value_kind": "price",
+          "reference": "U.S. Energy Information Administration, U.S. Gulf Coast kerosene-type jet fuel spot price FOB (FRED series DJFUELUSGULF).",
+          "reference_url": "https://fred.stlouisfed.org/series/DJFUELUSGULF"
+        }
+      },
+      {
+        "key": "variable:var_brent_crude",
+        "name": "Brent crude oil price",
+        "node_type": "economic_variable",
+        "nature": "real",
+        "attributes": {
+          "unit": "USD per barrel",
+          "frequency": "daily",
+          "category": "commodity",
+          "value_kind": "price",
+          "reference": "U.S. Energy Information Administration, Europe Brent spot price FOB (FRED series DCOILBRENTEU).",
+          "reference_url": "https://fred.stlouisfed.org/series/DCOILBRENTEU"
+        }
+      }
+    ]
+  },
+  "executions": [],
+  "drivers": null,
+  "previous": null,
+  "series": [],
+  "interpretations": [],
+  "not_interpreted": [],
+  "signals": [
+    {
+      "id": "exposure_breadth",
+      "name": "Exposure breadth",
+      "subject": {
+        "kind": "graph_node",
+        "id": "industry:ind_air_transport",
+        "label": "Air transport"
+      },
+      "status": "computed",
+      "level": null,
+      "level_label": null,
+      "summary": "2 variables reach Air transport through 2 validated paths.",
+      "values": [
+        {
+          "label": "Variables",
+          "value": "2",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [
+            {
+              "kind": "graph_build",
+              "id": "1",
+              "label": "Build #1"
+            }
+          ],
+          "period": null
+        },
+        {
+          "label": "Exposure paths",
+          "value": "2",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [
+            {
+              "kind": "graph_build",
+              "id": "1",
+              "label": "Build #1"
+            }
+          ],
+          "period": null
+        },
+        {
+          "label": "Paths to costs",
+          "value": "2",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Paths to revenue",
+          "value": "0",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Paths to financing",
+          "value": "0",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Direct paths",
+          "value": "1",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Via industry paths",
+          "value": "0",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Upstream paths",
+          "value": "1",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Paths resting on model assumption",
+          "value": "2",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "period": {
+        "kind": "graph_build",
+        "label": "Build #1",
+        "start": null,
+        "end": null
+      },
+      "inputs": [
+        {
+          "kind": "graph_build",
+          "id": "1",
+          "label": "Build #1"
+        }
+      ],
+      "thresholds": {},
+      "evidence": {
+        "grade": "assumed",
+        "conditional_on_simulation": false,
+        "includes_observations": false,
+        "statement": "Rests on at least one relationship recorded as a model assumption: an assumed effect with a written rationale, not an empirical finding.",
+        "weakest_step": 1
+      },
+      "limitations": [
+        "Counts relationships, not money: two exposures with equal counts can differ by orders of magnitude.",
+        "Only what the graph states is counted; an exposure the graph does not record is invisible."
+      ]
+    },
+    {
+      "id": "dependency",
+      "name": "Dependency",
+      "subject": {
+        "kind": "graph_node",
+        "id": "industry:ind_air_transport",
+        "label": "Air transport"
+      },
+      "status": "computed",
+      "level": "concentrated",
+      "level_label": "Concentrated",
+      "summary": "2 of 2 exposure paths pass through Jet fuel price (U.S. Gulf Coast).",
+      "values": [
+        {
+          "label": "Most shared variable",
+          "value": "Jet fuel price (U.S. Gulf Coast)",
+          "unit": null,
+          "basis": "calculation",
+          "refs": [
+            {
+              "kind": "graph_node",
+              "id": "variable:var_jet_fuel",
+              "label": "Jet fuel price (U.S. Gulf Coast)"
+            }
+          ],
+          "period": null
+        },
+        {
+          "label": "Paths through it",
+          "value": "2",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Exposure paths",
+          "value": "2",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Share of paths",
+          "value": "100",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Suppliers",
+          "value": "1",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Customers",
+          "value": "0",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Lenders",
+          "value": "0",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Borrowers",
+          "value": "0",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "period": {
+        "kind": "graph_build",
+        "label": "Build #1",
+        "start": null,
+        "end": null
+      },
+      "inputs": [
+        {
+          "kind": "graph_build",
+          "id": "1",
+          "label": "Build #1"
+        }
+      ],
+      "thresholds": {
+        "dependency_share_percent": "50"
+      },
+      "evidence": {
+        "grade": "assumed",
+        "conditional_on_simulation": false,
+        "includes_observations": false,
+        "statement": "Rests on at least one relationship recorded as a model assumption: an assumed effect with a written rationale, not an empirical finding.",
+        "weakest_step": 1
+      },
+      "limitations": [
+        "A share of relationships, not of costs or revenue.",
+        "Supply and credit relationships say nothing about size or terms."
+      ]
+    }
+  ],
+  "insights": [
+    {
+      "id": "ins-56c4f53de635faf1",
+      "rule": "E01",
+      "rule_title": "Stated exposure",
+      "kind": "exposure",
+      "headline": "Air transport is exposed to Brent crude oil price",
+      "statement": "The knowledge graph states that Brent crude oil price reaches Air transport's costs through Jet fuel price (U.S. Gulf Coast) (assumed to transmit), which reaches it directly.",
+      "subject": {
+        "kind": "graph_node",
+        "id": "industry:ind_air_transport",
+        "label": "Air transport"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "industry:ind_air_transport",
+          "label": "Air transport"
+        },
+        {
+          "kind": "graph_node",
+          "id": "variable:var_brent_crude",
+          "label": "Brent crude oil price"
+        },
+        {
+          "kind": "graph_node",
+          "id": "variable:var_jet_fuel",
+          "label": "Jet fuel price (U.S. Gulf Coast)"
+        }
+      ],
+      "relationships": [
+        {
+          "edge_key": "e-ea305310288a3f88",
+          "edge_type": "influences",
+          "label": "influences",
+          "source": "variable:var_brent_crude",
+          "source_name": "Brent crude oil price",
+          "target": "variable:var_jet_fuel",
+          "target_name": "Jet fuel price (U.S. Gulf Coast)",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-df536e008d0660a5",
+          "edge_type": "affects_costs",
+          "label": "affects costs of",
+          "source": "variable:var_jet_fuel",
+          "source_name": "Jet fuel price (U.S. Gulf Coast)",
+          "target": "industry:ind_air_transport",
+          "target_name": "Air transport",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        }
+      ],
+      "period": {
+        "kind": "graph_build",
+        "label": "Build #1",
+        "start": null,
+        "end": null
+      },
+      "facts": [
+        {
+          "label": "Paths",
+          "value": "1",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Channels",
+          "value": "costs",
+          "unit": null,
+          "basis": "relationship",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Models that can simulate it",
+          "value": "airline_fuel_cost",
+          "unit": null,
+          "basis": "record",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [],
+      "evidence": {
+        "grade": "assumed",
+        "conditional_on_simulation": false,
+        "includes_observations": false,
+        "statement": "Rests on at least one relationship recorded as a model assumption: an assumed effect with a written rationale, not an empirical finding.",
+        "weakest_step": 1
+      },
+      "chain": [
+        {
+          "basis": "record",
+          "text": "Knowledge-graph build #1",
+          "refs": [
+            {
+              "kind": "graph_build",
+              "id": "1",
+              "label": "Build #1"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Brent crude oil price influences Jet fuel price (U.S. Gulf Coast)",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-ea305310288a3f88",
+              "label": "Brent crude oil price influences Jet fuel price (U.S. Gulf Coast)"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Jet fuel price (U.S. Gulf Coast) affects costs of Air transport",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-df536e008d0660a5",
+              "label": "Jet fuel price (U.S. Gulf Coast) affects costs of Air transport"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "assumptions": [
+        "Brent crude oil price influences Jet fuel price (U.S. Gulf Coast): Jet fuel is refined from crude oil, so benchmark jet fuel prices generally move with crude prices. Refining margins (the crack spread) cause the two to diverge at times.",
+        "Jet fuel price (U.S. Gulf Coast) affects costs of Air transport: Fuel is typically one of the largest operating costs for airlines."
+      ],
+      "limitations": [
+        "influences: Assumed transmission between two variables, not a statistical or causal estimate. A connection is not evidence of causation.",
+        "affects costs of: An assumed effect, not a measured one: it says nothing about size or timing, and entities of the same kind can be affected very differently. A connection is not evidence of causation.",
+        "A stated exposure says that the entity is exposed, not how much: sizes come only from simulations with the user's own figures.",
+        "A connection in the graph is not evidence of causation."
+      ],
+      "next_steps": [
+        {
+          "action": "run_template",
+          "text": "Simulate it: start the “Crude oil shock on an airline” template for Air transport.",
+          "target": {
+            "kind": "template",
+            "id": "crude_oil_airline",
+            "label": "Crude oil shock on an airline"
+          }
+        },
+        {
+          "action": "find_evidence",
+          "text": "The relationship is recorded as a model assumption: look for a cited source before relying on it.",
+          "target": {
+            "kind": "graph_edge",
+            "id": "e-df536e008d0660a5",
+            "label": null
+          }
+        }
+      ],
+      "sources": [
+        {
+          "kind": "graph_build",
+          "id": "1",
+          "label": "Build #1"
+        }
+      ]
+    },
+    {
+      "id": "ins-7900d56033a41e24",
+      "rule": "E01",
+      "rule_title": "Stated exposure",
+      "kind": "exposure",
+      "headline": "Air transport is exposed to Jet fuel price (U.S. Gulf Coast)",
+      "statement": "The knowledge graph states that Jet fuel price (U.S. Gulf Coast) reaches Air transport's costs directly.",
+      "subject": {
+        "kind": "graph_node",
+        "id": "industry:ind_air_transport",
+        "label": "Air transport"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "industry:ind_air_transport",
+          "label": "Air transport"
+        },
+        {
+          "kind": "graph_node",
+          "id": "variable:var_jet_fuel",
+          "label": "Jet fuel price (U.S. Gulf Coast)"
+        }
+      ],
+      "relationships": [
+        {
+          "edge_key": "e-df536e008d0660a5",
+          "edge_type": "affects_costs",
+          "label": "affects costs of",
+          "source": "variable:var_jet_fuel",
+          "source_name": "Jet fuel price (U.S. Gulf Coast)",
+          "target": "industry:ind_air_transport",
+          "target_name": "Air transport",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        }
+      ],
+      "period": {
+        "kind": "graph_build",
+        "label": "Build #1",
+        "start": null,
+        "end": null
+      },
+      "facts": [
+        {
+          "label": "Paths",
+          "value": "1",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Channels",
+          "value": "costs",
+          "unit": null,
+          "basis": "relationship",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Models that can simulate it",
+          "value": "airline_fuel_cost",
+          "unit": null,
+          "basis": "record",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [],
+      "evidence": {
+        "grade": "assumed",
+        "conditional_on_simulation": false,
+        "includes_observations": false,
+        "statement": "Rests on at least one relationship recorded as a model assumption: an assumed effect with a written rationale, not an empirical finding.",
+        "weakest_step": 1
+      },
+      "chain": [
+        {
+          "basis": "record",
+          "text": "Knowledge-graph build #1",
+          "refs": [
+            {
+              "kind": "graph_build",
+              "id": "1",
+              "label": "Build #1"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Jet fuel price (U.S. Gulf Coast) affects costs of Air transport",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-df536e008d0660a5",
+              "label": "Jet fuel price (U.S. Gulf Coast) affects costs of Air transport"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "assumptions": [
+        "Jet fuel price (U.S. Gulf Coast) affects costs of Air transport: Fuel is typically one of the largest operating costs for airlines."
+      ],
+      "limitations": [
+        "affects costs of: An assumed effect, not a measured one: it says nothing about size or timing, and entities of the same kind can be affected very differently. A connection is not evidence of causation.",
+        "A stated exposure says that the entity is exposed, not how much: sizes come only from simulations with the user's own figures.",
+        "A connection in the graph is not evidence of causation."
+      ],
+      "next_steps": [
+        {
+          "action": "run_template",
+          "text": "Simulate it: start the “Jet fuel price shock” template for Air transport.",
+          "target": {
+            "kind": "template",
+            "id": "jet_fuel_airline",
+            "label": "Jet fuel price shock"
+          }
+        },
+        {
+          "action": "find_evidence",
+          "text": "The relationship is recorded as a model assumption: look for a cited source before relying on it.",
+          "target": {
+            "kind": "graph_edge",
+            "id": "e-df536e008d0660a5",
+            "label": null
+          }
+        }
+      ],
+      "sources": [
+        {
+          "kind": "graph_build",
+          "id": "1",
+          "label": "Build #1"
+        }
+      ]
+    },
+    {
+      "id": "ins-5043f4eb3267d978",
+      "rule": "E02",
+      "rule_title": "Concentrated dependency",
+      "kind": "dependency",
+      "headline": "Air transport's stated exposures depend on Jet fuel price (U.S. Gulf Coast)",
+      "statement": "2 of Air transport's 2 exposure paths (100.00 %) pass through Jet fuel price (U.S. Gulf Coast). This counts relationships, not money.",
+      "subject": {
+        "kind": "graph_node",
+        "id": "industry:ind_air_transport",
+        "label": "Air transport"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "industry:ind_air_transport",
+          "label": "Air transport"
+        },
+        {
+          "kind": "graph_node",
+          "id": "variable:var_jet_fuel",
+          "label": "Jet fuel price (U.S. Gulf Coast)"
+        }
+      ],
+      "relationships": [
+        {
+          "edge_key": "e-df536e008d0660a5",
+          "edge_type": "affects_costs",
+          "label": "affects costs of",
+          "source": "variable:var_jet_fuel",
+          "source_name": "Jet fuel price (U.S. Gulf Coast)",
+          "target": "industry:ind_air_transport",
+          "target_name": "Air transport",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-ea305310288a3f88",
+          "edge_type": "influences",
+          "label": "influences",
+          "source": "variable:var_brent_crude",
+          "source_name": "Brent crude oil price",
+          "target": "variable:var_jet_fuel",
+          "target_name": "Jet fuel price (U.S. Gulf Coast)",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        }
+      ],
+      "period": {
+        "kind": "graph_build",
+        "label": "Build #1",
+        "start": null,
+        "end": null
+      },
+      "facts": [
+        {
+          "label": "Most shared variable",
+          "value": "Jet fuel price (U.S. Gulf Coast)",
+          "unit": null,
+          "basis": "calculation",
+          "refs": [
+            {
+              "kind": "graph_node",
+              "id": "variable:var_jet_fuel",
+              "label": "Jet fuel price (U.S. Gulf Coast)"
+            }
+          ],
+          "period": null
+        },
+        {
+          "label": "Paths through it",
+          "value": "2",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Exposure paths",
+          "value": "2",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Share of paths",
+          "value": "100",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Suppliers",
+          "value": "1",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Customers",
+          "value": "0",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Lenders",
+          "value": "0",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Borrowers",
+          "value": "0",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [],
+      "evidence": {
+        "grade": "assumed",
+        "conditional_on_simulation": false,
+        "includes_observations": false,
+        "statement": "Rests on at least one relationship recorded as a model assumption: an assumed effect with a written rationale, not an empirical finding.",
+        "weakest_step": 1
+      },
+      "chain": [
+        {
+          "basis": "record",
+          "text": "Knowledge-graph build #1",
+          "refs": [
+            {
+              "kind": "graph_build",
+              "id": "1",
+              "label": "Build #1"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Jet fuel price (U.S. Gulf Coast) affects costs of Air transport",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-df536e008d0660a5",
+              "label": "Jet fuel price (U.S. Gulf Coast) affects costs of Air transport"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Brent crude oil price influences Jet fuel price (U.S. Gulf Coast)",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-ea305310288a3f88",
+              "label": "Brent crude oil price influences Jet fuel price (U.S. Gulf Coast)"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "calculation",
+          "text": "Share of exposure paths through each variable",
+          "refs": [],
+          "evidence_status": null,
+          "value": "100",
+          "unit": "percent"
+        },
+        {
+          "basis": "threshold",
+          "text": "Concentrated at or above 50 % of paths",
+          "refs": [
+            {
+              "kind": "threshold",
+              "id": "dependency_share_percent",
+              "label": null
+            }
+          ],
+          "evidence_status": null,
+          "value": "50",
+          "unit": "percent"
+        }
+      ],
+      "assumptions": [
+        "Jet fuel price (U.S. Gulf Coast) affects costs of Air transport: Fuel is typically one of the largest operating costs for airlines.",
+        "Brent crude oil price influences Jet fuel price (U.S. Gulf Coast): Jet fuel is refined from crude oil, so benchmark jet fuel prices generally move with crude prices. Refining margins (the crack spread) cause the two to diverge at times."
+      ],
+      "limitations": [
+        "A share of relationships, not of costs or revenue.",
+        "Supply and credit relationships say nothing about size or terms."
+      ],
+      "next_steps": [],
+      "sources": [
+        {
+          "kind": "graph_build",
+          "id": "1",
+          "label": "Build #1"
+        }
+      ]
+    },
+    {
+      "id": "ins-82cc67b7b2d291a3",
+      "rule": "E03",
+      "rule_title": "Supply and credit relationships",
+      "kind": "counterparty",
+      "headline": "Air transport's supply and credit relationships",
+      "statement": "In the knowledge graph, Air transport is supplied by Refined petroleum products.",
+      "subject": {
+        "kind": "graph_node",
+        "id": "industry:ind_air_transport",
+        "label": "Air transport"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "industry:ind_air_transport",
+          "label": "Air transport"
+        },
+        {
+          "kind": "graph_node",
+          "id": "industry:ind_petroleum_refining",
+          "label": "Refined petroleum products"
+        }
+      ],
+      "relationships": [
+        {
+          "edge_key": "e-99232bd7d6028997",
+          "edge_type": "supplies_to",
+          "label": "supplies",
+          "source": "industry:ind_petroleum_refining",
+          "source_name": "Refined petroleum products",
+          "target": "industry:ind_air_transport",
+          "target_name": "Air transport",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        }
+      ],
+      "period": {
+        "kind": "graph_build",
+        "label": "Build #1",
+        "start": null,
+        "end": null
+      },
+      "facts": [],
+      "models": [],
+      "evidence": {
+        "grade": "assumed",
+        "conditional_on_simulation": false,
+        "includes_observations": false,
+        "statement": "Rests on at least one relationship recorded as a model assumption: an assumed effect with a written rationale, not an empirical finding.",
+        "weakest_step": 1
+      },
+      "chain": [
+        {
+          "basis": "record",
+          "text": "Knowledge-graph build #1",
+          "refs": [
+            {
+              "kind": "graph_build",
+              "id": "1",
+              "label": "Build #1"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Refined petroleum products supplies Air transport",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-99232bd7d6028997",
+              "label": "Refined petroleum products supplies Air transport"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "assumptions": [],
+      "limitations": [
+        "supplies: A recorded supply relationship. It does not say how large or how important it is.",
+        "A connection in the graph is not evidence of causation."
+      ],
+      "next_steps": [],
+      "sources": []
+    },
+    {
+      "id": "ins-aad2dcb53b738829",
+      "rule": "C01",
+      "rule_title": "What is and is not covered",
+      "kind": "coverage",
+      "headline": "What RUMIN can say about Air transport",
+      "statement": "The knowledge graph states that 2 variables reach Air transport: 0 simulated in the latest stored execution, 2 simulatable by a registered model, 0 with stored observations of a related series.",
+      "subject": {
+        "kind": "graph_node",
+        "id": "industry:ind_air_transport",
+        "label": "Air transport"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "industry:ind_air_transport",
+          "label": "Air transport"
+        }
+      ],
+      "relationships": [],
+      "period": {
+        "kind": "graph_build",
+        "label": "Build #1",
+        "start": null,
+        "end": null
+      },
+      "facts": [
+        {
+          "label": "Variables reaching the entity",
+          "value": "2",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Simulated in the latest execution",
+          "value": "0",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Simulatable by a registered model",
+          "value": "2",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "With stored observations",
+          "value": "0",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Simulated without a stated exposure",
+          "value": "0",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [],
+      "evidence": {
+        "grade": "observed",
+        "conditional_on_simulation": false,
+        "includes_observations": false,
+        "statement": "Rests on stored observations, exact calculations on them and RUMIN's own records.",
+        "weakest_step": 0
+      },
+      "chain": [
+        {
+          "basis": "record",
+          "text": "Knowledge-graph build #1",
+          "refs": [
+            {
+              "kind": "graph_build",
+              "id": "1",
+              "label": "Build #1"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        }
+      ],
+      "assumptions": [],
+      "limitations": [
+        "A stated exposure says that the entity is exposed, not how much: sizes come only from simulations with the user's own figures."
+      ],
+      "next_steps": [
+        {
+          "action": "run_scenario",
+          "text": "No execution is stored for Air transport: run a scenario to size its exposures.",
+          "target": {
+            "kind": "graph_node",
+            "id": "industry:ind_air_transport",
+            "label": "Air transport"
+          }
+        }
+      ],
+      "sources": []
+    }
+  ],
+  "grades": {
+    "observed": 1,
+    "documented": 0,
+    "curated": 0,
+    "simulated": 0,
+    "assumed": 4,
+    "unverified": 0
+  },
+  "kinds": {
+    "exposure": 2,
+    "dependency": 1,
+    "counterparty": 1,
+    "coverage": 1
+  },
+  "next_steps": [
+    {
+      "action": "run_template",
+      "text": "Simulate it: start the “Crude oil shock on an airline” template for Air transport.",
+      "target": {
+        "kind": "template",
+        "id": "crude_oil_airline",
+        "label": "Crude oil shock on an airline"
+      }
+    },
+    {
+      "action": "find_evidence",
+      "text": "The relationship is recorded as a model assumption: look for a cited source before relying on it.",
+      "target": {
+        "kind": "graph_edge",
+        "id": "e-df536e008d0660a5",
+        "label": null
+      }
+    },
+    {
+      "action": "run_template",
+      "text": "Simulate it: start the “Jet fuel price shock” template for Air transport.",
+      "target": {
+        "kind": "template",
+        "id": "jet_fuel_airline",
+        "label": "Jet fuel price shock"
+      }
+    },
+    {
+      "action": "run_scenario",
+      "text": "No execution is stored for Air transport: run a scenario to size its exposures.",
+      "target": {
+        "kind": "graph_node",
+        "id": "industry:ind_air_transport",
+        "label": "Air transport"
+      }
+    }
+  ]
+}

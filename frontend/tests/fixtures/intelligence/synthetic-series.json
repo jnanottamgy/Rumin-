@@ -1,0 +1,1934 @@
+{
+  "build": {
+    "id": 1,
+    "finished_at": "2026-09-24T09:50:08.752819Z",
+    "freshness": "stale",
+    "message": "The sources changed after build #1. The graph shows the data as it was then; run `make graph` to rebuild it."
+  },
+  "thresholds": {
+    "relative_change_percent": "5",
+    "point_change": "1",
+    "price_move_percent": "5",
+    "anomaly_score": "3.5",
+    "trend_significance": "0.05",
+    "volatility_high_percentile": "80",
+    "dependency_share_percent": "50",
+    "min_history": 8,
+    "window": null
+  },
+  "analysis": {
+    "subject": {
+      "kind": "series",
+      "id": "wb-ind-pa-nus-fcrf",
+      "name": "Official exchange rate (INR per US$, period average) — India",
+      "unit": "INR per USD",
+      "frequency": "annual",
+      "measure": "relative",
+      "variable_id": "var_usd_inr",
+      "variable_relation": "An annual average of the official exchange rate, not the same measure: the variable is defined as a daily market rate. Annual averages smooth out movements within the year.",
+      "country": "IND",
+      "dataset": {
+        "id": "worldbank-wdi",
+        "name": "World Development Indicators",
+        "version": "catalogue 1.0.0",
+        "is_illustrative": false,
+        "license": "CC BY 4.0",
+        "attribution": "The World Bank: World Development Indicators. The original source of each series is named on the series."
+      },
+      "change_unit": "percent"
+    },
+    "points": [
+      {
+        "label": "2010",
+        "start": "2010-01-01",
+        "value": "45.7",
+        "record_id": 1,
+        "revision": 1,
+        "quality_status": "validated",
+        "flags": null,
+        "retrieved_at": "2026-09-23T12:00:06Z",
+        "last_confirmed_at": "2026-09-23T12:00:28Z"
+      },
+      {
+        "label": "2011",
+        "start": "2011-01-01",
+        "value": "46.6",
+        "record_id": 2,
+        "revision": 1,
+        "quality_status": "validated",
+        "flags": null,
+        "retrieved_at": "2026-09-23T12:00:06Z",
+        "last_confirmed_at": "2026-09-23T12:00:28Z"
+      },
+      {
+        "label": "2012",
+        "start": "2012-01-01",
+        "value": "53.4",
+        "record_id": 3,
+        "revision": 1,
+        "quality_status": "validated",
+        "flags": null,
+        "retrieved_at": "2026-09-23T12:00:06Z",
+        "last_confirmed_at": "2026-09-23T12:00:28Z"
+      },
+      {
+        "label": "2013",
+        "start": "2013-01-01",
+        "value": "58.6",
+        "record_id": 4,
+        "revision": 1,
+        "quality_status": "validated",
+        "flags": null,
+        "retrieved_at": "2026-09-23T12:00:06Z",
+        "last_confirmed_at": "2026-09-23T12:00:28Z"
+      },
+      {
+        "label": "2014",
+        "start": "2014-01-01",
+        "value": "61",
+        "record_id": 5,
+        "revision": 1,
+        "quality_status": "validated",
+        "flags": null,
+        "retrieved_at": "2026-09-23T12:00:06Z",
+        "last_confirmed_at": "2026-09-23T12:00:28Z"
+      },
+      {
+        "label": "2015",
+        "start": "2015-01-01",
+        "value": "64.2",
+        "record_id": 6,
+        "revision": 1,
+        "quality_status": "validated",
+        "flags": null,
+        "retrieved_at": "2026-09-23T12:00:06Z",
+        "last_confirmed_at": "2026-09-23T12:00:28Z"
+      },
+      {
+        "label": "2016",
+        "start": "2016-01-01",
+        "value": "67.2",
+        "record_id": 7,
+        "revision": 1,
+        "quality_status": "validated",
+        "flags": null,
+        "retrieved_at": "2026-09-23T12:00:06Z",
+        "last_confirmed_at": "2026-09-23T12:00:28Z"
+      },
+      {
+        "label": "2017",
+        "start": "2017-01-01",
+        "value": "65.1",
+        "record_id": 8,
+        "revision": 1,
+        "quality_status": "validated",
+        "flags": null,
+        "retrieved_at": "2026-09-23T12:00:06Z",
+        "last_confirmed_at": "2026-09-23T12:00:28Z"
+      },
+      {
+        "label": "2018",
+        "start": "2018-01-01",
+        "value": "68.4",
+        "record_id": 9,
+        "revision": 1,
+        "quality_status": "validated",
+        "flags": null,
+        "retrieved_at": "2026-09-23T12:00:06Z",
+        "last_confirmed_at": "2026-09-23T12:00:28Z"
+      },
+      {
+        "label": "2019",
+        "start": "2019-01-01",
+        "value": "70.4",
+        "record_id": 10,
+        "revision": 1,
+        "quality_status": "validated",
+        "flags": null,
+        "retrieved_at": "2026-09-23T12:00:06Z",
+        "last_confirmed_at": "2026-09-23T12:00:28Z"
+      },
+      {
+        "label": "2020",
+        "start": "2020-01-01",
+        "value": "74.1",
+        "record_id": 11,
+        "revision": 1,
+        "quality_status": "validated",
+        "flags": null,
+        "retrieved_at": "2026-09-23T12:00:06Z",
+        "last_confirmed_at": "2026-09-23T12:00:28Z"
+      },
+      {
+        "label": "2021",
+        "start": "2021-01-01",
+        "value": "73.9",
+        "record_id": 12,
+        "revision": 1,
+        "quality_status": "validated",
+        "flags": null,
+        "retrieved_at": "2026-09-23T12:00:06Z",
+        "last_confirmed_at": "2026-09-23T12:00:28Z"
+      },
+      {
+        "label": "2022",
+        "start": "2022-01-01",
+        "value": "78.6",
+        "record_id": 13,
+        "revision": 1,
+        "quality_status": "validated",
+        "flags": null,
+        "retrieved_at": "2026-09-23T12:00:06Z",
+        "last_confirmed_at": "2026-09-23T12:00:28Z"
+      },
+      {
+        "label": "2023",
+        "start": "2023-01-01",
+        "value": "82.6",
+        "record_id": 14,
+        "revision": 1,
+        "quality_status": "validated",
+        "flags": null,
+        "retrieved_at": "2026-09-23T12:00:06Z",
+        "last_confirmed_at": "2026-09-23T12:00:28Z"
+      },
+      {
+        "label": "2024",
+        "start": "2024-01-01",
+        "value": "84.2",
+        "record_id": 29,
+        "revision": 2,
+        "quality_status": "validated",
+        "flags": null,
+        "retrieved_at": "2026-09-23T12:00:28Z",
+        "last_confirmed_at": "2026-09-23T12:00:28Z"
+      },
+      {
+        "label": "2025",
+        "start": "2025-01-01",
+        "value": "92.1",
+        "record_id": 16,
+        "revision": 1,
+        "quality_status": "validated",
+        "flags": null,
+        "retrieved_at": "2026-09-23T12:00:06Z",
+        "last_confirmed_at": "2026-09-23T12:00:28Z"
+      }
+    ],
+    "points_total": 16,
+    "changes": [
+      {
+        "earlier": {
+          "label": "2010",
+          "start": "2010-01-01",
+          "value": "45.7",
+          "record_id": 1,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "later": {
+          "label": "2011",
+          "start": "2011-01-01",
+          "value": "46.6",
+          "record_id": 2,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "value": "1.9693654267",
+        "direction": "up",
+        "flagged": false
+      },
+      {
+        "earlier": {
+          "label": "2011",
+          "start": "2011-01-01",
+          "value": "46.6",
+          "record_id": 2,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "later": {
+          "label": "2012",
+          "start": "2012-01-01",
+          "value": "53.4",
+          "record_id": 3,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "value": "14.5922746781",
+        "direction": "up",
+        "flagged": false
+      },
+      {
+        "earlier": {
+          "label": "2012",
+          "start": "2012-01-01",
+          "value": "53.4",
+          "record_id": 3,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "later": {
+          "label": "2013",
+          "start": "2013-01-01",
+          "value": "58.6",
+          "record_id": 4,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "value": "9.7378277154",
+        "direction": "up",
+        "flagged": false
+      },
+      {
+        "earlier": {
+          "label": "2013",
+          "start": "2013-01-01",
+          "value": "58.6",
+          "record_id": 4,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "later": {
+          "label": "2014",
+          "start": "2014-01-01",
+          "value": "61",
+          "record_id": 5,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "value": "4.0955631399",
+        "direction": "up",
+        "flagged": false
+      },
+      {
+        "earlier": {
+          "label": "2014",
+          "start": "2014-01-01",
+          "value": "61",
+          "record_id": 5,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "later": {
+          "label": "2015",
+          "start": "2015-01-01",
+          "value": "64.2",
+          "record_id": 6,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "value": "5.2459016393",
+        "direction": "up",
+        "flagged": false
+      },
+      {
+        "earlier": {
+          "label": "2015",
+          "start": "2015-01-01",
+          "value": "64.2",
+          "record_id": 6,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "later": {
+          "label": "2016",
+          "start": "2016-01-01",
+          "value": "67.2",
+          "record_id": 7,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "value": "4.6728971963",
+        "direction": "up",
+        "flagged": false
+      },
+      {
+        "earlier": {
+          "label": "2016",
+          "start": "2016-01-01",
+          "value": "67.2",
+          "record_id": 7,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "later": {
+          "label": "2017",
+          "start": "2017-01-01",
+          "value": "65.1",
+          "record_id": 8,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "value": "-3.125",
+        "direction": "down",
+        "flagged": false
+      },
+      {
+        "earlier": {
+          "label": "2017",
+          "start": "2017-01-01",
+          "value": "65.1",
+          "record_id": 8,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "later": {
+          "label": "2018",
+          "start": "2018-01-01",
+          "value": "68.4",
+          "record_id": 9,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "value": "5.069124424",
+        "direction": "up",
+        "flagged": false
+      },
+      {
+        "earlier": {
+          "label": "2018",
+          "start": "2018-01-01",
+          "value": "68.4",
+          "record_id": 9,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "later": {
+          "label": "2019",
+          "start": "2019-01-01",
+          "value": "70.4",
+          "record_id": 10,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "value": "2.9239766082",
+        "direction": "up",
+        "flagged": false
+      },
+      {
+        "earlier": {
+          "label": "2019",
+          "start": "2019-01-01",
+          "value": "70.4",
+          "record_id": 10,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "later": {
+          "label": "2020",
+          "start": "2020-01-01",
+          "value": "74.1",
+          "record_id": 11,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "value": "5.2556818182",
+        "direction": "up",
+        "flagged": false
+      },
+      {
+        "earlier": {
+          "label": "2020",
+          "start": "2020-01-01",
+          "value": "74.1",
+          "record_id": 11,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "later": {
+          "label": "2021",
+          "start": "2021-01-01",
+          "value": "73.9",
+          "record_id": 12,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "value": "-0.2699055331",
+        "direction": "down",
+        "flagged": false
+      },
+      {
+        "earlier": {
+          "label": "2021",
+          "start": "2021-01-01",
+          "value": "73.9",
+          "record_id": 12,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "later": {
+          "label": "2022",
+          "start": "2022-01-01",
+          "value": "78.6",
+          "record_id": 13,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "value": "6.3599458728",
+        "direction": "up",
+        "flagged": false
+      },
+      {
+        "earlier": {
+          "label": "2022",
+          "start": "2022-01-01",
+          "value": "78.6",
+          "record_id": 13,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "later": {
+          "label": "2023",
+          "start": "2023-01-01",
+          "value": "82.6",
+          "record_id": 14,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "value": "5.0890585242",
+        "direction": "up",
+        "flagged": false
+      },
+      {
+        "earlier": {
+          "label": "2023",
+          "start": "2023-01-01",
+          "value": "82.6",
+          "record_id": 14,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "later": {
+          "label": "2024",
+          "start": "2024-01-01",
+          "value": "84.2",
+          "record_id": 29,
+          "revision": 2,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:28Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "value": "1.9370460048",
+        "direction": "up",
+        "flagged": false
+      },
+      {
+        "earlier": {
+          "label": "2024",
+          "start": "2024-01-01",
+          "value": "84.2",
+          "record_id": 29,
+          "revision": 2,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:28Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "later": {
+          "label": "2025",
+          "start": "2025-01-01",
+          "value": "92.1",
+          "record_id": 16,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "value": "9.3824228029",
+        "direction": "up",
+        "flagged": false
+      }
+    ],
+    "changes_total": 15,
+    "threshold_name": "relative_change_percent",
+    "threshold": "5",
+    "detected": [
+      {
+        "earlier": {
+          "label": "2021",
+          "start": "2021-01-01",
+          "value": "73.9",
+          "record_id": 12,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "later": {
+          "label": "2022",
+          "start": "2022-01-01",
+          "value": "78.6",
+          "record_id": 13,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "value": "6.3599458728",
+        "direction": "up",
+        "flagged": false
+      },
+      {
+        "earlier": {
+          "label": "2022",
+          "start": "2022-01-01",
+          "value": "78.6",
+          "record_id": 13,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "later": {
+          "label": "2023",
+          "start": "2023-01-01",
+          "value": "82.6",
+          "record_id": 14,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "value": "5.0890585242",
+        "direction": "up",
+        "flagged": false
+      },
+      {
+        "earlier": {
+          "label": "2024",
+          "start": "2024-01-01",
+          "value": "84.2",
+          "record_id": 29,
+          "revision": 2,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:28Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "later": {
+          "label": "2025",
+          "start": "2025-01-01",
+          "value": "92.1",
+          "record_id": 16,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "value": "9.3824228029",
+        "direction": "up",
+        "flagged": false
+      }
+    ],
+    "latest": {
+      "earlier": {
+        "label": "2024",
+        "start": "2024-01-01",
+        "value": "84.2",
+        "record_id": 29,
+        "revision": 2,
+        "quality_status": "validated",
+        "flags": null,
+        "retrieved_at": "2026-09-23T12:00:28Z",
+        "last_confirmed_at": "2026-09-23T12:00:28Z"
+      },
+      "later": {
+        "label": "2025",
+        "start": "2025-01-01",
+        "value": "92.1",
+        "record_id": 16,
+        "revision": 1,
+        "quality_status": "validated",
+        "flags": null,
+        "retrieved_at": "2026-09-23T12:00:06Z",
+        "last_confirmed_at": "2026-09-23T12:00:28Z"
+      },
+      "value": "9.3824228029",
+      "direction": "up",
+      "flagged": false
+    },
+    "trend": {
+      "window": 5,
+      "n": 5,
+      "first": "2021",
+      "last": "2025",
+      "slope": "4.2",
+      "relative_slope": "5.1045211473",
+      "t": "8.3511494668",
+      "critical": "3.182",
+      "significance": "0.05",
+      "direction": "rising",
+      "exact_fit": false
+    },
+    "volatility": {
+      "window": 5,
+      "latest": "3.7737637905",
+      "windows": 10,
+      "percentile": "72.7272727273",
+      "median_earlier": "3.5414476036",
+      "level": "not_high",
+      "first": "2020",
+      "last": "2025"
+    },
+    "anomaly": {
+      "change": {
+        "earlier": {
+          "label": "2024",
+          "start": "2024-01-01",
+          "value": "84.2",
+          "record_id": 29,
+          "revision": 2,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:28Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "later": {
+          "label": "2025",
+          "start": "2025-01-01",
+          "value": "92.1",
+          "record_id": 16,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "value": "9.3824228029",
+        "direction": "up",
+        "flagged": false
+      },
+      "reference": 14,
+      "score": "1.771230855",
+      "level": "not_unusual"
+    },
+    "revisions": [
+      {
+        "label": "2024",
+        "start": "2024-01-01",
+        "previous": "83.7",
+        "revised": "84.2",
+        "previous_revision": 1,
+        "revised_at": "2026-09-23T12:00:28Z",
+        "previous_id": 15,
+        "revised_id": 29,
+        "change": "0.5973715651"
+      }
+    ],
+    "signals": [
+      {
+        "id": "trend",
+        "name": "Trend",
+        "subject": {
+          "kind": "series",
+          "id": "wb-ind-pa-nus-fcrf",
+          "label": "Official exchange rate (INR per US$, period average) — India"
+        },
+        "status": "computed",
+        "level": "rising",
+        "level_label": "Rising",
+        "summary": "Rising over 2021 to 2025.",
+        "values": [
+          {
+            "label": "Slope per period",
+            "value": "4.2",
+            "unit": "INR per USD",
+            "basis": "calculation",
+            "refs": [],
+            "period": null
+          },
+          {
+            "label": "Slope per period, relative to the window's mean",
+            "value": "5.1045211473",
+            "unit": "percent",
+            "basis": "calculation",
+            "refs": [],
+            "period": null
+          },
+          {
+            "label": "t statistic",
+            "value": "8.3511494668",
+            "unit": null,
+            "basis": "calculation",
+            "refs": [],
+            "period": null
+          },
+          {
+            "label": "Critical value",
+            "value": "3.182",
+            "unit": null,
+            "basis": "calculation",
+            "refs": [],
+            "period": null
+          },
+          {
+            "label": "Values in the window",
+            "value": "5",
+            "unit": "count",
+            "basis": "calculation",
+            "refs": [],
+            "period": null
+          }
+        ],
+        "period": {
+          "kind": "observation",
+          "label": "2021 to 2025",
+          "start": "2021",
+          "end": "2025"
+        },
+        "inputs": [
+          {
+            "kind": "series",
+            "id": "wb-ind-pa-nus-fcrf",
+            "label": "Official exchange rate (INR per US$, period average) — India"
+          }
+        ],
+        "thresholds": {
+          "window": null,
+          "trend_significance": "0.05"
+        },
+        "evidence": {
+          "grade": "observed",
+          "conditional_on_simulation": false,
+          "includes_observations": true,
+          "statement": "Rests on stored observations, exact calculations on them and RUMIN's own records.",
+          "weakest_step": 0
+        },
+        "limitations": [
+          "Describes the window; it is not a forecast.",
+          "The test assumes independent, normally distributed residuals, which economic series often are not; small windows have little power."
+        ]
+      },
+      {
+        "id": "volatility",
+        "name": "Volatility",
+        "subject": {
+          "kind": "series",
+          "id": "wb-ind-pa-nus-fcrf",
+          "label": "Official exchange rate (INR per US$, period average) — India"
+        },
+        "status": "computed",
+        "level": "not_high",
+        "level_label": "Not high",
+        "summary": "Not moving more than usual.",
+        "values": [
+          {
+            "label": "Standard deviation of the latest window's changes",
+            "value": "3.7737637905",
+            "unit": "percent",
+            "basis": "calculation",
+            "refs": [],
+            "period": null
+          },
+          {
+            "label": "Earlier windows compared",
+            "value": "10",
+            "unit": "count",
+            "basis": "calculation",
+            "refs": [],
+            "period": null
+          },
+          {
+            "label": "Percentile among all windows",
+            "value": "72.7272727273",
+            "unit": "percentile",
+            "basis": "calculation",
+            "refs": [],
+            "period": null
+          },
+          {
+            "label": "Median of earlier windows",
+            "value": "3.5414476036",
+            "unit": "percent",
+            "basis": "calculation",
+            "refs": [],
+            "period": null
+          }
+        ],
+        "period": {
+          "kind": "observation",
+          "label": "2020 to 2025",
+          "start": "2020",
+          "end": "2025"
+        },
+        "inputs": [
+          {
+            "kind": "series",
+            "id": "wb-ind-pa-nus-fcrf",
+            "label": "Official exchange rate (INR per US$, period average) — India"
+          }
+        ],
+        "thresholds": {
+          "window": null,
+          "volatility_high_percentile": "80",
+          "min_history": 8
+        },
+        "evidence": {
+          "grade": "observed",
+          "conditional_on_simulation": false,
+          "includes_observations": true,
+          "statement": "Rests on stored observations, exact calculations on them and RUMIN's own records.",
+          "weakest_step": 0
+        },
+        "limitations": [
+          "Compares the series with its own past only.",
+          "Overlapping windows are not independent; the percentile is descriptive."
+        ]
+      },
+      {
+        "id": "anomaly",
+        "name": "Unusual change",
+        "subject": {
+          "kind": "series",
+          "id": "wb-ind-pa-nus-fcrf",
+          "label": "Official exchange rate (INR per US$, period average) — India"
+        },
+        "status": "computed",
+        "level": "not_unusual",
+        "level_label": "Not unusual",
+        "summary": "The latest change is within the usual range.",
+        "values": [
+          {
+            "label": "Change 2024 to 2025",
+            "value": "9.3824228029",
+            "unit": "percent",
+            "basis": "calculation",
+            "refs": [
+              {
+                "kind": "observation",
+                "id": "16",
+                "label": "2025"
+              }
+            ],
+            "period": null
+          },
+          {
+            "label": "Earlier changes compared",
+            "value": "14",
+            "unit": "count",
+            "basis": "calculation",
+            "refs": [],
+            "period": null
+          },
+          {
+            "label": "Modified z-score",
+            "value": "1.771230855",
+            "unit": "score",
+            "basis": "calculation",
+            "refs": [],
+            "period": null
+          }
+        ],
+        "period": {
+          "kind": "observation",
+          "label": "2024 to 2025",
+          "start": "2024",
+          "end": "2025"
+        },
+        "inputs": [
+          {
+            "kind": "series",
+            "id": "wb-ind-pa-nus-fcrf",
+            "label": "Official exchange rate (INR per US$, period average) — India"
+          }
+        ],
+        "thresholds": {
+          "anomaly_score": "3.5",
+          "min_history": 8
+        },
+        "evidence": {
+          "grade": "observed",
+          "conditional_on_simulation": false,
+          "includes_observations": true,
+          "statement": "Rests on stored observations, exact calculations on them and RUMIN's own records.",
+          "weakest_step": 0
+        },
+        "limitations": [
+          "Unusual is not wrong: a real event can produce an unusual change, and data quality is judged separately by the ingestion rules.",
+          "Needs enough earlier changes to be meaningful."
+        ]
+      }
+    ]
+  },
+  "variable": {
+    "key": "variable:var_usd_inr",
+    "name": "USD/INR exchange rate",
+    "node_type": "economic_variable",
+    "nature": "real",
+    "attributes": {
+      "unit": "INR per USD",
+      "frequency": "daily",
+      "category": "exchange_rate",
+      "value_kind": "exchange_rate",
+      "reference": "Board of Governors of the Federal Reserve System, H.10 release (FRED series DEXINUS).",
+      "reference_url": "https://fred.stlouisfed.org/series/DEXINUS"
+    }
+  },
+  "reached": [
+    {
+      "key": "company:co_aerisca_airways",
+      "name": "Aerisca Airways",
+      "node_type": "company",
+      "nature": "fictional",
+      "attributes": {
+        "reference": null
+      }
+    },
+    {
+      "key": "company:co_anvaya_bank",
+      "name": "Anvaya Bank",
+      "node_type": "company",
+      "nature": "fictional",
+      "attributes": {
+        "reference": null
+      }
+    },
+    {
+      "key": "company:co_deltrin_refining",
+      "name": "Deltrin Refining",
+      "node_type": "company",
+      "nature": "fictional",
+      "attributes": {
+        "reference": null
+      }
+    },
+    {
+      "key": "company:co_gridwell_power",
+      "name": "Gridwell Power",
+      "node_type": "company",
+      "nature": "fictional",
+      "attributes": {
+        "reference": null
+      }
+    },
+    {
+      "key": "company:co_kovalent_digital",
+      "name": "Kovalent Digital",
+      "node_type": "company",
+      "nature": "fictional",
+      "attributes": {
+        "reference": null
+      }
+    },
+    {
+      "key": "company:co_skyvara_air",
+      "name": "Skyvara Air",
+      "node_type": "company",
+      "nature": "fictional",
+      "attributes": {
+        "reference": null
+      }
+    },
+    {
+      "key": "company:co_trakvel_logistics",
+      "name": "Trakvel Logistics",
+      "node_type": "company",
+      "nature": "fictional",
+      "attributes": {
+        "reference": null
+      }
+    }
+  ],
+  "insights": [
+    {
+      "id": "ins-16b1edf860f6e628",
+      "rule": "D01",
+      "rule_title": "Observed change",
+      "kind": "change",
+      "headline": "Official exchange rate (INR per US$, period average) — India rose 9.38 %",
+      "statement": "Official exchange rate (INR per US$, period average) — India rose from 84.2 in 2024 to 92.1 in 2025 (+9.38 %), as stored.",
+      "subject": {
+        "kind": "series",
+        "id": "wb-ind-pa-nus-fcrf",
+        "label": "Official exchange rate (INR per US$, period average) — India"
+      },
+      "entities": [],
+      "relationships": [],
+      "period": {
+        "kind": "observation",
+        "label": "2024 to 2025",
+        "start": "2024",
+        "end": "2025"
+      },
+      "facts": [
+        {
+          "label": "2024",
+          "value": "84.2",
+          "unit": "INR per USD",
+          "basis": "observation",
+          "refs": [
+            {
+              "kind": "observation",
+              "id": "29",
+              "label": "2024"
+            }
+          ],
+          "period": "2024"
+        },
+        {
+          "label": "2025",
+          "value": "92.1",
+          "unit": "INR per USD",
+          "basis": "observation",
+          "refs": [
+            {
+              "kind": "observation",
+              "id": "16",
+              "label": "2025"
+            }
+          ],
+          "period": "2025"
+        },
+        {
+          "label": "Change",
+          "value": "9.3824228029",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Threshold",
+          "value": "5",
+          "unit": "percent",
+          "basis": "threshold",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [],
+      "evidence": {
+        "grade": "observed",
+        "conditional_on_simulation": false,
+        "includes_observations": true,
+        "statement": "Rests on stored observations, exact calculations on them and RUMIN's own records.",
+        "weakest_step": 0
+      },
+      "chain": [
+        {
+          "basis": "observation",
+          "text": "Official exchange rate (INR per US$, period average) — India, 2024: 84.2 INR per USD",
+          "refs": [
+            {
+              "kind": "observation",
+              "id": "29",
+              "label": "2024"
+            },
+            {
+              "kind": "dataset",
+              "id": "worldbank-wdi",
+              "label": "World Development Indicators"
+            }
+          ],
+          "evidence_status": null,
+          "value": "84.2",
+          "unit": "INR per USD"
+        },
+        {
+          "basis": "observation",
+          "text": "Official exchange rate (INR per US$, period average) — India, 2025: 92.1 INR per USD",
+          "refs": [
+            {
+              "kind": "observation",
+              "id": "16",
+              "label": "2025"
+            },
+            {
+              "kind": "dataset",
+              "id": "worldbank-wdi",
+              "label": "World Development Indicators"
+            }
+          ],
+          "evidence_status": null,
+          "value": "92.1",
+          "unit": "INR per USD"
+        },
+        {
+          "basis": "calculation",
+          "text": "Change: +9.38 %",
+          "refs": [],
+          "evidence_status": null,
+          "value": "9.3824228029",
+          "unit": "percent"
+        },
+        {
+          "basis": "threshold",
+          "text": "Meets the relative change percent threshold of 5.00",
+          "refs": [
+            {
+              "kind": "threshold",
+              "id": "relative_change_percent",
+              "label": null
+            }
+          ],
+          "evidence_status": null,
+          "value": "5",
+          "unit": null
+        }
+      ],
+      "assumptions": ["Detected because |change| ≥ 5.00 (percent), a configurable threshold."],
+      "limitations": [
+        "Related to a variable, with a stated difference: An annual average of the official exchange rate, not the same measure: the variable is defined as a daily market rate. Annual averages smooth out movements within the year."
+      ],
+      "next_steps": [],
+      "sources": [
+        {
+          "kind": "series",
+          "id": "wb-ind-pa-nus-fcrf",
+          "label": "Official exchange rate (INR per US$, period average) — India"
+        },
+        {
+          "kind": "dataset",
+          "id": "worldbank-wdi",
+          "label": "World Development Indicators"
+        }
+      ]
+    },
+    {
+      "id": "ins-a7b53d41047bc0aa",
+      "rule": "D02",
+      "rule_title": "Observed change on an exposure variable",
+      "kind": "exposure_change",
+      "headline": "Official exchange rate (INR per US$, period average) — India moved; 7 companies are exposed to USD/INR exchange rate",
+      "statement": "Official exchange rate (INR per US$, period average) — India moved +9.38 % from 2024 to 2025. It is recorded as a related measure of USD/INR exchange rate, which the graph states reaches Aerisca Airways, Anvaya Bank, Deltrin Refining, Gridwell Power, Kovalent Digital, Skyvara Air and Trakvel Logistics. This names who is exposed; it does not say the change affected them.",
+      "subject": {
+        "kind": "series",
+        "id": "wb-ind-pa-nus-fcrf",
+        "label": "Official exchange rate (INR per US$, period average) — India"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "company:co_aerisca_airways",
+          "label": "Aerisca Airways"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_anvaya_bank",
+          "label": "Anvaya Bank"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_deltrin_refining",
+          "label": "Deltrin Refining"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_gridwell_power",
+          "label": "Gridwell Power"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_kovalent_digital",
+          "label": "Kovalent Digital"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_skyvara_air",
+          "label": "Skyvara Air"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_trakvel_logistics",
+          "label": "Trakvel Logistics"
+        }
+      ],
+      "relationships": [
+        {
+          "edge_key": "e-d7af3853725f085a",
+          "edge_type": "related_measure_of",
+          "label": "is a related measure of",
+          "source": "series:wb-ind-pa-nus-fcrf",
+          "source_name": "Official exchange rate (INR per US$, period average) — India",
+          "target": "variable:var_usd_inr",
+          "target_name": "USD/INR exchange rate",
+          "evidence_status": "analyst_created",
+          "is_illustrative": false
+        },
+        {
+          "edge_key": "e-2afc04ee80f0699e",
+          "edge_type": "affects_costs",
+          "label": "affects costs of",
+          "source": "variable:var_usd_inr",
+          "source_name": "USD/INR exchange rate",
+          "target": "company:co_aerisca_airways",
+          "target_name": "Aerisca Airways",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-0ad272aa06e1d7d6",
+          "edge_type": "influences",
+          "label": "influences",
+          "source": "variable:var_us_fed_funds",
+          "source_name": "U.S. effective federal funds rate",
+          "target": "variable:var_usd_inr",
+          "target_name": "USD/INR exchange rate",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-e2f1d52da5ce0ff9",
+          "edge_type": "influences",
+          "label": "influences",
+          "source": "variable:var_usd_inr",
+          "source_name": "USD/INR exchange rate",
+          "target": "variable:var_india_cpi_inflation",
+          "target_name": "India CPI inflation",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-63ca87f4cb0cc460",
+          "edge_type": "influences",
+          "label": "influences",
+          "source": "variable:var_india_cpi_inflation",
+          "source_name": "India CPI inflation",
+          "target": "variable:var_rbi_repo_rate",
+          "target_name": "RBI policy repo rate",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-a4d9310e19366033",
+          "edge_type": "affects_revenue",
+          "label": "affects revenue of",
+          "source": "variable:var_rbi_repo_rate",
+          "source_name": "RBI policy repo rate",
+          "target": "company:co_anvaya_bank",
+          "target_name": "Anvaya Bank",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-dff724fccf21ee64",
+          "edge_type": "affects_costs",
+          "label": "affects costs of",
+          "source": "variable:var_usd_inr",
+          "source_name": "USD/INR exchange rate",
+          "target": "company:co_deltrin_refining",
+          "target_name": "Deltrin Refining",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-c1196940c5ae72f5",
+          "edge_type": "affects_financing",
+          "label": "affects financing costs of",
+          "source": "variable:var_rbi_repo_rate",
+          "source_name": "RBI policy repo rate",
+          "target": "company:co_gridwell_power",
+          "target_name": "Gridwell Power",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-30bd282fe1fdf72a",
+          "edge_type": "affects_revenue",
+          "label": "affects revenue of",
+          "source": "variable:var_usd_inr",
+          "source_name": "USD/INR exchange rate",
+          "target": "company:co_kovalent_digital",
+          "target_name": "Kovalent Digital",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-c93a6964520b431b",
+          "edge_type": "affects_costs",
+          "label": "affects costs of",
+          "source": "variable:var_usd_inr",
+          "source_name": "USD/INR exchange rate",
+          "target": "company:co_skyvara_air",
+          "target_name": "Skyvara Air",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-277924cd30f42d80",
+          "edge_type": "affects_financing",
+          "label": "affects financing costs of",
+          "source": "variable:var_rbi_repo_rate",
+          "source_name": "RBI policy repo rate",
+          "target": "company:co_trakvel_logistics",
+          "target_name": "Trakvel Logistics",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        }
+      ],
+      "period": {
+        "kind": "observation",
+        "label": "2024 to 2025",
+        "start": "2024",
+        "end": "2025"
+      },
+      "facts": [
+        {
+          "label": "Change",
+          "value": "9.3824228029",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Companies reached",
+          "value": "7",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [],
+      "evidence": {
+        "grade": "assumed",
+        "conditional_on_simulation": false,
+        "includes_observations": true,
+        "statement": "Rests on at least one relationship recorded as a model assumption: an assumed effect with a written rationale, not an empirical finding.",
+        "weakest_step": 5
+      },
+      "chain": [
+        {
+          "basis": "observation",
+          "text": "Official exchange rate (INR per US$, period average) — India, 2024: 84.2 INR per USD",
+          "refs": [
+            {
+              "kind": "observation",
+              "id": "29",
+              "label": "2024"
+            },
+            {
+              "kind": "dataset",
+              "id": "worldbank-wdi",
+              "label": "World Development Indicators"
+            }
+          ],
+          "evidence_status": null,
+          "value": "84.2",
+          "unit": "INR per USD"
+        },
+        {
+          "basis": "observation",
+          "text": "Official exchange rate (INR per US$, period average) — India, 2025: 92.1 INR per USD",
+          "refs": [
+            {
+              "kind": "observation",
+              "id": "16",
+              "label": "2025"
+            },
+            {
+              "kind": "dataset",
+              "id": "worldbank-wdi",
+              "label": "World Development Indicators"
+            }
+          ],
+          "evidence_status": null,
+          "value": "92.1",
+          "unit": "INR per USD"
+        },
+        {
+          "basis": "calculation",
+          "text": "Change: +9.38 %",
+          "refs": [],
+          "evidence_status": null,
+          "value": "9.3824228029",
+          "unit": "percent"
+        },
+        {
+          "basis": "threshold",
+          "text": "Meets the relative change percent threshold of 5.00",
+          "refs": [
+            {
+              "kind": "threshold",
+              "id": "relative_change_percent",
+              "label": null
+            }
+          ],
+          "evidence_status": null,
+          "value": "5",
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Official exchange rate (INR per US$, period average) — India is a related measure of USD/INR exchange rate",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-d7af3853725f085a",
+              "label": "Official exchange rate (INR per US$, period average) — India is a related measure of USD/INR exchange rate"
+            }
+          ],
+          "evidence_status": "analyst_created",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "USD/INR exchange rate affects costs of Aerisca Airways",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-2afc04ee80f0699e",
+              "label": "USD/INR exchange rate affects costs of Aerisca Airways"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "U.S. effective federal funds rate influences USD/INR exchange rate",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-0ad272aa06e1d7d6",
+              "label": "U.S. effective federal funds rate influences USD/INR exchange rate"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "USD/INR exchange rate influences India CPI inflation",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-e2f1d52da5ce0ff9",
+              "label": "USD/INR exchange rate influences India CPI inflation"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "India CPI inflation influences RBI policy repo rate",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-63ca87f4cb0cc460",
+              "label": "India CPI inflation influences RBI policy repo rate"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "RBI policy repo rate affects revenue of Anvaya Bank",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-a4d9310e19366033",
+              "label": "RBI policy repo rate affects revenue of Anvaya Bank"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "USD/INR exchange rate affects costs of Deltrin Refining",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-dff724fccf21ee64",
+              "label": "USD/INR exchange rate affects costs of Deltrin Refining"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "RBI policy repo rate affects financing costs of Gridwell Power",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-c1196940c5ae72f5",
+              "label": "RBI policy repo rate affects financing costs of Gridwell Power"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "USD/INR exchange rate affects revenue of Kovalent Digital",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-30bd282fe1fdf72a",
+              "label": "USD/INR exchange rate affects revenue of Kovalent Digital"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "USD/INR exchange rate affects costs of Skyvara Air",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-c93a6964520b431b",
+              "label": "USD/INR exchange rate affects costs of Skyvara Air"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "RBI policy repo rate affects financing costs of Trakvel Logistics",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-277924cd30f42d80",
+              "label": "RBI policy repo rate affects financing costs of Trakvel Logistics"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "assumptions": [],
+      "limitations": [
+        "Related to a variable, with a stated difference: An annual average of the official exchange rate, not the same measure: the variable is defined as a daily market rate. Annual averages smooth out movements within the year.",
+        "A connection in the graph is not evidence of causation.",
+        "A stated exposure says that the entity is exposed, not how much: sizes come only from simulations with the user's own figures."
+      ],
+      "next_steps": [],
+      "sources": [
+        {
+          "kind": "series",
+          "id": "wb-ind-pa-nus-fcrf",
+          "label": "Official exchange rate (INR per US$, period average) — India"
+        }
+      ]
+    },
+    {
+      "id": "ins-f1abe14455f9f7c9",
+      "rule": "D06",
+      "rule_title": "Data revision",
+      "kind": "revision",
+      "headline": "Official exchange rate (INR per US$, period average) — India 2024 was revised",
+      "statement": "The provider revised Official exchange rate (INR per US$, period average) — India for 2024 from 83.7 INR per USD to 84.2 INR per USD (+0.60 %). Both values are kept.",
+      "subject": {
+        "kind": "series",
+        "id": "wb-ind-pa-nus-fcrf",
+        "label": "Official exchange rate (INR per US$, period average) — India"
+      },
+      "entities": [],
+      "relationships": [],
+      "period": {
+        "kind": "observation",
+        "label": "2024",
+        "start": "2024",
+        "end": "2024"
+      },
+      "facts": [
+        {
+          "label": "Revision",
+          "value": "0.5973715651",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [],
+      "evidence": {
+        "grade": "observed",
+        "conditional_on_simulation": false,
+        "includes_observations": true,
+        "statement": "Rests on stored observations, exact calculations on them and RUMIN's own records.",
+        "weakest_step": 0
+      },
+      "chain": [
+        {
+          "basis": "observation",
+          "text": "Revision 1: 83.7 INR per USD",
+          "refs": [
+            {
+              "kind": "observation",
+              "id": "15",
+              "label": "2024"
+            }
+          ],
+          "evidence_status": null,
+          "value": "83.7",
+          "unit": "INR per USD"
+        },
+        {
+          "basis": "observation",
+          "text": "Revision 2: 84.2 INR per USD",
+          "refs": [
+            {
+              "kind": "observation",
+              "id": "29",
+              "label": "2024"
+            }
+          ],
+          "evidence_status": null,
+          "value": "84.2",
+          "unit": "INR per USD"
+        },
+        {
+          "basis": "calculation",
+          "text": "Size of the revision",
+          "refs": [],
+          "evidence_status": null,
+          "value": "0.5973715651",
+          "unit": "percent"
+        }
+      ],
+      "assumptions": [],
+      "limitations": [
+        "Related to a variable, with a stated difference: An annual average of the official exchange rate, not the same measure: the variable is defined as a daily market rate. Annual averages smooth out movements within the year."
+      ],
+      "next_steps": [
+        {
+          "action": "review_revision",
+          "text": "Check whether analyses that used the earlier value need redoing.",
+          "target": {
+            "kind": "series",
+            "id": "wb-ind-pa-nus-fcrf",
+            "label": "Official exchange rate (INR per US$, period average) — India"
+          }
+        }
+      ],
+      "sources": [
+        {
+          "kind": "series",
+          "id": "wb-ind-pa-nus-fcrf",
+          "label": "Official exchange rate (INR per US$, period average) — India"
+        }
+      ]
+    },
+    {
+      "id": "ins-8c25c1f847f3da5b",
+      "rule": "D04",
+      "rule_title": "Trend",
+      "kind": "trend",
+      "headline": "Official exchange rate (INR per US$, period average) — India has been rising",
+      "statement": "Official exchange rate (INR per US$, period average) — India has been rising over 2021 to 2025: +4.2 INR per USD per year (t = 8.35, critical value 3.182).",
+      "subject": {
+        "kind": "series",
+        "id": "wb-ind-pa-nus-fcrf",
+        "label": "Official exchange rate (INR per US$, period average) — India"
+      },
+      "entities": [],
+      "relationships": [],
+      "period": {
+        "kind": "observation",
+        "label": "2021 to 2025",
+        "start": "2021",
+        "end": "2025"
+      },
+      "facts": [
+        {
+          "label": "Slope per period",
+          "value": "4.2",
+          "unit": "INR per USD",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Slope per period, relative to the window's mean",
+          "value": "5.1045211473",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "t statistic",
+          "value": "8.3511494668",
+          "unit": null,
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Critical value",
+          "value": "3.182",
+          "unit": null,
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Values in the window",
+          "value": "5",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [],
+      "evidence": {
+        "grade": "observed",
+        "conditional_on_simulation": false,
+        "includes_observations": true,
+        "statement": "Rests on stored observations, exact calculations on them and RUMIN's own records.",
+        "weakest_step": 0
+      },
+      "chain": [
+        {
+          "basis": "observation",
+          "text": "Stored values of Official exchange rate (INR per US$, period average) — India, 2021 to 2025",
+          "refs": [
+            {
+              "kind": "series",
+              "id": "wb-ind-pa-nus-fcrf",
+              "label": "Official exchange rate (INR per US$, period average) — India"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "calculation",
+          "text": "Least-squares slope and its t statistic",
+          "refs": [],
+          "evidence_status": null,
+          "value": "4.2",
+          "unit": "INR per USD"
+        },
+        {
+          "basis": "threshold",
+          "text": "|t| above the two-sided critical value at 0.05",
+          "refs": [
+            {
+              "kind": "threshold",
+              "id": "trend_significance",
+              "label": null
+            }
+          ],
+          "evidence_status": null,
+          "value": "3.182",
+          "unit": null
+        }
+      ],
+      "assumptions": [],
+      "limitations": [
+        "Describes the window; it is not a forecast.",
+        "The test assumes independent, normally distributed residuals, which economic series often are not; small windows have little power.",
+        "Related to a variable, with a stated difference: An annual average of the official exchange rate, not the same measure: the variable is defined as a daily market rate. Annual averages smooth out movements within the year."
+      ],
+      "next_steps": [],
+      "sources": [
+        {
+          "kind": "series",
+          "id": "wb-ind-pa-nus-fcrf",
+          "label": "Official exchange rate (INR per US$, period average) — India"
+        }
+      ]
+    }
+  ]
+}

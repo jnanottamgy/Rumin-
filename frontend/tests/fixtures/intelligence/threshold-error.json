@@ -1,0 +1,15 @@
+{
+  "error": {
+    "code": "validation_error",
+    "message": "Some thresholds are invalid.",
+    "details": [
+      {
+        "location": "query",
+        "field": "relative_change_percent",
+        "message": "Change in a level or exchange rate must be between 0.1 and 100 (percent).",
+        "type": "invalid_threshold"
+      }
+    ],
+    "request_id": "bb7e0e2857ad4363b396e94d7fee3f02"
+  }
+}

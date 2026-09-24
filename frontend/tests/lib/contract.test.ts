@@ -6,6 +6,7 @@ import {
   systemFixture,
   variablesFixture,
 } from "../fixtures";
+import { intelligenceFixtures } from "../fixtures/intelligence";
 import { labFixtures } from "../fixtures/lab";
 import { simulationFixtures } from "../fixtures/simulation";
 import { contractViolations } from "../integration/contract";
@@ -107,5 +108,26 @@ describe("contractViolations", () => {
     expect(contractViolations("NetworkResponse", network)).toEqual([
       "$.nodes[0].entity: matches none of the allowed shapes",
     ]);
+  });
+});
+
+describe("the Financial Intelligence fixtures follow the committed OpenAPI contract", () => {
+  it.each([
+    ["MethodsRead", intelligenceFixtures.methods()],
+    ["OverviewRead", intelligenceFixtures.overview()],
+    ["OverviewRead", intelligenceFixtures.overviewUnsimulated()],
+    ["OverviewRead", intelligenceFixtures.syntheticOverview()],
+    ["EntityListRead", intelligenceFixtures.entities()],
+    ["EntityAnalysisRead", intelligenceFixtures.entity()],
+    ["EntityAnalysisRead", intelligenceFixtures.industry()],
+    ["EntityAnalysisRead", intelligenceFixtures.syntheticEntity()],
+    ["BriefRead", intelligenceFixtures.brief()],
+    ["SeriesIntelligenceRead", intelligenceFixtures.syntheticSeries()],
+    ["AnalysisRead", intelligenceFixtures.analysis()],
+    ["AnalysisRead", intelligenceFixtures.syntheticStale()],
+    ["Page_AnalysisSummaryRead_", intelligenceFixtures.analyses()],
+    ["ErrorResponse", intelligenceFixtures.thresholdError()],
+  ])("%s", (schema, fixture) => {
+    expect(contractViolations(schema, fixture)).toEqual([]);
   });
 });

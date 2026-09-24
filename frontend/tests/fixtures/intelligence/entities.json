@@ -1,0 +1,498 @@
+{
+  "build": {
+    "id": 1,
+    "finished_at": "2026-09-24T09:50:08.752819Z",
+    "freshness": "current",
+    "message": "Built from the current sources (build #1)."
+  },
+  "items": [
+    {
+      "entity": {
+        "key": "company:co_aerisca_airways",
+        "name": "Aerisca Airways",
+        "node_type": "company",
+        "nature": "fictional",
+        "attributes": {
+          "reference": null
+        }
+      },
+      "paths": 4,
+      "variables": 4,
+      "by_channel": {
+        "costs": 4
+      },
+      "by_directness": {
+        "direct": 1,
+        "via_industry": 1,
+        "upstream": 2
+      },
+      "weakest_evidence": "model_assumption",
+      "latest_impact": {
+        "entity_key": "company:co_aerisca_airways",
+        "execution": {
+          "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+          "scenario_id": "c2a0f465-3da5-4d9c-a206-8c9768560e93",
+          "scenario_name": "Oil, rupee and rates on Aerisca",
+          "version": 1,
+          "finished_at": "2026-09-24T09:50:10.993948Z",
+          "currency": "INR",
+          "horizon_months": 12,
+          "graph_build_id": 1,
+          "graph_freshness": "current",
+          "inputs_hash": "f6de3e60b25529da5405788ece8ab094fcbb2ff65a19f20c96c66310e77cd15b",
+          "result_hash": "45fe9f3bf9a5d69b0f49f5e01ae5f6ebf291fc8e3f94635f5d6072c8e8dce622"
+        },
+        "line": "profit_before_tax",
+        "label": "Profit before tax",
+        "currency": "INR",
+        "baseline": "38000000",
+        "change": "-6700000",
+        "percent_change": "-17.6315789474",
+        "changes": [
+          {
+            "variable_id": "var_brent_crude",
+            "name": "Brent crude oil price",
+            "change_type": "percent_change",
+            "value": "20",
+            "unit": "%",
+            "modelled": true
+          },
+          {
+            "variable_id": "var_usd_inr",
+            "name": "USD/INR exchange rate",
+            "change_type": "percent_change",
+            "value": "5",
+            "unit": "%",
+            "modelled": true
+          },
+          {
+            "variable_id": "var_rbi_repo_rate",
+            "name": "RBI policy repo rate",
+            "change_type": "absolute_change",
+            "value": "0.5",
+            "unit": "percentage points",
+            "modelled": true
+          }
+        ]
+      }
+    },
+    {
+      "entity": {
+        "key": "company:co_anvaya_bank",
+        "name": "Anvaya Bank",
+        "node_type": "company",
+        "nature": "fictional",
+        "attributes": {
+          "reference": null
+        }
+      },
+      "paths": 4,
+      "variables": 4,
+      "by_channel": {
+        "revenue": 4
+      },
+      "by_directness": {
+        "direct": 1,
+        "upstream": 3
+      },
+      "weakest_evidence": "model_assumption",
+      "latest_impact": null
+    },
+    {
+      "entity": {
+        "key": "company:co_brookvane_bank",
+        "name": "Brookvane Bank",
+        "node_type": "company",
+        "nature": "fictional",
+        "attributes": {
+          "reference": null
+        }
+      },
+      "paths": 1,
+      "variables": 1,
+      "by_channel": {
+        "revenue": 1
+      },
+      "by_directness": {
+        "direct": 1
+      },
+      "weakest_evidence": "model_assumption",
+      "latest_impact": null
+    },
+    {
+      "entity": {
+        "key": "company:co_deltrin_refining",
+        "name": "Deltrin Refining",
+        "node_type": "company",
+        "nature": "fictional",
+        "attributes": {
+          "reference": null
+        }
+      },
+      "paths": 5,
+      "variables": 4,
+      "by_channel": {
+        "costs": 3,
+        "revenue": 2
+      },
+      "by_directness": {
+        "direct": 1,
+        "via_industry": 2,
+        "upstream": 2
+      },
+      "weakest_evidence": "model_assumption",
+      "latest_impact": null
+    },
+    {
+      "entity": {
+        "key": "company:co_gridwell_power",
+        "name": "Gridwell Power",
+        "node_type": "company",
+        "nature": "fictional",
+        "attributes": {
+          "reference": null
+        }
+      },
+      "paths": 4,
+      "variables": 4,
+      "by_channel": {
+        "financing": 4
+      },
+      "by_directness": {
+        "direct": 1,
+        "upstream": 3
+      },
+      "weakest_evidence": "model_assumption",
+      "latest_impact": null
+    },
+    {
+      "entity": {
+        "key": "company:co_kovalent_digital",
+        "name": "Kovalent Digital",
+        "node_type": "company",
+        "nature": "fictional",
+        "attributes": {
+          "reference": null
+        }
+      },
+      "paths": 2,
+      "variables": 2,
+      "by_channel": {
+        "revenue": 2
+      },
+      "by_directness": {
+        "direct": 1,
+        "upstream": 1
+      },
+      "weakest_evidence": "model_assumption",
+      "latest_impact": null
+    },
+    {
+      "entity": {
+        "key": "company:co_lumeric_chemicals",
+        "name": "Lumeric Chemicals",
+        "node_type": "company",
+        "nature": "fictional",
+        "attributes": {
+          "reference": null
+        }
+      },
+      "paths": 2,
+      "variables": 2,
+      "by_channel": {
+        "costs": 1,
+        "financing": 1
+      },
+      "by_directness": {
+        "direct": 2
+      },
+      "weakest_evidence": "model_assumption",
+      "latest_impact": null
+    },
+    {
+      "entity": {
+        "key": "company:co_orvane_petroleum",
+        "name": "Orvane Petroleum",
+        "node_type": "company",
+        "nature": "fictional",
+        "attributes": {
+          "reference": null
+        }
+      },
+      "paths": 1,
+      "variables": 1,
+      "by_channel": {
+        "revenue": 1
+      },
+      "by_directness": {
+        "via_industry": 1
+      },
+      "weakest_evidence": "model_assumption",
+      "latest_impact": null
+    },
+    {
+      "entity": {
+        "key": "company:co_skyvara_air",
+        "name": "Skyvara Air",
+        "node_type": "company",
+        "nature": "fictional",
+        "attributes": {
+          "reference": null
+        }
+      },
+      "paths": 4,
+      "variables": 4,
+      "by_channel": {
+        "costs": 4
+      },
+      "by_directness": {
+        "direct": 1,
+        "via_industry": 1,
+        "upstream": 2
+      },
+      "weakest_evidence": "model_assumption",
+      "latest_impact": null
+    },
+    {
+      "entity": {
+        "key": "company:co_solvane_refining",
+        "name": "Solvane Refining",
+        "node_type": "company",
+        "nature": "fictional",
+        "attributes": {
+          "reference": null
+        }
+      },
+      "paths": 3,
+      "variables": 2,
+      "by_channel": {
+        "costs": 1,
+        "revenue": 2
+      },
+      "by_directness": {
+        "via_industry": 2,
+        "upstream": 1
+      },
+      "weakest_evidence": "model_assumption",
+      "latest_impact": null
+    },
+    {
+      "entity": {
+        "key": "company:co_tessaline_energy",
+        "name": "Tessaline Energy",
+        "node_type": "company",
+        "nature": "fictional",
+        "attributes": {
+          "reference": null
+        }
+      },
+      "paths": 2,
+      "variables": 2,
+      "by_channel": {
+        "revenue": 2
+      },
+      "by_directness": {
+        "direct": 1,
+        "via_industry": 1
+      },
+      "weakest_evidence": "model_assumption",
+      "latest_impact": null
+    },
+    {
+      "entity": {
+        "key": "company:co_trakvel_logistics",
+        "name": "Trakvel Logistics",
+        "node_type": "company",
+        "nature": "fictional",
+        "attributes": {
+          "reference": null
+        }
+      },
+      "paths": 5,
+      "variables": 4,
+      "by_channel": {
+        "financing": 4,
+        "costs": 1
+      },
+      "by_directness": {
+        "direct": 1,
+        "via_industry": 1,
+        "upstream": 3
+      },
+      "weakest_evidence": "model_assumption",
+      "latest_impact": null
+    },
+    {
+      "entity": {
+        "key": "industry:ind_air_transport",
+        "name": "Air transport",
+        "node_type": "industry",
+        "nature": "real",
+        "attributes": {
+          "classification_system": "ISIC Rev. 4",
+          "classification_code": "51",
+          "reference": "UN Statistics Division, ISIC Rev. 4, Division 51: Air transport."
+        }
+      },
+      "paths": 2,
+      "variables": 2,
+      "by_channel": {
+        "costs": 2
+      },
+      "by_directness": {
+        "direct": 1,
+        "upstream": 1
+      },
+      "weakest_evidence": "model_assumption",
+      "latest_impact": null
+    },
+    {
+      "entity": {
+        "key": "industry:ind_banking",
+        "name": "Banking",
+        "node_type": "industry",
+        "nature": "real",
+        "attributes": {
+          "classification_system": "ISIC Rev. 4",
+          "classification_code": "64",
+          "reference": "UN Statistics Division, ISIC Rev. 4, Division 64: Financial service activities, except insurance and pension funding."
+        }
+      },
+      "paths": 0,
+      "variables": 0,
+      "by_channel": {},
+      "by_directness": {},
+      "weakest_evidence": null,
+      "latest_impact": null
+    },
+    {
+      "entity": {
+        "key": "industry:ind_chemicals",
+        "name": "Chemicals & chemical products",
+        "node_type": "industry",
+        "nature": "real",
+        "attributes": {
+          "classification_system": "ISIC Rev. 4",
+          "classification_code": "20",
+          "reference": "UN Statistics Division, ISIC Rev. 4, Division 20: Manufacture of chemicals and chemical products."
+        }
+      },
+      "paths": 0,
+      "variables": 0,
+      "by_channel": {},
+      "by_directness": {},
+      "weakest_evidence": null,
+      "latest_impact": null
+    },
+    {
+      "entity": {
+        "key": "industry:ind_oil_gas_extraction",
+        "name": "Crude petroleum & natural gas extraction",
+        "node_type": "industry",
+        "nature": "real",
+        "attributes": {
+          "classification_system": "ISIC Rev. 4",
+          "classification_code": "06",
+          "reference": "UN Statistics Division, ISIC Rev. 4, Division 06: Extraction of crude petroleum and natural gas."
+        }
+      },
+      "paths": 1,
+      "variables": 1,
+      "by_channel": {
+        "revenue": 1
+      },
+      "by_directness": {
+        "direct": 1
+      },
+      "weakest_evidence": "model_assumption",
+      "latest_impact": null
+    },
+    {
+      "entity": {
+        "key": "industry:ind_power",
+        "name": "Electricity & gas supply",
+        "node_type": "industry",
+        "nature": "real",
+        "attributes": {
+          "classification_system": "ISIC Rev. 4",
+          "classification_code": "35",
+          "reference": "UN Statistics Division, ISIC Rev. 4, Division 35: Electricity, gas, steam and air conditioning supply."
+        }
+      },
+      "paths": 0,
+      "variables": 0,
+      "by_channel": {},
+      "by_directness": {},
+      "weakest_evidence": null,
+      "latest_impact": null
+    },
+    {
+      "entity": {
+        "key": "industry:ind_it_services",
+        "name": "IT services",
+        "node_type": "industry",
+        "nature": "real",
+        "attributes": {
+          "classification_system": "ISIC Rev. 4",
+          "classification_code": "62",
+          "reference": "UN Statistics Division, ISIC Rev. 4, Division 62: Computer programming, consultancy and related activities."
+        }
+      },
+      "paths": 0,
+      "variables": 0,
+      "by_channel": {},
+      "by_directness": {},
+      "weakest_evidence": null,
+      "latest_impact": null
+    },
+    {
+      "entity": {
+        "key": "industry:ind_land_transport",
+        "name": "Land transport",
+        "node_type": "industry",
+        "nature": "real",
+        "attributes": {
+          "classification_system": "ISIC Rev. 4",
+          "classification_code": "49",
+          "reference": "UN Statistics Division, ISIC Rev. 4, Division 49: Land transport and transport via pipelines."
+        }
+      },
+      "paths": 1,
+      "variables": 1,
+      "by_channel": {
+        "costs": 1
+      },
+      "by_directness": {
+        "direct": 1
+      },
+      "weakest_evidence": "model_assumption",
+      "latest_impact": null
+    },
+    {
+      "entity": {
+        "key": "industry:ind_petroleum_refining",
+        "name": "Refined petroleum products",
+        "node_type": "industry",
+        "nature": "real",
+        "attributes": {
+          "classification_system": "ISIC Rev. 4",
+          "classification_code": "19",
+          "reference": "UN Statistics Division, ISIC Rev. 4, Division 19: Manufacture of coke and refined petroleum products."
+        }
+      },
+      "paths": 3,
+      "variables": 2,
+      "by_channel": {
+        "costs": 1,
+        "revenue": 2
+      },
+      "by_directness": {
+        "direct": 2,
+        "upstream": 1
+      },
+      "weakest_evidence": "model_assumption",
+      "latest_impact": null
+    }
+  ],
+  "total": 20
+}

@@ -1,0 +1,4403 @@
+{
+  "engine_version": "1.0.0",
+  "build": {
+    "id": 1,
+    "finished_at": "2026-09-24T09:50:08.752819Z",
+    "freshness": "stale",
+    "message": "The sources changed after build #1. The graph shows the data as it was then; run `make graph` to rebuild it."
+  },
+  "thresholds": {
+    "relative_change_percent": "5",
+    "point_change": "1",
+    "price_move_percent": "5",
+    "anomaly_score": "3.5",
+    "trend_significance": "0.05",
+    "volatility_high_percentile": "80",
+    "dependency_share_percent": "50",
+    "min_history": 8,
+    "window": null
+  },
+  "coverage": {
+    "companies": 12,
+    "companies_with_exposure": 12,
+    "exposure_paths": 37,
+    "variables": 7,
+    "series": 11,
+    "series_with_data": 2,
+    "observations": 28,
+    "instruments": 0,
+    "instruments_with_data": 0,
+    "related_series": 2,
+    "related_with_data": 2,
+    "executions": 1,
+    "companies_with_executions": 1,
+    "truncated": false
+  },
+  "insights": [
+    {
+      "id": "ins-4ddf8fe1701ba670",
+      "rule": "D01",
+      "rule_title": "Observed change",
+      "kind": "change",
+      "headline": "Inflation, consumer prices (annual %) — India fell 1.80 percentage points",
+      "statement": "Inflation, consumer prices (annual %) — India fell from 4.9 in 2024 to 3.1 in 2025 (−1.80 percentage points), as stored.",
+      "subject": {
+        "kind": "series",
+        "id": "wb-ind-fp-cpi-totl-zg",
+        "label": "Inflation, consumer prices (annual %) — India"
+      },
+      "entities": [],
+      "relationships": [],
+      "period": {
+        "kind": "observation",
+        "label": "2024 to 2025",
+        "start": "2024",
+        "end": "2025"
+      },
+      "facts": [
+        {
+          "label": "2024",
+          "value": "4.9",
+          "unit": "% change on previous year",
+          "basis": "observation",
+          "refs": [
+            {
+              "kind": "observation",
+              "id": "27",
+              "label": "2024"
+            }
+          ],
+          "period": "2024"
+        },
+        {
+          "label": "2025",
+          "value": "3.1",
+          "unit": "% change on previous year",
+          "basis": "observation",
+          "refs": [
+            {
+              "kind": "observation",
+              "id": "28",
+              "label": "2025"
+            }
+          ],
+          "period": "2025"
+        },
+        {
+          "label": "Change",
+          "value": "-1.8",
+          "unit": "percentage_points",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Threshold",
+          "value": "1",
+          "unit": "percentage_points",
+          "basis": "threshold",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [],
+      "evidence": {
+        "grade": "observed",
+        "conditional_on_simulation": false,
+        "includes_observations": true,
+        "statement": "Rests on stored observations, exact calculations on them and RUMIN's own records.",
+        "weakest_step": 0
+      },
+      "chain": [
+        {
+          "basis": "observation",
+          "text": "Inflation, consumer prices (annual %) — India, 2024: 4.9 % change on previous year",
+          "refs": [
+            {
+              "kind": "observation",
+              "id": "27",
+              "label": "2024"
+            },
+            {
+              "kind": "dataset",
+              "id": "worldbank-wdi",
+              "label": "World Development Indicators"
+            }
+          ],
+          "evidence_status": null,
+          "value": "4.9",
+          "unit": "% change on previous year"
+        },
+        {
+          "basis": "observation",
+          "text": "Inflation, consumer prices (annual %) — India, 2025: 3.1 % change on previous year",
+          "refs": [
+            {
+              "kind": "observation",
+              "id": "28",
+              "label": "2025"
+            },
+            {
+              "kind": "dataset",
+              "id": "worldbank-wdi",
+              "label": "World Development Indicators"
+            }
+          ],
+          "evidence_status": null,
+          "value": "3.1",
+          "unit": "% change on previous year"
+        },
+        {
+          "basis": "calculation",
+          "text": "Change: −1.80 percentage points",
+          "refs": [],
+          "evidence_status": null,
+          "value": "-1.8",
+          "unit": "percentage_points"
+        },
+        {
+          "basis": "threshold",
+          "text": "Meets the point change threshold of 1.00",
+          "refs": [
+            {
+              "kind": "threshold",
+              "id": "point_change",
+              "label": null
+            }
+          ],
+          "evidence_status": null,
+          "value": "1",
+          "unit": null
+        }
+      ],
+      "assumptions": [
+        "Detected because |change| ≥ 1.00 (percentage points), a configurable threshold."
+      ],
+      "limitations": [
+        "Related to a variable, with a stated difference: An annual counterpart of this variable, not the same measure: the World Bank series is the change in the annual average consumer price index, while the variable is defined as monthly year-on-year CPI inflation (MoSPI). Use it for long-run context, not as a monthly reading."
+      ],
+      "next_steps": [],
+      "sources": [
+        {
+          "kind": "series",
+          "id": "wb-ind-fp-cpi-totl-zg",
+          "label": "Inflation, consumer prices (annual %) — India"
+        },
+        {
+          "kind": "dataset",
+          "id": "worldbank-wdi",
+          "label": "World Development Indicators"
+        }
+      ]
+    },
+    {
+      "id": "ins-16b1edf860f6e628",
+      "rule": "D01",
+      "rule_title": "Observed change",
+      "kind": "change",
+      "headline": "Official exchange rate (INR per US$, period average) — India rose 9.38 %",
+      "statement": "Official exchange rate (INR per US$, period average) — India rose from 84.2 in 2024 to 92.1 in 2025 (+9.38 %), as stored.",
+      "subject": {
+        "kind": "series",
+        "id": "wb-ind-pa-nus-fcrf",
+        "label": "Official exchange rate (INR per US$, period average) — India"
+      },
+      "entities": [],
+      "relationships": [],
+      "period": {
+        "kind": "observation",
+        "label": "2024 to 2025",
+        "start": "2024",
+        "end": "2025"
+      },
+      "facts": [
+        {
+          "label": "2024",
+          "value": "84.2",
+          "unit": "INR per USD",
+          "basis": "observation",
+          "refs": [
+            {
+              "kind": "observation",
+              "id": "29",
+              "label": "2024"
+            }
+          ],
+          "period": "2024"
+        },
+        {
+          "label": "2025",
+          "value": "92.1",
+          "unit": "INR per USD",
+          "basis": "observation",
+          "refs": [
+            {
+              "kind": "observation",
+              "id": "16",
+              "label": "2025"
+            }
+          ],
+          "period": "2025"
+        },
+        {
+          "label": "Change",
+          "value": "9.3824228029",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Threshold",
+          "value": "5",
+          "unit": "percent",
+          "basis": "threshold",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [],
+      "evidence": {
+        "grade": "observed",
+        "conditional_on_simulation": false,
+        "includes_observations": true,
+        "statement": "Rests on stored observations, exact calculations on them and RUMIN's own records.",
+        "weakest_step": 0
+      },
+      "chain": [
+        {
+          "basis": "observation",
+          "text": "Official exchange rate (INR per US$, period average) — India, 2024: 84.2 INR per USD",
+          "refs": [
+            {
+              "kind": "observation",
+              "id": "29",
+              "label": "2024"
+            },
+            {
+              "kind": "dataset",
+              "id": "worldbank-wdi",
+              "label": "World Development Indicators"
+            }
+          ],
+          "evidence_status": null,
+          "value": "84.2",
+          "unit": "INR per USD"
+        },
+        {
+          "basis": "observation",
+          "text": "Official exchange rate (INR per US$, period average) — India, 2025: 92.1 INR per USD",
+          "refs": [
+            {
+              "kind": "observation",
+              "id": "16",
+              "label": "2025"
+            },
+            {
+              "kind": "dataset",
+              "id": "worldbank-wdi",
+              "label": "World Development Indicators"
+            }
+          ],
+          "evidence_status": null,
+          "value": "92.1",
+          "unit": "INR per USD"
+        },
+        {
+          "basis": "calculation",
+          "text": "Change: +9.38 %",
+          "refs": [],
+          "evidence_status": null,
+          "value": "9.3824228029",
+          "unit": "percent"
+        },
+        {
+          "basis": "threshold",
+          "text": "Meets the relative change percent threshold of 5.00",
+          "refs": [
+            {
+              "kind": "threshold",
+              "id": "relative_change_percent",
+              "label": null
+            }
+          ],
+          "evidence_status": null,
+          "value": "5",
+          "unit": null
+        }
+      ],
+      "assumptions": ["Detected because |change| ≥ 5.00 (percent), a configurable threshold."],
+      "limitations": [
+        "Related to a variable, with a stated difference: An annual average of the official exchange rate, not the same measure: the variable is defined as a daily market rate. Annual averages smooth out movements within the year."
+      ],
+      "next_steps": [],
+      "sources": [
+        {
+          "kind": "series",
+          "id": "wb-ind-pa-nus-fcrf",
+          "label": "Official exchange rate (INR per US$, period average) — India"
+        },
+        {
+          "kind": "dataset",
+          "id": "worldbank-wdi",
+          "label": "World Development Indicators"
+        }
+      ]
+    },
+    {
+      "id": "ins-2bf825f85a8ff859",
+      "rule": "D02",
+      "rule_title": "Observed change on an exposure variable",
+      "kind": "exposure_change",
+      "headline": "Inflation, consumer prices (annual %) — India moved; 3 companies are exposed to India CPI inflation",
+      "statement": "Inflation, consumer prices (annual %) — India moved −1.80 percentage points from 2024 to 2025. It is recorded as a related measure of India CPI inflation, which the graph states reaches Anvaya Bank, Gridwell Power and Trakvel Logistics. This names who is exposed; it does not say the change affected them.",
+      "subject": {
+        "kind": "series",
+        "id": "wb-ind-fp-cpi-totl-zg",
+        "label": "Inflation, consumer prices (annual %) — India"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "company:co_anvaya_bank",
+          "label": "Anvaya Bank"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_gridwell_power",
+          "label": "Gridwell Power"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_trakvel_logistics",
+          "label": "Trakvel Logistics"
+        }
+      ],
+      "relationships": [
+        {
+          "edge_key": "e-9028f600b8525642",
+          "edge_type": "related_measure_of",
+          "label": "is a related measure of",
+          "source": "series:wb-ind-fp-cpi-totl-zg",
+          "source_name": "series:wb-ind-fp-cpi-totl-zg",
+          "target": "variable:var_india_cpi_inflation",
+          "target_name": "India CPI inflation",
+          "evidence_status": "analyst_created",
+          "is_illustrative": false
+        },
+        {
+          "edge_key": "e-c50b129f9181c94f",
+          "edge_type": "influences",
+          "label": "influences",
+          "source": "variable:var_brent_crude",
+          "source_name": "Brent crude oil price",
+          "target": "variable:var_india_cpi_inflation",
+          "target_name": "India CPI inflation",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-63ca87f4cb0cc460",
+          "edge_type": "influences",
+          "label": "influences",
+          "source": "variable:var_india_cpi_inflation",
+          "source_name": "India CPI inflation",
+          "target": "variable:var_rbi_repo_rate",
+          "target_name": "RBI policy repo rate",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-a4d9310e19366033",
+          "edge_type": "affects_revenue",
+          "label": "affects revenue of",
+          "source": "variable:var_rbi_repo_rate",
+          "source_name": "RBI policy repo rate",
+          "target": "company:co_anvaya_bank",
+          "target_name": "Anvaya Bank",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-e2f1d52da5ce0ff9",
+          "edge_type": "influences",
+          "label": "influences",
+          "source": "variable:var_usd_inr",
+          "source_name": "USD/INR exchange rate",
+          "target": "variable:var_india_cpi_inflation",
+          "target_name": "India CPI inflation",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-c1196940c5ae72f5",
+          "edge_type": "affects_financing",
+          "label": "affects financing costs of",
+          "source": "variable:var_rbi_repo_rate",
+          "source_name": "RBI policy repo rate",
+          "target": "company:co_gridwell_power",
+          "target_name": "Gridwell Power",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-277924cd30f42d80",
+          "edge_type": "affects_financing",
+          "label": "affects financing costs of",
+          "source": "variable:var_rbi_repo_rate",
+          "source_name": "RBI policy repo rate",
+          "target": "company:co_trakvel_logistics",
+          "target_name": "Trakvel Logistics",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        }
+      ],
+      "period": {
+        "kind": "observation",
+        "label": "2024 to 2025",
+        "start": "2024",
+        "end": "2025"
+      },
+      "facts": [
+        {
+          "label": "Change",
+          "value": "-1.8",
+          "unit": "percentage_points",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Companies reached",
+          "value": "3",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [],
+      "evidence": {
+        "grade": "assumed",
+        "conditional_on_simulation": false,
+        "includes_observations": true,
+        "statement": "Rests on at least one relationship recorded as a model assumption: an assumed effect with a written rationale, not an empirical finding.",
+        "weakest_step": 5
+      },
+      "chain": [
+        {
+          "basis": "observation",
+          "text": "Inflation, consumer prices (annual %) — India, 2024: 4.9 % change on previous year",
+          "refs": [
+            {
+              "kind": "observation",
+              "id": "27",
+              "label": "2024"
+            },
+            {
+              "kind": "dataset",
+              "id": "worldbank-wdi",
+              "label": "World Development Indicators"
+            }
+          ],
+          "evidence_status": null,
+          "value": "4.9",
+          "unit": "% change on previous year"
+        },
+        {
+          "basis": "observation",
+          "text": "Inflation, consumer prices (annual %) — India, 2025: 3.1 % change on previous year",
+          "refs": [
+            {
+              "kind": "observation",
+              "id": "28",
+              "label": "2025"
+            },
+            {
+              "kind": "dataset",
+              "id": "worldbank-wdi",
+              "label": "World Development Indicators"
+            }
+          ],
+          "evidence_status": null,
+          "value": "3.1",
+          "unit": "% change on previous year"
+        },
+        {
+          "basis": "calculation",
+          "text": "Change: −1.80 percentage points",
+          "refs": [],
+          "evidence_status": null,
+          "value": "-1.8",
+          "unit": "percentage_points"
+        },
+        {
+          "basis": "threshold",
+          "text": "Meets the point change threshold of 1.00",
+          "refs": [
+            {
+              "kind": "threshold",
+              "id": "point_change",
+              "label": null
+            }
+          ],
+          "evidence_status": null,
+          "value": "1",
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "series:wb-ind-fp-cpi-totl-zg is a related measure of India CPI inflation",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-9028f600b8525642",
+              "label": "series:wb-ind-fp-cpi-totl-zg is a related measure of India CPI inflation"
+            }
+          ],
+          "evidence_status": "analyst_created",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Brent crude oil price influences India CPI inflation",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-c50b129f9181c94f",
+              "label": "Brent crude oil price influences India CPI inflation"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "India CPI inflation influences RBI policy repo rate",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-63ca87f4cb0cc460",
+              "label": "India CPI inflation influences RBI policy repo rate"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "RBI policy repo rate affects revenue of Anvaya Bank",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-a4d9310e19366033",
+              "label": "RBI policy repo rate affects revenue of Anvaya Bank"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "USD/INR exchange rate influences India CPI inflation",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-e2f1d52da5ce0ff9",
+              "label": "USD/INR exchange rate influences India CPI inflation"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "RBI policy repo rate affects financing costs of Gridwell Power",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-c1196940c5ae72f5",
+              "label": "RBI policy repo rate affects financing costs of Gridwell Power"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "RBI policy repo rate affects financing costs of Trakvel Logistics",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-277924cd30f42d80",
+              "label": "RBI policy repo rate affects financing costs of Trakvel Logistics"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "assumptions": [],
+      "limitations": [
+        "Related to a variable, with a stated difference: An annual counterpart of this variable, not the same measure: the World Bank series is the change in the annual average consumer price index, while the variable is defined as monthly year-on-year CPI inflation (MoSPI). Use it for long-run context, not as a monthly reading.",
+        "A connection in the graph is not evidence of causation.",
+        "A stated exposure says that the entity is exposed, not how much: sizes come only from simulations with the user's own figures."
+      ],
+      "next_steps": [],
+      "sources": [
+        {
+          "kind": "series",
+          "id": "wb-ind-fp-cpi-totl-zg",
+          "label": "Inflation, consumer prices (annual %) — India"
+        }
+      ]
+    },
+    {
+      "id": "ins-a7b53d41047bc0aa",
+      "rule": "D02",
+      "rule_title": "Observed change on an exposure variable",
+      "kind": "exposure_change",
+      "headline": "Official exchange rate (INR per US$, period average) — India moved; 7 companies are exposed to USD/INR exchange rate",
+      "statement": "Official exchange rate (INR per US$, period average) — India moved +9.38 % from 2024 to 2025. It is recorded as a related measure of USD/INR exchange rate, which the graph states reaches Aerisca Airways, Anvaya Bank, Deltrin Refining, Gridwell Power, Kovalent Digital, Skyvara Air and Trakvel Logistics. This names who is exposed; it does not say the change affected them.",
+      "subject": {
+        "kind": "series",
+        "id": "wb-ind-pa-nus-fcrf",
+        "label": "Official exchange rate (INR per US$, period average) — India"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "company:co_aerisca_airways",
+          "label": "Aerisca Airways"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_anvaya_bank",
+          "label": "Anvaya Bank"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_deltrin_refining",
+          "label": "Deltrin Refining"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_gridwell_power",
+          "label": "Gridwell Power"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_kovalent_digital",
+          "label": "Kovalent Digital"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_skyvara_air",
+          "label": "Skyvara Air"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_trakvel_logistics",
+          "label": "Trakvel Logistics"
+        }
+      ],
+      "relationships": [
+        {
+          "edge_key": "e-d7af3853725f085a",
+          "edge_type": "related_measure_of",
+          "label": "is a related measure of",
+          "source": "series:wb-ind-pa-nus-fcrf",
+          "source_name": "series:wb-ind-pa-nus-fcrf",
+          "target": "variable:var_usd_inr",
+          "target_name": "USD/INR exchange rate",
+          "evidence_status": "analyst_created",
+          "is_illustrative": false
+        },
+        {
+          "edge_key": "e-2afc04ee80f0699e",
+          "edge_type": "affects_costs",
+          "label": "affects costs of",
+          "source": "variable:var_usd_inr",
+          "source_name": "USD/INR exchange rate",
+          "target": "company:co_aerisca_airways",
+          "target_name": "Aerisca Airways",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-0ad272aa06e1d7d6",
+          "edge_type": "influences",
+          "label": "influences",
+          "source": "variable:var_us_fed_funds",
+          "source_name": "U.S. effective federal funds rate",
+          "target": "variable:var_usd_inr",
+          "target_name": "USD/INR exchange rate",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-e2f1d52da5ce0ff9",
+          "edge_type": "influences",
+          "label": "influences",
+          "source": "variable:var_usd_inr",
+          "source_name": "USD/INR exchange rate",
+          "target": "variable:var_india_cpi_inflation",
+          "target_name": "India CPI inflation",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-63ca87f4cb0cc460",
+          "edge_type": "influences",
+          "label": "influences",
+          "source": "variable:var_india_cpi_inflation",
+          "source_name": "India CPI inflation",
+          "target": "variable:var_rbi_repo_rate",
+          "target_name": "RBI policy repo rate",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-a4d9310e19366033",
+          "edge_type": "affects_revenue",
+          "label": "affects revenue of",
+          "source": "variable:var_rbi_repo_rate",
+          "source_name": "RBI policy repo rate",
+          "target": "company:co_anvaya_bank",
+          "target_name": "Anvaya Bank",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-dff724fccf21ee64",
+          "edge_type": "affects_costs",
+          "label": "affects costs of",
+          "source": "variable:var_usd_inr",
+          "source_name": "USD/INR exchange rate",
+          "target": "company:co_deltrin_refining",
+          "target_name": "Deltrin Refining",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-c1196940c5ae72f5",
+          "edge_type": "affects_financing",
+          "label": "affects financing costs of",
+          "source": "variable:var_rbi_repo_rate",
+          "source_name": "RBI policy repo rate",
+          "target": "company:co_gridwell_power",
+          "target_name": "Gridwell Power",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-30bd282fe1fdf72a",
+          "edge_type": "affects_revenue",
+          "label": "affects revenue of",
+          "source": "variable:var_usd_inr",
+          "source_name": "USD/INR exchange rate",
+          "target": "company:co_kovalent_digital",
+          "target_name": "Kovalent Digital",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-c93a6964520b431b",
+          "edge_type": "affects_costs",
+          "label": "affects costs of",
+          "source": "variable:var_usd_inr",
+          "source_name": "USD/INR exchange rate",
+          "target": "company:co_skyvara_air",
+          "target_name": "Skyvara Air",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-277924cd30f42d80",
+          "edge_type": "affects_financing",
+          "label": "affects financing costs of",
+          "source": "variable:var_rbi_repo_rate",
+          "source_name": "RBI policy repo rate",
+          "target": "company:co_trakvel_logistics",
+          "target_name": "Trakvel Logistics",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        }
+      ],
+      "period": {
+        "kind": "observation",
+        "label": "2024 to 2025",
+        "start": "2024",
+        "end": "2025"
+      },
+      "facts": [
+        {
+          "label": "Change",
+          "value": "9.3824228029",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Companies reached",
+          "value": "7",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [],
+      "evidence": {
+        "grade": "assumed",
+        "conditional_on_simulation": false,
+        "includes_observations": true,
+        "statement": "Rests on at least one relationship recorded as a model assumption: an assumed effect with a written rationale, not an empirical finding.",
+        "weakest_step": 5
+      },
+      "chain": [
+        {
+          "basis": "observation",
+          "text": "Official exchange rate (INR per US$, period average) — India, 2024: 84.2 INR per USD",
+          "refs": [
+            {
+              "kind": "observation",
+              "id": "29",
+              "label": "2024"
+            },
+            {
+              "kind": "dataset",
+              "id": "worldbank-wdi",
+              "label": "World Development Indicators"
+            }
+          ],
+          "evidence_status": null,
+          "value": "84.2",
+          "unit": "INR per USD"
+        },
+        {
+          "basis": "observation",
+          "text": "Official exchange rate (INR per US$, period average) — India, 2025: 92.1 INR per USD",
+          "refs": [
+            {
+              "kind": "observation",
+              "id": "16",
+              "label": "2025"
+            },
+            {
+              "kind": "dataset",
+              "id": "worldbank-wdi",
+              "label": "World Development Indicators"
+            }
+          ],
+          "evidence_status": null,
+          "value": "92.1",
+          "unit": "INR per USD"
+        },
+        {
+          "basis": "calculation",
+          "text": "Change: +9.38 %",
+          "refs": [],
+          "evidence_status": null,
+          "value": "9.3824228029",
+          "unit": "percent"
+        },
+        {
+          "basis": "threshold",
+          "text": "Meets the relative change percent threshold of 5.00",
+          "refs": [
+            {
+              "kind": "threshold",
+              "id": "relative_change_percent",
+              "label": null
+            }
+          ],
+          "evidence_status": null,
+          "value": "5",
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "series:wb-ind-pa-nus-fcrf is a related measure of USD/INR exchange rate",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-d7af3853725f085a",
+              "label": "series:wb-ind-pa-nus-fcrf is a related measure of USD/INR exchange rate"
+            }
+          ],
+          "evidence_status": "analyst_created",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "USD/INR exchange rate affects costs of Aerisca Airways",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-2afc04ee80f0699e",
+              "label": "USD/INR exchange rate affects costs of Aerisca Airways"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "U.S. effective federal funds rate influences USD/INR exchange rate",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-0ad272aa06e1d7d6",
+              "label": "U.S. effective federal funds rate influences USD/INR exchange rate"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "USD/INR exchange rate influences India CPI inflation",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-e2f1d52da5ce0ff9",
+              "label": "USD/INR exchange rate influences India CPI inflation"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "India CPI inflation influences RBI policy repo rate",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-63ca87f4cb0cc460",
+              "label": "India CPI inflation influences RBI policy repo rate"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "RBI policy repo rate affects revenue of Anvaya Bank",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-a4d9310e19366033",
+              "label": "RBI policy repo rate affects revenue of Anvaya Bank"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "USD/INR exchange rate affects costs of Deltrin Refining",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-dff724fccf21ee64",
+              "label": "USD/INR exchange rate affects costs of Deltrin Refining"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "RBI policy repo rate affects financing costs of Gridwell Power",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-c1196940c5ae72f5",
+              "label": "RBI policy repo rate affects financing costs of Gridwell Power"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "USD/INR exchange rate affects revenue of Kovalent Digital",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-30bd282fe1fdf72a",
+              "label": "USD/INR exchange rate affects revenue of Kovalent Digital"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "USD/INR exchange rate affects costs of Skyvara Air",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-c93a6964520b431b",
+              "label": "USD/INR exchange rate affects costs of Skyvara Air"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "RBI policy repo rate affects financing costs of Trakvel Logistics",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-277924cd30f42d80",
+              "label": "RBI policy repo rate affects financing costs of Trakvel Logistics"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "assumptions": [],
+      "limitations": [
+        "Related to a variable, with a stated difference: An annual average of the official exchange rate, not the same measure: the variable is defined as a daily market rate. Annual averages smooth out movements within the year.",
+        "A connection in the graph is not evidence of causation.",
+        "A stated exposure says that the entity is exposed, not how much: sizes come only from simulations with the user's own figures."
+      ],
+      "next_steps": [],
+      "sources": [
+        {
+          "kind": "series",
+          "id": "wb-ind-pa-nus-fcrf",
+          "label": "Official exchange rate (INR per US$, period average) — India"
+        }
+      ]
+    },
+    {
+      "id": "ins-f1abe14455f9f7c9",
+      "rule": "D06",
+      "rule_title": "Data revision",
+      "kind": "revision",
+      "headline": "Official exchange rate (INR per US$, period average) — India 2024 was revised",
+      "statement": "The provider revised Official exchange rate (INR per US$, period average) — India for 2024 from 83.7 INR per USD to 84.2 INR per USD (+0.60 %). Both values are kept.",
+      "subject": {
+        "kind": "series",
+        "id": "wb-ind-pa-nus-fcrf",
+        "label": "Official exchange rate (INR per US$, period average) — India"
+      },
+      "entities": [],
+      "relationships": [],
+      "period": {
+        "kind": "observation",
+        "label": "2024",
+        "start": "2024",
+        "end": "2024"
+      },
+      "facts": [
+        {
+          "label": "Revision",
+          "value": "0.5973715651",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [],
+      "evidence": {
+        "grade": "observed",
+        "conditional_on_simulation": false,
+        "includes_observations": true,
+        "statement": "Rests on stored observations, exact calculations on them and RUMIN's own records.",
+        "weakest_step": 0
+      },
+      "chain": [
+        {
+          "basis": "observation",
+          "text": "Revision 1: 83.7 INR per USD",
+          "refs": [
+            {
+              "kind": "observation",
+              "id": "15",
+              "label": "2024"
+            }
+          ],
+          "evidence_status": null,
+          "value": "83.7",
+          "unit": "INR per USD"
+        },
+        {
+          "basis": "observation",
+          "text": "Revision 2: 84.2 INR per USD",
+          "refs": [
+            {
+              "kind": "observation",
+              "id": "29",
+              "label": "2024"
+            }
+          ],
+          "evidence_status": null,
+          "value": "84.2",
+          "unit": "INR per USD"
+        },
+        {
+          "basis": "calculation",
+          "text": "Size of the revision",
+          "refs": [],
+          "evidence_status": null,
+          "value": "0.5973715651",
+          "unit": "percent"
+        }
+      ],
+      "assumptions": [],
+      "limitations": [
+        "Related to a variable, with a stated difference: An annual average of the official exchange rate, not the same measure: the variable is defined as a daily market rate. Annual averages smooth out movements within the year."
+      ],
+      "next_steps": [
+        {
+          "action": "review_revision",
+          "text": "Check whether analyses that used the earlier value need redoing.",
+          "target": {
+            "kind": "series",
+            "id": "wb-ind-pa-nus-fcrf",
+            "label": "Official exchange rate (INR per US$, period average) — India"
+          }
+        }
+      ],
+      "sources": [
+        {
+          "kind": "series",
+          "id": "wb-ind-pa-nus-fcrf",
+          "label": "Official exchange rate (INR per US$, period average) — India"
+        }
+      ]
+    },
+    {
+      "id": "ins-8c25c1f847f3da5b",
+      "rule": "D04",
+      "rule_title": "Trend",
+      "kind": "trend",
+      "headline": "Official exchange rate (INR per US$, period average) — India has been rising",
+      "statement": "Official exchange rate (INR per US$, period average) — India has been rising over 2021 to 2025: +4.2 INR per USD per year (t = 8.35, critical value 3.182).",
+      "subject": {
+        "kind": "series",
+        "id": "wb-ind-pa-nus-fcrf",
+        "label": "Official exchange rate (INR per US$, period average) — India"
+      },
+      "entities": [],
+      "relationships": [],
+      "period": {
+        "kind": "observation",
+        "label": "2021 to 2025",
+        "start": "2021",
+        "end": "2025"
+      },
+      "facts": [
+        {
+          "label": "Slope per period",
+          "value": "4.2",
+          "unit": "INR per USD",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Slope per period, relative to the window's mean",
+          "value": "5.1045211473",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "t statistic",
+          "value": "8.3511494668",
+          "unit": null,
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Critical value",
+          "value": "3.182",
+          "unit": null,
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Values in the window",
+          "value": "5",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [],
+      "evidence": {
+        "grade": "observed",
+        "conditional_on_simulation": false,
+        "includes_observations": true,
+        "statement": "Rests on stored observations, exact calculations on them and RUMIN's own records.",
+        "weakest_step": 0
+      },
+      "chain": [
+        {
+          "basis": "observation",
+          "text": "Stored values of Official exchange rate (INR per US$, period average) — India, 2021 to 2025",
+          "refs": [
+            {
+              "kind": "series",
+              "id": "wb-ind-pa-nus-fcrf",
+              "label": "Official exchange rate (INR per US$, period average) — India"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "calculation",
+          "text": "Least-squares slope and its t statistic",
+          "refs": [],
+          "evidence_status": null,
+          "value": "4.2",
+          "unit": "INR per USD"
+        },
+        {
+          "basis": "threshold",
+          "text": "|t| above the two-sided critical value at 0.05",
+          "refs": [
+            {
+              "kind": "threshold",
+              "id": "trend_significance",
+              "label": null
+            }
+          ],
+          "evidence_status": null,
+          "value": "3.182",
+          "unit": null
+        }
+      ],
+      "assumptions": [],
+      "limitations": [
+        "Describes the window; it is not a forecast.",
+        "The test assumes independent, normally distributed residuals, which economic series often are not; small windows have little power.",
+        "Related to a variable, with a stated difference: An annual average of the official exchange rate, not the same measure: the variable is defined as a daily market rate. Annual averages smooth out movements within the year."
+      ],
+      "next_steps": [],
+      "sources": [
+        {
+          "kind": "series",
+          "id": "wb-ind-pa-nus-fcrf",
+          "label": "Official exchange rate (INR per US$, period average) — India"
+        }
+      ]
+    },
+    {
+      "id": "ins-ae1e49e01049985a",
+      "rule": "S01",
+      "rule_title": "Simulated impact",
+      "kind": "impact",
+      "headline": "Profit before tax −6,700,000 INR (−17.63 %) under “Oil, rupee and rates on Aerisca”",
+      "statement": "In the stored execution of “Oil, rupee and rates on Aerisca” (version 1), with Brent crude oil price +20.00 %, USD/INR exchange rate +5.00 % and RBI policy repo rate +0.50 percentage points, Aerisca Airways's profit before tax changes by −6,700,000 INR (−17.63 %) over 12 months, from a baseline of 38,000,000 INR.",
+      "subject": {
+        "kind": "graph_node",
+        "id": "company:co_aerisca_airways",
+        "label": "Aerisca Airways"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "company:co_aerisca_airways",
+          "label": "Aerisca Airways"
+        }
+      ],
+      "relationships": [],
+      "period": {
+        "kind": "scenario",
+        "label": "12 simulated months",
+        "start": null,
+        "end": null
+      },
+      "facts": [
+        {
+          "label": "Profit before tax: baseline",
+          "value": "38000000",
+          "unit": "INR",
+          "basis": "assumption",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "period": null
+        },
+        {
+          "label": "Profit before tax: change",
+          "value": "-6700000",
+          "unit": "INR",
+          "basis": "simulation",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "period": null
+        },
+        {
+          "label": "Profit before tax: change in percent",
+          "value": "-17.6315789474",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [
+        {
+          "kind": "execution",
+          "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+          "label": "Oil, rupee and rates on Aerisca, version 1",
+          "models": ["airline_fuel_cost 1.1.0", "fx_exposure 1.0.0", "floating_rate_interest 1.0.0"]
+        }
+      ],
+      "evidence": {
+        "grade": "simulated",
+        "conditional_on_simulation": true,
+        "includes_observations": false,
+        "statement": "Rests on stored model outputs: deterministic results of the stated inputs and assumptions, not forecasts.",
+        "weakest_step": 1
+      },
+      "chain": [
+        {
+          "basis": "assumption",
+          "text": "Figures entered by the user: Baseline jet fuel price 750 USD per kilolitre; Baseline exchange rate 80 INR per USD; Annual revenue 300000000 INR per year; Annual operating costs 250000000 INR per year; Annual fuel consumption 1000 kilolitre per year; Annual interest expense 12000000 INR per year; Debt linked to the repo rate 100000000 INR; Debt linked to US short-term rates 0 INR; Annual revenue invoiced in US dollars 500000 USD per year; Annual costs paid in US dollars 200000 USD per year",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "simulation",
+          "text": "Stored execution: Profit before tax −6,700,000 INR",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            },
+            {
+              "kind": "run",
+              "id": "b9658126-ea33-47df-971b-ef0d8a81c7fe",
+              "label": "airline_fuel_cost 1.1.0"
+            },
+            {
+              "kind": "run",
+              "id": "2a3d354b-175f-4384-ba14-96851339cc63",
+              "label": "fx_exposure 1.0.0"
+            },
+            {
+              "kind": "run",
+              "id": "00299b3e-3f95-4b27-af48-f0633bc71e21",
+              "label": "floating_rate_interest 1.0.0"
+            }
+          ],
+          "evidence_status": null,
+          "value": "-6700000",
+          "unit": "INR"
+        }
+      ],
+      "assumptions": [
+        "airline_fuel_cost: Everything the model does not include stays at its baseline: fuel consumption, other costs, traffic, capacity, fares (apart from the stated pass-through) and financing.",
+        "airline_fuel_cost: Fuel is consumed evenly through the year: each month uses one twelfth of the annual volume, and annual revenue and costs accrue evenly.",
+        "airline_fuel_cost: The fuel bill is consumption × the benchmark jet fuel price × the exchange rate. Taxes, fees and supplier margins that do not follow the benchmark are outside the model.",
+        "airline_fuel_cost: Scenario changes are step changes: they take effect in the start month and last for the stated duration (to the end of the horizon unless one is set), after which the changed variables return to their baselines. Every change in a run shares this timing.",
+        "airline_fuel_cost: Jet fuel responds to crude oil with a constant elasticity β after a lag: ln(jet fuel) changes by β × ln(1 + crude change). With β = 1 the refining margin stays a constant proportion of the price.",
+        "airline_fuel_cost: Hedged fuel pays the baseline US-dollar price until the hedges expire; the exchange rate is not hedged; hedges are not rolled over.",
+        "airline_fuel_cost: Fares recover a fixed share of the change in fuel cost after a lag, for rises and falls alike, and passenger demand does not respond.",
+        "airline_fuel_cost: The exchange rate affects the fuel bill only: other dollar costs and any dollar revenue are outside the model.",
+        "airline_fuel_cost: Crude-to-jet-fuel elasticity (β) = 1 elasticity (dimensionless) (default)",
+        "airline_fuel_cost: Crude-to-jet-fuel lag = 1 months (entered)",
+        "airline_fuel_cost: Hedge ratio = 40 % (entered)",
+        "airline_fuel_cost: Hedge cover = 6 months (entered)",
+        "… and 20 more stated with the model runs."
+      ],
+      "limitations": [
+        "Floating-rate interest: the knowledge graph does not state this exposure of Aerisca Airways; the result rests on your figures alone.",
+        "Simulated under the scenario's changes, figures and assumptions: not a forecast.",
+        "Not modelled: Cash flow."
+      ],
+      "next_steps": [
+        {
+          "action": "run_sensitivity",
+          "text": "Run a sensitivity analysis to see which inputs and assumptions move this result most.",
+          "target": {
+            "kind": "execution",
+            "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+            "label": "Oil, rupee and rates on Aerisca · version 1"
+          }
+        }
+      ],
+      "sources": [
+        {
+          "kind": "execution",
+          "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+          "label": "Oil, rupee and rates on Aerisca · version 1"
+        }
+      ]
+    },
+    {
+      "id": "ins-5098743906542627",
+      "rule": "X01",
+      "rule_title": "Shared driver",
+      "kind": "cross_entity",
+      "headline": "Brent crude oil price reaches 9 companies",
+      "statement": "Through validated relationships, Brent crude oil price reaches the costs of Aerisca Airways, Deltrin Refining, Skyvara Air, Solvane Refining and Trakvel Logistics; the financing costs of Gridwell Power and Trakvel Logistics; and the revenue of Anvaya Bank, Deltrin Refining, Orvane Petroleum, Solvane Refining and Tessaline Energy.",
+      "subject": {
+        "kind": "graph_node",
+        "id": "variable:var_brent_crude",
+        "label": "Brent crude oil price"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "company:co_aerisca_airways",
+          "label": "Aerisca Airways"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_anvaya_bank",
+          "label": "Anvaya Bank"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_deltrin_refining",
+          "label": "Deltrin Refining"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_gridwell_power",
+          "label": "Gridwell Power"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_orvane_petroleum",
+          "label": "Orvane Petroleum"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_skyvara_air",
+          "label": "Skyvara Air"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_solvane_refining",
+          "label": "Solvane Refining"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_tessaline_energy",
+          "label": "Tessaline Energy"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_trakvel_logistics",
+          "label": "Trakvel Logistics"
+        }
+      ],
+      "relationships": [
+        {
+          "edge_key": "e-ea305310288a3f88",
+          "edge_type": "influences",
+          "label": "influences",
+          "source": "variable:var_brent_crude",
+          "source_name": "Brent crude oil price",
+          "target": "variable:var_jet_fuel",
+          "target_name": "Jet fuel price (U.S. Gulf Coast)",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-df536e008d0660a5",
+          "edge_type": "affects_costs",
+          "label": "affects costs of",
+          "source": "variable:var_jet_fuel",
+          "source_name": "Jet fuel price (U.S. Gulf Coast)",
+          "target": "industry:ind_air_transport",
+          "target_name": "Air transport",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-3c1cd4f52348ae25",
+          "edge_type": "in_industry",
+          "label": "operates in",
+          "source": "company:co_aerisca_airways",
+          "source_name": "Aerisca Airways",
+          "target": "industry:ind_air_transport",
+          "target_name": "Air transport",
+          "evidence_status": "analyst_created",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-c50b129f9181c94f",
+          "edge_type": "influences",
+          "label": "influences",
+          "source": "variable:var_brent_crude",
+          "source_name": "Brent crude oil price",
+          "target": "variable:var_india_cpi_inflation",
+          "target_name": "India CPI inflation",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-63ca87f4cb0cc460",
+          "edge_type": "influences",
+          "label": "influences",
+          "source": "variable:var_india_cpi_inflation",
+          "source_name": "India CPI inflation",
+          "target": "variable:var_rbi_repo_rate",
+          "target_name": "RBI policy repo rate",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-a4d9310e19366033",
+          "edge_type": "affects_revenue",
+          "label": "affects revenue of",
+          "source": "variable:var_rbi_repo_rate",
+          "source_name": "RBI policy repo rate",
+          "target": "company:co_anvaya_bank",
+          "target_name": "Anvaya Bank",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-235c56ef17fc35ed",
+          "edge_type": "affects_costs",
+          "label": "affects costs of",
+          "source": "variable:var_brent_crude",
+          "source_name": "Brent crude oil price",
+          "target": "industry:ind_petroleum_refining",
+          "target_name": "Refined petroleum products",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-abbed46434b7e33a",
+          "edge_type": "in_industry",
+          "label": "operates in",
+          "source": "company:co_deltrin_refining",
+          "source_name": "Deltrin Refining",
+          "target": "industry:ind_petroleum_refining",
+          "target_name": "Refined petroleum products",
+          "evidence_status": "analyst_created",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-2202a51d4a09a79b",
+          "edge_type": "affects_revenue",
+          "label": "affects revenue of",
+          "source": "variable:var_jet_fuel",
+          "source_name": "Jet fuel price (U.S. Gulf Coast)",
+          "target": "industry:ind_petroleum_refining",
+          "target_name": "Refined petroleum products",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-c1196940c5ae72f5",
+          "edge_type": "affects_financing",
+          "label": "affects financing costs of",
+          "source": "variable:var_rbi_repo_rate",
+          "source_name": "RBI policy repo rate",
+          "target": "company:co_gridwell_power",
+          "target_name": "Gridwell Power",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-1cd600a6c634bc37",
+          "edge_type": "affects_revenue",
+          "label": "affects revenue of",
+          "source": "variable:var_brent_crude",
+          "source_name": "Brent crude oil price",
+          "target": "industry:ind_oil_gas_extraction",
+          "target_name": "Crude petroleum & natural gas extraction",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-221294c47808a5cf",
+          "edge_type": "in_industry",
+          "label": "operates in",
+          "source": "company:co_orvane_petroleum",
+          "source_name": "Orvane Petroleum",
+          "target": "industry:ind_oil_gas_extraction",
+          "target_name": "Crude petroleum & natural gas extraction",
+          "evidence_status": "analyst_created",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-5e13079bf457935d",
+          "edge_type": "in_industry",
+          "label": "operates in",
+          "source": "company:co_skyvara_air",
+          "source_name": "Skyvara Air",
+          "target": "industry:ind_air_transport",
+          "target_name": "Air transport",
+          "evidence_status": "analyst_created",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-898a3284542bdd62",
+          "edge_type": "in_industry",
+          "label": "operates in",
+          "source": "company:co_solvane_refining",
+          "source_name": "Solvane Refining",
+          "target": "industry:ind_petroleum_refining",
+          "target_name": "Refined petroleum products",
+          "evidence_status": "analyst_created",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-052ca199e0523f38",
+          "edge_type": "in_industry",
+          "label": "operates in",
+          "source": "company:co_tessaline_energy",
+          "source_name": "Tessaline Energy",
+          "target": "industry:ind_oil_gas_extraction",
+          "target_name": "Crude petroleum & natural gas extraction",
+          "evidence_status": "analyst_created",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-5b3dfdaaf8d458c9",
+          "edge_type": "affects_costs",
+          "label": "affects costs of",
+          "source": "variable:var_brent_crude",
+          "source_name": "Brent crude oil price",
+          "target": "industry:ind_land_transport",
+          "target_name": "Land transport",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-aed21c332c46c8ea",
+          "edge_type": "in_industry",
+          "label": "operates in",
+          "source": "company:co_trakvel_logistics",
+          "source_name": "Trakvel Logistics",
+          "target": "industry:ind_land_transport",
+          "target_name": "Land transport",
+          "evidence_status": "analyst_created",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-277924cd30f42d80",
+          "edge_type": "affects_financing",
+          "label": "affects financing costs of",
+          "source": "variable:var_rbi_repo_rate",
+          "source_name": "RBI policy repo rate",
+          "target": "company:co_trakvel_logistics",
+          "target_name": "Trakvel Logistics",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        }
+      ],
+      "period": {
+        "kind": "graph_build",
+        "label": "Build #1",
+        "start": null,
+        "end": null
+      },
+      "facts": [
+        {
+          "label": "Companies reached",
+          "value": "9",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [],
+      "evidence": {
+        "grade": "assumed",
+        "conditional_on_simulation": false,
+        "includes_observations": false,
+        "statement": "Rests on at least one relationship recorded as a model assumption: an assumed effect with a written rationale, not an empirical finding.",
+        "weakest_step": 1
+      },
+      "chain": [
+        {
+          "basis": "record",
+          "text": "Knowledge-graph build #1",
+          "refs": [
+            {
+              "kind": "graph_build",
+              "id": "1",
+              "label": "Build #1"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Brent crude oil price influences Jet fuel price (U.S. Gulf Coast)",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-ea305310288a3f88",
+              "label": "Brent crude oil price influences Jet fuel price (U.S. Gulf Coast)"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Jet fuel price (U.S. Gulf Coast) affects costs of Air transport",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-df536e008d0660a5",
+              "label": "Jet fuel price (U.S. Gulf Coast) affects costs of Air transport"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Aerisca Airways operates in Air transport",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-3c1cd4f52348ae25",
+              "label": "Aerisca Airways operates in Air transport"
+            }
+          ],
+          "evidence_status": "analyst_created",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Brent crude oil price influences India CPI inflation",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-c50b129f9181c94f",
+              "label": "Brent crude oil price influences India CPI inflation"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "India CPI inflation influences RBI policy repo rate",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-63ca87f4cb0cc460",
+              "label": "India CPI inflation influences RBI policy repo rate"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "RBI policy repo rate affects revenue of Anvaya Bank",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-a4d9310e19366033",
+              "label": "RBI policy repo rate affects revenue of Anvaya Bank"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Brent crude oil price affects costs of Refined petroleum products",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-235c56ef17fc35ed",
+              "label": "Brent crude oil price affects costs of Refined petroleum products"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Deltrin Refining operates in Refined petroleum products",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-abbed46434b7e33a",
+              "label": "Deltrin Refining operates in Refined petroleum products"
+            }
+          ],
+          "evidence_status": "analyst_created",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Jet fuel price (U.S. Gulf Coast) affects revenue of Refined petroleum products",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-2202a51d4a09a79b",
+              "label": "Jet fuel price (U.S. Gulf Coast) affects revenue of Refined petroleum products"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "RBI policy repo rate affects financing costs of Gridwell Power",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-c1196940c5ae72f5",
+              "label": "RBI policy repo rate affects financing costs of Gridwell Power"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Brent crude oil price affects revenue of Crude petroleum & natural gas extraction",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-1cd600a6c634bc37",
+              "label": "Brent crude oil price affects revenue of Crude petroleum & natural gas extraction"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Orvane Petroleum operates in Crude petroleum & natural gas extraction",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-221294c47808a5cf",
+              "label": "Orvane Petroleum operates in Crude petroleum & natural gas extraction"
+            }
+          ],
+          "evidence_status": "analyst_created",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Skyvara Air operates in Air transport",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-5e13079bf457935d",
+              "label": "Skyvara Air operates in Air transport"
+            }
+          ],
+          "evidence_status": "analyst_created",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Solvane Refining operates in Refined petroleum products",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-898a3284542bdd62",
+              "label": "Solvane Refining operates in Refined petroleum products"
+            }
+          ],
+          "evidence_status": "analyst_created",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Tessaline Energy operates in Crude petroleum & natural gas extraction",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-052ca199e0523f38",
+              "label": "Tessaline Energy operates in Crude petroleum & natural gas extraction"
+            }
+          ],
+          "evidence_status": "analyst_created",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Brent crude oil price affects costs of Land transport",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-5b3dfdaaf8d458c9",
+              "label": "Brent crude oil price affects costs of Land transport"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Trakvel Logistics operates in Land transport",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-aed21c332c46c8ea",
+              "label": "Trakvel Logistics operates in Land transport"
+            }
+          ],
+          "evidence_status": "analyst_created",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "RBI policy repo rate affects financing costs of Trakvel Logistics",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-277924cd30f42d80",
+              "label": "RBI policy repo rate affects financing costs of Trakvel Logistics"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "assumptions": [],
+      "limitations": [
+        "A stated exposure says that the entity is exposed, not how much: sizes come only from simulations with the user's own figures.",
+        "A connection in the graph is not evidence of causation.",
+        "Companies can be exposed through opposite channels (costs for one, revenue for another)."
+      ],
+      "next_steps": [],
+      "sources": [
+        {
+          "kind": "graph_build",
+          "id": "1",
+          "label": "Build #1"
+        }
+      ]
+    },
+    {
+      "id": "ins-bd869c17f9f4007a",
+      "rule": "X01",
+      "rule_title": "Shared driver",
+      "kind": "cross_entity",
+      "headline": "India CPI inflation reaches 3 companies",
+      "statement": "Through validated relationships, India CPI inflation reaches the financing costs of Gridwell Power and Trakvel Logistics; and the revenue of Anvaya Bank.",
+      "subject": {
+        "kind": "graph_node",
+        "id": "variable:var_india_cpi_inflation",
+        "label": "India CPI inflation"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "company:co_anvaya_bank",
+          "label": "Anvaya Bank"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_gridwell_power",
+          "label": "Gridwell Power"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_trakvel_logistics",
+          "label": "Trakvel Logistics"
+        }
+      ],
+      "relationships": [
+        {
+          "edge_key": "e-c50b129f9181c94f",
+          "edge_type": "influences",
+          "label": "influences",
+          "source": "variable:var_brent_crude",
+          "source_name": "Brent crude oil price",
+          "target": "variable:var_india_cpi_inflation",
+          "target_name": "India CPI inflation",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-63ca87f4cb0cc460",
+          "edge_type": "influences",
+          "label": "influences",
+          "source": "variable:var_india_cpi_inflation",
+          "source_name": "India CPI inflation",
+          "target": "variable:var_rbi_repo_rate",
+          "target_name": "RBI policy repo rate",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-a4d9310e19366033",
+          "edge_type": "affects_revenue",
+          "label": "affects revenue of",
+          "source": "variable:var_rbi_repo_rate",
+          "source_name": "RBI policy repo rate",
+          "target": "company:co_anvaya_bank",
+          "target_name": "Anvaya Bank",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-e2f1d52da5ce0ff9",
+          "edge_type": "influences",
+          "label": "influences",
+          "source": "variable:var_usd_inr",
+          "source_name": "USD/INR exchange rate",
+          "target": "variable:var_india_cpi_inflation",
+          "target_name": "India CPI inflation",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-c1196940c5ae72f5",
+          "edge_type": "affects_financing",
+          "label": "affects financing costs of",
+          "source": "variable:var_rbi_repo_rate",
+          "source_name": "RBI policy repo rate",
+          "target": "company:co_gridwell_power",
+          "target_name": "Gridwell Power",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-277924cd30f42d80",
+          "edge_type": "affects_financing",
+          "label": "affects financing costs of",
+          "source": "variable:var_rbi_repo_rate",
+          "source_name": "RBI policy repo rate",
+          "target": "company:co_trakvel_logistics",
+          "target_name": "Trakvel Logistics",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        }
+      ],
+      "period": {
+        "kind": "graph_build",
+        "label": "Build #1",
+        "start": null,
+        "end": null
+      },
+      "facts": [
+        {
+          "label": "Companies reached",
+          "value": "3",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [],
+      "evidence": {
+        "grade": "assumed",
+        "conditional_on_simulation": false,
+        "includes_observations": false,
+        "statement": "Rests on at least one relationship recorded as a model assumption: an assumed effect with a written rationale, not an empirical finding.",
+        "weakest_step": 1
+      },
+      "chain": [
+        {
+          "basis": "record",
+          "text": "Knowledge-graph build #1",
+          "refs": [
+            {
+              "kind": "graph_build",
+              "id": "1",
+              "label": "Build #1"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Brent crude oil price influences India CPI inflation",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-c50b129f9181c94f",
+              "label": "Brent crude oil price influences India CPI inflation"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "India CPI inflation influences RBI policy repo rate",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-63ca87f4cb0cc460",
+              "label": "India CPI inflation influences RBI policy repo rate"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "RBI policy repo rate affects revenue of Anvaya Bank",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-a4d9310e19366033",
+              "label": "RBI policy repo rate affects revenue of Anvaya Bank"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "USD/INR exchange rate influences India CPI inflation",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-e2f1d52da5ce0ff9",
+              "label": "USD/INR exchange rate influences India CPI inflation"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "RBI policy repo rate affects financing costs of Gridwell Power",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-c1196940c5ae72f5",
+              "label": "RBI policy repo rate affects financing costs of Gridwell Power"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "RBI policy repo rate affects financing costs of Trakvel Logistics",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-277924cd30f42d80",
+              "label": "RBI policy repo rate affects financing costs of Trakvel Logistics"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "assumptions": [],
+      "limitations": [
+        "A stated exposure says that the entity is exposed, not how much: sizes come only from simulations with the user's own figures.",
+        "A connection in the graph is not evidence of causation.",
+        "Companies can be exposed through opposite channels (costs for one, revenue for another)."
+      ],
+      "next_steps": [],
+      "sources": [
+        {
+          "kind": "graph_build",
+          "id": "1",
+          "label": "Build #1"
+        }
+      ]
+    },
+    {
+      "id": "ins-ce57da0f0a249184",
+      "rule": "X01",
+      "rule_title": "Shared driver",
+      "kind": "cross_entity",
+      "headline": "Jet fuel price (U.S. Gulf Coast) reaches 4 companies",
+      "statement": "Through validated relationships, Jet fuel price (U.S. Gulf Coast) reaches the costs of Aerisca Airways and Skyvara Air; and the revenue of Deltrin Refining and Solvane Refining.",
+      "subject": {
+        "kind": "graph_node",
+        "id": "variable:var_jet_fuel",
+        "label": "Jet fuel price (U.S. Gulf Coast)"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "company:co_aerisca_airways",
+          "label": "Aerisca Airways"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_deltrin_refining",
+          "label": "Deltrin Refining"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_skyvara_air",
+          "label": "Skyvara Air"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_solvane_refining",
+          "label": "Solvane Refining"
+        }
+      ],
+      "relationships": [
+        {
+          "edge_key": "e-df536e008d0660a5",
+          "edge_type": "affects_costs",
+          "label": "affects costs of",
+          "source": "variable:var_jet_fuel",
+          "source_name": "Jet fuel price (U.S. Gulf Coast)",
+          "target": "industry:ind_air_transport",
+          "target_name": "Air transport",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-3c1cd4f52348ae25",
+          "edge_type": "in_industry",
+          "label": "operates in",
+          "source": "company:co_aerisca_airways",
+          "source_name": "Aerisca Airways",
+          "target": "industry:ind_air_transport",
+          "target_name": "Air transport",
+          "evidence_status": "analyst_created",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-ea305310288a3f88",
+          "edge_type": "influences",
+          "label": "influences",
+          "source": "variable:var_brent_crude",
+          "source_name": "Brent crude oil price",
+          "target": "variable:var_jet_fuel",
+          "target_name": "Jet fuel price (U.S. Gulf Coast)",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-2202a51d4a09a79b",
+          "edge_type": "affects_revenue",
+          "label": "affects revenue of",
+          "source": "variable:var_jet_fuel",
+          "source_name": "Jet fuel price (U.S. Gulf Coast)",
+          "target": "industry:ind_petroleum_refining",
+          "target_name": "Refined petroleum products",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-abbed46434b7e33a",
+          "edge_type": "in_industry",
+          "label": "operates in",
+          "source": "company:co_deltrin_refining",
+          "source_name": "Deltrin Refining",
+          "target": "industry:ind_petroleum_refining",
+          "target_name": "Refined petroleum products",
+          "evidence_status": "analyst_created",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-5e13079bf457935d",
+          "edge_type": "in_industry",
+          "label": "operates in",
+          "source": "company:co_skyvara_air",
+          "source_name": "Skyvara Air",
+          "target": "industry:ind_air_transport",
+          "target_name": "Air transport",
+          "evidence_status": "analyst_created",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-898a3284542bdd62",
+          "edge_type": "in_industry",
+          "label": "operates in",
+          "source": "company:co_solvane_refining",
+          "source_name": "Solvane Refining",
+          "target": "industry:ind_petroleum_refining",
+          "target_name": "Refined petroleum products",
+          "evidence_status": "analyst_created",
+          "is_illustrative": true
+        }
+      ],
+      "period": {
+        "kind": "graph_build",
+        "label": "Build #1",
+        "start": null,
+        "end": null
+      },
+      "facts": [
+        {
+          "label": "Companies reached",
+          "value": "4",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [],
+      "evidence": {
+        "grade": "assumed",
+        "conditional_on_simulation": false,
+        "includes_observations": false,
+        "statement": "Rests on at least one relationship recorded as a model assumption: an assumed effect with a written rationale, not an empirical finding.",
+        "weakest_step": 1
+      },
+      "chain": [
+        {
+          "basis": "record",
+          "text": "Knowledge-graph build #1",
+          "refs": [
+            {
+              "kind": "graph_build",
+              "id": "1",
+              "label": "Build #1"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Jet fuel price (U.S. Gulf Coast) affects costs of Air transport",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-df536e008d0660a5",
+              "label": "Jet fuel price (U.S. Gulf Coast) affects costs of Air transport"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Aerisca Airways operates in Air transport",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-3c1cd4f52348ae25",
+              "label": "Aerisca Airways operates in Air transport"
+            }
+          ],
+          "evidence_status": "analyst_created",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Brent crude oil price influences Jet fuel price (U.S. Gulf Coast)",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-ea305310288a3f88",
+              "label": "Brent crude oil price influences Jet fuel price (U.S. Gulf Coast)"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Jet fuel price (U.S. Gulf Coast) affects revenue of Refined petroleum products",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-2202a51d4a09a79b",
+              "label": "Jet fuel price (U.S. Gulf Coast) affects revenue of Refined petroleum products"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Deltrin Refining operates in Refined petroleum products",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-abbed46434b7e33a",
+              "label": "Deltrin Refining operates in Refined petroleum products"
+            }
+          ],
+          "evidence_status": "analyst_created",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Skyvara Air operates in Air transport",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-5e13079bf457935d",
+              "label": "Skyvara Air operates in Air transport"
+            }
+          ],
+          "evidence_status": "analyst_created",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Solvane Refining operates in Refined petroleum products",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-898a3284542bdd62",
+              "label": "Solvane Refining operates in Refined petroleum products"
+            }
+          ],
+          "evidence_status": "analyst_created",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "assumptions": [],
+      "limitations": [
+        "A stated exposure says that the entity is exposed, not how much: sizes come only from simulations with the user's own figures.",
+        "A connection in the graph is not evidence of causation.",
+        "Companies can be exposed through opposite channels (costs for one, revenue for another)."
+      ],
+      "next_steps": [],
+      "sources": [
+        {
+          "kind": "graph_build",
+          "id": "1",
+          "label": "Build #1"
+        }
+      ]
+    },
+    {
+      "id": "ins-279c1371dbc410e3",
+      "rule": "X01",
+      "rule_title": "Shared driver",
+      "kind": "cross_entity",
+      "headline": "Natural gas price (Henry Hub) reaches 2 companies",
+      "statement": "Through validated relationships, Natural gas price (Henry Hub) reaches the costs of Lumeric Chemicals; and the revenue of Tessaline Energy.",
+      "subject": {
+        "kind": "graph_node",
+        "id": "variable:var_henry_hub_gas",
+        "label": "Natural gas price (Henry Hub)"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "company:co_lumeric_chemicals",
+          "label": "Lumeric Chemicals"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_tessaline_energy",
+          "label": "Tessaline Energy"
+        }
+      ],
+      "relationships": [
+        {
+          "edge_key": "e-a0e9c1c740ccfd08",
+          "edge_type": "affects_costs",
+          "label": "affects costs of",
+          "source": "variable:var_henry_hub_gas",
+          "source_name": "Natural gas price (Henry Hub)",
+          "target": "company:co_lumeric_chemicals",
+          "target_name": "Lumeric Chemicals",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-21410835ebd45235",
+          "edge_type": "affects_revenue",
+          "label": "affects revenue of",
+          "source": "variable:var_henry_hub_gas",
+          "source_name": "Natural gas price (Henry Hub)",
+          "target": "company:co_tessaline_energy",
+          "target_name": "Tessaline Energy",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        }
+      ],
+      "period": {
+        "kind": "graph_build",
+        "label": "Build #1",
+        "start": null,
+        "end": null
+      },
+      "facts": [
+        {
+          "label": "Companies reached",
+          "value": "2",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [],
+      "evidence": {
+        "grade": "assumed",
+        "conditional_on_simulation": false,
+        "includes_observations": false,
+        "statement": "Rests on at least one relationship recorded as a model assumption: an assumed effect with a written rationale, not an empirical finding.",
+        "weakest_step": 1
+      },
+      "chain": [
+        {
+          "basis": "record",
+          "text": "Knowledge-graph build #1",
+          "refs": [
+            {
+              "kind": "graph_build",
+              "id": "1",
+              "label": "Build #1"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Natural gas price (Henry Hub) affects costs of Lumeric Chemicals",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-a0e9c1c740ccfd08",
+              "label": "Natural gas price (Henry Hub) affects costs of Lumeric Chemicals"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Natural gas price (Henry Hub) affects revenue of Tessaline Energy",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-21410835ebd45235",
+              "label": "Natural gas price (Henry Hub) affects revenue of Tessaline Energy"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "assumptions": [],
+      "limitations": [
+        "A stated exposure says that the entity is exposed, not how much: sizes come only from simulations with the user's own figures.",
+        "A connection in the graph is not evidence of causation.",
+        "Companies can be exposed through opposite channels (costs for one, revenue for another)."
+      ],
+      "next_steps": [],
+      "sources": [
+        {
+          "kind": "graph_build",
+          "id": "1",
+          "label": "Build #1"
+        }
+      ]
+    },
+    {
+      "id": "ins-d7d11ee457170c3f",
+      "rule": "X01",
+      "rule_title": "Shared driver",
+      "kind": "cross_entity",
+      "headline": "RBI policy repo rate reaches 3 companies",
+      "statement": "Through validated relationships, RBI policy repo rate reaches the financing costs of Gridwell Power and Trakvel Logistics; and the revenue of Anvaya Bank.",
+      "subject": {
+        "kind": "graph_node",
+        "id": "variable:var_rbi_repo_rate",
+        "label": "RBI policy repo rate"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "company:co_anvaya_bank",
+          "label": "Anvaya Bank"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_gridwell_power",
+          "label": "Gridwell Power"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_trakvel_logistics",
+          "label": "Trakvel Logistics"
+        }
+      ],
+      "relationships": [
+        {
+          "edge_key": "e-a4d9310e19366033",
+          "edge_type": "affects_revenue",
+          "label": "affects revenue of",
+          "source": "variable:var_rbi_repo_rate",
+          "source_name": "RBI policy repo rate",
+          "target": "company:co_anvaya_bank",
+          "target_name": "Anvaya Bank",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-c50b129f9181c94f",
+          "edge_type": "influences",
+          "label": "influences",
+          "source": "variable:var_brent_crude",
+          "source_name": "Brent crude oil price",
+          "target": "variable:var_india_cpi_inflation",
+          "target_name": "India CPI inflation",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-63ca87f4cb0cc460",
+          "edge_type": "influences",
+          "label": "influences",
+          "source": "variable:var_india_cpi_inflation",
+          "source_name": "India CPI inflation",
+          "target": "variable:var_rbi_repo_rate",
+          "target_name": "RBI policy repo rate",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-e2f1d52da5ce0ff9",
+          "edge_type": "influences",
+          "label": "influences",
+          "source": "variable:var_usd_inr",
+          "source_name": "USD/INR exchange rate",
+          "target": "variable:var_india_cpi_inflation",
+          "target_name": "India CPI inflation",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-c1196940c5ae72f5",
+          "edge_type": "affects_financing",
+          "label": "affects financing costs of",
+          "source": "variable:var_rbi_repo_rate",
+          "source_name": "RBI policy repo rate",
+          "target": "company:co_gridwell_power",
+          "target_name": "Gridwell Power",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-277924cd30f42d80",
+          "edge_type": "affects_financing",
+          "label": "affects financing costs of",
+          "source": "variable:var_rbi_repo_rate",
+          "source_name": "RBI policy repo rate",
+          "target": "company:co_trakvel_logistics",
+          "target_name": "Trakvel Logistics",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        }
+      ],
+      "period": {
+        "kind": "graph_build",
+        "label": "Build #1",
+        "start": null,
+        "end": null
+      },
+      "facts": [
+        {
+          "label": "Companies reached",
+          "value": "3",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [],
+      "evidence": {
+        "grade": "assumed",
+        "conditional_on_simulation": false,
+        "includes_observations": false,
+        "statement": "Rests on at least one relationship recorded as a model assumption: an assumed effect with a written rationale, not an empirical finding.",
+        "weakest_step": 1
+      },
+      "chain": [
+        {
+          "basis": "record",
+          "text": "Knowledge-graph build #1",
+          "refs": [
+            {
+              "kind": "graph_build",
+              "id": "1",
+              "label": "Build #1"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "RBI policy repo rate affects revenue of Anvaya Bank",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-a4d9310e19366033",
+              "label": "RBI policy repo rate affects revenue of Anvaya Bank"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Brent crude oil price influences India CPI inflation",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-c50b129f9181c94f",
+              "label": "Brent crude oil price influences India CPI inflation"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "India CPI inflation influences RBI policy repo rate",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-63ca87f4cb0cc460",
+              "label": "India CPI inflation influences RBI policy repo rate"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "USD/INR exchange rate influences India CPI inflation",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-e2f1d52da5ce0ff9",
+              "label": "USD/INR exchange rate influences India CPI inflation"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "RBI policy repo rate affects financing costs of Gridwell Power",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-c1196940c5ae72f5",
+              "label": "RBI policy repo rate affects financing costs of Gridwell Power"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "RBI policy repo rate affects financing costs of Trakvel Logistics",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-277924cd30f42d80",
+              "label": "RBI policy repo rate affects financing costs of Trakvel Logistics"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "assumptions": [],
+      "limitations": [
+        "A stated exposure says that the entity is exposed, not how much: sizes come only from simulations with the user's own figures.",
+        "A connection in the graph is not evidence of causation.",
+        "Companies can be exposed through opposite channels (costs for one, revenue for another)."
+      ],
+      "next_steps": [],
+      "sources": [
+        {
+          "kind": "graph_build",
+          "id": "1",
+          "label": "Build #1"
+        }
+      ]
+    },
+    {
+      "id": "ins-6b062f93f7a7d718",
+      "rule": "X01",
+      "rule_title": "Shared driver",
+      "kind": "cross_entity",
+      "headline": "U.S. effective federal funds rate reaches 6 companies",
+      "statement": "Through validated relationships, U.S. effective federal funds rate reaches the costs of Aerisca Airways, Deltrin Refining and Skyvara Air; the financing costs of Lumeric Chemicals; and the revenue of Brookvane Bank and Kovalent Digital.",
+      "subject": {
+        "kind": "graph_node",
+        "id": "variable:var_us_fed_funds",
+        "label": "U.S. effective federal funds rate"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "company:co_aerisca_airways",
+          "label": "Aerisca Airways"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_brookvane_bank",
+          "label": "Brookvane Bank"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_deltrin_refining",
+          "label": "Deltrin Refining"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_kovalent_digital",
+          "label": "Kovalent Digital"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_lumeric_chemicals",
+          "label": "Lumeric Chemicals"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_skyvara_air",
+          "label": "Skyvara Air"
+        }
+      ],
+      "relationships": [
+        {
+          "edge_key": "e-0ad272aa06e1d7d6",
+          "edge_type": "influences",
+          "label": "influences",
+          "source": "variable:var_us_fed_funds",
+          "source_name": "U.S. effective federal funds rate",
+          "target": "variable:var_usd_inr",
+          "target_name": "USD/INR exchange rate",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-2afc04ee80f0699e",
+          "edge_type": "affects_costs",
+          "label": "affects costs of",
+          "source": "variable:var_usd_inr",
+          "source_name": "USD/INR exchange rate",
+          "target": "company:co_aerisca_airways",
+          "target_name": "Aerisca Airways",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-a59514e8ac6b5dc2",
+          "edge_type": "affects_revenue",
+          "label": "affects revenue of",
+          "source": "variable:var_us_fed_funds",
+          "source_name": "U.S. effective federal funds rate",
+          "target": "company:co_brookvane_bank",
+          "target_name": "Brookvane Bank",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-dff724fccf21ee64",
+          "edge_type": "affects_costs",
+          "label": "affects costs of",
+          "source": "variable:var_usd_inr",
+          "source_name": "USD/INR exchange rate",
+          "target": "company:co_deltrin_refining",
+          "target_name": "Deltrin Refining",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-30bd282fe1fdf72a",
+          "edge_type": "affects_revenue",
+          "label": "affects revenue of",
+          "source": "variable:var_usd_inr",
+          "source_name": "USD/INR exchange rate",
+          "target": "company:co_kovalent_digital",
+          "target_name": "Kovalent Digital",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-d7f79df4700a8b0f",
+          "edge_type": "affects_financing",
+          "label": "affects financing costs of",
+          "source": "variable:var_us_fed_funds",
+          "source_name": "U.S. effective federal funds rate",
+          "target": "company:co_lumeric_chemicals",
+          "target_name": "Lumeric Chemicals",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-c93a6964520b431b",
+          "edge_type": "affects_costs",
+          "label": "affects costs of",
+          "source": "variable:var_usd_inr",
+          "source_name": "USD/INR exchange rate",
+          "target": "company:co_skyvara_air",
+          "target_name": "Skyvara Air",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        }
+      ],
+      "period": {
+        "kind": "graph_build",
+        "label": "Build #1",
+        "start": null,
+        "end": null
+      },
+      "facts": [
+        {
+          "label": "Companies reached",
+          "value": "6",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [],
+      "evidence": {
+        "grade": "assumed",
+        "conditional_on_simulation": false,
+        "includes_observations": false,
+        "statement": "Rests on at least one relationship recorded as a model assumption: an assumed effect with a written rationale, not an empirical finding.",
+        "weakest_step": 1
+      },
+      "chain": [
+        {
+          "basis": "record",
+          "text": "Knowledge-graph build #1",
+          "refs": [
+            {
+              "kind": "graph_build",
+              "id": "1",
+              "label": "Build #1"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "U.S. effective federal funds rate influences USD/INR exchange rate",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-0ad272aa06e1d7d6",
+              "label": "U.S. effective federal funds rate influences USD/INR exchange rate"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "USD/INR exchange rate affects costs of Aerisca Airways",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-2afc04ee80f0699e",
+              "label": "USD/INR exchange rate affects costs of Aerisca Airways"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "U.S. effective federal funds rate affects revenue of Brookvane Bank",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-a59514e8ac6b5dc2",
+              "label": "U.S. effective federal funds rate affects revenue of Brookvane Bank"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "USD/INR exchange rate affects costs of Deltrin Refining",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-dff724fccf21ee64",
+              "label": "USD/INR exchange rate affects costs of Deltrin Refining"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "USD/INR exchange rate affects revenue of Kovalent Digital",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-30bd282fe1fdf72a",
+              "label": "USD/INR exchange rate affects revenue of Kovalent Digital"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "U.S. effective federal funds rate affects financing costs of Lumeric Chemicals",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-d7f79df4700a8b0f",
+              "label": "U.S. effective federal funds rate affects financing costs of Lumeric Chemicals"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "USD/INR exchange rate affects costs of Skyvara Air",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-c93a6964520b431b",
+              "label": "USD/INR exchange rate affects costs of Skyvara Air"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "assumptions": [],
+      "limitations": [
+        "A stated exposure says that the entity is exposed, not how much: sizes come only from simulations with the user's own figures.",
+        "A connection in the graph is not evidence of causation.",
+        "Companies can be exposed through opposite channels (costs for one, revenue for another)."
+      ],
+      "next_steps": [],
+      "sources": [
+        {
+          "kind": "graph_build",
+          "id": "1",
+          "label": "Build #1"
+        }
+      ]
+    },
+    {
+      "id": "ins-8a6e222b2af4f2e4",
+      "rule": "X01",
+      "rule_title": "Shared driver",
+      "kind": "cross_entity",
+      "headline": "USD/INR exchange rate reaches 7 companies",
+      "statement": "Through validated relationships, USD/INR exchange rate reaches the costs of Aerisca Airways, Deltrin Refining and Skyvara Air; the financing costs of Gridwell Power and Trakvel Logistics; and the revenue of Anvaya Bank and Kovalent Digital.",
+      "subject": {
+        "kind": "graph_node",
+        "id": "variable:var_usd_inr",
+        "label": "USD/INR exchange rate"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "company:co_aerisca_airways",
+          "label": "Aerisca Airways"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_anvaya_bank",
+          "label": "Anvaya Bank"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_deltrin_refining",
+          "label": "Deltrin Refining"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_gridwell_power",
+          "label": "Gridwell Power"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_kovalent_digital",
+          "label": "Kovalent Digital"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_skyvara_air",
+          "label": "Skyvara Air"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_trakvel_logistics",
+          "label": "Trakvel Logistics"
+        }
+      ],
+      "relationships": [
+        {
+          "edge_key": "e-2afc04ee80f0699e",
+          "edge_type": "affects_costs",
+          "label": "affects costs of",
+          "source": "variable:var_usd_inr",
+          "source_name": "USD/INR exchange rate",
+          "target": "company:co_aerisca_airways",
+          "target_name": "Aerisca Airways",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-0ad272aa06e1d7d6",
+          "edge_type": "influences",
+          "label": "influences",
+          "source": "variable:var_us_fed_funds",
+          "source_name": "U.S. effective federal funds rate",
+          "target": "variable:var_usd_inr",
+          "target_name": "USD/INR exchange rate",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-e2f1d52da5ce0ff9",
+          "edge_type": "influences",
+          "label": "influences",
+          "source": "variable:var_usd_inr",
+          "source_name": "USD/INR exchange rate",
+          "target": "variable:var_india_cpi_inflation",
+          "target_name": "India CPI inflation",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-63ca87f4cb0cc460",
+          "edge_type": "influences",
+          "label": "influences",
+          "source": "variable:var_india_cpi_inflation",
+          "source_name": "India CPI inflation",
+          "target": "variable:var_rbi_repo_rate",
+          "target_name": "RBI policy repo rate",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-a4d9310e19366033",
+          "edge_type": "affects_revenue",
+          "label": "affects revenue of",
+          "source": "variable:var_rbi_repo_rate",
+          "source_name": "RBI policy repo rate",
+          "target": "company:co_anvaya_bank",
+          "target_name": "Anvaya Bank",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-dff724fccf21ee64",
+          "edge_type": "affects_costs",
+          "label": "affects costs of",
+          "source": "variable:var_usd_inr",
+          "source_name": "USD/INR exchange rate",
+          "target": "company:co_deltrin_refining",
+          "target_name": "Deltrin Refining",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-c1196940c5ae72f5",
+          "edge_type": "affects_financing",
+          "label": "affects financing costs of",
+          "source": "variable:var_rbi_repo_rate",
+          "source_name": "RBI policy repo rate",
+          "target": "company:co_gridwell_power",
+          "target_name": "Gridwell Power",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-30bd282fe1fdf72a",
+          "edge_type": "affects_revenue",
+          "label": "affects revenue of",
+          "source": "variable:var_usd_inr",
+          "source_name": "USD/INR exchange rate",
+          "target": "company:co_kovalent_digital",
+          "target_name": "Kovalent Digital",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-c93a6964520b431b",
+          "edge_type": "affects_costs",
+          "label": "affects costs of",
+          "source": "variable:var_usd_inr",
+          "source_name": "USD/INR exchange rate",
+          "target": "company:co_skyvara_air",
+          "target_name": "Skyvara Air",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-277924cd30f42d80",
+          "edge_type": "affects_financing",
+          "label": "affects financing costs of",
+          "source": "variable:var_rbi_repo_rate",
+          "source_name": "RBI policy repo rate",
+          "target": "company:co_trakvel_logistics",
+          "target_name": "Trakvel Logistics",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        }
+      ],
+      "period": {
+        "kind": "graph_build",
+        "label": "Build #1",
+        "start": null,
+        "end": null
+      },
+      "facts": [
+        {
+          "label": "Companies reached",
+          "value": "7",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [],
+      "evidence": {
+        "grade": "assumed",
+        "conditional_on_simulation": false,
+        "includes_observations": false,
+        "statement": "Rests on at least one relationship recorded as a model assumption: an assumed effect with a written rationale, not an empirical finding.",
+        "weakest_step": 1
+      },
+      "chain": [
+        {
+          "basis": "record",
+          "text": "Knowledge-graph build #1",
+          "refs": [
+            {
+              "kind": "graph_build",
+              "id": "1",
+              "label": "Build #1"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "USD/INR exchange rate affects costs of Aerisca Airways",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-2afc04ee80f0699e",
+              "label": "USD/INR exchange rate affects costs of Aerisca Airways"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "U.S. effective federal funds rate influences USD/INR exchange rate",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-0ad272aa06e1d7d6",
+              "label": "U.S. effective federal funds rate influences USD/INR exchange rate"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "USD/INR exchange rate influences India CPI inflation",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-e2f1d52da5ce0ff9",
+              "label": "USD/INR exchange rate influences India CPI inflation"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "India CPI inflation influences RBI policy repo rate",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-63ca87f4cb0cc460",
+              "label": "India CPI inflation influences RBI policy repo rate"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "RBI policy repo rate affects revenue of Anvaya Bank",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-a4d9310e19366033",
+              "label": "RBI policy repo rate affects revenue of Anvaya Bank"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "USD/INR exchange rate affects costs of Deltrin Refining",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-dff724fccf21ee64",
+              "label": "USD/INR exchange rate affects costs of Deltrin Refining"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "RBI policy repo rate affects financing costs of Gridwell Power",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-c1196940c5ae72f5",
+              "label": "RBI policy repo rate affects financing costs of Gridwell Power"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "USD/INR exchange rate affects revenue of Kovalent Digital",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-30bd282fe1fdf72a",
+              "label": "USD/INR exchange rate affects revenue of Kovalent Digital"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "USD/INR exchange rate affects costs of Skyvara Air",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-c93a6964520b431b",
+              "label": "USD/INR exchange rate affects costs of Skyvara Air"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "RBI policy repo rate affects financing costs of Trakvel Logistics",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-277924cd30f42d80",
+              "label": "RBI policy repo rate affects financing costs of Trakvel Logistics"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "assumptions": [],
+      "limitations": [
+        "A stated exposure says that the entity is exposed, not how much: sizes come only from simulations with the user's own figures.",
+        "A connection in the graph is not evidence of causation.",
+        "Companies can be exposed through opposite channels (costs for one, revenue for another)."
+      ],
+      "next_steps": [],
+      "sources": [
+        {
+          "kind": "graph_build",
+          "id": "1",
+          "label": "Build #1"
+        }
+      ]
+    },
+    {
+      "id": "ins-676938c722d2acdb",
+      "rule": "C02",
+      "rule_title": "Stored data",
+      "kind": "coverage",
+      "headline": "What the stored data can support",
+      "statement": "2 of 11 catalogued series and 0 of 0 instruments have two or more stored values; 2 of the 2 series recorded as related measures of economic variables do.",
+      "subject": {
+        "kind": "catalogue",
+        "id": "data",
+        "label": "Data catalogue"
+      },
+      "entities": [],
+      "relationships": [],
+      "period": {
+        "kind": "analysis",
+        "label": "Stored at the time of analysis",
+        "start": null,
+        "end": null
+      },
+      "facts": [
+        {
+          "label": "Series catalogued",
+          "value": "11",
+          "unit": "count",
+          "basis": "record",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Series with two or more values",
+          "value": "2",
+          "unit": "count",
+          "basis": "record",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Stored values",
+          "value": "28",
+          "unit": "count",
+          "basis": "record",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Instruments",
+          "value": "0",
+          "unit": "count",
+          "basis": "record",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Instruments with two or more bars",
+          "value": "0",
+          "unit": "count",
+          "basis": "record",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Series related to economic variables",
+          "value": "2",
+          "unit": "count",
+          "basis": "record",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Of which with two or more values",
+          "value": "2",
+          "unit": "count",
+          "basis": "record",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [],
+      "evidence": {
+        "grade": "observed",
+        "conditional_on_simulation": false,
+        "includes_observations": false,
+        "statement": "Rests on stored observations, exact calculations on them and RUMIN's own records.",
+        "weakest_step": 0
+      },
+      "chain": [
+        {
+          "basis": "record",
+          "text": "Data catalogue: 11 series, 28 stored values",
+          "refs": [
+            {
+              "kind": "catalogue",
+              "id": "data",
+              "label": "Data catalogue"
+            }
+          ],
+          "evidence_status": null,
+          "value": "28",
+          "unit": "count"
+        }
+      ],
+      "assumptions": [],
+      "limitations": ["Only stored values are analysed: nothing is fetched or filled in."],
+      "next_steps": [],
+      "sources": []
+    }
+  ],
+  "grades": {
+    "observed": 5,
+    "documented": 0,
+    "curated": 0,
+    "simulated": 1,
+    "assumed": 9,
+    "unverified": 0
+  },
+  "kinds": {
+    "change": 2,
+    "exposure_change": 2,
+    "revision": 1,
+    "trend": 1,
+    "impact": 1,
+    "cross_entity": 7,
+    "coverage": 1
+  },
+  "next_steps": [
+    {
+      "action": "review_revision",
+      "text": "Check whether analyses that used the earlier value need redoing.",
+      "target": {
+        "kind": "series",
+        "id": "wb-ind-pa-nus-fcrf",
+        "label": "Official exchange rate (INR per US$, period average) — India"
+      }
+    },
+    {
+      "action": "run_sensitivity",
+      "text": "Run a sensitivity analysis to see which inputs and assumptions move this result most.",
+      "target": {
+        "kind": "execution",
+        "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+        "label": "Oil, rupee and rates on Aerisca · version 1"
+      }
+    }
+  ],
+  "exposure": {
+    "build_id": 1,
+    "companies": [
+      {
+        "key": "company:co_aerisca_airways",
+        "name": "Aerisca Airways",
+        "node_type": "company",
+        "nature": "fictional",
+        "attributes": {
+          "reference": null
+        }
+      },
+      {
+        "key": "company:co_anvaya_bank",
+        "name": "Anvaya Bank",
+        "node_type": "company",
+        "nature": "fictional",
+        "attributes": {
+          "reference": null
+        }
+      },
+      {
+        "key": "company:co_brookvane_bank",
+        "name": "Brookvane Bank",
+        "node_type": "company",
+        "nature": "fictional",
+        "attributes": {
+          "reference": null
+        }
+      },
+      {
+        "key": "company:co_deltrin_refining",
+        "name": "Deltrin Refining",
+        "node_type": "company",
+        "nature": "fictional",
+        "attributes": {
+          "reference": null
+        }
+      },
+      {
+        "key": "company:co_gridwell_power",
+        "name": "Gridwell Power",
+        "node_type": "company",
+        "nature": "fictional",
+        "attributes": {
+          "reference": null
+        }
+      },
+      {
+        "key": "company:co_kovalent_digital",
+        "name": "Kovalent Digital",
+        "node_type": "company",
+        "nature": "fictional",
+        "attributes": {
+          "reference": null
+        }
+      },
+      {
+        "key": "company:co_lumeric_chemicals",
+        "name": "Lumeric Chemicals",
+        "node_type": "company",
+        "nature": "fictional",
+        "attributes": {
+          "reference": null
+        }
+      },
+      {
+        "key": "company:co_orvane_petroleum",
+        "name": "Orvane Petroleum",
+        "node_type": "company",
+        "nature": "fictional",
+        "attributes": {
+          "reference": null
+        }
+      },
+      {
+        "key": "company:co_skyvara_air",
+        "name": "Skyvara Air",
+        "node_type": "company",
+        "nature": "fictional",
+        "attributes": {
+          "reference": null
+        }
+      },
+      {
+        "key": "company:co_solvane_refining",
+        "name": "Solvane Refining",
+        "node_type": "company",
+        "nature": "fictional",
+        "attributes": {
+          "reference": null
+        }
+      },
+      {
+        "key": "company:co_tessaline_energy",
+        "name": "Tessaline Energy",
+        "node_type": "company",
+        "nature": "fictional",
+        "attributes": {
+          "reference": null
+        }
+      },
+      {
+        "key": "company:co_trakvel_logistics",
+        "name": "Trakvel Logistics",
+        "node_type": "company",
+        "nature": "fictional",
+        "attributes": {
+          "reference": null
+        }
+      }
+    ],
+    "variables": [
+      {
+        "key": "variable:var_brent_crude",
+        "name": "Brent crude oil price",
+        "node_type": "economic_variable",
+        "nature": "real",
+        "attributes": {
+          "unit": "USD per barrel",
+          "frequency": "daily",
+          "category": "commodity",
+          "value_kind": "price",
+          "reference": "U.S. Energy Information Administration, Europe Brent spot price FOB (FRED series DCOILBRENTEU).",
+          "reference_url": "https://fred.stlouisfed.org/series/DCOILBRENTEU"
+        }
+      },
+      {
+        "key": "variable:var_jet_fuel",
+        "name": "Jet fuel price (U.S. Gulf Coast)",
+        "node_type": "economic_variable",
+        "nature": "real",
+        "attributes": {
+          "unit": "USD per gallon",
+          "frequency": "daily",
+          "category": "commodity",
+          "value_kind": "price",
+          "reference": "U.S. Energy Information Administration, U.S. Gulf Coast kerosene-type jet fuel spot price FOB (FRED series DJFUELUSGULF).",
+          "reference_url": "https://fred.stlouisfed.org/series/DJFUELUSGULF"
+        }
+      },
+      {
+        "key": "variable:var_henry_hub_gas",
+        "name": "Natural gas price (Henry Hub)",
+        "node_type": "economic_variable",
+        "nature": "real",
+        "attributes": {
+          "unit": "USD per million Btu",
+          "frequency": "daily",
+          "category": "commodity",
+          "value_kind": "price",
+          "reference": "U.S. Energy Information Administration, Henry Hub natural gas spot price (FRED series DHHNGSP).",
+          "reference_url": "https://fred.stlouisfed.org/series/DHHNGSP"
+        }
+      },
+      {
+        "key": "variable:var_usd_inr",
+        "name": "USD/INR exchange rate",
+        "node_type": "economic_variable",
+        "nature": "real",
+        "attributes": {
+          "unit": "INR per USD",
+          "frequency": "daily",
+          "category": "exchange_rate",
+          "value_kind": "exchange_rate",
+          "reference": "Board of Governors of the Federal Reserve System, H.10 release (FRED series DEXINUS).",
+          "reference_url": "https://fred.stlouisfed.org/series/DEXINUS"
+        }
+      },
+      {
+        "key": "variable:var_rbi_repo_rate",
+        "name": "RBI policy repo rate",
+        "node_type": "economic_variable",
+        "nature": "real",
+        "attributes": {
+          "unit": "percent per annum",
+          "frequency": "irregular",
+          "category": "monetary_policy",
+          "value_kind": "rate",
+          "reference": "Reserve Bank of India, Monetary Policy Committee statements.",
+          "reference_url": "https://www.rbi.org.in"
+        }
+      },
+      {
+        "key": "variable:var_us_fed_funds",
+        "name": "U.S. effective federal funds rate",
+        "node_type": "economic_variable",
+        "nature": "real",
+        "attributes": {
+          "unit": "percent per annum",
+          "frequency": "monthly",
+          "category": "monetary_policy",
+          "value_kind": "rate",
+          "reference": "Board of Governors of the Federal Reserve System (FRED series FEDFUNDS).",
+          "reference_url": "https://fred.stlouisfed.org/series/FEDFUNDS"
+        }
+      },
+      {
+        "key": "variable:var_india_cpi_inflation",
+        "name": "India CPI inflation",
+        "node_type": "economic_variable",
+        "nature": "real",
+        "attributes": {
+          "unit": "percent, year-on-year",
+          "frequency": "monthly",
+          "category": "inflation",
+          "value_kind": "rate",
+          "reference": "National Statistics Office, Ministry of Statistics and Programme Implementation (MoSPI), Consumer Price Index (Combined).",
+          "reference_url": "https://www.mospi.gov.in"
+        }
+      }
+    ],
+    "cells": [
+      {
+        "company": "company:co_aerisca_airways",
+        "variable": "variable:var_brent_crude",
+        "paths": 1,
+        "channels": ["costs"],
+        "directness": ["upstream"],
+        "evidence_status": "model_assumption",
+        "models": ["airline_fuel_cost"]
+      },
+      {
+        "company": "company:co_aerisca_airways",
+        "variable": "variable:var_jet_fuel",
+        "paths": 2,
+        "channels": ["costs"],
+        "directness": ["upstream", "via_industry"],
+        "evidence_status": "model_assumption",
+        "models": ["airline_fuel_cost"]
+      },
+      {
+        "company": "company:co_aerisca_airways",
+        "variable": "variable:var_us_fed_funds",
+        "paths": 1,
+        "channels": ["costs"],
+        "directness": ["upstream"],
+        "evidence_status": "model_assumption",
+        "models": []
+      },
+      {
+        "company": "company:co_aerisca_airways",
+        "variable": "variable:var_usd_inr",
+        "paths": 2,
+        "channels": ["costs"],
+        "directness": ["direct", "upstream"],
+        "evidence_status": "model_assumption",
+        "models": ["fx_exposure"]
+      },
+      {
+        "company": "company:co_anvaya_bank",
+        "variable": "variable:var_brent_crude",
+        "paths": 1,
+        "channels": ["revenue"],
+        "directness": ["upstream"],
+        "evidence_status": "model_assumption",
+        "models": []
+      },
+      {
+        "company": "company:co_anvaya_bank",
+        "variable": "variable:var_india_cpi_inflation",
+        "paths": 3,
+        "channels": ["revenue"],
+        "directness": ["upstream"],
+        "evidence_status": "model_assumption",
+        "models": []
+      },
+      {
+        "company": "company:co_anvaya_bank",
+        "variable": "variable:var_rbi_repo_rate",
+        "paths": 4,
+        "channels": ["revenue"],
+        "directness": ["direct", "upstream"],
+        "evidence_status": "model_assumption",
+        "models": []
+      },
+      {
+        "company": "company:co_anvaya_bank",
+        "variable": "variable:var_usd_inr",
+        "paths": 1,
+        "channels": ["revenue"],
+        "directness": ["upstream"],
+        "evidence_status": "model_assumption",
+        "models": []
+      },
+      {
+        "company": "company:co_brookvane_bank",
+        "variable": "variable:var_us_fed_funds",
+        "paths": 1,
+        "channels": ["revenue"],
+        "directness": ["direct"],
+        "evidence_status": "model_assumption",
+        "models": []
+      },
+      {
+        "company": "company:co_deltrin_refining",
+        "variable": "variable:var_brent_crude",
+        "paths": 2,
+        "channels": ["costs", "revenue"],
+        "directness": ["upstream", "via_industry"],
+        "evidence_status": "model_assumption",
+        "models": ["crude_linked_costs"]
+      },
+      {
+        "company": "company:co_deltrin_refining",
+        "variable": "variable:var_jet_fuel",
+        "paths": 2,
+        "channels": ["revenue"],
+        "directness": ["upstream", "via_industry"],
+        "evidence_status": "model_assumption",
+        "models": []
+      },
+      {
+        "company": "company:co_deltrin_refining",
+        "variable": "variable:var_us_fed_funds",
+        "paths": 1,
+        "channels": ["costs"],
+        "directness": ["upstream"],
+        "evidence_status": "model_assumption",
+        "models": []
+      },
+      {
+        "company": "company:co_deltrin_refining",
+        "variable": "variable:var_usd_inr",
+        "paths": 2,
+        "channels": ["costs"],
+        "directness": ["direct", "upstream"],
+        "evidence_status": "model_assumption",
+        "models": ["fx_exposure"]
+      },
+      {
+        "company": "company:co_gridwell_power",
+        "variable": "variable:var_brent_crude",
+        "paths": 1,
+        "channels": ["financing"],
+        "directness": ["upstream"],
+        "evidence_status": "model_assumption",
+        "models": []
+      },
+      {
+        "company": "company:co_gridwell_power",
+        "variable": "variable:var_india_cpi_inflation",
+        "paths": 3,
+        "channels": ["financing"],
+        "directness": ["upstream"],
+        "evidence_status": "model_assumption",
+        "models": []
+      },
+      {
+        "company": "company:co_gridwell_power",
+        "variable": "variable:var_rbi_repo_rate",
+        "paths": 4,
+        "channels": ["financing"],
+        "directness": ["direct", "upstream"],
+        "evidence_status": "model_assumption",
+        "models": ["floating_rate_interest"]
+      },
+      {
+        "company": "company:co_gridwell_power",
+        "variable": "variable:var_usd_inr",
+        "paths": 1,
+        "channels": ["financing"],
+        "directness": ["upstream"],
+        "evidence_status": "model_assumption",
+        "models": []
+      },
+      {
+        "company": "company:co_kovalent_digital",
+        "variable": "variable:var_us_fed_funds",
+        "paths": 1,
+        "channels": ["revenue"],
+        "directness": ["upstream"],
+        "evidence_status": "model_assumption",
+        "models": []
+      },
+      {
+        "company": "company:co_kovalent_digital",
+        "variable": "variable:var_usd_inr",
+        "paths": 2,
+        "channels": ["revenue"],
+        "directness": ["direct", "upstream"],
+        "evidence_status": "model_assumption",
+        "models": ["fx_exposure"]
+      },
+      {
+        "company": "company:co_lumeric_chemicals",
+        "variable": "variable:var_henry_hub_gas",
+        "paths": 1,
+        "channels": ["costs"],
+        "directness": ["direct"],
+        "evidence_status": "model_assumption",
+        "models": ["gas_linked_costs"]
+      },
+      {
+        "company": "company:co_lumeric_chemicals",
+        "variable": "variable:var_us_fed_funds",
+        "paths": 1,
+        "channels": ["financing"],
+        "directness": ["direct"],
+        "evidence_status": "model_assumption",
+        "models": ["floating_rate_interest"]
+      },
+      {
+        "company": "company:co_orvane_petroleum",
+        "variable": "variable:var_brent_crude",
+        "paths": 1,
+        "channels": ["revenue"],
+        "directness": ["via_industry"],
+        "evidence_status": "model_assumption",
+        "models": []
+      },
+      {
+        "company": "company:co_skyvara_air",
+        "variable": "variable:var_brent_crude",
+        "paths": 1,
+        "channels": ["costs"],
+        "directness": ["upstream"],
+        "evidence_status": "model_assumption",
+        "models": ["airline_fuel_cost"]
+      },
+      {
+        "company": "company:co_skyvara_air",
+        "variable": "variable:var_jet_fuel",
+        "paths": 2,
+        "channels": ["costs"],
+        "directness": ["upstream", "via_industry"],
+        "evidence_status": "model_assumption",
+        "models": ["airline_fuel_cost"]
+      },
+      {
+        "company": "company:co_skyvara_air",
+        "variable": "variable:var_us_fed_funds",
+        "paths": 1,
+        "channels": ["costs"],
+        "directness": ["upstream"],
+        "evidence_status": "model_assumption",
+        "models": []
+      },
+      {
+        "company": "company:co_skyvara_air",
+        "variable": "variable:var_usd_inr",
+        "paths": 2,
+        "channels": ["costs"],
+        "directness": ["direct", "upstream"],
+        "evidence_status": "model_assumption",
+        "models": ["fx_exposure"]
+      },
+      {
+        "company": "company:co_solvane_refining",
+        "variable": "variable:var_brent_crude",
+        "paths": 2,
+        "channels": ["costs", "revenue"],
+        "directness": ["upstream", "via_industry"],
+        "evidence_status": "model_assumption",
+        "models": ["crude_linked_costs"]
+      },
+      {
+        "company": "company:co_solvane_refining",
+        "variable": "variable:var_jet_fuel",
+        "paths": 2,
+        "channels": ["revenue"],
+        "directness": ["upstream", "via_industry"],
+        "evidence_status": "model_assumption",
+        "models": []
+      },
+      {
+        "company": "company:co_tessaline_energy",
+        "variable": "variable:var_brent_crude",
+        "paths": 1,
+        "channels": ["revenue"],
+        "directness": ["via_industry"],
+        "evidence_status": "model_assumption",
+        "models": []
+      },
+      {
+        "company": "company:co_tessaline_energy",
+        "variable": "variable:var_henry_hub_gas",
+        "paths": 1,
+        "channels": ["revenue"],
+        "directness": ["direct"],
+        "evidence_status": "model_assumption",
+        "models": []
+      },
+      {
+        "company": "company:co_trakvel_logistics",
+        "variable": "variable:var_brent_crude",
+        "paths": 2,
+        "channels": ["costs", "financing"],
+        "directness": ["upstream", "via_industry"],
+        "evidence_status": "model_assumption",
+        "models": ["crude_linked_costs"]
+      },
+      {
+        "company": "company:co_trakvel_logistics",
+        "variable": "variable:var_india_cpi_inflation",
+        "paths": 3,
+        "channels": ["financing"],
+        "directness": ["upstream"],
+        "evidence_status": "model_assumption",
+        "models": []
+      },
+      {
+        "company": "company:co_trakvel_logistics",
+        "variable": "variable:var_rbi_repo_rate",
+        "paths": 4,
+        "channels": ["financing"],
+        "directness": ["direct", "upstream"],
+        "evidence_status": "model_assumption",
+        "models": ["floating_rate_interest"]
+      },
+      {
+        "company": "company:co_trakvel_logistics",
+        "variable": "variable:var_usd_inr",
+        "paths": 1,
+        "channels": ["financing"],
+        "directness": ["upstream"],
+        "evidence_status": "model_assumption",
+        "models": []
+      }
+    ],
+    "truncated": false
+  },
+  "series": [
+    {
+      "subject": {
+        "kind": "series",
+        "id": "wb-ind-fp-cpi-totl-zg",
+        "name": "Inflation, consumer prices (annual %) — India",
+        "unit": "% change on previous year",
+        "frequency": "annual",
+        "measure": "points",
+        "variable_id": "var_india_cpi_inflation",
+        "variable_relation": "An annual counterpart of this variable, not the same measure: the World Bank series is the change in the annual average consumer price index, while the variable is defined as monthly year-on-year CPI inflation (MoSPI). Use it for long-run context, not as a monthly reading.",
+        "country": "IND",
+        "dataset": {
+          "id": "worldbank-wdi",
+          "name": "World Development Indicators",
+          "version": "catalogue 1.0.0",
+          "is_illustrative": false,
+          "license": "CC BY 4.0",
+          "attribution": "The World Bank: World Development Indicators. The original source of each series is named on the series."
+        },
+        "change_unit": "percentage_points"
+      },
+      "points_total": 12,
+      "first": "2014",
+      "last": "2025",
+      "latest_value": "3.1",
+      "latest": {
+        "earlier": {
+          "label": "2024",
+          "start": "2024-01-01",
+          "value": "4.9",
+          "record_id": 27,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:17Z",
+          "last_confirmed_at": "2026-09-23T12:00:17Z"
+        },
+        "later": {
+          "label": "2025",
+          "start": "2025-01-01",
+          "value": "3.1",
+          "record_id": 28,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:17Z",
+          "last_confirmed_at": "2026-09-23T12:00:17Z"
+        },
+        "value": "-1.8",
+        "direction": "down",
+        "flagged": false
+      },
+      "threshold_name": "point_change",
+      "threshold": "1",
+      "detected": 4,
+      "latest_detected": true,
+      "trend": "no_clear_direction",
+      "volatility": "insufficient_history",
+      "anomaly": "not_unusual",
+      "revisions": 0
+    },
+    {
+      "subject": {
+        "kind": "series",
+        "id": "wb-ind-pa-nus-fcrf",
+        "name": "Official exchange rate (INR per US$, period average) — India",
+        "unit": "INR per USD",
+        "frequency": "annual",
+        "measure": "relative",
+        "variable_id": "var_usd_inr",
+        "variable_relation": "An annual average of the official exchange rate, not the same measure: the variable is defined as a daily market rate. Annual averages smooth out movements within the year.",
+        "country": "IND",
+        "dataset": {
+          "id": "worldbank-wdi",
+          "name": "World Development Indicators",
+          "version": "catalogue 1.0.0",
+          "is_illustrative": false,
+          "license": "CC BY 4.0",
+          "attribution": "The World Bank: World Development Indicators. The original source of each series is named on the series."
+        },
+        "change_unit": "percent"
+      },
+      "points_total": 16,
+      "first": "2010",
+      "last": "2025",
+      "latest_value": "92.1",
+      "latest": {
+        "earlier": {
+          "label": "2024",
+          "start": "2024-01-01",
+          "value": "84.2",
+          "record_id": 29,
+          "revision": 2,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:28Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "later": {
+          "label": "2025",
+          "start": "2025-01-01",
+          "value": "92.1",
+          "record_id": 16,
+          "revision": 1,
+          "quality_status": "validated",
+          "flags": null,
+          "retrieved_at": "2026-09-23T12:00:06Z",
+          "last_confirmed_at": "2026-09-23T12:00:28Z"
+        },
+        "value": "9.3824228029",
+        "direction": "up",
+        "flagged": false
+      },
+      "threshold_name": "relative_change_percent",
+      "threshold": "5",
+      "detected": 3,
+      "latest_detected": true,
+      "trend": "rising",
+      "volatility": "not_high",
+      "anomaly": "not_unusual",
+      "revisions": 1
+    }
+  ],
+  "instruments": [],
+  "relationships": {
+    "build": {
+      "id": 1,
+      "finished_at": "2026-09-24T09:50:08.752819Z",
+      "status": "completed"
+    },
+    "previous": null,
+    "edges": [],
+    "counts": {},
+    "truncated": false,
+    "note": "This is the first build: there is no earlier build to compare with."
+  },
+  "impacts": [
+    {
+      "entity_key": "company:co_aerisca_airways",
+      "execution": {
+        "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+        "scenario_id": "c2a0f465-3da5-4d9c-a206-8c9768560e93",
+        "scenario_name": "Oil, rupee and rates on Aerisca",
+        "version": 1,
+        "finished_at": "2026-09-24T09:50:10.993948Z",
+        "currency": "INR",
+        "horizon_months": 12,
+        "graph_build_id": 1,
+        "graph_freshness": "current",
+        "inputs_hash": "f6de3e60b25529da5405788ece8ab094fcbb2ff65a19f20c96c66310e77cd15b",
+        "result_hash": "45fe9f3bf9a5d69b0f49f5e01ae5f6ebf291fc8e3f94635f5d6072c8e8dce622"
+      },
+      "line": "profit_before_tax",
+      "label": "Profit before tax",
+      "currency": "INR",
+      "baseline": "38000000",
+      "change": "-6700000",
+      "percent_change": "-17.6315789474",
+      "changes": [
+        {
+          "variable_id": "var_brent_crude",
+          "name": "Brent crude oil price",
+          "change_type": "percent_change",
+          "value": "20",
+          "unit": "%",
+          "modelled": true
+        },
+        {
+          "variable_id": "var_usd_inr",
+          "name": "USD/INR exchange rate",
+          "change_type": "percent_change",
+          "value": "5",
+          "unit": "%",
+          "modelled": true
+        },
+        {
+          "variable_id": "var_rbi_repo_rate",
+          "name": "RBI policy repo rate",
+          "change_type": "absolute_change",
+          "value": "0.5",
+          "unit": "percentage points",
+          "modelled": true
+        }
+      ]
+    }
+  ]
+}

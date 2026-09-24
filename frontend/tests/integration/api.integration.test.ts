@@ -21,7 +21,7 @@ import {
 } from "@/features/scenarioLab/draft";
 import { isFinal } from "@/features/scenarioLab/format";
 import { ApiError } from "@/lib/apiClient";
-import { api, labApi, simulationApi } from "@/services/api";
+import { api, intelligenceApi, labApi, simulationApi } from "@/services/api";
 import type { EconomicVariable, ScenarioExecution, ScenarioInput } from "@/types/api";
 import { contractViolations } from "./contract";
 
@@ -378,6 +378,70 @@ describe("the Scenario Lab against the live API", () => {
     // An executed scenario keeps its history: it cannot be deleted.
     const kept = await api.scenarios.remove(saved.id, options).catch((error: unknown) => error);
     expect(kept).toMatchObject({ kind: "http", status: 409 });
+  });
+});
+
+describe("Financial intelligence against the live API", () => {
+  const aerisca = "company:co_aerisca_airways";
+
+  it("analyses the workspace with every finding tied to its evidence", async () => {
+    const overview = await intelligenceApi.overview({}, options);
+    expect(contractViolations("OverviewRead", overview)).toEqual([]);
+    expect(overview.build.freshness).not.toBe("not_built");
+    expect(overview.insights.length).toBeGreaterThan(0);
+    for (const insight of overview.insights) {
+      expect(insight.chain.length).toBeGreaterThan(0);
+      expect(insight.evidence.weakest_step).not.toBeNull();
+    }
+    // The SYNTHETIC smoke-test prices are an instrument with stored values.
+    expect(overview.instruments.map((item) => item.subject.id)).toContain("smoke-synthetic");
+    const methods = await intelligenceApi.methods(options);
+    expect(contractViolations("MethodsRead", methods)).toEqual([]);
+    const changes = await intelligenceApi.changes({ price_move_percent: "1" }, options);
+    expect(contractViolations("ChangesRead", changes)).toEqual([]);
+    // 102.00 → 100.40 is −1.57 %: reported at a 1 % threshold, not at the default 5 %.
+    expect(changes.observed.map((item) => item.change.value)).toContain("-1.568627451");
+  });
+
+  it("builds a dossier and a brief from validated relationships", async () => {
+    const entities = await intelligenceApi.entities(undefined, options);
+    expect(contractViolations("EntityListRead", entities)).toEqual([]);
+    expect(entities.items.map((item) => item.entity.key)).toContain(aerisca);
+
+    const dossier = await intelligenceApi.entity(aerisca, {}, "any", options);
+    expect(contractViolations("EntityAnalysisRead", dossier)).toEqual([]);
+    expect(dossier.exposure.paths.length).toBeGreaterThan(0);
+    for (const path of dossier.exposure.paths) {
+      for (const edge of path.edges) expect(edge.quality_status).toBe("validated");
+    }
+    const brief = await intelligenceApi.brief(aerisca, {}, options);
+    expect(contractViolations("BriefRead", brief)).toEqual([]);
+    expect(brief.evidence.map((item) => item.insight_id)).toEqual(
+      dossier.insights.map((item) => item.id),
+    );
+  });
+
+  it("refuses an invalid threshold with its field", async () => {
+    const error = await intelligenceApi
+      .overview({ relative_change_percent: "0" }, options)
+      .catch((caught: unknown) => caught);
+    expect(error).toMatchObject({ kind: "http", status: 422, code: "validation_error" });
+    expect((error as ApiError).details.map((detail) => detail.field)).toEqual([
+      "relative_change_percent",
+    ]);
+  });
+
+  it("stores an analysis and reads it back unchanged and current", async () => {
+    const stored = await intelligenceApi.analyses.create(
+      { scope: "entity", entity: aerisca, thresholds: null, evidence: "any", label: null },
+      options,
+    );
+    expect(contractViolations("AnalysisRead", stored)).toEqual([]);
+    const again = await intelligenceApi.analyses.get(stored.id, options);
+    expect(again.result_hash).toBe(stored.result_hash);
+    expect(again.freshness.status).toBe("current");
+    const listed = await intelligenceApi.analyses.list({ entity: aerisca }, options);
+    expect(listed.items.map((item) => item.id)).toContain(stored.id);
   });
 });
 

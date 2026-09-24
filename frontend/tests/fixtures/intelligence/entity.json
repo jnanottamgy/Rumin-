@@ -1,0 +1,4539 @@
+{
+  "engine_version": "1.0.0",
+  "entity": {
+    "key": "company:co_aerisca_airways",
+    "name": "Aerisca Airways",
+    "node_type": "company",
+    "nature": "fictional",
+    "attributes": {
+      "reference": null
+    }
+  },
+  "build": {
+    "id": 1,
+    "finished_at": "2026-09-24T09:50:08.752819Z",
+    "freshness": "current",
+    "message": "Built from the current sources (build #1)."
+  },
+  "thresholds": {
+    "relative_change_percent": "5",
+    "point_change": "1",
+    "price_move_percent": "5",
+    "anomaly_score": "3.5",
+    "trend_significance": "0.05",
+    "volatility_high_percentile": "80",
+    "dependency_share_percent": "50",
+    "min_history": 8,
+    "window": null
+  },
+  "exposure": {
+    "entity": {
+      "key": "company:co_aerisca_airways",
+      "name": "Aerisca Airways",
+      "node_type": "company",
+      "nature": "fictional",
+      "attributes": {
+        "reference": null
+      }
+    },
+    "build_id": 1,
+    "evidence_filter": "any",
+    "paths": [
+      {
+        "origin": {
+          "key": "variable:var_usd_inr",
+          "name": "USD/INR exchange rate",
+          "node_type": "economic_variable",
+          "nature": "real",
+          "attributes": {
+            "unit": "INR per USD",
+            "frequency": "daily",
+            "category": "exchange_rate",
+            "value_kind": "exchange_rate",
+            "reference": "Board of Governors of the Federal Reserve System, H.10 release (FRED series DEXINUS).",
+            "reference_url": "https://fred.stlouisfed.org/series/DEXINUS"
+          }
+        },
+        "variable": {
+          "key": "variable:var_usd_inr",
+          "name": "USD/INR exchange rate",
+          "node_type": "economic_variable",
+          "nature": "real",
+          "attributes": {
+            "unit": "INR per USD",
+            "frequency": "daily",
+            "category": "exchange_rate",
+            "value_kind": "exchange_rate",
+            "reference": "Board of Governors of the Federal Reserve System, H.10 release (FRED series DEXINUS).",
+            "reference_url": "https://fred.stlouisfed.org/series/DEXINUS"
+          }
+        },
+        "channel": "costs",
+        "directness": "direct",
+        "base": "direct",
+        "industry": null,
+        "hops": [
+          {
+            "key": "variable:var_usd_inr",
+            "name": "USD/INR exchange rate",
+            "node_type": "economic_variable",
+            "nature": "real",
+            "attributes": {
+              "unit": "INR per USD",
+              "frequency": "daily",
+              "category": "exchange_rate",
+              "value_kind": "exchange_rate",
+              "reference": "Board of Governors of the Federal Reserve System, H.10 release (FRED series DEXINUS).",
+              "reference_url": "https://fred.stlouisfed.org/series/DEXINUS"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "key": "e-2afc04ee80f0699e",
+            "edge_type": "affects_costs",
+            "label": "affects costs of",
+            "source": "variable:var_usd_inr",
+            "target": "company:co_aerisca_airways",
+            "evidence_status": "model_assumption",
+            "is_illustrative": true,
+            "quality_status": "validated",
+            "description": "The USD/INR exchange rate affects the costs of Aerisca Airways.",
+            "caveat": "An assumed effect, not a measured one: it says nothing about size or timing, and entities of the same kind can be affected very differently. A connection is not evidence of causation.",
+            "polarity": "positive",
+            "strength": "moderate",
+            "rationale": "Aircraft leases and maintenance are commonly priced in U.S. dollars, so a weaker rupee raises an Indian airline's costs in rupees.",
+            "evidence_level": "illustrative",
+            "stated_difference": null
+          }
+        ],
+        "evidence_status": "model_assumption",
+        "models": ["fx_exposure"],
+        "group": "Exchange rates"
+      },
+      {
+        "origin": {
+          "key": "variable:var_jet_fuel",
+          "name": "Jet fuel price (U.S. Gulf Coast)",
+          "node_type": "economic_variable",
+          "nature": "real",
+          "attributes": {
+            "unit": "USD per gallon",
+            "frequency": "daily",
+            "category": "commodity",
+            "value_kind": "price",
+            "reference": "U.S. Energy Information Administration, U.S. Gulf Coast kerosene-type jet fuel spot price FOB (FRED series DJFUELUSGULF).",
+            "reference_url": "https://fred.stlouisfed.org/series/DJFUELUSGULF"
+          }
+        },
+        "variable": {
+          "key": "variable:var_jet_fuel",
+          "name": "Jet fuel price (U.S. Gulf Coast)",
+          "node_type": "economic_variable",
+          "nature": "real",
+          "attributes": {
+            "unit": "USD per gallon",
+            "frequency": "daily",
+            "category": "commodity",
+            "value_kind": "price",
+            "reference": "U.S. Energy Information Administration, U.S. Gulf Coast kerosene-type jet fuel spot price FOB (FRED series DJFUELUSGULF).",
+            "reference_url": "https://fred.stlouisfed.org/series/DJFUELUSGULF"
+          }
+        },
+        "channel": "costs",
+        "directness": "via_industry",
+        "base": "via_industry",
+        "industry": {
+          "key": "industry:ind_air_transport",
+          "name": "Air transport",
+          "node_type": "industry",
+          "nature": "real",
+          "attributes": {
+            "classification_system": "ISIC Rev. 4",
+            "classification_code": "51",
+            "reference": "UN Statistics Division, ISIC Rev. 4, Division 51: Air transport."
+          }
+        },
+        "hops": [
+          {
+            "key": "variable:var_jet_fuel",
+            "name": "Jet fuel price (U.S. Gulf Coast)",
+            "node_type": "economic_variable",
+            "nature": "real",
+            "attributes": {
+              "unit": "USD per gallon",
+              "frequency": "daily",
+              "category": "commodity",
+              "value_kind": "price",
+              "reference": "U.S. Energy Information Administration, U.S. Gulf Coast kerosene-type jet fuel spot price FOB (FRED series DJFUELUSGULF).",
+              "reference_url": "https://fred.stlouisfed.org/series/DJFUELUSGULF"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "key": "e-df536e008d0660a5",
+            "edge_type": "affects_costs",
+            "label": "affects costs of",
+            "source": "variable:var_jet_fuel",
+            "target": "industry:ind_air_transport",
+            "evidence_status": "model_assumption",
+            "is_illustrative": true,
+            "quality_status": "validated",
+            "description": "The jet fuel price affects the costs of air transport.",
+            "caveat": "An assumed effect, not a measured one: it says nothing about size or timing, and entities of the same kind can be affected very differently. A connection is not evidence of causation.",
+            "polarity": "positive",
+            "strength": "strong",
+            "rationale": "Fuel is typically one of the largest operating costs for airlines.",
+            "evidence_level": "illustrative",
+            "stated_difference": null
+          },
+          {
+            "key": "e-3c1cd4f52348ae25",
+            "edge_type": "in_industry",
+            "label": "operates in",
+            "source": "company:co_aerisca_airways",
+            "target": "industry:ind_air_transport",
+            "evidence_status": "analyst_created",
+            "is_illustrative": true,
+            "quality_status": "validated",
+            "description": "Aerisca Airways operates in Air transport.",
+            "caveat": "A primary-industry classification. A company can also operate in other industries.",
+            "polarity": null,
+            "strength": null,
+            "rationale": null,
+            "evidence_level": null,
+            "stated_difference": null
+          }
+        ],
+        "evidence_status": "model_assumption",
+        "models": ["airline_fuel_cost"],
+        "group": "Commodities"
+      },
+      {
+        "origin": {
+          "key": "variable:var_brent_crude",
+          "name": "Brent crude oil price",
+          "node_type": "economic_variable",
+          "nature": "real",
+          "attributes": {
+            "unit": "USD per barrel",
+            "frequency": "daily",
+            "category": "commodity",
+            "value_kind": "price",
+            "reference": "U.S. Energy Information Administration, Europe Brent spot price FOB (FRED series DCOILBRENTEU).",
+            "reference_url": "https://fred.stlouisfed.org/series/DCOILBRENTEU"
+          }
+        },
+        "variable": {
+          "key": "variable:var_jet_fuel",
+          "name": "Jet fuel price (U.S. Gulf Coast)",
+          "node_type": "economic_variable",
+          "nature": "real",
+          "attributes": {
+            "unit": "USD per gallon",
+            "frequency": "daily",
+            "category": "commodity",
+            "value_kind": "price",
+            "reference": "U.S. Energy Information Administration, U.S. Gulf Coast kerosene-type jet fuel spot price FOB (FRED series DJFUELUSGULF).",
+            "reference_url": "https://fred.stlouisfed.org/series/DJFUELUSGULF"
+          }
+        },
+        "channel": "costs",
+        "directness": "upstream",
+        "base": "via_industry",
+        "industry": {
+          "key": "industry:ind_air_transport",
+          "name": "Air transport",
+          "node_type": "industry",
+          "nature": "real",
+          "attributes": {
+            "classification_system": "ISIC Rev. 4",
+            "classification_code": "51",
+            "reference": "UN Statistics Division, ISIC Rev. 4, Division 51: Air transport."
+          }
+        },
+        "hops": [
+          {
+            "key": "variable:var_brent_crude",
+            "name": "Brent crude oil price",
+            "node_type": "economic_variable",
+            "nature": "real",
+            "attributes": {
+              "unit": "USD per barrel",
+              "frequency": "daily",
+              "category": "commodity",
+              "value_kind": "price",
+              "reference": "U.S. Energy Information Administration, Europe Brent spot price FOB (FRED series DCOILBRENTEU).",
+              "reference_url": "https://fred.stlouisfed.org/series/DCOILBRENTEU"
+            }
+          },
+          {
+            "key": "variable:var_jet_fuel",
+            "name": "Jet fuel price (U.S. Gulf Coast)",
+            "node_type": "economic_variable",
+            "nature": "real",
+            "attributes": {
+              "unit": "USD per gallon",
+              "frequency": "daily",
+              "category": "commodity",
+              "value_kind": "price",
+              "reference": "U.S. Energy Information Administration, U.S. Gulf Coast kerosene-type jet fuel spot price FOB (FRED series DJFUELUSGULF).",
+              "reference_url": "https://fred.stlouisfed.org/series/DJFUELUSGULF"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "key": "e-ea305310288a3f88",
+            "edge_type": "influences",
+            "label": "influences",
+            "source": "variable:var_brent_crude",
+            "target": "variable:var_jet_fuel",
+            "evidence_status": "model_assumption",
+            "is_illustrative": true,
+            "quality_status": "validated",
+            "description": "The Brent crude oil price influences the jet fuel price.",
+            "caveat": "Assumed transmission between two variables, not a statistical or causal estimate. A connection is not evidence of causation.",
+            "polarity": "positive",
+            "strength": "strong",
+            "rationale": "Jet fuel is refined from crude oil, so benchmark jet fuel prices generally move with crude prices. Refining margins (the crack spread) cause the two to diverge at times.",
+            "evidence_level": "illustrative",
+            "stated_difference": null
+          },
+          {
+            "key": "e-df536e008d0660a5",
+            "edge_type": "affects_costs",
+            "label": "affects costs of",
+            "source": "variable:var_jet_fuel",
+            "target": "industry:ind_air_transport",
+            "evidence_status": "model_assumption",
+            "is_illustrative": true,
+            "quality_status": "validated",
+            "description": "The jet fuel price affects the costs of air transport.",
+            "caveat": "An assumed effect, not a measured one: it says nothing about size or timing, and entities of the same kind can be affected very differently. A connection is not evidence of causation.",
+            "polarity": "positive",
+            "strength": "strong",
+            "rationale": "Fuel is typically one of the largest operating costs for airlines.",
+            "evidence_level": "illustrative",
+            "stated_difference": null
+          },
+          {
+            "key": "e-3c1cd4f52348ae25",
+            "edge_type": "in_industry",
+            "label": "operates in",
+            "source": "company:co_aerisca_airways",
+            "target": "industry:ind_air_transport",
+            "evidence_status": "analyst_created",
+            "is_illustrative": true,
+            "quality_status": "validated",
+            "description": "Aerisca Airways operates in Air transport.",
+            "caveat": "A primary-industry classification. A company can also operate in other industries.",
+            "polarity": null,
+            "strength": null,
+            "rationale": null,
+            "evidence_level": null,
+            "stated_difference": null
+          }
+        ],
+        "evidence_status": "model_assumption",
+        "models": ["airline_fuel_cost"],
+        "group": "Commodities"
+      },
+      {
+        "origin": {
+          "key": "variable:var_us_fed_funds",
+          "name": "U.S. effective federal funds rate",
+          "node_type": "economic_variable",
+          "nature": "real",
+          "attributes": {
+            "unit": "percent per annum",
+            "frequency": "monthly",
+            "category": "monetary_policy",
+            "value_kind": "rate",
+            "reference": "Board of Governors of the Federal Reserve System (FRED series FEDFUNDS).",
+            "reference_url": "https://fred.stlouisfed.org/series/FEDFUNDS"
+          }
+        },
+        "variable": {
+          "key": "variable:var_usd_inr",
+          "name": "USD/INR exchange rate",
+          "node_type": "economic_variable",
+          "nature": "real",
+          "attributes": {
+            "unit": "INR per USD",
+            "frequency": "daily",
+            "category": "exchange_rate",
+            "value_kind": "exchange_rate",
+            "reference": "Board of Governors of the Federal Reserve System, H.10 release (FRED series DEXINUS).",
+            "reference_url": "https://fred.stlouisfed.org/series/DEXINUS"
+          }
+        },
+        "channel": "costs",
+        "directness": "upstream",
+        "base": "direct",
+        "industry": null,
+        "hops": [
+          {
+            "key": "variable:var_us_fed_funds",
+            "name": "U.S. effective federal funds rate",
+            "node_type": "economic_variable",
+            "nature": "real",
+            "attributes": {
+              "unit": "percent per annum",
+              "frequency": "monthly",
+              "category": "monetary_policy",
+              "value_kind": "rate",
+              "reference": "Board of Governors of the Federal Reserve System (FRED series FEDFUNDS).",
+              "reference_url": "https://fred.stlouisfed.org/series/FEDFUNDS"
+            }
+          },
+          {
+            "key": "variable:var_usd_inr",
+            "name": "USD/INR exchange rate",
+            "node_type": "economic_variable",
+            "nature": "real",
+            "attributes": {
+              "unit": "INR per USD",
+              "frequency": "daily",
+              "category": "exchange_rate",
+              "value_kind": "exchange_rate",
+              "reference": "Board of Governors of the Federal Reserve System, H.10 release (FRED series DEXINUS).",
+              "reference_url": "https://fred.stlouisfed.org/series/DEXINUS"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "key": "e-0ad272aa06e1d7d6",
+            "edge_type": "influences",
+            "label": "influences",
+            "source": "variable:var_us_fed_funds",
+            "target": "variable:var_usd_inr",
+            "evidence_status": "model_assumption",
+            "is_illustrative": true,
+            "quality_status": "validated",
+            "description": "The U.S. federal funds rate influences the USD/INR exchange rate.",
+            "caveat": "Assumed transmission between two variables, not a statistical or causal estimate. A connection is not evidence of causation.",
+            "polarity": "positive",
+            "strength": "weak",
+            "rationale": "Higher U.S. policy rates can strengthen the dollar and draw portfolio capital away from emerging markets, adding depreciation pressure on the rupee. The link is unstable and often dominated by other factors, hence 'weak'.",
+            "evidence_level": "illustrative",
+            "stated_difference": null
+          },
+          {
+            "key": "e-2afc04ee80f0699e",
+            "edge_type": "affects_costs",
+            "label": "affects costs of",
+            "source": "variable:var_usd_inr",
+            "target": "company:co_aerisca_airways",
+            "evidence_status": "model_assumption",
+            "is_illustrative": true,
+            "quality_status": "validated",
+            "description": "The USD/INR exchange rate affects the costs of Aerisca Airways.",
+            "caveat": "An assumed effect, not a measured one: it says nothing about size or timing, and entities of the same kind can be affected very differently. A connection is not evidence of causation.",
+            "polarity": "positive",
+            "strength": "moderate",
+            "rationale": "Aircraft leases and maintenance are commonly priced in U.S. dollars, so a weaker rupee raises an Indian airline's costs in rupees.",
+            "evidence_level": "illustrative",
+            "stated_difference": null
+          }
+        ],
+        "evidence_status": "model_assumption",
+        "models": [],
+        "group": "Interest rates"
+      }
+    ],
+    "counterparties": [
+      {
+        "relationship": "supplies_to",
+        "role": "supplier",
+        "counterparty": {
+          "key": "company:co_deltrin_refining",
+          "name": "Deltrin Refining",
+          "node_type": "company",
+          "nature": "fictional",
+          "attributes": {
+            "reference": null
+          }
+        },
+        "level": "company",
+        "edge": {
+          "key": "e-74e25572234f23d1",
+          "edge_type": "supplies_to",
+          "label": "supplies",
+          "source": "company:co_deltrin_refining",
+          "target": "company:co_aerisca_airways",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true,
+          "quality_status": "validated",
+          "description": "Deltrin Refining supplies jet fuel to Aerisca Airways.",
+          "caveat": "A recorded supply relationship. It does not say how large or how important it is.",
+          "polarity": "not_applicable",
+          "strength": "strong",
+          "rationale": "Fictional supply relationship between a domestic refiner and an airline.",
+          "evidence_level": "illustrative",
+          "stated_difference": null
+        }
+      },
+      {
+        "relationship": "lends_to",
+        "role": "lender",
+        "counterparty": {
+          "key": "company:co_anvaya_bank",
+          "name": "Anvaya Bank",
+          "node_type": "company",
+          "nature": "fictional",
+          "attributes": {
+            "reference": null
+          }
+        },
+        "level": "company",
+        "edge": {
+          "key": "e-a62eff6b5769fe71",
+          "edge_type": "lends_to",
+          "label": "lends to",
+          "source": "company:co_anvaya_bank",
+          "target": "company:co_aerisca_airways",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true,
+          "quality_status": "validated",
+          "description": "Anvaya Bank lends to Aerisca Airways.",
+          "caveat": "A recorded lending relationship. It says nothing about amounts, terms or risk.",
+          "polarity": "not_applicable",
+          "strength": "moderate",
+          "rationale": "Fictional credit relationship: working-capital facilities to an airline.",
+          "evidence_level": "illustrative",
+          "stated_difference": null
+        }
+      },
+      {
+        "relationship": "supplies_to",
+        "role": "supplier",
+        "counterparty": {
+          "key": "industry:ind_petroleum_refining",
+          "name": "Refined petroleum products",
+          "node_type": "industry",
+          "nature": "real",
+          "attributes": {
+            "classification_system": "ISIC Rev. 4",
+            "classification_code": "19",
+            "reference": "UN Statistics Division, ISIC Rev. 4, Division 19: Manufacture of coke and refined petroleum products."
+          }
+        },
+        "level": "industry",
+        "edge": {
+          "key": "e-99232bd7d6028997",
+          "edge_type": "supplies_to",
+          "label": "supplies",
+          "source": "industry:ind_petroleum_refining",
+          "target": "industry:ind_air_transport",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true,
+          "quality_status": "validated",
+          "description": "Refined petroleum products supplies jet fuel to air transport.",
+          "caveat": "A recorded supply relationship. It does not say how large or how important it is.",
+          "polarity": "not_applicable",
+          "strength": "strong",
+          "rationale": "Airlines buy jet fuel produced by refiners.",
+          "evidence_level": "illustrative",
+          "stated_difference": null
+        }
+      }
+    ],
+    "context": [
+      {
+        "kind": "industry",
+        "node": {
+          "key": "industry:ind_air_transport",
+          "name": "Air transport",
+          "node_type": "industry",
+          "nature": "real",
+          "attributes": {
+            "classification_system": "ISIC Rev. 4",
+            "classification_code": "51",
+            "reference": "UN Statistics Division, ISIC Rev. 4, Division 51: Air transport."
+          }
+        },
+        "edges": [
+          {
+            "key": "e-3c1cd4f52348ae25",
+            "edge_type": "in_industry",
+            "label": "operates in",
+            "source": "company:co_aerisca_airways",
+            "target": "industry:ind_air_transport",
+            "evidence_status": "analyst_created",
+            "is_illustrative": true,
+            "quality_status": "validated",
+            "description": "Aerisca Airways operates in Air transport.",
+            "caveat": "A primary-industry classification. A company can also operate in other industries.",
+            "polarity": null,
+            "strength": null,
+            "rationale": null,
+            "evidence_level": null,
+            "stated_difference": null
+          }
+        ]
+      },
+      {
+        "kind": "sector",
+        "node": {
+          "key": "sector:isic4-h",
+          "name": "Transportation and storage",
+          "node_type": "sector",
+          "nature": "real",
+          "attributes": {
+            "code": "H",
+            "classification": "ISIC Rev. 4",
+            "first_division": "49",
+            "last_division": "53"
+          }
+        },
+        "edges": [
+          {
+            "key": "e-3c1cd4f52348ae25",
+            "edge_type": "in_industry",
+            "label": "operates in",
+            "source": "company:co_aerisca_airways",
+            "target": "industry:ind_air_transport",
+            "evidence_status": "analyst_created",
+            "is_illustrative": true,
+            "quality_status": "validated",
+            "description": "Aerisca Airways operates in Air transport.",
+            "caveat": "A primary-industry classification. A company can also operate in other industries.",
+            "polarity": null,
+            "strength": null,
+            "rationale": null,
+            "evidence_level": null,
+            "stated_difference": null
+          },
+          {
+            "key": "e-a30da84963a87b46",
+            "edge_type": "in_sector",
+            "label": "belongs to",
+            "source": "industry:ind_air_transport",
+            "target": "sector:isic4-h",
+            "evidence_status": "evidence_backed",
+            "is_illustrative": false,
+            "quality_status": "validated",
+            "description": "Air transport (ISIC Rev. 4 division 51) belongs to section H, Transportation and storage.",
+            "caveat": "A classification hierarchy: every division sits in exactly one section. It says nothing about economic links between industries of the same section.",
+            "polarity": null,
+            "strength": null,
+            "rationale": null,
+            "evidence_level": null,
+            "stated_difference": null
+          }
+        ]
+      },
+      {
+        "kind": "country",
+        "node": {
+          "key": "country:cty_in",
+          "name": "India",
+          "node_type": "country",
+          "nature": "real",
+          "attributes": {
+            "iso_alpha2": "IN",
+            "currency_code": "INR",
+            "reference": "ISO 3166-1 alpha-2 country code IN; ISO 4217 currency code INR."
+          }
+        },
+        "edges": [
+          {
+            "key": "e-4013b3168f0021ed",
+            "edge_type": "domiciled_in",
+            "label": "is domiciled in",
+            "source": "company:co_aerisca_airways",
+            "target": "country:cty_in",
+            "evidence_status": "analyst_created",
+            "is_illustrative": true,
+            "quality_status": "validated",
+            "description": "Aerisca Airways is domiciled in India.",
+            "caveat": "Country of domicile only — not where the company sells, produces or is exposed.",
+            "polarity": null,
+            "strength": null,
+            "rationale": null,
+            "evidence_level": null,
+            "stated_difference": null
+          }
+        ]
+      },
+      {
+        "kind": "currency",
+        "node": {
+          "key": "currency:inr",
+          "name": "INR",
+          "node_type": "currency",
+          "nature": "real",
+          "attributes": {
+            "code": "INR"
+          }
+        },
+        "edges": [
+          {
+            "key": "e-4013b3168f0021ed",
+            "edge_type": "domiciled_in",
+            "label": "is domiciled in",
+            "source": "company:co_aerisca_airways",
+            "target": "country:cty_in",
+            "evidence_status": "analyst_created",
+            "is_illustrative": true,
+            "quality_status": "validated",
+            "description": "Aerisca Airways is domiciled in India.",
+            "caveat": "Country of domicile only — not where the company sells, produces or is exposed.",
+            "polarity": null,
+            "strength": null,
+            "rationale": null,
+            "evidence_level": null,
+            "stated_difference": null
+          },
+          {
+            "key": "e-b166bb7710cb18d3",
+            "edge_type": "has_currency",
+            "label": "has currency",
+            "source": "country:cty_in",
+            "target": "currency:inr",
+            "evidence_status": "evidence_backed",
+            "is_illustrative": false,
+            "quality_status": "validated",
+            "description": "India has the currency INR (ISO 4217).",
+            "caveat": "It says nothing about exchange-rate exposure, or about other places that use the currency.",
+            "polarity": null,
+            "strength": null,
+            "rationale": null,
+            "evidence_level": null,
+            "stated_difference": null
+          }
+        ]
+      },
+      {
+        "kind": "competitor",
+        "node": {
+          "key": "company:co_skyvara_air",
+          "name": "Skyvara Air",
+          "node_type": "company",
+          "nature": "fictional",
+          "attributes": {
+            "reference": null
+          }
+        },
+        "edges": [
+          {
+            "key": "e-78ed818f1ba32e57",
+            "edge_type": "competes_with",
+            "label": "competes with",
+            "source": "company:co_aerisca_airways",
+            "target": "company:co_skyvara_air",
+            "evidence_status": "model_assumption",
+            "is_illustrative": true,
+            "quality_status": "validated",
+            "description": "Aerisca Airways and Skyvara Air compete with each other.",
+            "caveat": "The two sell similar products in the same market; it does not rank them.",
+            "polarity": "not_applicable",
+            "strength": "strong",
+            "rationale": "Both fictional airlines operate domestic passenger services in India.",
+            "evidence_level": "illustrative",
+            "stated_difference": null
+          }
+        ]
+      }
+    ],
+    "series": [
+      {
+        "variable": "variable:var_usd_inr",
+        "series_key": "series:wb-ind-pa-nus-fcrf",
+        "info": {
+          "series_id": "wb-ind-pa-nus-fcrf",
+          "name": "Official exchange rate (INR per US$, period average) — India",
+          "unit": "INR per USD",
+          "frequency": "annual",
+          "measure_type": "exchange_rate",
+          "observation_count": 0,
+          "first_period": null,
+          "last_period": null
+        },
+        "edge": {
+          "key": "e-d7af3853725f085a",
+          "edge_type": "related_measure_of",
+          "label": "is a related measure of",
+          "source": "series:wb-ind-pa-nus-fcrf",
+          "target": "variable:var_usd_inr",
+          "evidence_status": "analyst_created",
+          "is_illustrative": false,
+          "quality_status": "validated",
+          "description": "Official exchange rate (INR per US$, period average) — India is a related measure of USD/INR exchange rate.",
+          "caveat": "A related measure, not the same measure: frequency, definition or source differ (see the stated difference).",
+          "polarity": null,
+          "strength": null,
+          "rationale": null,
+          "evidence_level": null,
+          "stated_difference": "An annual average of the official exchange rate, not the same measure: the variable is defined as a daily market rate. Annual averages smooth out movements within the year."
+        }
+      }
+    ],
+    "flagged": [],
+    "removed_by_filter": 0,
+    "notes": [
+      "A stated exposure says that the entity is exposed, not how much: sizes come only from simulations with the user's own figures.",
+      "A connection in the graph is not evidence of causation.",
+      "None of these exposures is evidence-backed: each rests on at least one relationship recorded as a model assumption.",
+      "Stated for the industry as a whole, not for this company; companies in one industry can be affected very differently."
+    ],
+    "summary": {
+      "paths": 4,
+      "variables": 4,
+      "by_channel": {
+        "costs": 4
+      },
+      "by_directness": {
+        "direct": 1,
+        "via_industry": 1,
+        "upstream": 2
+      },
+      "by_group": {
+        "Exchange rates": 1,
+        "Commodities": 2,
+        "Interest rates": 1
+      },
+      "by_evidence": {
+        "model_assumption": 4
+      }
+    },
+    "variables": [
+      {
+        "key": "variable:var_usd_inr",
+        "name": "USD/INR exchange rate",
+        "node_type": "economic_variable",
+        "nature": "real",
+        "attributes": {
+          "unit": "INR per USD",
+          "frequency": "daily",
+          "category": "exchange_rate",
+          "value_kind": "exchange_rate",
+          "reference": "Board of Governors of the Federal Reserve System, H.10 release (FRED series DEXINUS).",
+          "reference_url": "https://fred.stlouisfed.org/series/DEXINUS"
+        }
+      },
+      {
+        "key": "variable:var_jet_fuel",
+        "name": "Jet fuel price (U.S. Gulf Coast)",
+        "node_type": "economic_variable",
+        "nature": "real",
+        "attributes": {
+          "unit": "USD per gallon",
+          "frequency": "daily",
+          "category": "commodity",
+          "value_kind": "price",
+          "reference": "U.S. Energy Information Administration, U.S. Gulf Coast kerosene-type jet fuel spot price FOB (FRED series DJFUELUSGULF).",
+          "reference_url": "https://fred.stlouisfed.org/series/DJFUELUSGULF"
+        }
+      },
+      {
+        "key": "variable:var_brent_crude",
+        "name": "Brent crude oil price",
+        "node_type": "economic_variable",
+        "nature": "real",
+        "attributes": {
+          "unit": "USD per barrel",
+          "frequency": "daily",
+          "category": "commodity",
+          "value_kind": "price",
+          "reference": "U.S. Energy Information Administration, Europe Brent spot price FOB (FRED series DCOILBRENTEU).",
+          "reference_url": "https://fred.stlouisfed.org/series/DCOILBRENTEU"
+        }
+      },
+      {
+        "key": "variable:var_us_fed_funds",
+        "name": "U.S. effective federal funds rate",
+        "node_type": "economic_variable",
+        "nature": "real",
+        "attributes": {
+          "unit": "percent per annum",
+          "frequency": "monthly",
+          "category": "monetary_policy",
+          "value_kind": "rate",
+          "reference": "Board of Governors of the Federal Reserve System (FRED series FEDFUNDS).",
+          "reference_url": "https://fred.stlouisfed.org/series/FEDFUNDS"
+        }
+      }
+    ]
+  },
+  "executions": [
+    {
+      "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+      "scenario_id": "c2a0f465-3da5-4d9c-a206-8c9768560e93",
+      "scenario_name": "Oil, rupee and rates on Aerisca",
+      "version": 1,
+      "finished_at": "2026-09-24T09:50:10.993948Z",
+      "currency": "INR",
+      "horizon_months": 12,
+      "graph_build_id": 1,
+      "graph_freshness": "current",
+      "inputs_hash": "f6de3e60b25529da5405788ece8ab094fcbb2ff65a19f20c96c66310e77cd15b",
+      "result_hash": "45fe9f3bf9a5d69b0f49f5e01ae5f6ebf291fc8e3f94635f5d6072c8e8dce622"
+    }
+  ],
+  "drivers": {
+    "entity_key": "company:co_aerisca_airways",
+    "execution": {
+      "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+      "scenario_id": "c2a0f465-3da5-4d9c-a206-8c9768560e93",
+      "scenario_name": "Oil, rupee and rates on Aerisca",
+      "version": 1,
+      "finished_at": "2026-09-24T09:50:10.993948Z",
+      "currency": "INR",
+      "horizon_months": 12,
+      "graph_build_id": 1,
+      "graph_freshness": "current",
+      "inputs_hash": "f6de3e60b25529da5405788ece8ab094fcbb2ff65a19f20c96c66310e77cd15b",
+      "result_hash": "45fe9f3bf9a5d69b0f49f5e01ae5f6ebf291fc8e3f94635f5d6072c8e8dce622"
+    },
+    "changes": [
+      {
+        "variable_id": "var_brent_crude",
+        "name": "Brent crude oil price",
+        "change_type": "percent_change",
+        "value": "20",
+        "unit": "%",
+        "modelled": true
+      },
+      {
+        "variable_id": "var_usd_inr",
+        "name": "USD/INR exchange rate",
+        "change_type": "percent_change",
+        "value": "5",
+        "unit": "%",
+        "modelled": true
+      },
+      {
+        "variable_id": "var_rbi_repo_rate",
+        "name": "RBI policy repo rate",
+        "change_type": "absolute_change",
+        "value": "0.5",
+        "unit": "percentage points",
+        "modelled": true
+      }
+    ],
+    "lines": [
+      {
+        "id": "revenue",
+        "label": "Revenue",
+        "currency": "INR",
+        "baseline": "300000000",
+        "change": "6925000",
+        "scenario": "306925000",
+        "percent_change": "2.3083333333",
+        "direction": "up",
+        "effect": "raises_profit",
+        "contributions": [
+          {
+            "variable_id": "var_brent_crude",
+            "name": "Brent crude oil price",
+            "value": "3587500",
+            "share_of_change": "51.8050541516",
+            "points_of_baseline": "1.1958333333",
+            "per_unit": "179375",
+            "per_unit_label": "1 %"
+          },
+          {
+            "variable_id": "var_usd_inr",
+            "name": "USD/INR exchange rate",
+            "value": "3337500",
+            "share_of_change": "48.1949458484",
+            "points_of_baseline": "1.1125",
+            "per_unit": "667500",
+            "per_unit_label": "1 %"
+          }
+        ],
+        "residual": "0",
+        "items": [
+          {
+            "model_id": "airline_fuel_cost",
+            "item": "fuel_cost_recovery",
+            "label": "Fare recovery",
+            "value": "4925000",
+            "by_change": {
+              "var_brent_crude": "3587500",
+              "var_usd_inr": "1337500"
+            }
+          },
+          {
+            "model_id": "fx_exposure",
+            "item": "usd_revenue",
+            "label": "US-dollar revenue",
+            "value": "2000000",
+            "by_change": {
+              "var_usd_inr": "2000000"
+            }
+          }
+        ]
+      },
+      {
+        "id": "operating_costs",
+        "label": "Operating costs",
+        "currency": "INR",
+        "baseline": "250000000",
+        "change": "13250000",
+        "scenario": "263250000",
+        "percent_change": "5.3",
+        "direction": "up",
+        "effect": "reduces_profit",
+        "contributions": [
+          {
+            "variable_id": "var_brent_crude",
+            "name": "Brent crude oil price",
+            "value": "9225000",
+            "share_of_change": "69.6226415094",
+            "points_of_baseline": "3.69",
+            "per_unit": "461250",
+            "per_unit_label": "1 %"
+          },
+          {
+            "variable_id": "var_usd_inr",
+            "name": "USD/INR exchange rate",
+            "value": "4025000",
+            "share_of_change": "30.3773584906",
+            "points_of_baseline": "1.61",
+            "per_unit": "805000",
+            "per_unit_label": "1 %"
+          }
+        ],
+        "residual": "0",
+        "items": [
+          {
+            "model_id": "airline_fuel_cost",
+            "item": "jet_fuel",
+            "label": "Jet fuel",
+            "value": "12450000",
+            "by_change": {
+              "var_brent_crude": "9225000",
+              "var_usd_inr": "3225000"
+            }
+          },
+          {
+            "model_id": "fx_exposure",
+            "item": "usd_costs",
+            "label": "US-dollar costs",
+            "value": "800000",
+            "by_change": {
+              "var_usd_inr": "800000"
+            }
+          }
+        ]
+      },
+      {
+        "id": "operating_profit",
+        "label": "Operating profit",
+        "currency": "INR",
+        "baseline": "50000000",
+        "change": "-6325000",
+        "scenario": "43675000",
+        "percent_change": "-12.65",
+        "direction": "down",
+        "effect": "reduces_profit",
+        "contributions": [
+          {
+            "variable_id": "var_brent_crude",
+            "name": "Brent crude oil price",
+            "value": "-5637500",
+            "share_of_change": "89.1304347826",
+            "points_of_baseline": "-11.275",
+            "per_unit": "-281875",
+            "per_unit_label": "1 %"
+          },
+          {
+            "variable_id": "var_usd_inr",
+            "name": "USD/INR exchange rate",
+            "value": "-687500",
+            "share_of_change": "10.8695652174",
+            "points_of_baseline": "-1.375",
+            "per_unit": "-137500",
+            "per_unit_label": "1 %"
+          }
+        ],
+        "residual": "0",
+        "items": []
+      },
+      {
+        "id": "interest_expense",
+        "label": "Interest expense",
+        "currency": "INR",
+        "baseline": "12000000",
+        "change": "375000",
+        "scenario": "12375000",
+        "percent_change": "3.125",
+        "direction": "up",
+        "effect": "reduces_profit",
+        "contributions": [
+          {
+            "variable_id": "var_rbi_repo_rate",
+            "name": "RBI policy repo rate",
+            "value": "375000",
+            "share_of_change": "100",
+            "points_of_baseline": "3.125",
+            "per_unit": "750000",
+            "per_unit_label": "1 percentage point"
+          }
+        ],
+        "residual": "0",
+        "items": [
+          {
+            "model_id": "floating_rate_interest",
+            "item": "repo_linked_interest",
+            "label": "Repo-linked debt",
+            "value": "375000",
+            "by_change": {
+              "var_rbi_repo_rate": "375000"
+            }
+          },
+          {
+            "model_id": "floating_rate_interest",
+            "item": "us_rate_linked_interest",
+            "label": "US-rate-linked debt",
+            "value": "0",
+            "by_change": {
+              "var_rbi_repo_rate": "0"
+            }
+          }
+        ]
+      },
+      {
+        "id": "profit_before_tax",
+        "label": "Profit before tax",
+        "currency": "INR",
+        "baseline": "38000000",
+        "change": "-6700000",
+        "scenario": "31300000",
+        "percent_change": "-17.6315789474",
+        "direction": "down",
+        "effect": "reduces_profit",
+        "contributions": [
+          {
+            "variable_id": "var_brent_crude",
+            "name": "Brent crude oil price",
+            "value": "-5637500",
+            "share_of_change": "84.1417910448",
+            "points_of_baseline": "-14.8355263158",
+            "per_unit": "-281875",
+            "per_unit_label": "1 %"
+          },
+          {
+            "variable_id": "var_usd_inr",
+            "name": "USD/INR exchange rate",
+            "value": "-687500",
+            "share_of_change": "10.2611940299",
+            "points_of_baseline": "-1.8092105263",
+            "per_unit": "-137500",
+            "per_unit_label": "1 %"
+          },
+          {
+            "variable_id": "var_rbi_repo_rate",
+            "name": "RBI policy repo rate",
+            "value": "-375000",
+            "share_of_change": "5.5970149254",
+            "points_of_baseline": "-0.9868421053",
+            "per_unit": "-750000",
+            "per_unit_label": "1 percentage point"
+          }
+        ],
+        "residual": "0",
+        "items": []
+      }
+    ],
+    "metrics": [
+      {
+        "id": "operating_margin",
+        "label": "Operating margin",
+        "unit": "ratio",
+        "baseline": "0.1666666667",
+        "scenario": "0.1422986072",
+        "change": "-0.0243680595",
+        "change_unit": "ratio_points"
+      },
+      {
+        "id": "interest_coverage",
+        "label": "Interest coverage",
+        "unit": "times",
+        "baseline": "4.1666666667",
+        "scenario": "3.5292929293",
+        "change": "-0.6373737374",
+        "change_unit": "times"
+      }
+    ],
+    "headline": "profit_before_tax",
+    "models": [
+      {
+        "model_id": "airline_fuel_cost",
+        "version": "1.1.0",
+        "name": "Airline fuel-cost shock",
+        "run_id": "b9658126-ea33-47df-971b-ef0d8a81c7fe",
+        "definition_hash": "1e6ddaac9f18fed44bab55dd1bb12f192ff50326438aa331c7cb295ada15ed6f"
+      },
+      {
+        "model_id": "fx_exposure",
+        "version": "1.0.0",
+        "name": "Foreign-currency revenue and costs",
+        "run_id": "2a3d354b-175f-4384-ba14-96851339cc63",
+        "definition_hash": "1d0da6e5da1964c8910696394f6c905b4c2d5016c4bb9ed70dd94253890492a3"
+      },
+      {
+        "model_id": "floating_rate_interest",
+        "version": "1.0.0",
+        "name": "Floating-rate interest costs",
+        "run_id": "00299b3e-3f95-4b27-af48-f0633bc71e21",
+        "definition_hash": "e11b2df833e9dbe2cb7146b0c3d0719304260e8a5c74852127996c64979fbe2d"
+      }
+    ],
+    "assumptions": [
+      "airline_fuel_cost: Everything the model does not include stays at its baseline: fuel consumption, other costs, traffic, capacity, fares (apart from the stated pass-through) and financing.",
+      "airline_fuel_cost: Fuel is consumed evenly through the year: each month uses one twelfth of the annual volume, and annual revenue and costs accrue evenly.",
+      "airline_fuel_cost: The fuel bill is consumption × the benchmark jet fuel price × the exchange rate. Taxes, fees and supplier margins that do not follow the benchmark are outside the model.",
+      "airline_fuel_cost: Scenario changes are step changes: they take effect in the start month and last for the stated duration (to the end of the horizon unless one is set), after which the changed variables return to their baselines. Every change in a run shares this timing.",
+      "airline_fuel_cost: Jet fuel responds to crude oil with a constant elasticity β after a lag: ln(jet fuel) changes by β × ln(1 + crude change). With β = 1 the refining margin stays a constant proportion of the price.",
+      "airline_fuel_cost: Hedged fuel pays the baseline US-dollar price until the hedges expire; the exchange rate is not hedged; hedges are not rolled over.",
+      "airline_fuel_cost: Fares recover a fixed share of the change in fuel cost after a lag, for rises and falls alike, and passenger demand does not respond.",
+      "airline_fuel_cost: The exchange rate affects the fuel bill only: other dollar costs and any dollar revenue are outside the model.",
+      "airline_fuel_cost: Crude-to-jet-fuel elasticity (β) = 1 elasticity (dimensionless) (default)",
+      "airline_fuel_cost: Crude-to-jet-fuel lag = 1 months (entered)",
+      "airline_fuel_cost: Hedge ratio = 40 % (entered)",
+      "airline_fuel_cost: Hedge cover = 6 months (entered)",
+      "airline_fuel_cost: Fare pass-through = 50 % (entered)",
+      "airline_fuel_cost: Fare pass-through lag = 2 months (entered)",
+      "floating_rate_interest: Everything the model does not include stays at its baseline: the amount of debt (no repayments or new borrowing), fixed-rate debt, operating profit and other income.",
+      "floating_rate_interest: Floating-rate loans reprice by the stated share of the benchmark change after the stated delay, then keep that rate while the change lasts. Interest accrues evenly: each month carries one twelfth of the annual rate.",
+      "floating_rate_interest: The benchmark change is taken as given. RUMIN does not predict policy rates.",
+      "floating_rate_interest: Scenario changes are step changes: they take effect in the start month and last for the stated duration (to the end of the horizon unless one is set), after which the changed variables return to their baselines. Every change in a run shares this timing.",
+      "floating_rate_interest: Debt linked to US rates is stated in the reporting currency at today's exchange rate; exchange-rate movements on it are not modelled here.",
+      "floating_rate_interest: Repo pass-through = 100 % (default)",
+      "floating_rate_interest: Repo repricing delay = 3 months (entered)",
+      "floating_rate_interest: US-rate pass-through = 100 % (default)",
+      "floating_rate_interest: US-rate repricing delay = 0 months (default)",
+      "fx_exposure: Everything the model does not include stays at its baseline: the US-dollar amounts, volumes, prices in every currency, other costs and financing.",
+      "fx_exposure: US-dollar revenue and costs accrue evenly through the year: each month carries one twelfth.",
+      "fx_exposure: Dollar amounts are converted at the month's exchange rate. Dollar prices, volumes and demand do not respond to the exchange rate.",
+      "fx_exposure: Scenario changes are step changes: they take effect in the start month and last for the stated duration (to the end of the horizon unless one is set), after which the changed variables return to their baselines. Every change in a run shares this timing.",
+      "fx_exposure: Hedges fix the baseline exchange rate for the hedged share during the first months of cover, then expire; they are not rolled over. Revenue and cost hedges are separate.",
+      "fx_exposure: Only amounts invoiced or paid in US dollars are exposed. Costs another model in the same scenario already converts must be left out of the US-dollar costs.",
+      "fx_exposure: Revenue hedge ratio = 0 % (default)",
+      "fx_exposure: Cost hedge ratio = 0 % (default)",
+      "fx_exposure: Hedge cover = 0 months (default)"
+    ],
+    "figures": [
+      {
+        "label": "Baseline jet fuel price",
+        "value": "750",
+        "unit": "USD per kilolitre"
+      },
+      {
+        "label": "Baseline exchange rate",
+        "value": "80",
+        "unit": "INR per USD"
+      },
+      {
+        "label": "Annual revenue",
+        "value": "300000000",
+        "unit": "INR per year"
+      },
+      {
+        "label": "Annual operating costs",
+        "value": "250000000",
+        "unit": "INR per year"
+      },
+      {
+        "label": "Annual fuel consumption",
+        "value": "1000",
+        "unit": "kilolitre per year"
+      },
+      {
+        "label": "Annual interest expense",
+        "value": "12000000",
+        "unit": "INR per year"
+      },
+      {
+        "label": "Debt linked to the repo rate",
+        "value": "100000000",
+        "unit": "INR"
+      },
+      {
+        "label": "Debt linked to US short-term rates",
+        "value": "0",
+        "unit": "INR"
+      },
+      {
+        "label": "Annual revenue invoiced in US dollars",
+        "value": "500000",
+        "unit": "USD per year"
+      },
+      {
+        "label": "Annual costs paid in US dollars",
+        "value": "200000",
+        "unit": "USD per year"
+      }
+    ],
+    "sensitivity": null,
+    "notes": [
+      "Contributions are the models' Shapley credits per change, as stored with the execution; they add up to each line's change.",
+      "Ratios (operating margin, interest coverage) are not attributed to changes.",
+      "Simulated under the scenario's changes, figures and assumptions: not a forecast."
+    ],
+    "not_modelled": ["Cash flow"],
+    "unstated": [
+      {
+        "model_id": "floating_rate_interest",
+        "model_name": "Floating-rate interest costs",
+        "variable_ids": ["var_rbi_repo_rate"],
+        "message": "Floating-rate interest: the knowledge graph does not state this exposure of Aerisca Airways; the result rests on your figures alone."
+      }
+    ]
+  },
+  "previous": null,
+  "series": [],
+  "interpretations": [],
+  "not_interpreted": [],
+  "signals": [
+    {
+      "id": "exposure_breadth",
+      "name": "Exposure breadth",
+      "subject": {
+        "kind": "graph_node",
+        "id": "company:co_aerisca_airways",
+        "label": "Aerisca Airways"
+      },
+      "status": "computed",
+      "level": null,
+      "level_label": null,
+      "summary": "4 variables reach Aerisca Airways through 4 validated paths.",
+      "values": [
+        {
+          "label": "Variables",
+          "value": "4",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [
+            {
+              "kind": "graph_build",
+              "id": "1",
+              "label": "Build #1"
+            }
+          ],
+          "period": null
+        },
+        {
+          "label": "Exposure paths",
+          "value": "4",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [
+            {
+              "kind": "graph_build",
+              "id": "1",
+              "label": "Build #1"
+            }
+          ],
+          "period": null
+        },
+        {
+          "label": "Paths to costs",
+          "value": "4",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Paths to revenue",
+          "value": "0",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Paths to financing",
+          "value": "0",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Direct paths",
+          "value": "1",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Via industry paths",
+          "value": "1",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Upstream paths",
+          "value": "2",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Paths resting on model assumption",
+          "value": "4",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "period": {
+        "kind": "graph_build",
+        "label": "Build #1",
+        "start": null,
+        "end": null
+      },
+      "inputs": [
+        {
+          "kind": "graph_build",
+          "id": "1",
+          "label": "Build #1"
+        }
+      ],
+      "thresholds": {},
+      "evidence": {
+        "grade": "assumed",
+        "conditional_on_simulation": false,
+        "includes_observations": false,
+        "statement": "Rests on at least one relationship recorded as a model assumption: an assumed effect with a written rationale, not an empirical finding.",
+        "weakest_step": 1
+      },
+      "limitations": [
+        "Counts relationships, not money: two exposures with equal counts can differ by orders of magnitude.",
+        "Only what the graph states is counted; an exposure the graph does not record is invisible."
+      ]
+    },
+    {
+      "id": "dependency",
+      "name": "Dependency",
+      "subject": {
+        "kind": "graph_node",
+        "id": "company:co_aerisca_airways",
+        "label": "Aerisca Airways"
+      },
+      "status": "computed",
+      "level": "concentrated",
+      "level_label": "Concentrated",
+      "summary": "Jet fuel price (U.S. Gulf Coast) and USD/INR exchange rate each lie on 2 of 4 exposure paths.",
+      "values": [
+        {
+          "label": "Most shared variables",
+          "value": "Jet fuel price (U.S. Gulf Coast) and USD/INR exchange rate",
+          "unit": null,
+          "basis": "calculation",
+          "refs": [
+            {
+              "kind": "graph_node",
+              "id": "variable:var_jet_fuel",
+              "label": "Jet fuel price (U.S. Gulf Coast)"
+            },
+            {
+              "kind": "graph_node",
+              "id": "variable:var_usd_inr",
+              "label": "USD/INR exchange rate"
+            }
+          ],
+          "period": null
+        },
+        {
+          "label": "Paths through it",
+          "value": "2",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Exposure paths",
+          "value": "4",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Share of paths",
+          "value": "50",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Suppliers",
+          "value": "2",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Customers",
+          "value": "0",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Lenders",
+          "value": "1",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Borrowers",
+          "value": "0",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "period": {
+        "kind": "graph_build",
+        "label": "Build #1",
+        "start": null,
+        "end": null
+      },
+      "inputs": [
+        {
+          "kind": "graph_build",
+          "id": "1",
+          "label": "Build #1"
+        }
+      ],
+      "thresholds": {
+        "dependency_share_percent": "50"
+      },
+      "evidence": {
+        "grade": "assumed",
+        "conditional_on_simulation": false,
+        "includes_observations": false,
+        "statement": "Rests on at least one relationship recorded as a model assumption: an assumed effect with a written rationale, not an empirical finding.",
+        "weakest_step": 1
+      },
+      "limitations": [
+        "A share of relationships, not of costs or revenue.",
+        "Supply and credit relationships say nothing about size or terms."
+      ]
+    },
+    {
+      "id": "scenario_sensitivity",
+      "name": "Scenario sensitivity",
+      "subject": {
+        "kind": "graph_node",
+        "id": "company:co_aerisca_airways",
+        "label": "Aerisca Airways"
+      },
+      "status": "computed",
+      "level": null,
+      "level_label": null,
+      "summary": "Brent crude oil price contributes most to the change in profit before tax.",
+      "values": [
+        {
+          "label": "Brent crude oil price: contribution",
+          "value": "-5637500",
+          "unit": "INR",
+          "basis": "simulation",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca v1"
+            }
+          ],
+          "period": null
+        },
+        {
+          "label": "Brent crude oil price: share of the change",
+          "value": "84.1417910448",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Brent crude oil price: per 1 %",
+          "value": "-281875",
+          "unit": "INR",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "USD/INR exchange rate: contribution",
+          "value": "-687500",
+          "unit": "INR",
+          "basis": "simulation",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca v1"
+            }
+          ],
+          "period": null
+        },
+        {
+          "label": "USD/INR exchange rate: share of the change",
+          "value": "10.2611940299",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "USD/INR exchange rate: per 1 %",
+          "value": "-137500",
+          "unit": "INR",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "RBI policy repo rate: contribution",
+          "value": "-375000",
+          "unit": "INR",
+          "basis": "simulation",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca v1"
+            }
+          ],
+          "period": null
+        },
+        {
+          "label": "RBI policy repo rate: share of the change",
+          "value": "5.5970149254",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "RBI policy repo rate: per 1 percentage point",
+          "value": "-750000",
+          "unit": "INR",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "period": {
+        "kind": "scenario",
+        "label": "12 simulated months",
+        "start": null,
+        "end": null
+      },
+      "inputs": [
+        {
+          "kind": "execution",
+          "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+          "label": "Oil, rupee and rates on Aerisca v1"
+        }
+      ],
+      "thresholds": {},
+      "evidence": {
+        "grade": "simulated",
+        "conditional_on_simulation": true,
+        "includes_observations": false,
+        "statement": "Rests on stored model outputs: deterministic results of the stated inputs and assumptions, not forecasts.",
+        "weakest_step": 0
+      },
+      "limitations": [
+        "Per-unit effects are averages over the scenario's change, not slopes: the models are not linear (hedges, lags, compounding).",
+        "Conditional on the scenario's figures and assumptions."
+      ]
+    }
+  ],
+  "insights": [
+    {
+      "id": "ins-ae1e49e01049985a",
+      "rule": "S01",
+      "rule_title": "Simulated impact",
+      "kind": "impact",
+      "headline": "Profit before tax −6,700,000 INR (−17.63 %) under “Oil, rupee and rates on Aerisca”",
+      "statement": "In the stored execution of “Oil, rupee and rates on Aerisca” (version 1), with Brent crude oil price +20.00 %, USD/INR exchange rate +5.00 % and RBI policy repo rate +0.50 percentage points, Aerisca Airways's profit before tax changes by −6,700,000 INR (−17.63 %) over 12 months, from a baseline of 38,000,000 INR.",
+      "subject": {
+        "kind": "graph_node",
+        "id": "company:co_aerisca_airways",
+        "label": "Aerisca Airways"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "company:co_aerisca_airways",
+          "label": "Aerisca Airways"
+        }
+      ],
+      "relationships": [
+        {
+          "edge_key": "e-2afc04ee80f0699e",
+          "edge_type": "affects_costs",
+          "label": "affects costs of",
+          "source": "variable:var_usd_inr",
+          "source_name": "USD/INR exchange rate",
+          "target": "company:co_aerisca_airways",
+          "target_name": "Aerisca Airways",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-ea305310288a3f88",
+          "edge_type": "influences",
+          "label": "influences",
+          "source": "variable:var_brent_crude",
+          "source_name": "Brent crude oil price",
+          "target": "variable:var_jet_fuel",
+          "target_name": "Jet fuel price (U.S. Gulf Coast)",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-df536e008d0660a5",
+          "edge_type": "affects_costs",
+          "label": "affects costs of",
+          "source": "variable:var_jet_fuel",
+          "source_name": "Jet fuel price (U.S. Gulf Coast)",
+          "target": "industry:ind_air_transport",
+          "target_name": "Air transport",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-3c1cd4f52348ae25",
+          "edge_type": "in_industry",
+          "label": "operates in",
+          "source": "company:co_aerisca_airways",
+          "source_name": "Aerisca Airways",
+          "target": "industry:ind_air_transport",
+          "target_name": "Air transport",
+          "evidence_status": "analyst_created",
+          "is_illustrative": true
+        }
+      ],
+      "period": {
+        "kind": "scenario",
+        "label": "12 simulated months",
+        "start": null,
+        "end": null
+      },
+      "facts": [
+        {
+          "label": "Profit before tax: baseline",
+          "value": "38000000",
+          "unit": "INR",
+          "basis": "assumption",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "period": null
+        },
+        {
+          "label": "Profit before tax: change",
+          "value": "-6700000",
+          "unit": "INR",
+          "basis": "simulation",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "period": null
+        },
+        {
+          "label": "Profit before tax: change in percent",
+          "value": "-17.6315789474",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [
+        {
+          "kind": "execution",
+          "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+          "label": "Oil, rupee and rates on Aerisca, version 1",
+          "models": ["airline_fuel_cost 1.1.0", "fx_exposure 1.0.0", "floating_rate_interest 1.0.0"]
+        }
+      ],
+      "evidence": {
+        "grade": "assumed",
+        "conditional_on_simulation": true,
+        "includes_observations": false,
+        "statement": "Rests on at least one relationship recorded as a model assumption: an assumed effect with a written rationale, not an empirical finding. Its figures are simulated: they hold only under the scenario's inputs and assumptions.",
+        "weakest_step": 0
+      },
+      "chain": [
+        {
+          "basis": "relationship",
+          "text": "USD/INR exchange rate affects costs of Aerisca Airways",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-2afc04ee80f0699e",
+              "label": "USD/INR exchange rate affects costs of Aerisca Airways"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Brent crude oil price influences Jet fuel price (U.S. Gulf Coast)",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-ea305310288a3f88",
+              "label": "Brent crude oil price influences Jet fuel price (U.S. Gulf Coast)"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Jet fuel price (U.S. Gulf Coast) affects costs of Air transport",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-df536e008d0660a5",
+              "label": "Jet fuel price (U.S. Gulf Coast) affects costs of Air transport"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Aerisca Airways operates in Air transport",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-3c1cd4f52348ae25",
+              "label": "Aerisca Airways operates in Air transport"
+            }
+          ],
+          "evidence_status": "analyst_created",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "assumption",
+          "text": "Figures entered by the user: Baseline jet fuel price 750 USD per kilolitre; Baseline exchange rate 80 INR per USD; Annual revenue 300000000 INR per year; Annual operating costs 250000000 INR per year; Annual fuel consumption 1000 kilolitre per year; Annual interest expense 12000000 INR per year; Debt linked to the repo rate 100000000 INR; Debt linked to US short-term rates 0 INR; Annual revenue invoiced in US dollars 500000 USD per year; Annual costs paid in US dollars 200000 USD per year",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "simulation",
+          "text": "Stored execution: Profit before tax −6,700,000 INR",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            },
+            {
+              "kind": "run",
+              "id": "b9658126-ea33-47df-971b-ef0d8a81c7fe",
+              "label": "airline_fuel_cost 1.1.0"
+            },
+            {
+              "kind": "run",
+              "id": "2a3d354b-175f-4384-ba14-96851339cc63",
+              "label": "fx_exposure 1.0.0"
+            },
+            {
+              "kind": "run",
+              "id": "00299b3e-3f95-4b27-af48-f0633bc71e21",
+              "label": "floating_rate_interest 1.0.0"
+            }
+          ],
+          "evidence_status": null,
+          "value": "-6700000",
+          "unit": "INR"
+        }
+      ],
+      "assumptions": [
+        "airline_fuel_cost: Everything the model does not include stays at its baseline: fuel consumption, other costs, traffic, capacity, fares (apart from the stated pass-through) and financing.",
+        "airline_fuel_cost: Fuel is consumed evenly through the year: each month uses one twelfth of the annual volume, and annual revenue and costs accrue evenly.",
+        "airline_fuel_cost: The fuel bill is consumption × the benchmark jet fuel price × the exchange rate. Taxes, fees and supplier margins that do not follow the benchmark are outside the model.",
+        "airline_fuel_cost: Scenario changes are step changes: they take effect in the start month and last for the stated duration (to the end of the horizon unless one is set), after which the changed variables return to their baselines. Every change in a run shares this timing.",
+        "airline_fuel_cost: Jet fuel responds to crude oil with a constant elasticity β after a lag: ln(jet fuel) changes by β × ln(1 + crude change). With β = 1 the refining margin stays a constant proportion of the price.",
+        "airline_fuel_cost: Hedged fuel pays the baseline US-dollar price until the hedges expire; the exchange rate is not hedged; hedges are not rolled over.",
+        "airline_fuel_cost: Fares recover a fixed share of the change in fuel cost after a lag, for rises and falls alike, and passenger demand does not respond.",
+        "airline_fuel_cost: The exchange rate affects the fuel bill only: other dollar costs and any dollar revenue are outside the model.",
+        "airline_fuel_cost: Crude-to-jet-fuel elasticity (β) = 1 elasticity (dimensionless) (default)",
+        "airline_fuel_cost: Crude-to-jet-fuel lag = 1 months (entered)",
+        "airline_fuel_cost: Hedge ratio = 40 % (entered)",
+        "airline_fuel_cost: Hedge cover = 6 months (entered)",
+        "… and 20 more stated with the model runs."
+      ],
+      "limitations": [
+        "Floating-rate interest: the knowledge graph does not state this exposure of Aerisca Airways; the result rests on your figures alone.",
+        "Simulated under the scenario's changes, figures and assumptions: not a forecast.",
+        "Not modelled: Cash flow."
+      ],
+      "next_steps": [
+        {
+          "action": "run_sensitivity",
+          "text": "Run a sensitivity analysis to see which inputs and assumptions move this result most.",
+          "target": {
+            "kind": "execution",
+            "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+            "label": "Oil, rupee and rates on Aerisca · version 1"
+          }
+        }
+      ],
+      "sources": [
+        {
+          "kind": "execution",
+          "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+          "label": "Oil, rupee and rates on Aerisca · version 1"
+        }
+      ]
+    },
+    {
+      "id": "ins-bb9feff92b33ad78",
+      "rule": "S02",
+      "rule_title": "Contributions to a line",
+      "kind": "contribution",
+      "headline": "Interest expense: all of the +375,000 INR change comes from RBI policy repo rate",
+      "statement": "For Aerisca Airways, the change in interest expense, +375,000 INR (+3.12 %), splits by the scenario's changes into RBI policy repo rate +375,000 INR (100.00 % of the change).",
+      "subject": {
+        "kind": "graph_node",
+        "id": "company:co_aerisca_airways",
+        "label": "Aerisca Airways"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "company:co_aerisca_airways",
+          "label": "Aerisca Airways"
+        }
+      ],
+      "relationships": [],
+      "period": {
+        "kind": "scenario",
+        "label": "12 simulated months",
+        "start": null,
+        "end": null
+      },
+      "facts": [
+        {
+          "label": "RBI policy repo rate",
+          "value": "375000",
+          "unit": "INR",
+          "basis": "simulation",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "period": null
+        },
+        {
+          "label": "RBI policy repo rate: share of the change",
+          "value": "100",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "RBI policy repo rate: points of the baseline",
+          "value": "3.125",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Unattributed",
+          "value": "0",
+          "unit": "INR",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [
+        {
+          "kind": "execution",
+          "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+          "label": "Oil, rupee and rates on Aerisca, version 1",
+          "models": ["airline_fuel_cost 1.1.0", "fx_exposure 1.0.0", "floating_rate_interest 1.0.0"]
+        }
+      ],
+      "evidence": {
+        "grade": "simulated",
+        "conditional_on_simulation": true,
+        "includes_observations": false,
+        "statement": "Rests on stored model outputs: deterministic results of the stated inputs and assumptions, not forecasts.",
+        "weakest_step": 0
+      },
+      "chain": [
+        {
+          "basis": "simulation",
+          "text": "Stored contributions to interest expense",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "evidence_status": null,
+          "value": "375000",
+          "unit": "INR"
+        },
+        {
+          "basis": "calculation",
+          "text": "Each contribution as a share of the change and of the baseline",
+          "refs": [],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "assumption",
+          "text": "Figures entered by the user: Baseline jet fuel price 750 USD per kilolitre; Baseline exchange rate 80 INR per USD; Annual revenue 300000000 INR per year; Annual operating costs 250000000 INR per year; Annual fuel consumption 1000 kilolitre per year; Annual interest expense 12000000 INR per year; Debt linked to the repo rate 100000000 INR; Debt linked to US short-term rates 0 INR; Annual revenue invoiced in US dollars 500000 USD per year; Annual costs paid in US dollars 200000 USD per year",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        }
+      ],
+      "assumptions": [
+        "airline_fuel_cost: Everything the model does not include stays at its baseline: fuel consumption, other costs, traffic, capacity, fares (apart from the stated pass-through) and financing.",
+        "airline_fuel_cost: Fuel is consumed evenly through the year: each month uses one twelfth of the annual volume, and annual revenue and costs accrue evenly.",
+        "airline_fuel_cost: The fuel bill is consumption × the benchmark jet fuel price × the exchange rate. Taxes, fees and supplier margins that do not follow the benchmark are outside the model.",
+        "airline_fuel_cost: Scenario changes are step changes: they take effect in the start month and last for the stated duration (to the end of the horizon unless one is set), after which the changed variables return to their baselines. Every change in a run shares this timing.",
+        "airline_fuel_cost: Jet fuel responds to crude oil with a constant elasticity β after a lag: ln(jet fuel) changes by β × ln(1 + crude change). With β = 1 the refining margin stays a constant proportion of the price.",
+        "airline_fuel_cost: Hedged fuel pays the baseline US-dollar price until the hedges expire; the exchange rate is not hedged; hedges are not rolled over.",
+        "airline_fuel_cost: Fares recover a fixed share of the change in fuel cost after a lag, for rises and falls alike, and passenger demand does not respond.",
+        "airline_fuel_cost: The exchange rate affects the fuel bill only: other dollar costs and any dollar revenue are outside the model.",
+        "airline_fuel_cost: Crude-to-jet-fuel elasticity (β) = 1 elasticity (dimensionless) (default)",
+        "airline_fuel_cost: Crude-to-jet-fuel lag = 1 months (entered)",
+        "airline_fuel_cost: Hedge ratio = 40 % (entered)",
+        "airline_fuel_cost: Hedge cover = 6 months (entered)",
+        "… and 20 more stated with the model runs."
+      ],
+      "limitations": [
+        "Floating-rate interest: the knowledge graph does not state this exposure of Aerisca Airways; the result rests on your figures alone.",
+        "Simulated under the scenario's changes, figures and assumptions: not a forecast.",
+        "Contributions are Shapley credits: an interaction between two changes is split evenly between them."
+      ],
+      "next_steps": [],
+      "sources": []
+    },
+    {
+      "id": "ins-282268976166a260",
+      "rule": "S02",
+      "rule_title": "Contributions to a line",
+      "kind": "contribution",
+      "headline": "Operating costs: Brent crude oil price contributes +9,225,000 INR of the +13,250,000 INR change",
+      "statement": "For Aerisca Airways, the change in operating costs, +13,250,000 INR (+5.30 %), splits by the scenario's changes into Brent crude oil price +9,225,000 INR (69.62 % of the change) and USD/INR exchange rate +4,025,000 INR (30.38 % of the change).",
+      "subject": {
+        "kind": "graph_node",
+        "id": "company:co_aerisca_airways",
+        "label": "Aerisca Airways"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "company:co_aerisca_airways",
+          "label": "Aerisca Airways"
+        }
+      ],
+      "relationships": [],
+      "period": {
+        "kind": "scenario",
+        "label": "12 simulated months",
+        "start": null,
+        "end": null
+      },
+      "facts": [
+        {
+          "label": "Brent crude oil price",
+          "value": "9225000",
+          "unit": "INR",
+          "basis": "simulation",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "period": null
+        },
+        {
+          "label": "Brent crude oil price: share of the change",
+          "value": "69.6226415094",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Brent crude oil price: points of the baseline",
+          "value": "3.69",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "USD/INR exchange rate",
+          "value": "4025000",
+          "unit": "INR",
+          "basis": "simulation",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "period": null
+        },
+        {
+          "label": "USD/INR exchange rate: share of the change",
+          "value": "30.3773584906",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "USD/INR exchange rate: points of the baseline",
+          "value": "1.61",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Unattributed",
+          "value": "0",
+          "unit": "INR",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [
+        {
+          "kind": "execution",
+          "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+          "label": "Oil, rupee and rates on Aerisca, version 1",
+          "models": ["airline_fuel_cost 1.1.0", "fx_exposure 1.0.0", "floating_rate_interest 1.0.0"]
+        }
+      ],
+      "evidence": {
+        "grade": "simulated",
+        "conditional_on_simulation": true,
+        "includes_observations": false,
+        "statement": "Rests on stored model outputs: deterministic results of the stated inputs and assumptions, not forecasts.",
+        "weakest_step": 0
+      },
+      "chain": [
+        {
+          "basis": "simulation",
+          "text": "Stored contributions to operating costs",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "evidence_status": null,
+          "value": "13250000",
+          "unit": "INR"
+        },
+        {
+          "basis": "calculation",
+          "text": "Each contribution as a share of the change and of the baseline",
+          "refs": [],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "assumption",
+          "text": "Figures entered by the user: Baseline jet fuel price 750 USD per kilolitre; Baseline exchange rate 80 INR per USD; Annual revenue 300000000 INR per year; Annual operating costs 250000000 INR per year; Annual fuel consumption 1000 kilolitre per year; Annual interest expense 12000000 INR per year; Debt linked to the repo rate 100000000 INR; Debt linked to US short-term rates 0 INR; Annual revenue invoiced in US dollars 500000 USD per year; Annual costs paid in US dollars 200000 USD per year",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        }
+      ],
+      "assumptions": [
+        "airline_fuel_cost: Everything the model does not include stays at its baseline: fuel consumption, other costs, traffic, capacity, fares (apart from the stated pass-through) and financing.",
+        "airline_fuel_cost: Fuel is consumed evenly through the year: each month uses one twelfth of the annual volume, and annual revenue and costs accrue evenly.",
+        "airline_fuel_cost: The fuel bill is consumption × the benchmark jet fuel price × the exchange rate. Taxes, fees and supplier margins that do not follow the benchmark are outside the model.",
+        "airline_fuel_cost: Scenario changes are step changes: they take effect in the start month and last for the stated duration (to the end of the horizon unless one is set), after which the changed variables return to their baselines. Every change in a run shares this timing.",
+        "airline_fuel_cost: Jet fuel responds to crude oil with a constant elasticity β after a lag: ln(jet fuel) changes by β × ln(1 + crude change). With β = 1 the refining margin stays a constant proportion of the price.",
+        "airline_fuel_cost: Hedged fuel pays the baseline US-dollar price until the hedges expire; the exchange rate is not hedged; hedges are not rolled over.",
+        "airline_fuel_cost: Fares recover a fixed share of the change in fuel cost after a lag, for rises and falls alike, and passenger demand does not respond.",
+        "airline_fuel_cost: The exchange rate affects the fuel bill only: other dollar costs and any dollar revenue are outside the model.",
+        "airline_fuel_cost: Crude-to-jet-fuel elasticity (β) = 1 elasticity (dimensionless) (default)",
+        "airline_fuel_cost: Crude-to-jet-fuel lag = 1 months (entered)",
+        "airline_fuel_cost: Hedge ratio = 40 % (entered)",
+        "airline_fuel_cost: Hedge cover = 6 months (entered)",
+        "… and 20 more stated with the model runs."
+      ],
+      "limitations": [
+        "Simulated under the scenario's changes, figures and assumptions: not a forecast.",
+        "Contributions are Shapley credits: an interaction between two changes is split evenly between them."
+      ],
+      "next_steps": [],
+      "sources": []
+    },
+    {
+      "id": "ins-d9423f8a7faaa933",
+      "rule": "S02",
+      "rule_title": "Contributions to a line",
+      "kind": "contribution",
+      "headline": "Operating profit: Brent crude oil price contributes −5,637,500 INR of the −6,325,000 INR change",
+      "statement": "For Aerisca Airways, the change in operating profit, −6,325,000 INR (−12.65 %), splits by the scenario's changes into Brent crude oil price −5,637,500 INR (89.13 % of the change) and USD/INR exchange rate −687,500 INR (10.87 % of the change).",
+      "subject": {
+        "kind": "graph_node",
+        "id": "company:co_aerisca_airways",
+        "label": "Aerisca Airways"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "company:co_aerisca_airways",
+          "label": "Aerisca Airways"
+        }
+      ],
+      "relationships": [],
+      "period": {
+        "kind": "scenario",
+        "label": "12 simulated months",
+        "start": null,
+        "end": null
+      },
+      "facts": [
+        {
+          "label": "Brent crude oil price",
+          "value": "-5637500",
+          "unit": "INR",
+          "basis": "simulation",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "period": null
+        },
+        {
+          "label": "Brent crude oil price: share of the change",
+          "value": "89.1304347826",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Brent crude oil price: points of the baseline",
+          "value": "-11.275",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "USD/INR exchange rate",
+          "value": "-687500",
+          "unit": "INR",
+          "basis": "simulation",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "period": null
+        },
+        {
+          "label": "USD/INR exchange rate: share of the change",
+          "value": "10.8695652174",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "USD/INR exchange rate: points of the baseline",
+          "value": "-1.375",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Unattributed",
+          "value": "0",
+          "unit": "INR",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [
+        {
+          "kind": "execution",
+          "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+          "label": "Oil, rupee and rates on Aerisca, version 1",
+          "models": ["airline_fuel_cost 1.1.0", "fx_exposure 1.0.0", "floating_rate_interest 1.0.0"]
+        }
+      ],
+      "evidence": {
+        "grade": "simulated",
+        "conditional_on_simulation": true,
+        "includes_observations": false,
+        "statement": "Rests on stored model outputs: deterministic results of the stated inputs and assumptions, not forecasts.",
+        "weakest_step": 0
+      },
+      "chain": [
+        {
+          "basis": "simulation",
+          "text": "Stored contributions to operating profit",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "evidence_status": null,
+          "value": "-6325000",
+          "unit": "INR"
+        },
+        {
+          "basis": "calculation",
+          "text": "Each contribution as a share of the change and of the baseline",
+          "refs": [],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "assumption",
+          "text": "Figures entered by the user: Baseline jet fuel price 750 USD per kilolitre; Baseline exchange rate 80 INR per USD; Annual revenue 300000000 INR per year; Annual operating costs 250000000 INR per year; Annual fuel consumption 1000 kilolitre per year; Annual interest expense 12000000 INR per year; Debt linked to the repo rate 100000000 INR; Debt linked to US short-term rates 0 INR; Annual revenue invoiced in US dollars 500000 USD per year; Annual costs paid in US dollars 200000 USD per year",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        }
+      ],
+      "assumptions": [
+        "airline_fuel_cost: Everything the model does not include stays at its baseline: fuel consumption, other costs, traffic, capacity, fares (apart from the stated pass-through) and financing.",
+        "airline_fuel_cost: Fuel is consumed evenly through the year: each month uses one twelfth of the annual volume, and annual revenue and costs accrue evenly.",
+        "airline_fuel_cost: The fuel bill is consumption × the benchmark jet fuel price × the exchange rate. Taxes, fees and supplier margins that do not follow the benchmark are outside the model.",
+        "airline_fuel_cost: Scenario changes are step changes: they take effect in the start month and last for the stated duration (to the end of the horizon unless one is set), after which the changed variables return to their baselines. Every change in a run shares this timing.",
+        "airline_fuel_cost: Jet fuel responds to crude oil with a constant elasticity β after a lag: ln(jet fuel) changes by β × ln(1 + crude change). With β = 1 the refining margin stays a constant proportion of the price.",
+        "airline_fuel_cost: Hedged fuel pays the baseline US-dollar price until the hedges expire; the exchange rate is not hedged; hedges are not rolled over.",
+        "airline_fuel_cost: Fares recover a fixed share of the change in fuel cost after a lag, for rises and falls alike, and passenger demand does not respond.",
+        "airline_fuel_cost: The exchange rate affects the fuel bill only: other dollar costs and any dollar revenue are outside the model.",
+        "airline_fuel_cost: Crude-to-jet-fuel elasticity (β) = 1 elasticity (dimensionless) (default)",
+        "airline_fuel_cost: Crude-to-jet-fuel lag = 1 months (entered)",
+        "airline_fuel_cost: Hedge ratio = 40 % (entered)",
+        "airline_fuel_cost: Hedge cover = 6 months (entered)",
+        "… and 20 more stated with the model runs."
+      ],
+      "limitations": [
+        "Simulated under the scenario's changes, figures and assumptions: not a forecast.",
+        "Contributions are Shapley credits: an interaction between two changes is split evenly between them."
+      ],
+      "next_steps": [],
+      "sources": []
+    },
+    {
+      "id": "ins-dd8030889feb7c1b",
+      "rule": "S02",
+      "rule_title": "Contributions to a line",
+      "kind": "contribution",
+      "headline": "Profit before tax: Brent crude oil price contributes −5,637,500 INR of the −6,700,000 INR change",
+      "statement": "For Aerisca Airways, the change in profit before tax, −6,700,000 INR (−17.63 %), splits by the scenario's changes into Brent crude oil price −5,637,500 INR (84.14 % of the change), USD/INR exchange rate −687,500 INR (10.26 % of the change) and RBI policy repo rate −375,000 INR (5.60 % of the change).",
+      "subject": {
+        "kind": "graph_node",
+        "id": "company:co_aerisca_airways",
+        "label": "Aerisca Airways"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "company:co_aerisca_airways",
+          "label": "Aerisca Airways"
+        }
+      ],
+      "relationships": [],
+      "period": {
+        "kind": "scenario",
+        "label": "12 simulated months",
+        "start": null,
+        "end": null
+      },
+      "facts": [
+        {
+          "label": "Brent crude oil price",
+          "value": "-5637500",
+          "unit": "INR",
+          "basis": "simulation",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "period": null
+        },
+        {
+          "label": "Brent crude oil price: share of the change",
+          "value": "84.1417910448",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Brent crude oil price: points of the baseline",
+          "value": "-14.8355263158",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "USD/INR exchange rate",
+          "value": "-687500",
+          "unit": "INR",
+          "basis": "simulation",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "period": null
+        },
+        {
+          "label": "USD/INR exchange rate: share of the change",
+          "value": "10.2611940299",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "USD/INR exchange rate: points of the baseline",
+          "value": "-1.8092105263",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "RBI policy repo rate",
+          "value": "-375000",
+          "unit": "INR",
+          "basis": "simulation",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "period": null
+        },
+        {
+          "label": "RBI policy repo rate: share of the change",
+          "value": "5.5970149254",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "RBI policy repo rate: points of the baseline",
+          "value": "-0.9868421053",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Unattributed",
+          "value": "0",
+          "unit": "INR",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [
+        {
+          "kind": "execution",
+          "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+          "label": "Oil, rupee and rates on Aerisca, version 1",
+          "models": ["airline_fuel_cost 1.1.0", "fx_exposure 1.0.0", "floating_rate_interest 1.0.0"]
+        }
+      ],
+      "evidence": {
+        "grade": "simulated",
+        "conditional_on_simulation": true,
+        "includes_observations": false,
+        "statement": "Rests on stored model outputs: deterministic results of the stated inputs and assumptions, not forecasts.",
+        "weakest_step": 0
+      },
+      "chain": [
+        {
+          "basis": "simulation",
+          "text": "Stored contributions to profit before tax",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "evidence_status": null,
+          "value": "-6700000",
+          "unit": "INR"
+        },
+        {
+          "basis": "calculation",
+          "text": "Each contribution as a share of the change and of the baseline",
+          "refs": [],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "assumption",
+          "text": "Figures entered by the user: Baseline jet fuel price 750 USD per kilolitre; Baseline exchange rate 80 INR per USD; Annual revenue 300000000 INR per year; Annual operating costs 250000000 INR per year; Annual fuel consumption 1000 kilolitre per year; Annual interest expense 12000000 INR per year; Debt linked to the repo rate 100000000 INR; Debt linked to US short-term rates 0 INR; Annual revenue invoiced in US dollars 500000 USD per year; Annual costs paid in US dollars 200000 USD per year",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        }
+      ],
+      "assumptions": [
+        "airline_fuel_cost: Everything the model does not include stays at its baseline: fuel consumption, other costs, traffic, capacity, fares (apart from the stated pass-through) and financing.",
+        "airline_fuel_cost: Fuel is consumed evenly through the year: each month uses one twelfth of the annual volume, and annual revenue and costs accrue evenly.",
+        "airline_fuel_cost: The fuel bill is consumption × the benchmark jet fuel price × the exchange rate. Taxes, fees and supplier margins that do not follow the benchmark are outside the model.",
+        "airline_fuel_cost: Scenario changes are step changes: they take effect in the start month and last for the stated duration (to the end of the horizon unless one is set), after which the changed variables return to their baselines. Every change in a run shares this timing.",
+        "airline_fuel_cost: Jet fuel responds to crude oil with a constant elasticity β after a lag: ln(jet fuel) changes by β × ln(1 + crude change). With β = 1 the refining margin stays a constant proportion of the price.",
+        "airline_fuel_cost: Hedged fuel pays the baseline US-dollar price until the hedges expire; the exchange rate is not hedged; hedges are not rolled over.",
+        "airline_fuel_cost: Fares recover a fixed share of the change in fuel cost after a lag, for rises and falls alike, and passenger demand does not respond.",
+        "airline_fuel_cost: The exchange rate affects the fuel bill only: other dollar costs and any dollar revenue are outside the model.",
+        "airline_fuel_cost: Crude-to-jet-fuel elasticity (β) = 1 elasticity (dimensionless) (default)",
+        "airline_fuel_cost: Crude-to-jet-fuel lag = 1 months (entered)",
+        "airline_fuel_cost: Hedge ratio = 40 % (entered)",
+        "airline_fuel_cost: Hedge cover = 6 months (entered)",
+        "… and 20 more stated with the model runs."
+      ],
+      "limitations": [
+        "Floating-rate interest: the knowledge graph does not state this exposure of Aerisca Airways; the result rests on your figures alone.",
+        "Simulated under the scenario's changes, figures and assumptions: not a forecast.",
+        "Contributions are Shapley credits: an interaction between two changes is split evenly between them."
+      ],
+      "next_steps": [],
+      "sources": []
+    },
+    {
+      "id": "ins-184bd31d1ef5c2ee",
+      "rule": "S02",
+      "rule_title": "Contributions to a line",
+      "kind": "contribution",
+      "headline": "Revenue: Brent crude oil price contributes +3,587,500 INR of the +6,925,000 INR change",
+      "statement": "For Aerisca Airways, the change in revenue, +6,925,000 INR (+2.31 %), splits by the scenario's changes into Brent crude oil price +3,587,500 INR (51.81 % of the change) and USD/INR exchange rate +3,337,500 INR (48.19 % of the change).",
+      "subject": {
+        "kind": "graph_node",
+        "id": "company:co_aerisca_airways",
+        "label": "Aerisca Airways"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "company:co_aerisca_airways",
+          "label": "Aerisca Airways"
+        }
+      ],
+      "relationships": [],
+      "period": {
+        "kind": "scenario",
+        "label": "12 simulated months",
+        "start": null,
+        "end": null
+      },
+      "facts": [
+        {
+          "label": "Brent crude oil price",
+          "value": "3587500",
+          "unit": "INR",
+          "basis": "simulation",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "period": null
+        },
+        {
+          "label": "Brent crude oil price: share of the change",
+          "value": "51.8050541516",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Brent crude oil price: points of the baseline",
+          "value": "1.1958333333",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "USD/INR exchange rate",
+          "value": "3337500",
+          "unit": "INR",
+          "basis": "simulation",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "period": null
+        },
+        {
+          "label": "USD/INR exchange rate: share of the change",
+          "value": "48.1949458484",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "USD/INR exchange rate: points of the baseline",
+          "value": "1.1125",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Unattributed",
+          "value": "0",
+          "unit": "INR",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [
+        {
+          "kind": "execution",
+          "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+          "label": "Oil, rupee and rates on Aerisca, version 1",
+          "models": ["airline_fuel_cost 1.1.0", "fx_exposure 1.0.0", "floating_rate_interest 1.0.0"]
+        }
+      ],
+      "evidence": {
+        "grade": "simulated",
+        "conditional_on_simulation": true,
+        "includes_observations": false,
+        "statement": "Rests on stored model outputs: deterministic results of the stated inputs and assumptions, not forecasts.",
+        "weakest_step": 0
+      },
+      "chain": [
+        {
+          "basis": "simulation",
+          "text": "Stored contributions to revenue",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "evidence_status": null,
+          "value": "6925000",
+          "unit": "INR"
+        },
+        {
+          "basis": "calculation",
+          "text": "Each contribution as a share of the change and of the baseline",
+          "refs": [],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "assumption",
+          "text": "Figures entered by the user: Baseline jet fuel price 750 USD per kilolitre; Baseline exchange rate 80 INR per USD; Annual revenue 300000000 INR per year; Annual operating costs 250000000 INR per year; Annual fuel consumption 1000 kilolitre per year; Annual interest expense 12000000 INR per year; Debt linked to the repo rate 100000000 INR; Debt linked to US short-term rates 0 INR; Annual revenue invoiced in US dollars 500000 USD per year; Annual costs paid in US dollars 200000 USD per year",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        }
+      ],
+      "assumptions": [
+        "airline_fuel_cost: Everything the model does not include stays at its baseline: fuel consumption, other costs, traffic, capacity, fares (apart from the stated pass-through) and financing.",
+        "airline_fuel_cost: Fuel is consumed evenly through the year: each month uses one twelfth of the annual volume, and annual revenue and costs accrue evenly.",
+        "airline_fuel_cost: The fuel bill is consumption × the benchmark jet fuel price × the exchange rate. Taxes, fees and supplier margins that do not follow the benchmark are outside the model.",
+        "airline_fuel_cost: Scenario changes are step changes: they take effect in the start month and last for the stated duration (to the end of the horizon unless one is set), after which the changed variables return to their baselines. Every change in a run shares this timing.",
+        "airline_fuel_cost: Jet fuel responds to crude oil with a constant elasticity β after a lag: ln(jet fuel) changes by β × ln(1 + crude change). With β = 1 the refining margin stays a constant proportion of the price.",
+        "airline_fuel_cost: Hedged fuel pays the baseline US-dollar price until the hedges expire; the exchange rate is not hedged; hedges are not rolled over.",
+        "airline_fuel_cost: Fares recover a fixed share of the change in fuel cost after a lag, for rises and falls alike, and passenger demand does not respond.",
+        "airline_fuel_cost: The exchange rate affects the fuel bill only: other dollar costs and any dollar revenue are outside the model.",
+        "airline_fuel_cost: Crude-to-jet-fuel elasticity (β) = 1 elasticity (dimensionless) (default)",
+        "airline_fuel_cost: Crude-to-jet-fuel lag = 1 months (entered)",
+        "airline_fuel_cost: Hedge ratio = 40 % (entered)",
+        "airline_fuel_cost: Hedge cover = 6 months (entered)",
+        "… and 20 more stated with the model runs."
+      ],
+      "limitations": [
+        "Simulated under the scenario's changes, figures and assumptions: not a forecast.",
+        "Contributions are Shapley credits: an interaction between two changes is split evenly between them."
+      ],
+      "next_steps": [],
+      "sources": []
+    },
+    {
+      "id": "ins-d9950a2860b8d8db",
+      "rule": "S03",
+      "rule_title": "Effect per unit of a change",
+      "kind": "sensitivity",
+      "headline": "Profit before tax per 1 % of Brent crude oil price",
+      "statement": "Per 1 % of Brent crude oil price, Aerisca Airways's profit before tax changes by −281,875 INR on average over this scenario's +20.00 %.",
+      "subject": {
+        "kind": "graph_node",
+        "id": "company:co_aerisca_airways",
+        "label": "Aerisca Airways"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "company:co_aerisca_airways",
+          "label": "Aerisca Airways"
+        }
+      ],
+      "relationships": [],
+      "period": {
+        "kind": "scenario",
+        "label": "12 simulated months",
+        "start": null,
+        "end": null
+      },
+      "facts": [
+        {
+          "label": "Contribution",
+          "value": "-5637500",
+          "unit": "INR",
+          "basis": "simulation",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "period": null
+        },
+        {
+          "label": "Size of the change",
+          "value": "20",
+          "unit": "percent",
+          "basis": "assumption",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Per 1 %",
+          "value": "-281875",
+          "unit": "INR",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [
+        {
+          "kind": "execution",
+          "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+          "label": "Oil, rupee and rates on Aerisca, version 1",
+          "models": ["airline_fuel_cost 1.1.0", "fx_exposure 1.0.0", "floating_rate_interest 1.0.0"]
+        }
+      ],
+      "evidence": {
+        "grade": "simulated",
+        "conditional_on_simulation": true,
+        "includes_observations": false,
+        "statement": "Rests on stored model outputs: deterministic results of the stated inputs and assumptions, not forecasts.",
+        "weakest_step": 0
+      },
+      "chain": [
+        {
+          "basis": "simulation",
+          "text": "Stored contribution of Brent crude oil price",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "evidence_status": null,
+          "value": "-5637500",
+          "unit": "INR"
+        },
+        {
+          "basis": "calculation",
+          "text": "Contribution ÷ +20.00 %",
+          "refs": [],
+          "evidence_status": null,
+          "value": "-281875",
+          "unit": "INR"
+        },
+        {
+          "basis": "assumption",
+          "text": "Figures entered by the user: Baseline jet fuel price 750 USD per kilolitre; Baseline exchange rate 80 INR per USD; Annual revenue 300000000 INR per year; Annual operating costs 250000000 INR per year; Annual fuel consumption 1000 kilolitre per year; Annual interest expense 12000000 INR per year; Debt linked to the repo rate 100000000 INR; Debt linked to US short-term rates 0 INR; Annual revenue invoiced in US dollars 500000 USD per year; Annual costs paid in US dollars 200000 USD per year",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        }
+      ],
+      "assumptions": [
+        "airline_fuel_cost: Everything the model does not include stays at its baseline: fuel consumption, other costs, traffic, capacity, fares (apart from the stated pass-through) and financing.",
+        "airline_fuel_cost: Fuel is consumed evenly through the year: each month uses one twelfth of the annual volume, and annual revenue and costs accrue evenly.",
+        "airline_fuel_cost: The fuel bill is consumption × the benchmark jet fuel price × the exchange rate. Taxes, fees and supplier margins that do not follow the benchmark are outside the model.",
+        "airline_fuel_cost: Scenario changes are step changes: they take effect in the start month and last for the stated duration (to the end of the horizon unless one is set), after which the changed variables return to their baselines. Every change in a run shares this timing.",
+        "airline_fuel_cost: Jet fuel responds to crude oil with a constant elasticity β after a lag: ln(jet fuel) changes by β × ln(1 + crude change). With β = 1 the refining margin stays a constant proportion of the price.",
+        "airline_fuel_cost: Hedged fuel pays the baseline US-dollar price until the hedges expire; the exchange rate is not hedged; hedges are not rolled over.",
+        "airline_fuel_cost: Fares recover a fixed share of the change in fuel cost after a lag, for rises and falls alike, and passenger demand does not respond.",
+        "airline_fuel_cost: The exchange rate affects the fuel bill only: other dollar costs and any dollar revenue are outside the model.",
+        "airline_fuel_cost: Crude-to-jet-fuel elasticity (β) = 1 elasticity (dimensionless) (default)",
+        "airline_fuel_cost: Crude-to-jet-fuel lag = 1 months (entered)",
+        "airline_fuel_cost: Hedge ratio = 40 % (entered)",
+        "airline_fuel_cost: Hedge cover = 6 months (entered)",
+        "… and 20 more stated with the model runs."
+      ],
+      "limitations": [
+        "Simulated under the scenario's changes, figures and assumptions: not a forecast.",
+        "An average over the scenario's change, not a slope: hedges, lags and compounding make the models non-linear."
+      ],
+      "next_steps": [],
+      "sources": []
+    },
+    {
+      "id": "ins-f188da4b68ae04ef",
+      "rule": "S03",
+      "rule_title": "Effect per unit of a change",
+      "kind": "sensitivity",
+      "headline": "Profit before tax per 1 % of USD/INR exchange rate",
+      "statement": "Per 1 % of USD/INR exchange rate, Aerisca Airways's profit before tax changes by −137,500 INR on average over this scenario's +5.00 %.",
+      "subject": {
+        "kind": "graph_node",
+        "id": "company:co_aerisca_airways",
+        "label": "Aerisca Airways"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "company:co_aerisca_airways",
+          "label": "Aerisca Airways"
+        }
+      ],
+      "relationships": [],
+      "period": {
+        "kind": "scenario",
+        "label": "12 simulated months",
+        "start": null,
+        "end": null
+      },
+      "facts": [
+        {
+          "label": "Contribution",
+          "value": "-687500",
+          "unit": "INR",
+          "basis": "simulation",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "period": null
+        },
+        {
+          "label": "Size of the change",
+          "value": "5",
+          "unit": "percent",
+          "basis": "assumption",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Per 1 %",
+          "value": "-137500",
+          "unit": "INR",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [
+        {
+          "kind": "execution",
+          "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+          "label": "Oil, rupee and rates on Aerisca, version 1",
+          "models": ["airline_fuel_cost 1.1.0", "fx_exposure 1.0.0", "floating_rate_interest 1.0.0"]
+        }
+      ],
+      "evidence": {
+        "grade": "simulated",
+        "conditional_on_simulation": true,
+        "includes_observations": false,
+        "statement": "Rests on stored model outputs: deterministic results of the stated inputs and assumptions, not forecasts.",
+        "weakest_step": 0
+      },
+      "chain": [
+        {
+          "basis": "simulation",
+          "text": "Stored contribution of USD/INR exchange rate",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "evidence_status": null,
+          "value": "-687500",
+          "unit": "INR"
+        },
+        {
+          "basis": "calculation",
+          "text": "Contribution ÷ +5.00 %",
+          "refs": [],
+          "evidence_status": null,
+          "value": "-137500",
+          "unit": "INR"
+        },
+        {
+          "basis": "assumption",
+          "text": "Figures entered by the user: Baseline jet fuel price 750 USD per kilolitre; Baseline exchange rate 80 INR per USD; Annual revenue 300000000 INR per year; Annual operating costs 250000000 INR per year; Annual fuel consumption 1000 kilolitre per year; Annual interest expense 12000000 INR per year; Debt linked to the repo rate 100000000 INR; Debt linked to US short-term rates 0 INR; Annual revenue invoiced in US dollars 500000 USD per year; Annual costs paid in US dollars 200000 USD per year",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        }
+      ],
+      "assumptions": [
+        "airline_fuel_cost: Everything the model does not include stays at its baseline: fuel consumption, other costs, traffic, capacity, fares (apart from the stated pass-through) and financing.",
+        "airline_fuel_cost: Fuel is consumed evenly through the year: each month uses one twelfth of the annual volume, and annual revenue and costs accrue evenly.",
+        "airline_fuel_cost: The fuel bill is consumption × the benchmark jet fuel price × the exchange rate. Taxes, fees and supplier margins that do not follow the benchmark are outside the model.",
+        "airline_fuel_cost: Scenario changes are step changes: they take effect in the start month and last for the stated duration (to the end of the horizon unless one is set), after which the changed variables return to their baselines. Every change in a run shares this timing.",
+        "airline_fuel_cost: Jet fuel responds to crude oil with a constant elasticity β after a lag: ln(jet fuel) changes by β × ln(1 + crude change). With β = 1 the refining margin stays a constant proportion of the price.",
+        "airline_fuel_cost: Hedged fuel pays the baseline US-dollar price until the hedges expire; the exchange rate is not hedged; hedges are not rolled over.",
+        "airline_fuel_cost: Fares recover a fixed share of the change in fuel cost after a lag, for rises and falls alike, and passenger demand does not respond.",
+        "airline_fuel_cost: The exchange rate affects the fuel bill only: other dollar costs and any dollar revenue are outside the model.",
+        "airline_fuel_cost: Crude-to-jet-fuel elasticity (β) = 1 elasticity (dimensionless) (default)",
+        "airline_fuel_cost: Crude-to-jet-fuel lag = 1 months (entered)",
+        "airline_fuel_cost: Hedge ratio = 40 % (entered)",
+        "airline_fuel_cost: Hedge cover = 6 months (entered)",
+        "… and 20 more stated with the model runs."
+      ],
+      "limitations": [
+        "Simulated under the scenario's changes, figures and assumptions: not a forecast.",
+        "An average over the scenario's change, not a slope: hedges, lags and compounding make the models non-linear."
+      ],
+      "next_steps": [],
+      "sources": []
+    },
+    {
+      "id": "ins-cec9bae66d41135a",
+      "rule": "S03",
+      "rule_title": "Effect per unit of a change",
+      "kind": "sensitivity",
+      "headline": "Profit before tax per 1 percentage point of RBI policy repo rate",
+      "statement": "Per 1 percentage point of RBI policy repo rate, Aerisca Airways's profit before tax changes by −750,000 INR on average over this scenario's +0.50 percentage points.",
+      "subject": {
+        "kind": "graph_node",
+        "id": "company:co_aerisca_airways",
+        "label": "Aerisca Airways"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "company:co_aerisca_airways",
+          "label": "Aerisca Airways"
+        }
+      ],
+      "relationships": [],
+      "period": {
+        "kind": "scenario",
+        "label": "12 simulated months",
+        "start": null,
+        "end": null
+      },
+      "facts": [
+        {
+          "label": "Contribution",
+          "value": "-375000",
+          "unit": "INR",
+          "basis": "simulation",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "period": null
+        },
+        {
+          "label": "Size of the change",
+          "value": "0.5",
+          "unit": "percentage points",
+          "basis": "assumption",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Per 1 percentage point",
+          "value": "-750000",
+          "unit": "INR",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [
+        {
+          "kind": "execution",
+          "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+          "label": "Oil, rupee and rates on Aerisca, version 1",
+          "models": ["airline_fuel_cost 1.1.0", "fx_exposure 1.0.0", "floating_rate_interest 1.0.0"]
+        }
+      ],
+      "evidence": {
+        "grade": "simulated",
+        "conditional_on_simulation": true,
+        "includes_observations": false,
+        "statement": "Rests on stored model outputs: deterministic results of the stated inputs and assumptions, not forecasts.",
+        "weakest_step": 0
+      },
+      "chain": [
+        {
+          "basis": "simulation",
+          "text": "Stored contribution of RBI policy repo rate",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "evidence_status": null,
+          "value": "-375000",
+          "unit": "INR"
+        },
+        {
+          "basis": "calculation",
+          "text": "Contribution ÷ +0.50 percentage points",
+          "refs": [],
+          "evidence_status": null,
+          "value": "-750000",
+          "unit": "INR"
+        },
+        {
+          "basis": "assumption",
+          "text": "Figures entered by the user: Baseline jet fuel price 750 USD per kilolitre; Baseline exchange rate 80 INR per USD; Annual revenue 300000000 INR per year; Annual operating costs 250000000 INR per year; Annual fuel consumption 1000 kilolitre per year; Annual interest expense 12000000 INR per year; Debt linked to the repo rate 100000000 INR; Debt linked to US short-term rates 0 INR; Annual revenue invoiced in US dollars 500000 USD per year; Annual costs paid in US dollars 200000 USD per year",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        }
+      ],
+      "assumptions": [
+        "airline_fuel_cost: Everything the model does not include stays at its baseline: fuel consumption, other costs, traffic, capacity, fares (apart from the stated pass-through) and financing.",
+        "airline_fuel_cost: Fuel is consumed evenly through the year: each month uses one twelfth of the annual volume, and annual revenue and costs accrue evenly.",
+        "airline_fuel_cost: The fuel bill is consumption × the benchmark jet fuel price × the exchange rate. Taxes, fees and supplier margins that do not follow the benchmark are outside the model.",
+        "airline_fuel_cost: Scenario changes are step changes: they take effect in the start month and last for the stated duration (to the end of the horizon unless one is set), after which the changed variables return to their baselines. Every change in a run shares this timing.",
+        "airline_fuel_cost: Jet fuel responds to crude oil with a constant elasticity β after a lag: ln(jet fuel) changes by β × ln(1 + crude change). With β = 1 the refining margin stays a constant proportion of the price.",
+        "airline_fuel_cost: Hedged fuel pays the baseline US-dollar price until the hedges expire; the exchange rate is not hedged; hedges are not rolled over.",
+        "airline_fuel_cost: Fares recover a fixed share of the change in fuel cost after a lag, for rises and falls alike, and passenger demand does not respond.",
+        "airline_fuel_cost: The exchange rate affects the fuel bill only: other dollar costs and any dollar revenue are outside the model.",
+        "airline_fuel_cost: Crude-to-jet-fuel elasticity (β) = 1 elasticity (dimensionless) (default)",
+        "airline_fuel_cost: Crude-to-jet-fuel lag = 1 months (entered)",
+        "airline_fuel_cost: Hedge ratio = 40 % (entered)",
+        "airline_fuel_cost: Hedge cover = 6 months (entered)",
+        "… and 20 more stated with the model runs."
+      ],
+      "limitations": [
+        "Floating-rate interest: the knowledge graph does not state this exposure of Aerisca Airways; the result rests on your figures alone.",
+        "Simulated under the scenario's changes, figures and assumptions: not a forecast.",
+        "An average over the scenario's change, not a slope: hedges, lags and compounding make the models non-linear."
+      ],
+      "next_steps": [],
+      "sources": []
+    },
+    {
+      "id": "ins-9b87a89f5c40d243",
+      "rule": "E01",
+      "rule_title": "Stated exposure",
+      "kind": "exposure",
+      "headline": "Aerisca Airways is exposed to Brent crude oil price",
+      "statement": "The knowledge graph states that Brent crude oil price reaches Aerisca Airways's costs through Jet fuel price (U.S. Gulf Coast) (assumed to transmit), which reaches it through its industry, Air transport.",
+      "subject": {
+        "kind": "graph_node",
+        "id": "company:co_aerisca_airways",
+        "label": "Aerisca Airways"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "company:co_aerisca_airways",
+          "label": "Aerisca Airways"
+        },
+        {
+          "kind": "graph_node",
+          "id": "variable:var_brent_crude",
+          "label": "Brent crude oil price"
+        },
+        {
+          "kind": "graph_node",
+          "id": "variable:var_jet_fuel",
+          "label": "Jet fuel price (U.S. Gulf Coast)"
+        }
+      ],
+      "relationships": [
+        {
+          "edge_key": "e-ea305310288a3f88",
+          "edge_type": "influences",
+          "label": "influences",
+          "source": "variable:var_brent_crude",
+          "source_name": "Brent crude oil price",
+          "target": "variable:var_jet_fuel",
+          "target_name": "Jet fuel price (U.S. Gulf Coast)",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-df536e008d0660a5",
+          "edge_type": "affects_costs",
+          "label": "affects costs of",
+          "source": "variable:var_jet_fuel",
+          "source_name": "Jet fuel price (U.S. Gulf Coast)",
+          "target": "industry:ind_air_transport",
+          "target_name": "Air transport",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-3c1cd4f52348ae25",
+          "edge_type": "in_industry",
+          "label": "operates in",
+          "source": "company:co_aerisca_airways",
+          "source_name": "Aerisca Airways",
+          "target": "industry:ind_air_transport",
+          "target_name": "Air transport",
+          "evidence_status": "analyst_created",
+          "is_illustrative": true
+        }
+      ],
+      "period": {
+        "kind": "graph_build",
+        "label": "Build #1",
+        "start": null,
+        "end": null
+      },
+      "facts": [
+        {
+          "label": "Paths",
+          "value": "1",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Channels",
+          "value": "costs",
+          "unit": null,
+          "basis": "relationship",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Models that can simulate it",
+          "value": "airline_fuel_cost",
+          "unit": null,
+          "basis": "record",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [],
+      "evidence": {
+        "grade": "assumed",
+        "conditional_on_simulation": false,
+        "includes_observations": false,
+        "statement": "Rests on at least one relationship recorded as a model assumption: an assumed effect with a written rationale, not an empirical finding.",
+        "weakest_step": 1
+      },
+      "chain": [
+        {
+          "basis": "record",
+          "text": "Knowledge-graph build #1",
+          "refs": [
+            {
+              "kind": "graph_build",
+              "id": "1",
+              "label": "Build #1"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Brent crude oil price influences Jet fuel price (U.S. Gulf Coast)",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-ea305310288a3f88",
+              "label": "Brent crude oil price influences Jet fuel price (U.S. Gulf Coast)"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Jet fuel price (U.S. Gulf Coast) affects costs of Air transport",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-df536e008d0660a5",
+              "label": "Jet fuel price (U.S. Gulf Coast) affects costs of Air transport"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Aerisca Airways operates in Air transport",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-3c1cd4f52348ae25",
+              "label": "Aerisca Airways operates in Air transport"
+            }
+          ],
+          "evidence_status": "analyst_created",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "assumptions": [
+        "Brent crude oil price influences Jet fuel price (U.S. Gulf Coast): Jet fuel is refined from crude oil, so benchmark jet fuel prices generally move with crude prices. Refining margins (the crack spread) cause the two to diverge at times.",
+        "Jet fuel price (U.S. Gulf Coast) affects costs of Air transport: Fuel is typically one of the largest operating costs for airlines."
+      ],
+      "limitations": [
+        "influences: Assumed transmission between two variables, not a statistical or causal estimate. A connection is not evidence of causation.",
+        "affects costs of: An assumed effect, not a measured one: it says nothing about size or timing, and entities of the same kind can be affected very differently. A connection is not evidence of causation.",
+        "operates in: A primary-industry classification. A company can also operate in other industries.",
+        "A stated exposure says that the entity is exposed, not how much: sizes come only from simulations with the user's own figures.",
+        "A connection in the graph is not evidence of causation.",
+        "Stated for the industry as a whole, not for this company; companies in one industry can be affected very differently."
+      ],
+      "next_steps": [
+        {
+          "action": "find_evidence",
+          "text": "The relationship is recorded as a model assumption: look for a cited source before relying on it.",
+          "target": {
+            "kind": "graph_edge",
+            "id": "e-df536e008d0660a5",
+            "label": null
+          }
+        }
+      ],
+      "sources": [
+        {
+          "kind": "graph_build",
+          "id": "1",
+          "label": "Build #1"
+        }
+      ]
+    },
+    {
+      "id": "ins-24e01b0cb973844f",
+      "rule": "E01",
+      "rule_title": "Stated exposure",
+      "kind": "exposure",
+      "headline": "Aerisca Airways is exposed to Jet fuel price (U.S. Gulf Coast)",
+      "statement": "The knowledge graph states that Jet fuel price (U.S. Gulf Coast) reaches Aerisca Airways's costs through its industry, Air transport.",
+      "subject": {
+        "kind": "graph_node",
+        "id": "company:co_aerisca_airways",
+        "label": "Aerisca Airways"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "company:co_aerisca_airways",
+          "label": "Aerisca Airways"
+        },
+        {
+          "kind": "graph_node",
+          "id": "variable:var_jet_fuel",
+          "label": "Jet fuel price (U.S. Gulf Coast)"
+        }
+      ],
+      "relationships": [
+        {
+          "edge_key": "e-df536e008d0660a5",
+          "edge_type": "affects_costs",
+          "label": "affects costs of",
+          "source": "variable:var_jet_fuel",
+          "source_name": "Jet fuel price (U.S. Gulf Coast)",
+          "target": "industry:ind_air_transport",
+          "target_name": "Air transport",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-3c1cd4f52348ae25",
+          "edge_type": "in_industry",
+          "label": "operates in",
+          "source": "company:co_aerisca_airways",
+          "source_name": "Aerisca Airways",
+          "target": "industry:ind_air_transport",
+          "target_name": "Air transport",
+          "evidence_status": "analyst_created",
+          "is_illustrative": true
+        }
+      ],
+      "period": {
+        "kind": "graph_build",
+        "label": "Build #1",
+        "start": null,
+        "end": null
+      },
+      "facts": [
+        {
+          "label": "Paths",
+          "value": "1",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Channels",
+          "value": "costs",
+          "unit": null,
+          "basis": "relationship",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Models that can simulate it",
+          "value": "airline_fuel_cost",
+          "unit": null,
+          "basis": "record",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [],
+      "evidence": {
+        "grade": "assumed",
+        "conditional_on_simulation": false,
+        "includes_observations": false,
+        "statement": "Rests on at least one relationship recorded as a model assumption: an assumed effect with a written rationale, not an empirical finding.",
+        "weakest_step": 1
+      },
+      "chain": [
+        {
+          "basis": "record",
+          "text": "Knowledge-graph build #1",
+          "refs": [
+            {
+              "kind": "graph_build",
+              "id": "1",
+              "label": "Build #1"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Jet fuel price (U.S. Gulf Coast) affects costs of Air transport",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-df536e008d0660a5",
+              "label": "Jet fuel price (U.S. Gulf Coast) affects costs of Air transport"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Aerisca Airways operates in Air transport",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-3c1cd4f52348ae25",
+              "label": "Aerisca Airways operates in Air transport"
+            }
+          ],
+          "evidence_status": "analyst_created",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "assumptions": [
+        "Jet fuel price (U.S. Gulf Coast) affects costs of Air transport: Fuel is typically one of the largest operating costs for airlines."
+      ],
+      "limitations": [
+        "affects costs of: An assumed effect, not a measured one: it says nothing about size or timing, and entities of the same kind can be affected very differently. A connection is not evidence of causation.",
+        "operates in: A primary-industry classification. A company can also operate in other industries.",
+        "A stated exposure says that the entity is exposed, not how much: sizes come only from simulations with the user's own figures.",
+        "A connection in the graph is not evidence of causation.",
+        "Stated for the industry as a whole, not for this company; companies in one industry can be affected very differently."
+      ],
+      "next_steps": [
+        {
+          "action": "run_template",
+          "text": "Simulate it: start the “Jet fuel price shock” template for Aerisca Airways.",
+          "target": {
+            "kind": "template",
+            "id": "jet_fuel_airline",
+            "label": "Jet fuel price shock"
+          }
+        },
+        {
+          "action": "find_evidence",
+          "text": "The relationship is recorded as a model assumption: look for a cited source before relying on it.",
+          "target": {
+            "kind": "graph_edge",
+            "id": "e-df536e008d0660a5",
+            "label": null
+          }
+        }
+      ],
+      "sources": [
+        {
+          "kind": "graph_build",
+          "id": "1",
+          "label": "Build #1"
+        }
+      ]
+    },
+    {
+      "id": "ins-02210b2c96528d15",
+      "rule": "E01",
+      "rule_title": "Stated exposure",
+      "kind": "exposure",
+      "headline": "Aerisca Airways is exposed to U.S. effective federal funds rate",
+      "statement": "The knowledge graph states that U.S. effective federal funds rate reaches Aerisca Airways's costs through USD/INR exchange rate (assumed to transmit), which reaches it directly.",
+      "subject": {
+        "kind": "graph_node",
+        "id": "company:co_aerisca_airways",
+        "label": "Aerisca Airways"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "company:co_aerisca_airways",
+          "label": "Aerisca Airways"
+        },
+        {
+          "kind": "graph_node",
+          "id": "variable:var_us_fed_funds",
+          "label": "U.S. effective federal funds rate"
+        },
+        {
+          "kind": "graph_node",
+          "id": "variable:var_usd_inr",
+          "label": "USD/INR exchange rate"
+        }
+      ],
+      "relationships": [
+        {
+          "edge_key": "e-0ad272aa06e1d7d6",
+          "edge_type": "influences",
+          "label": "influences",
+          "source": "variable:var_us_fed_funds",
+          "source_name": "U.S. effective federal funds rate",
+          "target": "variable:var_usd_inr",
+          "target_name": "USD/INR exchange rate",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-2afc04ee80f0699e",
+          "edge_type": "affects_costs",
+          "label": "affects costs of",
+          "source": "variable:var_usd_inr",
+          "source_name": "USD/INR exchange rate",
+          "target": "company:co_aerisca_airways",
+          "target_name": "Aerisca Airways",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        }
+      ],
+      "period": {
+        "kind": "graph_build",
+        "label": "Build #1",
+        "start": null,
+        "end": null
+      },
+      "facts": [
+        {
+          "label": "Paths",
+          "value": "1",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Channels",
+          "value": "costs",
+          "unit": null,
+          "basis": "relationship",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Models that can simulate it",
+          "value": "None",
+          "unit": null,
+          "basis": "record",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [],
+      "evidence": {
+        "grade": "assumed",
+        "conditional_on_simulation": false,
+        "includes_observations": false,
+        "statement": "Rests on at least one relationship recorded as a model assumption: an assumed effect with a written rationale, not an empirical finding.",
+        "weakest_step": 1
+      },
+      "chain": [
+        {
+          "basis": "record",
+          "text": "Knowledge-graph build #1",
+          "refs": [
+            {
+              "kind": "graph_build",
+              "id": "1",
+              "label": "Build #1"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "U.S. effective federal funds rate influences USD/INR exchange rate",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-0ad272aa06e1d7d6",
+              "label": "U.S. effective federal funds rate influences USD/INR exchange rate"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "USD/INR exchange rate affects costs of Aerisca Airways",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-2afc04ee80f0699e",
+              "label": "USD/INR exchange rate affects costs of Aerisca Airways"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "assumptions": [
+        "U.S. effective federal funds rate influences USD/INR exchange rate: Higher U.S. policy rates can strengthen the dollar and draw portfolio capital away from emerging markets, adding depreciation pressure on the rupee. The link is unstable and often dominated by other factors, hence 'weak'.",
+        "USD/INR exchange rate affects costs of Aerisca Airways: Aircraft leases and maintenance are commonly priced in U.S. dollars, so a weaker rupee raises an Indian airline's costs in rupees."
+      ],
+      "limitations": [
+        "influences: Assumed transmission between two variables, not a statistical or causal estimate. A connection is not evidence of causation.",
+        "affects costs of: An assumed effect, not a measured one: it says nothing about size or timing, and entities of the same kind can be affected very differently. A connection is not evidence of causation.",
+        "A stated exposure says that the entity is exposed, not how much: sizes come only from simulations with the user's own figures.",
+        "A connection in the graph is not evidence of causation."
+      ],
+      "next_steps": [
+        {
+          "action": "model_gap",
+          "text": "No registered model simulates how U.S. effective federal funds rate reaches Aerisca Airways; its size cannot be simulated yet.",
+          "target": {
+            "kind": "graph_node",
+            "id": "variable:var_us_fed_funds",
+            "label": "U.S. effective federal funds rate"
+          }
+        },
+        {
+          "action": "find_evidence",
+          "text": "The relationship is recorded as a model assumption: look for a cited source before relying on it.",
+          "target": {
+            "kind": "graph_edge",
+            "id": "e-2afc04ee80f0699e",
+            "label": null
+          }
+        }
+      ],
+      "sources": [
+        {
+          "kind": "graph_build",
+          "id": "1",
+          "label": "Build #1"
+        }
+      ]
+    },
+    {
+      "id": "ins-e0e17c31471fe81b",
+      "rule": "E01",
+      "rule_title": "Stated exposure",
+      "kind": "exposure",
+      "headline": "Aerisca Airways is exposed to USD/INR exchange rate",
+      "statement": "The knowledge graph states that USD/INR exchange rate reaches Aerisca Airways's costs directly.",
+      "subject": {
+        "kind": "graph_node",
+        "id": "company:co_aerisca_airways",
+        "label": "Aerisca Airways"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "company:co_aerisca_airways",
+          "label": "Aerisca Airways"
+        },
+        {
+          "kind": "graph_node",
+          "id": "variable:var_usd_inr",
+          "label": "USD/INR exchange rate"
+        }
+      ],
+      "relationships": [
+        {
+          "edge_key": "e-2afc04ee80f0699e",
+          "edge_type": "affects_costs",
+          "label": "affects costs of",
+          "source": "variable:var_usd_inr",
+          "source_name": "USD/INR exchange rate",
+          "target": "company:co_aerisca_airways",
+          "target_name": "Aerisca Airways",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        }
+      ],
+      "period": {
+        "kind": "graph_build",
+        "label": "Build #1",
+        "start": null,
+        "end": null
+      },
+      "facts": [
+        {
+          "label": "Paths",
+          "value": "1",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Channels",
+          "value": "costs",
+          "unit": null,
+          "basis": "relationship",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Models that can simulate it",
+          "value": "fx_exposure",
+          "unit": null,
+          "basis": "record",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [],
+      "evidence": {
+        "grade": "assumed",
+        "conditional_on_simulation": false,
+        "includes_observations": false,
+        "statement": "Rests on at least one relationship recorded as a model assumption: an assumed effect with a written rationale, not an empirical finding.",
+        "weakest_step": 1
+      },
+      "chain": [
+        {
+          "basis": "record",
+          "text": "Knowledge-graph build #1",
+          "refs": [
+            {
+              "kind": "graph_build",
+              "id": "1",
+              "label": "Build #1"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "USD/INR exchange rate affects costs of Aerisca Airways",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-2afc04ee80f0699e",
+              "label": "USD/INR exchange rate affects costs of Aerisca Airways"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "assumptions": [
+        "USD/INR exchange rate affects costs of Aerisca Airways: Aircraft leases and maintenance are commonly priced in U.S. dollars, so a weaker rupee raises an Indian airline's costs in rupees."
+      ],
+      "limitations": [
+        "affects costs of: An assumed effect, not a measured one: it says nothing about size or timing, and entities of the same kind can be affected very differently. A connection is not evidence of causation.",
+        "A stated exposure says that the entity is exposed, not how much: sizes come only from simulations with the user's own figures.",
+        "A connection in the graph is not evidence of causation."
+      ],
+      "next_steps": [
+        {
+          "action": "find_evidence",
+          "text": "The relationship is recorded as a model assumption: look for a cited source before relying on it.",
+          "target": {
+            "kind": "graph_edge",
+            "id": "e-2afc04ee80f0699e",
+            "label": null
+          }
+        },
+        {
+          "action": "ingest_series",
+          "text": "No values are stored for Official exchange rate (INR per US$, period average) — India, recorded as a related measure of USD/INR exchange rate: retrieve it to see how it has moved.",
+          "target": {
+            "kind": "series",
+            "id": "wb-ind-pa-nus-fcrf",
+            "label": "Official exchange rate (INR per US$, period average) — India"
+          }
+        }
+      ],
+      "sources": [
+        {
+          "kind": "graph_build",
+          "id": "1",
+          "label": "Build #1"
+        }
+      ]
+    },
+    {
+      "id": "ins-a1383ed4aff8ad64",
+      "rule": "E02",
+      "rule_title": "Concentrated dependency",
+      "kind": "dependency",
+      "headline": "Aerisca Airways's stated exposures concentrate on Jet fuel price (U.S. Gulf Coast) and USD/INR exchange rate",
+      "statement": "Jet fuel price (U.S. Gulf Coast) and USD/INR exchange rate each lie on 2 of Aerisca Airways's 4 exposure paths (50.00 % each). This counts relationships, not money.",
+      "subject": {
+        "kind": "graph_node",
+        "id": "company:co_aerisca_airways",
+        "label": "Aerisca Airways"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "company:co_aerisca_airways",
+          "label": "Aerisca Airways"
+        },
+        {
+          "kind": "graph_node",
+          "id": "variable:var_jet_fuel",
+          "label": "Jet fuel price (U.S. Gulf Coast)"
+        },
+        {
+          "kind": "graph_node",
+          "id": "variable:var_usd_inr",
+          "label": "USD/INR exchange rate"
+        }
+      ],
+      "relationships": [
+        {
+          "edge_key": "e-2afc04ee80f0699e",
+          "edge_type": "affects_costs",
+          "label": "affects costs of",
+          "source": "variable:var_usd_inr",
+          "source_name": "USD/INR exchange rate",
+          "target": "company:co_aerisca_airways",
+          "target_name": "Aerisca Airways",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-df536e008d0660a5",
+          "edge_type": "affects_costs",
+          "label": "affects costs of",
+          "source": "variable:var_jet_fuel",
+          "source_name": "Jet fuel price (U.S. Gulf Coast)",
+          "target": "industry:ind_air_transport",
+          "target_name": "Air transport",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-3c1cd4f52348ae25",
+          "edge_type": "in_industry",
+          "label": "operates in",
+          "source": "company:co_aerisca_airways",
+          "source_name": "Aerisca Airways",
+          "target": "industry:ind_air_transport",
+          "target_name": "Air transport",
+          "evidence_status": "analyst_created",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-ea305310288a3f88",
+          "edge_type": "influences",
+          "label": "influences",
+          "source": "variable:var_brent_crude",
+          "source_name": "Brent crude oil price",
+          "target": "variable:var_jet_fuel",
+          "target_name": "Jet fuel price (U.S. Gulf Coast)",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-0ad272aa06e1d7d6",
+          "edge_type": "influences",
+          "label": "influences",
+          "source": "variable:var_us_fed_funds",
+          "source_name": "U.S. effective federal funds rate",
+          "target": "variable:var_usd_inr",
+          "target_name": "USD/INR exchange rate",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        }
+      ],
+      "period": {
+        "kind": "graph_build",
+        "label": "Build #1",
+        "start": null,
+        "end": null
+      },
+      "facts": [
+        {
+          "label": "Most shared variables",
+          "value": "Jet fuel price (U.S. Gulf Coast) and USD/INR exchange rate",
+          "unit": null,
+          "basis": "calculation",
+          "refs": [
+            {
+              "kind": "graph_node",
+              "id": "variable:var_jet_fuel",
+              "label": "Jet fuel price (U.S. Gulf Coast)"
+            },
+            {
+              "kind": "graph_node",
+              "id": "variable:var_usd_inr",
+              "label": "USD/INR exchange rate"
+            }
+          ],
+          "period": null
+        },
+        {
+          "label": "Paths through it",
+          "value": "2",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Exposure paths",
+          "value": "4",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Share of paths",
+          "value": "50",
+          "unit": "percent",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Suppliers",
+          "value": "2",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Customers",
+          "value": "0",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Lenders",
+          "value": "1",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Borrowers",
+          "value": "0",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [],
+      "evidence": {
+        "grade": "assumed",
+        "conditional_on_simulation": false,
+        "includes_observations": false,
+        "statement": "Rests on at least one relationship recorded as a model assumption: an assumed effect with a written rationale, not an empirical finding.",
+        "weakest_step": 1
+      },
+      "chain": [
+        {
+          "basis": "record",
+          "text": "Knowledge-graph build #1",
+          "refs": [
+            {
+              "kind": "graph_build",
+              "id": "1",
+              "label": "Build #1"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "USD/INR exchange rate affects costs of Aerisca Airways",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-2afc04ee80f0699e",
+              "label": "USD/INR exchange rate affects costs of Aerisca Airways"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Jet fuel price (U.S. Gulf Coast) affects costs of Air transport",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-df536e008d0660a5",
+              "label": "Jet fuel price (U.S. Gulf Coast) affects costs of Air transport"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Aerisca Airways operates in Air transport",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-3c1cd4f52348ae25",
+              "label": "Aerisca Airways operates in Air transport"
+            }
+          ],
+          "evidence_status": "analyst_created",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Brent crude oil price influences Jet fuel price (U.S. Gulf Coast)",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-ea305310288a3f88",
+              "label": "Brent crude oil price influences Jet fuel price (U.S. Gulf Coast)"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "U.S. effective federal funds rate influences USD/INR exchange rate",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-0ad272aa06e1d7d6",
+              "label": "U.S. effective federal funds rate influences USD/INR exchange rate"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "calculation",
+          "text": "Share of exposure paths through each variable",
+          "refs": [],
+          "evidence_status": null,
+          "value": "50",
+          "unit": "percent"
+        },
+        {
+          "basis": "threshold",
+          "text": "Concentrated at or above 50 % of paths",
+          "refs": [
+            {
+              "kind": "threshold",
+              "id": "dependency_share_percent",
+              "label": null
+            }
+          ],
+          "evidence_status": null,
+          "value": "50",
+          "unit": "percent"
+        }
+      ],
+      "assumptions": [
+        "USD/INR exchange rate affects costs of Aerisca Airways: Aircraft leases and maintenance are commonly priced in U.S. dollars, so a weaker rupee raises an Indian airline's costs in rupees.",
+        "Jet fuel price (U.S. Gulf Coast) affects costs of Air transport: Fuel is typically one of the largest operating costs for airlines.",
+        "Brent crude oil price influences Jet fuel price (U.S. Gulf Coast): Jet fuel is refined from crude oil, so benchmark jet fuel prices generally move with crude prices. Refining margins (the crack spread) cause the two to diverge at times.",
+        "U.S. effective federal funds rate influences USD/INR exchange rate: Higher U.S. policy rates can strengthen the dollar and draw portfolio capital away from emerging markets, adding depreciation pressure on the rupee. The link is unstable and often dominated by other factors, hence 'weak'."
+      ],
+      "limitations": [
+        "A share of relationships, not of costs or revenue.",
+        "Supply and credit relationships say nothing about size or terms."
+      ],
+      "next_steps": [],
+      "sources": [
+        {
+          "kind": "graph_build",
+          "id": "1",
+          "label": "Build #1"
+        }
+      ]
+    },
+    {
+      "id": "ins-66c1fc3d8e318081",
+      "rule": "E03",
+      "rule_title": "Supply and credit relationships",
+      "kind": "counterparty",
+      "headline": "Aerisca Airways's supply and credit relationships",
+      "statement": "In the knowledge graph, Aerisca Airways is supplied by Deltrin Refining and Refined petroleum products (industry) and borrows from Anvaya Bank.",
+      "subject": {
+        "kind": "graph_node",
+        "id": "company:co_aerisca_airways",
+        "label": "Aerisca Airways"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "company:co_aerisca_airways",
+          "label": "Aerisca Airways"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_deltrin_refining",
+          "label": "Deltrin Refining"
+        },
+        {
+          "kind": "graph_node",
+          "id": "company:co_anvaya_bank",
+          "label": "Anvaya Bank"
+        },
+        {
+          "kind": "graph_node",
+          "id": "industry:ind_petroleum_refining",
+          "label": "Refined petroleum products"
+        }
+      ],
+      "relationships": [
+        {
+          "edge_key": "e-74e25572234f23d1",
+          "edge_type": "supplies_to",
+          "label": "supplies",
+          "source": "company:co_deltrin_refining",
+          "source_name": "Deltrin Refining",
+          "target": "company:co_aerisca_airways",
+          "target_name": "Aerisca Airways",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-a62eff6b5769fe71",
+          "edge_type": "lends_to",
+          "label": "lends to",
+          "source": "company:co_anvaya_bank",
+          "source_name": "Anvaya Bank",
+          "target": "company:co_aerisca_airways",
+          "target_name": "Aerisca Airways",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        },
+        {
+          "edge_key": "e-99232bd7d6028997",
+          "edge_type": "supplies_to",
+          "label": "supplies",
+          "source": "industry:ind_petroleum_refining",
+          "source_name": "Refined petroleum products",
+          "target": "industry:ind_air_transport",
+          "target_name": "Air transport",
+          "evidence_status": "model_assumption",
+          "is_illustrative": true
+        }
+      ],
+      "period": {
+        "kind": "graph_build",
+        "label": "Build #1",
+        "start": null,
+        "end": null
+      },
+      "facts": [],
+      "models": [],
+      "evidence": {
+        "grade": "assumed",
+        "conditional_on_simulation": false,
+        "includes_observations": false,
+        "statement": "Rests on at least one relationship recorded as a model assumption: an assumed effect with a written rationale, not an empirical finding.",
+        "weakest_step": 1
+      },
+      "chain": [
+        {
+          "basis": "record",
+          "text": "Knowledge-graph build #1",
+          "refs": [
+            {
+              "kind": "graph_build",
+              "id": "1",
+              "label": "Build #1"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Deltrin Refining supplies Aerisca Airways",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-74e25572234f23d1",
+              "label": "Deltrin Refining supplies Aerisca Airways"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Anvaya Bank lends to Aerisca Airways",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-a62eff6b5769fe71",
+              "label": "Anvaya Bank lends to Aerisca Airways"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "relationship",
+          "text": "Refined petroleum products supplies Air transport",
+          "refs": [
+            {
+              "kind": "graph_edge",
+              "id": "e-99232bd7d6028997",
+              "label": "Refined petroleum products supplies Air transport"
+            }
+          ],
+          "evidence_status": "model_assumption",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "assumptions": [],
+      "limitations": [
+        "supplies: A recorded supply relationship. It does not say how large or how important it is.",
+        "lends to: A recorded lending relationship. It says nothing about amounts, terms or risk.",
+        "A connection in the graph is not evidence of causation."
+      ],
+      "next_steps": [],
+      "sources": []
+    },
+    {
+      "id": "ins-c2638023b374e62a",
+      "rule": "C01",
+      "rule_title": "What is and is not covered",
+      "kind": "coverage",
+      "headline": "What RUMIN can say about Aerisca Airways",
+      "statement": "The knowledge graph states that 4 variables reach Aerisca Airways: 2 simulated in the latest stored execution, 3 simulatable by a registered model, 0 with stored observations of a related series. The latest execution also simulates RBI policy repo rate, although the graph states no exposure of Aerisca Airways to it: that part of the result rests on the entered figures alone.",
+      "subject": {
+        "kind": "graph_node",
+        "id": "company:co_aerisca_airways",
+        "label": "Aerisca Airways"
+      },
+      "entities": [
+        {
+          "kind": "graph_node",
+          "id": "company:co_aerisca_airways",
+          "label": "Aerisca Airways"
+        }
+      ],
+      "relationships": [],
+      "period": {
+        "kind": "graph_build",
+        "label": "Build #1",
+        "start": null,
+        "end": null
+      },
+      "facts": [
+        {
+          "label": "Variables reaching the entity",
+          "value": "4",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Simulated in the latest execution",
+          "value": "2",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Simulatable by a registered model",
+          "value": "3",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "With stored observations",
+          "value": "0",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        },
+        {
+          "label": "Simulated without a stated exposure",
+          "value": "1",
+          "unit": "count",
+          "basis": "calculation",
+          "refs": [],
+          "period": null
+        }
+      ],
+      "models": [
+        {
+          "kind": "execution",
+          "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+          "label": "Oil, rupee and rates on Aerisca, version 1",
+          "models": ["airline_fuel_cost 1.1.0", "fx_exposure 1.0.0", "floating_rate_interest 1.0.0"]
+        }
+      ],
+      "evidence": {
+        "grade": "observed",
+        "conditional_on_simulation": false,
+        "includes_observations": false,
+        "statement": "Rests on stored observations, exact calculations on them and RUMIN's own records.",
+        "weakest_step": 0
+      },
+      "chain": [
+        {
+          "basis": "record",
+          "text": "Knowledge-graph build #1",
+          "refs": [
+            {
+              "kind": "graph_build",
+              "id": "1",
+              "label": "Build #1"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        },
+        {
+          "basis": "record",
+          "text": "The changes and models of the latest stored execution",
+          "refs": [
+            {
+              "kind": "execution",
+              "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+              "label": "Oil, rupee and rates on Aerisca · version 1"
+            }
+          ],
+          "evidence_status": null,
+          "value": null,
+          "unit": null
+        }
+      ],
+      "assumptions": [],
+      "limitations": [
+        "Floating-rate interest: the knowledge graph does not state this exposure of Aerisca Airways; the result rests on your figures alone.",
+        "A stated exposure says that the entity is exposed, not how much: sizes come only from simulations with the user's own figures."
+      ],
+      "next_steps": [
+        {
+          "action": "run_sensitivity",
+          "text": "Run a sensitivity analysis on the latest execution to see which assumptions move the result most.",
+          "target": {
+            "kind": "execution",
+            "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+            "label": "Oil, rupee and rates on Aerisca · version 1"
+          }
+        }
+      ],
+      "sources": []
+    }
+  ],
+  "grades": {
+    "observed": 1,
+    "documented": 0,
+    "curated": 0,
+    "simulated": 8,
+    "assumed": 7,
+    "unverified": 0
+  },
+  "kinds": {
+    "impact": 1,
+    "contribution": 5,
+    "sensitivity": 3,
+    "exposure": 4,
+    "dependency": 1,
+    "counterparty": 1,
+    "coverage": 1
+  },
+  "next_steps": [
+    {
+      "action": "run_sensitivity",
+      "text": "Run a sensitivity analysis to see which inputs and assumptions move this result most.",
+      "target": {
+        "kind": "execution",
+        "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+        "label": "Oil, rupee and rates on Aerisca · version 1"
+      }
+    },
+    {
+      "action": "find_evidence",
+      "text": "The relationship is recorded as a model assumption: look for a cited source before relying on it.",
+      "target": {
+        "kind": "graph_edge",
+        "id": "e-df536e008d0660a5",
+        "label": null
+      }
+    },
+    {
+      "action": "run_template",
+      "text": "Simulate it: start the “Jet fuel price shock” template for Aerisca Airways.",
+      "target": {
+        "kind": "template",
+        "id": "jet_fuel_airline",
+        "label": "Jet fuel price shock"
+      }
+    },
+    {
+      "action": "model_gap",
+      "text": "No registered model simulates how U.S. effective federal funds rate reaches Aerisca Airways; its size cannot be simulated yet.",
+      "target": {
+        "kind": "graph_node",
+        "id": "variable:var_us_fed_funds",
+        "label": "U.S. effective federal funds rate"
+      }
+    },
+    {
+      "action": "find_evidence",
+      "text": "The relationship is recorded as a model assumption: look for a cited source before relying on it.",
+      "target": {
+        "kind": "graph_edge",
+        "id": "e-2afc04ee80f0699e",
+        "label": null
+      }
+    },
+    {
+      "action": "ingest_series",
+      "text": "No values are stored for Official exchange rate (INR per US$, period average) — India, recorded as a related measure of USD/INR exchange rate: retrieve it to see how it has moved.",
+      "target": {
+        "kind": "series",
+        "id": "wb-ind-pa-nus-fcrf",
+        "label": "Official exchange rate (INR per US$, period average) — India"
+      }
+    },
+    {
+      "action": "run_sensitivity",
+      "text": "Run a sensitivity analysis on the latest execution to see which assumptions move the result most.",
+      "target": {
+        "kind": "execution",
+        "id": "26f21d81-5835-44bd-8f3a-25c9041e9f02",
+        "label": "Oil, rupee and rates on Aerisca · version 1"
+      }
+    }
+  ]
+}
