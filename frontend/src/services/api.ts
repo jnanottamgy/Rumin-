@@ -6,12 +6,15 @@
 import { validateNetwork } from "@/features/network/model";
 import { apiRequest, type RequestOptions } from "@/lib/apiClient";
 import type {
+  AnalysisRequest,
   DatasetPage,
   EconomicSeriesDetail,
   EconomicSeriesPage,
   EconomicVariablePage,
+  EntityAnalysis,
   EvidenceStatus,
   ExecutionVerification,
+  ExposureMap,
   GraphBuildDetail,
   GraphBuildPage,
   GraphComponents,
@@ -28,8 +31,17 @@ import type {
   HealthResponse,
   IngestionJobDetail,
   IngestionJobPage,
+  InsightList,
   InstrumentDetail,
+  InstrumentIntelligence,
   InstrumentPage,
+  IntelligenceBrief,
+  IntelligenceChanges,
+  IntelligenceDrivers,
+  IntelligenceEntityList,
+  IntelligenceMethods,
+  IntelligenceOverview,
+  IntelligenceSignalList,
   LabExplanation,
   LabPathway,
   LabSensitivity,
@@ -58,6 +70,7 @@ import type {
   SensitivityAnalysis,
   SensitivityAnalysisList,
   SensitivityRequest,
+  SeriesIntelligence,
   SimulationExplanation,
   SimulationModelDetail,
   SimulationModelSummary,
@@ -69,7 +82,10 @@ import type {
   SimulationValidation,
   SimulationVerification,
   SourceCapture,
+  StoredAnalysis,
+  StoredAnalysisPage,
   SystemStatus,
+  VariableExposure,
 } from "@/types/api";
 
 type Options = Pick<RequestOptions, "signal" | "baseUrl">;
@@ -477,5 +493,116 @@ export const simulationApi = {
         method: "POST",
         body: request,
       }),
+  },
+};
+
+/** Threshold overrides for an intelligence read (GET /intelligence/methods lists them). */
+export type ThresholdOverrides = Readonly<Record<string, string | undefined>>;
+export type EvidenceFilter = "any" | "evidence_backed";
+
+/**
+ * Financial intelligence (Phase 6): findings computed from the stored data, the knowledge
+ * graph and stored executions, each with its evidence chain. Reads write nothing; stored
+ * analyses are append-only.
+ */
+export const intelligenceApi = {
+  overview: (thresholds: ThresholdOverrides = {}, options?: Options) =>
+    apiRequest<IntelligenceOverview>(
+      `/api/v1/intelligence/overview${toQuery({ ...thresholds })}`,
+      options,
+    ),
+
+  insights: (
+    query: { entity?: string; kind?: string; rule?: string; grade?: string } = {},
+    options?: Options,
+  ) => apiRequest<InsightList>(`/api/v1/intelligence/insights${toQuery(query)}`, options),
+
+  changes: (thresholds: ThresholdOverrides = {}, options?: Options) =>
+    apiRequest<IntelligenceChanges>(
+      `/api/v1/intelligence/changes${toQuery({ ...thresholds })}`,
+      options,
+    ),
+
+  methods: (options?: Options) =>
+    apiRequest<IntelligenceMethods>("/api/v1/intelligence/methods", options),
+
+  entities: (kind?: "company" | "industry", options?: Options) =>
+    apiRequest<IntelligenceEntityList>(
+      `/api/v1/intelligence/entities${toQuery({ kind })}`,
+      options,
+    ),
+
+  entity: (
+    key: string,
+    thresholds: ThresholdOverrides = {},
+    evidence: EvidenceFilter = "any",
+    options?: Options,
+  ) =>
+    apiRequest<EntityAnalysis>(
+      `/api/v1/intelligence/entities/${segment(key)}${toQuery({
+        ...thresholds,
+        evidence: evidence === "any" ? undefined : evidence,
+      })}`,
+      options,
+    ),
+
+  brief: (key: string, thresholds: ThresholdOverrides = {}, options?: Options) =>
+    apiRequest<IntelligenceBrief>(
+      `/api/v1/intelligence/entities/${segment(key)}/brief${toQuery({ ...thresholds })}`,
+      options,
+    ),
+
+  exposure: (key: string, evidence: EvidenceFilter = "any", options?: Options) =>
+    apiRequest<ExposureMap>(
+      `/api/v1/intelligence/entities/${segment(key)}/exposure${toQuery({
+        evidence: evidence === "any" ? undefined : evidence,
+      })}`,
+      options,
+    ),
+
+  signals: (key: string, thresholds: ThresholdOverrides = {}, options?: Options) =>
+    apiRequest<IntelligenceSignalList>(
+      `/api/v1/intelligence/entities/${segment(key)}/signals${toQuery({ ...thresholds })}`,
+      options,
+    ),
+
+  drivers: (key: string, options?: Options) =>
+    apiRequest<IntelligenceDrivers>(
+      `/api/v1/intelligence/entities/${segment(key)}/drivers`,
+      options,
+    ),
+
+  variableExposure: (key: string, options?: Options) =>
+    apiRequest<VariableExposure>(
+      `/api/v1/intelligence/variables/${segment(key)}/exposure`,
+      options,
+    ),
+
+  series: (id: string, thresholds: ThresholdOverrides = {}, options?: Options) =>
+    apiRequest<SeriesIntelligence>(
+      `/api/v1/intelligence/series/${segment(id)}${toQuery({ ...thresholds })}`,
+      options,
+    ),
+
+  instrument: (id: string, thresholds: ThresholdOverrides = {}, options?: Options) =>
+    apiRequest<InstrumentIntelligence>(
+      `/api/v1/intelligence/instruments/${segment(id)}${toQuery({ ...thresholds })}`,
+      options,
+    ),
+
+  analyses: {
+    create: (request: AnalysisRequest, options?: Options) =>
+      apiRequest<StoredAnalysis>("/api/v1/intelligence/analyses", {
+        ...options,
+        method: "POST",
+        body: request,
+      }),
+    list: (query: { scope?: string; entity?: string; limit?: number } = {}, options?: Options) =>
+      apiRequest<StoredAnalysisPage>(
+        `/api/v1/intelligence/analyses${toQuery({ ...query, limit: query.limit ?? 20 })}`,
+        options,
+      ),
+    get: (id: string, options?: Options) =>
+      apiRequest<StoredAnalysis>(`/api/v1/intelligence/analyses/${segment(id)}`, options),
   },
 };

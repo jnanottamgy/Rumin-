@@ -10,6 +10,7 @@ import { EmptyState, ErrorState, LoadingState } from "@/components/States";
 import { StatGrid, StatTile } from "@/components/StatTile";
 import { StatusIndicator } from "@/components/StatusIndicator";
 import { JOB_STATUS } from "@/features/data/labels";
+import { LatestFindings } from "@/features/intelligence/Summary";
 import { KIND_ENCODING } from "@/features/network/encoding";
 import { KindGlyph } from "@/features/network/KindGlyph";
 import { defaultFilters, KIND_ORDER, visibleSubgraph } from "@/features/network/model";
@@ -298,6 +299,13 @@ export function DashboardPage() {
             }
           >
             <RecentScenarios />
+          </Panel>
+          <Panel
+            eyebrow="Financial intelligence"
+            title="Latest findings"
+            actions={<Link to="/intelligence">All findings</Link>}
+          >
+            <LatestFindings />
           </Panel>
           <Panel eyebrow="System" title="Status" actions={<Link to="/system">Details</Link>}>
             <SystemSummary system={system} />

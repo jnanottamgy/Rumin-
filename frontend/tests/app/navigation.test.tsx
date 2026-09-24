@@ -14,9 +14,7 @@ describe("application shell and routing", () => {
         name: /interactive financial intelligence platform/i,
       }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByText(/Deterministic runs of one preview model \(an airline fuel-cost shock\)/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Deterministic runs of five registered models/)).toBeInTheDocument();
     // The illustrative network drawing appears once the API has answered.
     expect(await screen.findByText(/30 entities and 71 links/)).toBeInTheDocument();
   });

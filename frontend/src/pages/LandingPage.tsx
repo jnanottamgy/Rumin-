@@ -20,11 +20,11 @@ const IN_THIS_BUILD: Record<EpistemicCategory, string> = {
   observation:
     "World Bank indicators and licensed price files, retrieved from the command line — historical, never live.",
   assumption: "Every relationship in the sample network, each with a written rationale.",
-  scenario_input: "Draft scenarios can be defined and saved in the Scenario Lab.",
+  scenario_input: "Versioned scenarios, built and executed in the Scenario Lab.",
   simulated_output:
-    "Deterministic runs of one preview model (an airline fuel-cost shock), stored with every calculation step.",
+    "Deterministic runs of five registered models, stored with every calculation step and read by Financial Intelligence as contributions — never as forecasts.",
   uncertainty:
-    "Stated in words, plus one-at-a-time sensitivity ranges for simulation runs. No probabilities are estimated.",
+    "Stated in words, with one-at-a-time sensitivity ranges and an evidence grade on every finding. No probabilities are estimated.",
 };
 
 export function LandingPage() {
@@ -64,8 +64,9 @@ export function LandingPage() {
             </h1>
             <p className={styles.lede}>
               RUMIN maps how companies, industries and economic variables connect, lets you build
-              scenarios on that network, and always shows what is observed, what is assumed, what
-              you changed and what was simulated.
+              scenarios on that network, turns what it holds into findings with the evidence each
+              rests on, and always shows what is observed, what is assumed, what you changed and
+              what was simulated.
             </p>
             <div className={styles.ctas}>
               <ButtonLink to="/dashboard" variant="primary" iconAfter={<Icon name="arrowRight" />}>

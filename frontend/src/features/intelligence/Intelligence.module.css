@@ -1,0 +1,1449 @@
+/*
+ * Financial Intelligence — an analytical instrument, not a dashboard of scores.
+ *
+ * Bone surfaces, charcoal ink, stone greys for context. Sky blue is emphasis only: the
+ * subject in focus and the link of an evidence chain that sets a finding's grade. Findings
+ * are ruled rows, not cards of equal weight; the evidence chain is the signature element.
+ * Semantic tokens only (see styles/tokens.css).
+ */
+
+/* ── Page ─────────────────────────────────────────────────────────────── */
+
+.page {
+  display: grid;
+  grid-template-columns: minmax(13rem, 16rem) minmax(0, 1fr);
+  gap: var(--space-8);
+  align-items: start;
+}
+
+.content {
+  display: grid;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.main {
+  display: grid;
+  gap: var(--space-10);
+  min-width: 0;
+  transition: opacity var(--duration-base) var(--ease-out);
+}
+
+.refreshing {
+  opacity: 0.72;
+}
+
+.muted {
+  color: var(--color-ink-muted);
+}
+
+.hash {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  word-break: break-all;
+}
+
+.caveat {
+  display: block;
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+}
+
+.emptyLine {
+  max-width: 70ch;
+  color: var(--color-ink-secondary);
+  font-size: var(--text-sm);
+}
+
+.emptyBlock {
+  padding: var(--space-6) 0;
+  color: var(--color-ink-secondary);
+}
+
+.plainList {
+  display: grid;
+  gap: var(--space-2);
+  padding-left: 1.1em;
+  font-size: var(--text-sm);
+}
+
+.plainList li::marker {
+  color: var(--color-ink-muted);
+}
+
+.headerLink {
+  font-size: var(--text-sm);
+  align-self: center;
+}
+
+.lede {
+  max-width: 72ch;
+  color: var(--color-ink-secondary);
+}
+
+/* ── Subjects rail ────────────────────────────────────────────────────── */
+
+.rail {
+  position: sticky;
+  top: calc(var(--header-height) + var(--space-5));
+  display: grid;
+  gap: var(--space-2);
+  max-height: calc(100dvh - var(--header-height) - var(--space-10));
+  overflow-y: auto;
+  padding-right: var(--space-2);
+  scrollbar-width: thin;
+}
+
+.railHeading {
+  margin-top: var(--space-4);
+  padding: 0 var(--space-3);
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.railFold > summary {
+  cursor: pointer;
+  list-style-position: inside;
+}
+
+.picker {
+  display: none;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--color-ink-secondary);
+}
+
+.picker select {
+  min-height: 2.5rem;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--color-field-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: var(--text-sm);
+}
+
+.note {
+  color: var(--color-ink-muted);
+  font-size: var(--text-sm);
+}
+
+.subjects {
+  display: grid;
+  gap: 1px;
+  padding: 0;
+  list-style: none;
+}
+
+.subject {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-2) var(--space-3);
+  border-left: 2px solid transparent;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--color-ink);
+  text-decoration: none;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.subject:hover {
+  background: var(--color-surface-raised);
+}
+
+.subjectActive {
+  border-left-color: var(--color-accent);
+  background: var(--color-surface);
+}
+
+.workspace {
+  padding-top: var(--space-3);
+  padding-bottom: var(--space-3);
+}
+
+.subjectName {
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.subjectMeta,
+.subjectImpact {
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+}
+
+.subjectImpact {
+  color: var(--color-ink-secondary);
+}
+
+/* ── Header helpers: thresholds, storing ──────────────────────────────── */
+
+.storeAction {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.storedNotice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  font-size: var(--text-sm);
+}
+
+.storedNotice > span {
+  flex: 1;
+}
+
+.thresholds {
+  border-top: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--color-line);
+  font-size: var(--text-sm);
+}
+
+.thresholds > summary {
+  padding: var(--space-2) 0;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.thresholdForm {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-2) 0 var(--space-5);
+}
+
+.thresholdFields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: var(--space-4) var(--space-5);
+}
+
+.field {
+  display: grid;
+  gap: var(--space-1);
+  align-content: start;
+}
+
+.field label {
+  font-size: var(--text-xs);
+  font-weight: 500;
+}
+
+.field input,
+.field select,
+.inlineField select {
+  min-height: 2.25rem;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--color-field-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  font-size: var(--text-sm);
+}
+
+.fieldInvalid input {
+  border-color: var(--color-critical);
+}
+
+.fieldHint {
+  color: var(--color-ink-muted);
+  font-size: var(--text-2xs);
+}
+
+.fieldError {
+  color: var(--color-critical-ink);
+  font-size: var(--text-xs);
+}
+
+.formActions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.inlineField {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-ink-secondary);
+}
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+/* ── Summary lines ────────────────────────────────────────────────────── */
+
+.coverage,
+.readings {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  column-gap: var(--space-6);
+}
+
+.coverage > div,
+.readings > div {
+  display: grid;
+  gap: 2px;
+  align-content: start;
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--color-line-strong);
+}
+
+.coverage dt,
+.readings dt {
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+}
+
+.coverage dd,
+.readings dd {
+  font-size: var(--text-md);
+}
+
+/* ── Sections ─────────────────────────────────────────────────────────── */
+
+.section {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.sectionHead {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 500;
+}
+
+.sectionLede {
+  max-width: 72ch;
+  color: var(--color-ink-secondary);
+  font-size: var(--text-sm);
+}
+
+.tabBody {
+  display: grid;
+  gap: var(--space-6);
+}
+
+/* ── The findings ledger ──────────────────────────────────────────────── */
+
+.ledger {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.ledgerControls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.segmented {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.segmented label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  cursor: pointer;
+  color: var(--color-ink-secondary);
+  font-size: var(--text-xs);
+  font-weight: 500;
+}
+
+.segmented label + label {
+  border-left: 1px solid var(--color-line);
+}
+
+.segmented input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.segmented label:has(input:focus-visible) {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.segmented label:has(input:disabled) {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.segmentOn {
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.segmentCount {
+  color: var(--color-ink-muted);
+}
+
+.ledgerSection {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.ledgerHeading {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.findings {
+  display: grid;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--color-line-strong);
+}
+
+.finding {
+  border-bottom: 1px solid var(--color-line);
+}
+
+.findingHead {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr) auto 1rem;
+  gap: var(--space-4);
+  align-items: baseline;
+  width: 100%;
+  padding: var(--space-3) var(--space-1) var(--space-3) 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.findingHead:hover {
+  background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+}
+
+.findingHead:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.findingOpen .findingHead {
+  background: var(--color-surface);
+}
+
+.findingGrade {
+  padding-left: var(--space-1);
+}
+
+.findingText {
+  display: grid;
+  gap: 2px;
+}
+
+.findingKind {
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+}
+
+.headline {
+  font-size: var(--text-base);
+  font-weight: 500;
+  line-height: var(--leading-snug);
+}
+
+.findingMeta {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+.chainCount {
+  font-variant-numeric: tabular-nums;
+}
+
+.chevron {
+  align-self: center;
+  color: var(--color-ink-muted);
+  transition: transform var(--duration-base) var(--ease-out);
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.findingBody {
+  padding: var(--space-2) var(--space-1) var(--space-6) calc(7.5rem + var(--space-4));
+  background: var(--color-surface);
+  animation: open var(--duration-base) var(--ease-out);
+}
+
+@keyframes open {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+.findingDetails {
+  display: grid;
+  gap: var(--space-5);
+  max-width: 64rem;
+}
+
+.statement {
+  max-width: 72ch;
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+}
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: var(--space-8);
+  align-items: start;
+}
+
+.detailMain,
+.detailSide {
+  display: grid;
+  gap: var(--space-4);
+  align-content: start;
+  min-width: 0;
+}
+
+.detailTitle {
+  margin-bottom: var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-ink-secondary);
+}
+
+.fold {
+  font-size: var(--text-sm);
+}
+
+.fold > summary {
+  cursor: pointer;
+  color: var(--color-ink-secondary);
+  font-weight: 500;
+}
+
+.fold[open] > summary {
+  margin-bottom: var(--space-3);
+}
+
+.limitations ul {
+  color: var(--color-ink-secondary);
+}
+
+.nextSteps {
+  display: grid;
+  gap: var(--space-2);
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-sm);
+}
+
+.nextSteps li {
+  display: grid;
+  grid-template-columns: 11rem minmax(0, 1fr);
+  gap: var(--space-3);
+}
+
+.nextSteps a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+}
+
+.nextAction {
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.sources {
+  display: grid;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+}
+
+/* ── Evidence: grade marks and the chain (signature) ──────────────────── */
+
+.grade {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-ink);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.gradeCompact {
+  color: var(--color-ink-secondary);
+}
+
+.gradeLine {
+  flex: none;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-ink-secondary);
+  font-size: var(--text-xs);
+}
+
+.chainBlock {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.chain {
+  display: grid;
+  padding: 0;
+  list-style: none;
+}
+
+.link {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.25rem minmax(0, 1fr);
+  gap: var(--space-3);
+  padding-bottom: var(--space-4);
+}
+
+/* The chain itself: a hairline from each link to the next. */
+.link:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  top: 1.05rem;
+  bottom: 0.1rem;
+  left: calc(0.625rem - 0.5px);
+  width: 1px;
+  background: var(--color-line-strong);
+}
+
+.linkMark {
+  justify-self: center;
+  width: 0.65rem;
+  height: 0.65rem;
+  margin-top: 0.4rem;
+  border: 1.5px solid var(--color-ink);
+  background: var(--color-bg);
+}
+
+/* Each kind of link keeps its own shape, so the chain reads without colour. */
+.basis_observation .linkMark {
+  border-radius: 50%;
+  background: var(--color-ink);
+}
+
+.basis_calculation .linkMark {
+  border-radius: 1px;
+}
+
+.basis_relationship .linkMark {
+  transform: rotate(45deg) scale(0.9);
+}
+
+.basis_record .linkMark {
+  border-radius: 50%;
+}
+
+.basis_simulation .linkMark {
+  background: repeating-linear-gradient(135deg, var(--color-ink) 0 1.5px, transparent 1.5px 3.5px);
+}
+
+.basis_assumption .linkMark {
+  border-style: dashed;
+  border-radius: 50%;
+}
+
+.basis_threshold .linkMark {
+  height: 0.2rem;
+  margin-top: 0.62rem;
+  border-width: 1px;
+  background: var(--color-ink);
+}
+
+.weakest .linkMark {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-wash);
+}
+
+.basis_observation.weakest .linkMark,
+.basis_threshold.weakest .linkMark {
+  background: var(--color-accent);
+}
+
+.linkBody {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.linkHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+}
+
+.basis {
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.setsGrade {
+  color: var(--color-accent-ink);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.linkText {
+  font-size: var(--text-sm);
+}
+
+.linkValue {
+  color: var(--color-ink-secondary);
+  font-size: var(--text-xs);
+}
+
+.refs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-xs);
+}
+
+.refs span {
+  color: var(--color-ink-muted);
+}
+
+.gradeStatement {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: baseline;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-line);
+  color: var(--color-ink-secondary);
+  font-size: var(--text-xs);
+}
+
+.gradeCounts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-xs);
+}
+
+.gradeCounts li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* ── Tables ───────────────────────────────────────────────────────────── */
+
+/* Scroll frames are positioned, so screen-reader-only text inside them (absolutely
+   positioned) is clipped with the table instead of widening the page. */
+.tableFrame {
+  position: relative;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.table,
+.facts {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.table caption {
+  padding-bottom: var(--space-2);
+  color: var(--color-ink-secondary);
+  font-size: var(--text-xs);
+  text-align: left;
+}
+
+.facts th,
+.facts td {
+  padding: 3px var(--space-3) 3px 0;
+  border-bottom: 1px solid var(--color-line);
+  text-align: left;
+  vertical-align: baseline;
+}
+
+.facts th {
+  color: var(--color-ink-secondary);
+  font-weight: 400;
+}
+
+.facts td {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.bars th,
+.bars td {
+  padding: var(--space-1) var(--space-2) var(--space-1) 0;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.bars th {
+  width: 34%;
+  font-weight: 400;
+  color: var(--color-ink-secondary);
+}
+
+.table th,
+.table td {
+  padding: var(--space-2) var(--space-3) var(--space-2) 0;
+  border-bottom: 1px solid var(--color-line);
+  text-align: left;
+  vertical-align: baseline;
+}
+
+.table thead th {
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  border-bottom-color: var(--color-line-strong);
+}
+
+.table tbody th {
+  font-weight: 500;
+}
+
+.factBasis {
+  color: var(--color-ink-muted);
+  font-size: var(--text-2xs);
+  white-space: nowrap;
+}
+
+.cellEmphasis {
+  font-weight: 600;
+}
+
+/* ── Exposure matrix ──────────────────────────────────────────────────── */
+
+.matrixFrame {
+  position: relative;
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.matrix {
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.matrix tbody th {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  padding: var(--space-2) var(--space-4) var(--space-2) 0;
+  background: var(--color-bg);
+  font-weight: 500;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.matrix thead th {
+  padding: var(--space-1) var(--space-2);
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-align: center;
+  vertical-align: bottom;
+}
+
+.matrix thead tr:first-child th {
+  border-bottom: 1px solid var(--color-line-strong);
+}
+
+.matrix thead .matrixCorner {
+  text-align: left;
+}
+
+.matrix thead .matrixVariable {
+  width: 6.25rem;
+  min-width: 5.5rem;
+  font-weight: 500;
+  line-height: var(--leading-snug);
+}
+
+.matrix tbody td {
+  padding: var(--space-1);
+  border-left: 1px solid var(--color-line);
+  text-align: center;
+}
+
+.matrix tbody tr {
+  border-top: 1px solid var(--color-line);
+}
+
+.matrix tbody tr:hover th,
+.matrix tbody tr:hover td {
+  background: var(--color-surface);
+}
+
+.matrixEmpty {
+  background: transparent;
+}
+
+.cellMark {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.9rem;
+  padding: 1px var(--space-1);
+  border: 1.5px solid var(--color-ink);
+  border-radius: var(--radius-xs);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.reach_direct {
+  border-style: solid;
+}
+
+.reach_via_industry {
+  border-style: dashed;
+}
+
+.reach_upstream {
+  border-style: dotted;
+  border-width: 2px;
+}
+
+.matrixKey {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  padding: 0;
+  list-style: none;
+  color: var(--color-ink-secondary);
+  font-size: var(--text-xs);
+}
+
+.matrixKey li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.keyLetters {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.table tbody tr.rowEmphasis th,
+.table tbody tr.rowEmphasis td {
+  font-weight: 600;
+}
+
+/* ── Exposure paths (one entity) ──────────────────────────────────────── */
+
+.exposure,
+.relations {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.relations {
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--space-6);
+}
+
+.paths {
+  display: grid;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--color-line-strong);
+}
+
+.path {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.pathLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.pathPart {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.hop {
+  display: inline-flex;
+  color: var(--color-ink-secondary);
+}
+
+.node {
+  padding: 1px var(--space-2);
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+
+.nodeKey {
+  border-color: var(--color-ink);
+  font-weight: 500;
+}
+
+.nodeEntity {
+  border-color: var(--color-accent);
+  color: var(--color-accent-ink);
+  font-weight: 600;
+}
+
+.pathMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+}
+
+.channel {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+/* ── Drivers ──────────────────────────────────────────────────────────── */
+
+.drivers {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.driversHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.notice {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--color-warning);
+  background: var(--color-surface);
+  list-style: none;
+  font-size: var(--text-sm);
+}
+
+.barsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr));
+  gap: var(--space-8);
+}
+
+.bars {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.barsFigure {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  min-width: 0;
+}
+
+.barsCaption {
+  display: grid;
+  gap: 2px;
+  font-size: var(--text-xs);
+}
+
+.barsTitle {
+  color: var(--color-ink);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.bars td:nth-child(3) {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.bars td:nth-child(4) {
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+.barCell {
+  width: 36%;
+}
+
+.barTrack {
+  position: relative;
+  display: block;
+  height: 0.85rem;
+}
+
+.barZero {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  left: 50%;
+  width: 1px;
+  background: var(--color-line-strong);
+}
+
+.bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  min-width: 2px;
+  border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+  background: var(--viz-series);
+}
+
+.barNegative {
+  border-radius: var(--radius-xs) 0 0 var(--radius-xs);
+}
+
+.bars tbody tr.barsTotal th,
+.bars tbody tr.barsTotal td {
+  border-top: 1px solid var(--color-line-strong);
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.bars tbody tr.barsTotal .bar {
+  background: var(--color-ink);
+}
+
+.twoColumns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  gap: var(--space-8);
+}
+
+/* ── Signals ──────────────────────────────────────────────────────────── */
+
+.signals {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+  gap: var(--space-6) var(--space-8);
+}
+
+.signal {
+  display: grid;
+  gap: var(--space-3);
+  align-content: start;
+  padding-top: var(--space-3);
+  border-top: 2px solid var(--color-ink);
+}
+
+.signalHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.signalName {
+  font-size: var(--text-base);
+  font-weight: 600;
+}
+
+.signalLevel {
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+}
+
+.signalSummary {
+  color: var(--color-ink-secondary);
+  font-size: var(--text-sm);
+}
+
+.signalMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+}
+
+.method {
+  display: grid;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.method dt {
+  color: var(--color-ink-muted);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.method dd {
+  margin: 0 0 var(--space-2);
+}
+
+/* ── History ──────────────────────────────────────────────────────────── */
+
+.history {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.history > section {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.series {
+  display: grid;
+  gap: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-line-strong);
+}
+
+.seriesHead {
+  display: grid;
+  gap: 2px;
+}
+
+.seriesName {
+  font-size: var(--text-base);
+  font-weight: 600;
+}
+
+.interpretation {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border: 1px dashed var(--color-line-strong);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+}
+
+.interpretationHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+/* ── Sources and the brief ────────────────────────────────────────────── */
+
+.sourcesView,
+.brief {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.sourcesView > section,
+.brief > section {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.briefActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-xs);
+}
+
+.json {
+  max-height: 32rem;
+  overflow: auto;
+  padding: var(--space-4);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-sunken);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: 1.5;
+}
+
+/* ── Stored analyses ──────────────────────────────────────────────────── */
+
+.freshness {
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--color-line-strong);
+  background: var(--color-surface);
+  font-size: var(--text-sm);
+}
+
+.freshnessCurrent {
+  border-left-color: var(--color-good);
+}
+
+.freshnessStale {
+  border-left-color: var(--color-warning);
+}
+
+/* ── Dashboard summary ────────────────────────────────────────────────── */
+
+.summary {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.summaryList {
+  display: grid;
+  padding: 0;
+  list-style: none;
+}
+
+.summaryList li {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.summaryHeadline {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  line-height: var(--leading-snug);
+}
+
+/* ── Small screens ────────────────────────────────────────────────────── */
+
+@media (max-width: 64rem) {
+  .page {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-5);
+  }
+
+  .rail {
+    display: none;
+  }
+
+  .picker {
+    display: grid;
+  }
+
+  .detailGrid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-5);
+  }
+}
+
+@media (max-width: 40rem) {
+  .findingHead {
+    grid-template-columns: minmax(0, 1fr) 1rem;
+    gap: var(--space-1) var(--space-3);
+  }
+
+  .findingGrade {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .findingText {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .findingMeta {
+    grid-column: 1;
+    grid-row: 3;
+    justify-items: start;
+    grid-auto-flow: column;
+    gap: var(--space-3);
+  }
+
+  .chevron {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .findingBody {
+    padding-left: var(--space-3);
+  }
+
+  .nextSteps li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .barsGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bars tbody th {
+    width: 30%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .findingBody {
+    animation: none;
+  }
+
+  .main,
+  .chevron,
+  .subject,
+  .findingHead {
+    transition: none;
+  }
+}

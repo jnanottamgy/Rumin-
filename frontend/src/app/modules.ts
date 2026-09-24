@@ -82,6 +82,17 @@ export const APP_MODULES: readonly AppModule[] = [
     phase: 5,
   },
   {
+    id: "intelligence",
+    path: "/intelligence",
+    navLabel: "Intelligence",
+    title: "Financial Intelligence",
+    summary:
+      "What the stored data, the knowledge graph and stored simulations say: changes, exposure, drivers and signals, each finding with the evidence it rests on.",
+    status: "available",
+    statusNote: "Rule-based findings with evidence chains; no forecasts",
+    phase: 6,
+  },
+  {
     id: "analyst",
     path: "/analyst",
     navLabel: "Analyst",
@@ -114,7 +125,7 @@ export interface RoadmapPhase {
   title: string;
 }
 
-export const CURRENT_PHASE = 5;
+export const CURRENT_PHASE = 6;
 
 export const ROADMAP: readonly RoadmapPhase[] = [
   { phase: 1, title: "Foundation & system architecture" },
