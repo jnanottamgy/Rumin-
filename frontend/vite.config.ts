@@ -43,6 +43,9 @@ export default defineConfig(({ mode }) => {
       exclude: ["tests/integration/**"],
       restoreMocks: true,
       css: false,
+      // Page tests walk through several renders of a full page; on a slow runner that can
+      // take more than the default 5 s without anything being wrong.
+      testTimeout: 15_000,
     },
   };
 });

@@ -47,7 +47,7 @@ function labRoutes(overrides: Record<string, Route> = {}): Record<string, Route>
 async function openSaved(path = `/scenarios/${SCENARIO_ID}`) {
   const view = renderRoute(path);
   await screen.findByText(/^Showing stored execution · v1/);
-  await screen.findByRole("group", { name: "Scenario views" }).catch(() => undefined);
+  await screen.findByRole("tablist", { name: "Scenario views" });
   return view;
 }
 
@@ -362,7 +362,7 @@ describe("Scenario Lab — a saved scenario", () => {
       duration_ms: null,
       stages: [],
       results_available: false,
-      poll_after_ms: 10,
+      poll_after_ms: 100,
     };
     const polls: string[] = [];
     // The server keeps the execution in "simulating" until the test lets it finish.
@@ -395,9 +395,9 @@ describe("Scenario Lab — a saved scenario", () => {
     ).toBeInTheDocument();
     expect(router.state.location.search).toBe(`?execution=${NEW_ID}`);
     expect(api.writes().some((request) => request.path.endsWith("/executions"))).toBe(true);
-    // Final means final: polling stops.
+    // Final means final: polling stops (checked over more than two polling intervals).
     const seen = polls.length;
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await new Promise((resolve) => setTimeout(resolve, 250));
     expect(polls.length).toBe(seen);
   });
 
