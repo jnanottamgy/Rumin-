@@ -34,7 +34,7 @@ from app.analyst.answer import (
     cite,
     text,
 )
-from app.analyst.evidence import Knowledge, SourceRef
+from app.analyst.evidence import Knowledge, SourceRef, ValueUnit, change_unit
 from app.analyst.router import Route
 from app.analyst.tools.registry import ToolCall, ToolRunner
 from app.analyst.vocabulary import Term, Vocabulary, example_change, the
@@ -126,18 +126,26 @@ class Composer:
         """The figures of the question itself, as read: a person's input, citable."""
         route = self.route
         values: dict[str, Any] = {}
+        units: dict[str, ValueUnit | None] = {}
         for change in route.changes:
-            values[f"change.{change.variable.record_id}"] = change.value
-            for key, value in change.figures.items():
-                values[key] = value
+            key = f"change.{change.variable.record_id}"
+            values[key] = change.value
+            units[key] = change_unit(change.change_type, change.variable.unit)
+            for name, value in change.figures.items():
+                values[name] = value
         if route.horizon:
             values["horizon_months"] = route.horizon
         for year in route.periods.years:
             values[f"year.{year}"] = year
         if route.periods.last:
             values["last"] = route.periods.last
-        for number, value in enumerate(route.untied_values, start=1):
+        for number, (value, unit) in enumerate(
+            zip(route.untied_values, route.untied_units, strict=False), start=1
+        ):
             values[f"figure.{number}"] = value
+            units[f"figure.{number}"] = (
+                "percent" if unit == "percent" else "points" if unit == "points" else None
+            )
         if not values:
             return None
         return self.ledger.add(
@@ -149,6 +157,7 @@ class Composer:
             source=SourceRef(kind="question", id="question", label="This question"),
             retrieved_at=self.runner.clock(),
             values=values,
+            value_units=units,
         )
 
     def assumptions(self) -> list[Block]:

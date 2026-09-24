@@ -113,8 +113,8 @@ def rename_session(
     "Refused (409) while a question in it is being answered.",
     responses={**NOT_FOUND, **CONFLICT},
 )
-def delete_session(session: SessionDep, session_id: SessionId) -> Response:
-    analyst.delete_session(session, session_id)
+def delete_session(session: SessionDep, session_id: SessionId, runtime: RuntimeDep) -> Response:
+    analyst.delete_session(session, session_id, runtime.settings)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 

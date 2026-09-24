@@ -41,13 +41,13 @@ RUMIN's settings only:
 | `RUMIN_ANALYST_PROVIDER` | `grounded` | `anthropic` to use a Claude model |
 | `RUMIN_ANTHROPIC_API_KEY` | — | the API key (a secret: never logged, never returned by the API) |
 | `RUMIN_ANALYST_MODEL` | — | the model to call. **No model identifier is written in the repository**: choose one when deploying |
-| `RUMIN_ANTHROPIC_BASE_URL` | `https://api.anthropic.com` | must be `https://` (plain `http://` only for localhost) |
+| `RUMIN_ANTHROPIC_BASE_URL` | `https://api.anthropic.com` | must be `https://` (plain `http://` only to this machine: the host is parsed, so `http://localhost.example.com` is refused) |
 | `RUMIN_ANALYST_THINKING` | `adaptive` | `adaptive` or `off` |
 | `RUMIN_ANALYST_MAX_TOKENS` | 4096 | output tokens per model request |
-| `RUMIN_ANALYST_REQUEST_TIMEOUT_SECONDS` | 60 | per model request |
-| `RUMIN_ANALYST_MAX_RETRIES` | 2 | the SDK's retries of a failed request (with its backoff) |
+| `RUMIN_ANALYST_REQUEST_TIMEOUT_SECONDS` | 60 | per model request, and never past the turn's deadline |
+| `RUMIN_ANALYST_MAX_RETRIES` | 2 | RUMIN's retries of a request that failed transiently (a server error, overloaded, rate-limited, timed out, unreachable), with a short backoff, only while the turn's deadline allows; the SDK's own retries are off |
 | `RUMIN_ANALYST_MAX_MODEL_REQUESTS` | 6 | model requests per turn |
-| `RUMIN_ANALYST_DAILY_TOKEN_BUDGET` | 2,000,000 | input + output tokens a day across all turns; beyond it the grounded composer answers |
+| `RUMIN_ANALYST_DAILY_TOKEN_BUDGET` | 2,000,000 | tokens a day across all turns — input, output, and cached input read or written; beyond it the grounded composer answers. It is checked before each turn, so a turn in progress can take the total past it |
 
 The SDK would otherwise read `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN` and
 `ANTHROPIC_BASE_URL` from the environment when no value is passed; RUMIN always passes its
@@ -61,16 +61,24 @@ definitions and `submit_answer`. Each `tool_use` the model returns is run throug
 registry (allowlist, validation, limits) and answered with a compact JSON result that lists
 its evidence ids; stored text in it has been cleaned. The model finishes by calling
 `submit_answer` with a headline, paragraphs (each with a role: answer, detail,
-interpretation, general) and the tool calls whose displays to show. The tables, charts,
+interpretation, general) and the tool calls whose displays to show. Its input is validated
+against that schema (statuses, roles, lengths, no other fields): an answer that does not
+fit is not used. Invisible characters (control, zero-width, direction, NUL) are removed from
+everything the model wrote. The tables, charts,
 paths and scenario cards are RUMIN's, built from the tool results; the model only chooses
 them. The system prompt is cached (`cache_control`), and adaptive thinking is used unless
 turned off.
 
 **Failures fall back, and say so.** An authentication, permission, rate-limit, timeout,
-connection or server error; a refusal; an answer cut off at the token limit; too many model
-requests; or a draft that fails the grounding check: each ends the model's attempt with a
-safe reason, the grounded composer answers from the same tools, and the answer carries a
-*Fallback* notice naming the reason. Token usage is recorded either way.
+connection or server error (after the retries the deadline allows); a refusal; an answer
+cut off at the token limit or not in `submit_answer`'s form; too many model requests; or a
+draft that fails the grounding check: each ends the model's attempt with a safe reason, the
+grounded composer answers from the same tools — with a fresh budget of tool calls and 15
+seconds, since the model may have used up the first — and the answer carries a *Fallback*
+notice naming the reason. Token usage is recorded either way.
+
+The SDK logs whole requests at debug level when `ANTHROPIC_LOG` asks it to; RUMIN holds its
+logger at warnings, so questions and records never reach the logs that way.
 
 ## Not verified here
 

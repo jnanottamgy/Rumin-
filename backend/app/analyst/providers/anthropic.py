@@ -26,8 +26,10 @@ import json
 import logging
 import os
 import time
-from dataclasses import dataclass
-from typing import Any
+from dataclasses import dataclass, field
+from typing import Any, Literal
+
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from app.analyst import policy
 from app.analyst.answer import Block, NoticeBlock, text
@@ -42,6 +44,15 @@ from app.analyst.providers.base import (
 from app.analyst.tools.registry import ToolCall
 
 logger = logging.getLogger(__name__)
+
+
+class _Retryable(Exception):
+    """A transient API error; ``reason`` is safe to show."""
+
+    def __init__(self, reason: str) -> None:
+        super().__init__(reason)
+        self.reason = reason
+
 
 SUBMIT = "submit_answer"
 MAX_TOOL_RESULT_CHARS = 12_000
@@ -135,14 +146,33 @@ SUBMIT_TOOL: dict[str, Any] = {
 
 @dataclass(frozen=True)
 class AnthropicConfig:
-    api_key: str
+    api_key: str = field(repr=False)
     model: str
     base_url: str = "https://api.anthropic.com"
-    timeout_seconds: float = 60.0
-    max_retries: int = 2
+    timeout_seconds: float = 60.0  # per request, and never past the turn's deadline
+    max_retries: int = 2  # of a failed request, while the turn's deadline allows
     max_tokens: int = 4096
     thinking: str = "adaptive"  # "adaptive" or "off"
     max_requests: int = 6
+
+
+class _Paragraph(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    role: Literal["answer", "detail", "interpretation", "general"]
+    text: str = Field(min_length=1, max_length=1500)
+
+
+class Submitted(BaseModel):
+    """What ``submit_answer`` must carry; anything else is not an answer."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    status: Literal["answered", "partial", "no_data"]
+    headline: str = Field(min_length=1, max_length=200)
+    paragraphs: list[_Paragraph] = Field(min_length=1, max_length=8)
+    show: list[int] = Field(default_factory=list, max_length=6)
+    follow_ups: list[str] = Field(default_factory=list, max_length=4)
 
 
 def _inline(schema: dict[str, Any]) -> dict[str, Any]:
@@ -171,13 +201,28 @@ def build_client(config: AnthropicConfig, http_client: Any = None) -> Any:
         )
     import anthropic
 
+    # The SDK logs whole requests at debug level when ANTHROPIC_LOG asks it to; questions and
+    # records must not reach the logs, whatever the environment says.
+    logging.getLogger("anthropic").setLevel(logging.WARNING)
     return anthropic.Anthropic(
         api_key=config.api_key,
         base_url=config.base_url,
         timeout=config.timeout_seconds,
-        max_retries=config.max_retries,
+        max_retries=0,  # RUMIN retries itself, within the turn's deadline (``_request``)
         **({"http_client": http_client} if http_client is not None else {}),
     )
+
+
+def _scrub(value: Any) -> Any:
+    """Every string in a tool result or a brief, cleaned as stored text shown to a model is
+    (``policy.data_text``): invisible characters removed, instructions withheld."""
+    if isinstance(value, str):
+        return policy.data_text(value, 2000)
+    if isinstance(value, dict):
+        return {str(key): _scrub(item) for key, item in value.items()}
+    if isinstance(value, list | tuple):
+        return [_scrub(item) for item in value]
+    return value
 
 
 def _brief(context: ProviderContext) -> str:
@@ -209,8 +254,10 @@ def _brief(context: ProviderContext) -> str:
     ]
     return (
         "<context>\n"
-        f"RUMIN's reading of the question (data): {json.dumps(reading, sort_keys=True)}\n"
-        f"Conversation focus (keys only; fetch data again): {json.dumps(focus, sort_keys=True)}\n"
+        "RUMIN's reading of the question (data): "
+        f"{json.dumps(_scrub(reading), sort_keys=True, default=str)}\n"
+        "Conversation focus (keys only; fetch data again): "
+        f"{json.dumps(_scrub(focus), sort_keys=True, default=str)}\n"
         f"Earlier turns (headlines only, not current data): {json.dumps(history)}\n"
         "</context>\n"
         f"<question>{policy.data_text(route.question, 2000)}</question>"
@@ -220,12 +267,16 @@ def _brief(context: ProviderContext) -> str:
 def _result_content(call: ToolCall) -> tuple[str, bool]:
     if call.ok and call.output is not None:
         payload = {"call": call.position, "summary": call.output.summary, **call.output.data}
-        body = json.dumps(payload, default=str, sort_keys=True)
+        body = json.dumps(_scrub(json.loads(json.dumps(payload, default=str))), sort_keys=True)
         if len(body) > MAX_TOOL_RESULT_CHARS:
             body = body[: MAX_TOOL_RESULT_CHARS - 40] + '..."} (result shortened)'
         return body, False
     return json.dumps(
-        {"call": call.position, "status": call.status, "error": call.error or "No result."}
+        {
+            "call": call.position,
+            "status": call.status,
+            "error": policy.data_text(call.error or "No result.", 600),
+        }
     ), True
 
 
@@ -240,18 +291,39 @@ def _add_usage(usage: Usage, response: Any) -> None:
     usage.cache_write_tokens += int(getattr(got, "cache_creation_input_tokens", 0) or 0)
 
 
-def _draft(context: ProviderContext, submitted: dict[str, Any]) -> Draft:
+def _submitted(data: Any) -> Submitted:
+    """The model's answer, checked against ``submit_answer``'s schema and cleaned of
+    invisible characters (which could not be stored or shown); otherwise ProviderFailed."""
+    try:
+        found = Submitted.model_validate(data)
+    except ValidationError as error:
+        raise ProviderFailed("The language model's answer was not in the expected form.") from error
+    paragraphs = [
+        _Paragraph(role=item.role, text=body)
+        for item in found.paragraphs
+        if (body := policy.clean(item.text, lines=True).strip())
+    ]
+    headline = " ".join(policy.clean(found.headline).split())
+    if not paragraphs or not headline:
+        raise ProviderFailed("The language model's answer was empty.")
+    return Submitted(
+        status=found.status,
+        headline=headline,
+        paragraphs=paragraphs,
+        show=found.show,
+        follow_ups=[" ".join(policy.clean(item).split())[:160] for item in found.follow_ups],
+    )
+
+
+def _draft(context: ProviderContext, submitted: Submitted) -> Draft:
     """The model's submitted answer as a draft: its paragraphs, then RUMIN's displays of
     the tool calls it chose, then the notices the evidence calls for."""
     calls = {call.position: call for call in context.runner.calls}
-    blocks: list[Block] = []
-    for paragraph in submitted.get("paragraphs") or []:
-        role = paragraph.get("role")
-        body = str(paragraph.get("text") or "").strip()
-        if role in ("answer", "detail", "interpretation", "general") and body:
-            blocks.append(text(role, body))
-    for position in submitted.get("show") or []:
-        call = calls.get(int(position)) if isinstance(position, int) else None
+    blocks: list[Block] = [
+        text(paragraph.role, paragraph.text) for paragraph in submitted.paragraphs
+    ]
+    for position in submitted.show:
+        call = calls.get(position)
         if call is not None and call.ok and call.output is not None:
             blocks.extend(call.output.display)
     kinds = {item.kind for item in context.runner.ledger.items}
@@ -275,12 +347,11 @@ def _draft(context: ProviderContext, submitted: dict[str, Any]) -> Draft:
         )
     for note in context.route.assumptions:
         blocks.append(NoticeBlock(kind="assumption", title="How the question was read", text=note))
-    status = submitted.get("status")
     return Draft(
-        status=status if status in ("answered", "partial", "no_data") else "answered",
-        headline=str(submitted.get("headline") or "").strip()[:200] or "Answer",
+        status=submitted.status,
+        headline=submitted.headline,
         blocks=blocks,
-        follow_ups=[str(item)[:160] for item in (submitted.get("follow_ups") or [])][:4],
+        follow_ups=submitted.follow_ups,
     )
 
 
@@ -297,7 +368,35 @@ class AnthropicProvider:
             self._client = build_client(self.config)
         return self._client
 
-    def _request(self, messages: list[dict[str, Any]], tools: list[dict[str, Any]]) -> Any:
+    def _request(
+        self, messages: list[dict[str, Any]], tools: list[dict[str, Any]], deadline: float | None
+    ) -> Any:
+        """One model request, tried again after a transient error while the turn's deadline
+        allows; each attempt's timeout ends at the deadline at the latest."""
+        attempt = 0
+        while True:
+            left = None if deadline is None else deadline - time.monotonic()
+            if left is not None and left < 1:
+                raise ProviderFailed("The time allowed for this question ran out.")
+            timeout = (
+                self.config.timeout_seconds
+                if left is None
+                else min(self.config.timeout_seconds, left)
+            )
+            try:
+                return self._send(messages, tools, timeout)
+            except _Retryable as retry:
+                attempt += 1
+                pause = min(0.5 * 2 ** (attempt - 1), 4.0)
+                left = None if deadline is None else deadline - time.monotonic()
+                if attempt > self.config.max_retries or (left is not None and left < pause + 1):
+                    raise ProviderFailed(retry.reason) from retry
+                logger.warning("event=analyst.model_retry attempt=%d", attempt)
+                time.sleep(pause)
+
+    def _send(
+        self, messages: list[dict[str, Any]], tools: list[dict[str, Any]], timeout: float
+    ) -> Any:
         import anthropic
 
         params: dict[str, Any] = {
@@ -313,7 +412,7 @@ class AnthropicProvider:
         if self.config.thinking == "adaptive":
             params["thinking"] = {"type": "adaptive"}
         try:
-            return self.client.messages.create(**params)
+            return self.client.messages.create(**params, timeout=timeout)
         except anthropic.AuthenticationError as error:
             raise ProviderFailed("The Anthropic API refused the configured key.") from error
         except anthropic.PermissionDeniedError as error:
@@ -321,17 +420,18 @@ class AnthropicProvider:
         except anthropic.NotFoundError as error:
             raise ProviderFailed("The configured model was not found.") from error
         except anthropic.RateLimitError as error:
-            raise ProviderFailed("The Anthropic API is rate-limiting requests.") from error
+            raise _Retryable("The Anthropic API is rate-limiting requests.") from error
         except anthropic.BadRequestError as error:
             raise ProviderFailed("The Anthropic API rejected the request.") from error
         except anthropic.APITimeoutError as error:
-            raise ProviderFailed("The language model did not answer in time.") from error
+            raise _Retryable("The language model did not answer in time.") from error
         except anthropic.APIConnectionError as error:
-            raise ProviderFailed("The Anthropic API could not be reached.") from error
+            raise _Retryable("The Anthropic API could not be reached.") from error
         except anthropic.APIStatusError as error:
-            raise ProviderFailed(
-                f"The Anthropic API returned an error ({error.status_code})."
-            ) from error
+            reason = f"The Anthropic API returned an error ({error.status_code})."
+            if error.status_code >= 500:  # a server error, or overloaded (529)
+                raise _Retryable(reason) from error
+            raise ProviderFailed(reason) from error
 
     def answer(self, context: ProviderContext) -> ProviderResult:
         runner = context.runner
@@ -347,7 +447,7 @@ class AnthropicProvider:
             for _ in range(self.config.max_requests):
                 if runner.deadline is not None and time.monotonic() >= runner.deadline:
                     raise ProviderFailed("The time allowed for this question ran out.")
-                response = self._request(messages, tools)
+                response = self._request(messages, tools, runner.deadline)
                 _add_usage(usage, response)
                 model_name = getattr(response, "model", None) or model_name
                 stop = getattr(response, "stop_reason", None)
@@ -359,7 +459,7 @@ class AnthropicProvider:
                 uses = [block for block in content if getattr(block, "type", "") == "tool_use"]
                 submitted = next((block for block in uses if block.name == SUBMIT), None)
                 if submitted is not None:
-                    draft = _draft(context, dict(submitted.input or {}))
+                    draft = _draft(context, _submitted(submitted.input))
                     return ProviderResult(draft=draft, usage=usage, model=model_name)
                 if not uses:
                     written = "\n\n".join(
@@ -370,15 +470,17 @@ class AnthropicProvider:
                     first = written.split("\n", 1)[0][:200]
                     draft = _draft(
                         context,
-                        {
-                            "status": "answered",
-                            "headline": first,
-                            "paragraphs": [
-                                {"role": "answer", "text": part}
-                                for part in written.split("\n\n")
-                                if part.strip()
-                            ][:8],
-                        },
+                        _submitted(
+                            {
+                                "status": "answered",
+                                "headline": first,
+                                "paragraphs": [
+                                    {"role": "answer", "text": part}
+                                    for part in written.split("\n\n")
+                                    if part.strip()
+                                ][:8],
+                            }
+                        ),
                     )
                     return ProviderResult(draft=draft, usage=usage, model=model_name)
                 messages.append({"role": "assistant", "content": content})

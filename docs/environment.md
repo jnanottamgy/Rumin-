@@ -55,7 +55,7 @@ Read by the API. None is needed: RUMIN's grounded composer answers by default, o
 | `RUMIN_ANALYST_THINKING` | `adaptive` | `adaptive` or `off`. |
 | `RUMIN_ANALYST_MAX_TOKENS` | `4096` | Output tokens per model request (512 – 32,000). |
 | `RUMIN_ANALYST_REQUEST_TIMEOUT_SECONDS` | `60` | Per model request (5 – 300). |
-| `RUMIN_ANALYST_MAX_RETRIES` | `2` | Retries of a failed model request by the SDK (0 – 5). |
+| `RUMIN_ANALYST_MAX_RETRIES` | `2` | Retries of a model request that failed transiently (a server error, overloaded, rate-limited, timed out or unreachable), by RUMIN and only while the turn's time allows (0 – 5). |
 | `RUMIN_ANALYST_MAX_MODEL_REQUESTS` | `6` | Model requests per question (1 – 12). |
 | `RUMIN_ANALYST_DAILY_TOKEN_BUDGET` | `2000000` | Input + output tokens a day across all questions; beyond it RUMIN answers (0 turns the model off). |
 | `RUMIN_ANALYST_DEADLINE_SECONDS` | `90` | Time allowed for one question (5 – 300). |

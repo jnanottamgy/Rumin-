@@ -2,8 +2,8 @@
 
 | Suite | Tool | Tests | Runs against | Command |
 |---|---|---|---|---|
-| Backend | pytest | 969 (one skipped without a key) | the FastAPI app, the ingestion pipeline, the graph build, the simulation engine, the Scenario Lab, Financial Intelligence and the AI Analyst with a real, migrated database (SQLite; PostgreSQL optional); providers answered by scripted responses; the Anthropic SDK over a mocked transport | `uv run pytest` in `backend/` |
-| Frontend unit and pages | Vitest + Testing Library (jsdom) | 320 | the real route table, with `fetch` replaced by a fake API serving recorded responses | `npm test` in `frontend/` |
+| Backend | pytest | 1,059 (one skipped without a key) | the FastAPI app, the ingestion pipeline, the graph build, the simulation engine, the Scenario Lab, Financial Intelligence and the AI Analyst with a real, migrated database (SQLite; PostgreSQL optional); providers answered by scripted responses; the Anthropic SDK over a mocked transport | `uv run pytest` in `backend/` |
+| Frontend unit and pages | Vitest + Testing Library (jsdom) | 321 | the real route table, with `fetch` replaced by a fake API serving recorded responses | `npm test` in `frontend/` |
 | Integration | Vitest (Node) | 57 | a live API: the frontend's real service layer over HTTP | `npm run test:integration` with `RUMIN_API_URL` |
 | Analyst evaluation | `python -m app.analyst.evaluation` | 33 cases | the configured provider on the configured database (in CI: the grounded composer and seven adversarial scripted models, inside the backend suite) | see [evaluation](analyst/evaluation.md) |
 | End-to-end smoke | `scripts/smoke_test.sh` | — | fresh database → migrate → seed → load the catalogue → import a synthetic price file → build the knowledge graph, rebuild it and fail if anything changed → start API → integration suite (including a simulation run and a background scenario execution, both checked against hand calculations) | `make smoke` |

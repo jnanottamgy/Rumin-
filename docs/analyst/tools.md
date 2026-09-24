@@ -34,14 +34,18 @@ Keys follow the graph's form (`company:co_…`, `industry:ind_…`, `variable:va
 
 `tools/registry.py`, `ToolRunner.call`:
 
-1. **Allowlist**: an unknown name is recorded as `refused` and returns an error to the caller.
-2. **Validation**: the arguments are parsed by the tool's input model; a failure is recorded
+1. **Limits first**: at most `RUMIN_ANALYST_MAX_TOOL_CALLS` calls per turn (default 12),
+   counting calls to names that are not tools, and none after the turn's deadline
+   (`skipped`); each call's time limit is the tool's own or the time left, whichever is
+   shorter (`timeout`). When RUMIN's composer answers after a language model's answer was not
+   used, it gets a fresh budget of calls and time; the calls already made stay recorded.
+2. **Allowlist**: an unknown name is recorded as `refused` (the name cleaned of invisible
+   characters and cut to 64 characters) and returns an error to the caller.
+3. **Validation**: the arguments are parsed by the tool's input model; a failure is recorded
    as `invalid` with the field and returned (a model can correct itself; nothing runs).
-3. **Access**: compute tools run only when the access context allows it (`Access.may_compute`),
+   Arguments longer than 4,000 characters are refused and recorded as their size only.
+4. **Access**: compute tools run only when the access context allows it (`Access.may_compute`),
    the one place per-user checks will go when RUMIN has authentication.
-4. **Limits**: at most `RUMIN_ANALYST_MAX_TOOL_CALLS` calls per turn (default 12) and none
-   after the turn's deadline (`skipped`); each call's time limit is the tool's own or the time
-   left, whichever is shorter (`timeout`).
 5. **Isolation**: the call runs with its own database session, in its own thread; a transient
    database error is retried once; any other error is recorded as `failed` with a safe message,
    never a stack trace.
@@ -50,7 +54,10 @@ Keys follow the graph's form (`company:co_…`, `industry:ind_…`, `variable:va
    Only then does the caller see it.
 
 A tool that fails, times out or finds nothing adds **no evidence**: nothing can be cited from
-it, so nothing can be claimed from it.
+it, so nothing can be claimed from it. Evidence holds what RUMIN read, never a caller's
+words: `search_records` records *Records found by name* and the number found, not the words
+searched for (which a model chooses), and searches scenario names with `%` and `_` taken
+literally.
 
 ## Why no general-purpose tool
 

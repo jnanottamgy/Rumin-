@@ -19,6 +19,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from sqlalchemy import CursorResult, delete, func, select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.analyst import ANALYST_VERSION
@@ -216,7 +217,21 @@ class AnalystRuntime:
             session.commit()
 
     def run_turn(self, turn_id: uuid.UUID) -> None:
+        """Answer one queued turn. Whatever happens after the turn is claimed, it ends
+        completed or failed: a turn left running would block its conversation."""
         began = time.monotonic()
+        try:
+            self._run_turn(turn_id, began)
+        except Exception:
+            logger.exception("event=analyst.turn_failed turn=%s", turn_id)
+            try:
+                self._finish_failed(turn_id, began)
+            except Exception:
+                # The database itself is failing; the turn is expired later (``expire_stale``)
+                # or when the server restarts (``recover``).
+                logger.exception("event=analyst.turn_not_closed turn=%s", turn_id)
+
+    def _run_turn(self, turn_id: uuid.UUID, began: float) -> None:
         with self.session_factory() as session:
             claimed = session.execute(
                 update(AnalystTurn)
@@ -260,17 +275,12 @@ class AnalystRuntime:
             ),
             skip_model=skip,
         )
-        try:
-            result = orchestrator.answer(
-                question,
-                focus=focus,
-                history=history,
-                on_call=lambda call: self._store_call(turn_id, call),
-            )
-        except Exception:
-            logger.exception("event=analyst.turn_failed turn=%s", turn_id)
-            self._finish_failed(turn_id, began)
-            return
+        result = orchestrator.answer(
+            question,
+            focus=focus,
+            history=history,
+            on_call=lambda call: self._store_call(turn_id, call),
+        )
         self._finish(turn_id, session_id, result, began)
 
     def _finish_failed(self, turn_id: uuid.UUID, began: float) -> None:
@@ -313,7 +323,12 @@ class AnalystRuntime:
                     fallback=result.fallback,
                     rejected=result.rejected.model_dump(mode="json") if result.rejected else None,
                     usage=usage,
-                    tokens=usage["input_tokens"] + usage["output_tokens"],
+                    # Every token the model read or wrote counts against the daily budget,
+                    # cached or not.
+                    tokens=usage["input_tokens"]
+                    + usage["output_tokens"]
+                    + usage["cache_read_tokens"]
+                    + usage["cache_write_tokens"],
                     finished_at=now,
                     duration_ms=int((time.monotonic() - began) * 1000),
                 )
@@ -471,8 +486,42 @@ def rename_session(session: Session, session_id: uuid.UUID, payload: SessionUpda
     return get_session(session, row.id)
 
 
-def delete_session(session: Session, session_id: uuid.UUID) -> None:
+def stale_after(settings: Settings) -> timedelta:
+    """How long a turn may stay queued or running before it is taken to be abandoned (its
+    process stopped without closing it): far longer than any turn can take."""
+    return timedelta(seconds=max(600.0, settings.analyst_deadline_seconds * 10))
+
+
+def expire_stale(session: Session, session_id: uuid.UUID, settings: Settings) -> int:
+    """Mark this conversation's abandoned turns failed, so they no longer block it."""
+    cutoff = utcnow() - stale_after(settings)
+    result = session.execute(
+        update(AnalystTurn)
+        .where(
+            AnalystTurn.session_id == session_id,
+            AnalystTurn.status.in_(PENDING),
+            AnalystTurn.requested_at < cutoff,
+        )
+        .values(
+            status="failed",
+            error={"code": "interrupted", "message": INTERRUPTED},
+            finished_at=utcnow(),
+        )
+        .execution_options(synchronize_session=False)
+    )
+    session.commit()
+    expired = result.rowcount if isinstance(result, CursorResult) else 0
+    if expired:
+        logger.warning("event=analyst.expired session=%s turns=%d", session_id, expired)
+    return expired
+
+
+def delete_session(
+    session: Session, session_id: uuid.UUID, settings: Settings | None = None
+) -> None:
     row = _session_or_404(session, session_id)
+    if settings is not None:
+        expire_stale(session, row.id, settings)
     pending = session.scalar(
         select(func.count()).where(
             AnalystTurn.session_id == row.id, AnalystTurn.status.in_(PENDING)
@@ -518,6 +567,7 @@ def ask(
             f"This conversation has reached {settings.analyst_max_turns_per_session} questions; "
             "start a new one."
         )
+    expire_stale(session, row.id, settings)
     pending = session.scalar(
         select(func.count()).where(
             AnalystTurn.session_id == row.id, AnalystTurn.status.in_(PENDING)
@@ -551,6 +601,13 @@ def ask(
         row.updated_at = utcnow()
         session.add(turn)
         session.commit()
+    except IntegrityError as error:
+        # Another question was stored in this conversation at the same moment.
+        session.rollback()
+        runtime.runner.release()
+        raise ConflictError(
+            "Another question was just asked in this conversation; ask when it has finished."
+        ) from error
     except Exception:
         runtime.runner.release()
         raise

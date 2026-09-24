@@ -3782,6 +3782,13 @@ export interface components {
             values?: {
                 [key: string]: string;
             };
+            /**
+             * Value Units
+             * @description For the values that are percentages ('percent') or changes in percentage points ('points'). Every other value is in the record's unit or currency, or is a count.
+             */
+            value_units?: {
+                [key: string]: "percent" | "points";
+            };
         };
         /**
          * EvidenceLevel

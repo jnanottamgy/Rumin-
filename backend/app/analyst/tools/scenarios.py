@@ -25,7 +25,16 @@ from app.analyst.answer import (
     TableBlock,
     TableRow,
 )
-from app.analyst.evidence import Knowledge, SourceRef, exact, node_link, scenario_link
+from app.analyst.evidence import (
+    Knowledge,
+    SourceRef,
+    change_unit,
+    exact,
+    fact_unit,
+    node_link,
+    percent_unit,
+    scenario_link,
+)
 from app.analyst.policy import data_text
 from app.analyst.tools.common import counted
 from app.analyst.tools.records import simulation_block
@@ -625,6 +634,23 @@ def _preview_render(
             values[f"{metric.id}.change"] = metric.change
         for change in plan.changes:
             values[f"change.{change.variable_id}"] = change.value
+        units = {
+            f"change.{change.variable_id}": change_unit(change.change_type, change.unit)
+            for change in plan.changes
+        }
+        units.update(
+            {
+                f"{metric.id}.{which}": "percent" if percent_unit(metric.unit) else None
+                for metric in results.metrics
+                for which in ("baseline", "scenario")
+            }
+        )
+        units.update(
+            {
+                f"{metric.id}.change": fact_unit("change", metric.change_unit)
+                for metric in results.metrics
+            }
+        )
         values["horizon_months"] = results.horizon_months
         assumptions = [
             f"{item.label}: {item.value}{' ' + item.unit_label if item.unit_label else ''} "
@@ -653,6 +679,7 @@ def _preview_render(
             models=models,
             assumptions=assumptions[:12],
             values=values,
+            value_units=units,
         )
         ids.append(preview_id)
         if found.base is not None:

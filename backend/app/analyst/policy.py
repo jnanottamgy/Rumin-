@@ -17,6 +17,7 @@ beyond read-only tools or put an uncited figure in front of anyone.
 from __future__ import annotations
 
 import re
+import unicodedata
 from dataclasses import dataclass
 from typing import Literal
 
@@ -93,7 +94,10 @@ FORBIDDEN: tuple[tuple[re.Pattern[str], str], ...] = (
     (re.compile(r"\brisk[\s-]free\b|\bsafe\s+bet\b", re.I), "a guarantee"),
 )
 
-_CONTROL = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f​-‏‪-‮⁦-⁩]")
+WITHHELD = "[withheld: this stored text reads like an instruction]"
+# Control, format (zero-width, direction, tag), surrogate, private-use and unassigned
+# characters: invisible, or not text at all.
+_INVISIBLE = frozenset(("Cc", "Cf", "Cs", "Co", "Cn"))
 
 
 @dataclass(frozen=True)
@@ -105,8 +109,26 @@ class Screening:
         return flag in self.flags
 
 
+def clean(value: object, *, lines: bool = False) -> str:
+    """Text without invisible characters (see ``_INVISIBLE``); tabs and, with ``lines``,
+    line breaks are kept."""
+    keep = "\t\n" if lines else "\t"
+    return "".join(
+        character
+        for character in str(value)
+        if character in keep or unicodedata.category(character) not in _INVISIBLE
+    )
+
+
+def _plain(text: str) -> str:
+    """``text`` as the screening patterns read it: compatibility forms folded (full-width
+    letters, ligatures) and invisible characters removed."""
+    return clean(unicodedata.normalize("NFKC", text))
+
+
 def screen(question: str) -> Screening:
     flags: list[Screen] = []
+    question = _plain(question)
     if _INJECTION.search(question):
         flags.append("injection")
     if _SECRETS.search(question):
@@ -126,13 +148,13 @@ def phrasing_problems(text: str) -> list[str]:
 
 
 def data_text(value: object, limit: int = MAX_DATA_TEXT) -> str:
-    """Stored text made safe to show a language model as data: control and direction-
-    override characters removed, whitespace collapsed, capped at ``limit`` characters, and
-    withheld entirely if it reads like an instruction."""
-    text = _CONTROL.sub("", str(value))
-    text = re.sub(r"\s+", " ", text).strip()
-    if _INJECTION.search(text):
-        return "[withheld: this stored text reads like an instruction]"
+    """Stored text made safe to show a language model as data: invisible characters
+    (control, zero-width, direction-override, tag) removed, whitespace collapsed, capped at
+    ``limit`` characters, and withheld entirely if it reads like an instruction (also once
+    full-width letters and other compatibility forms are folded)."""
+    text = re.sub(r"\s+", " ", clean(value)).strip()
+    if _INJECTION.search(text) or _INJECTION.search(_plain(text)):
+        return WITHHELD
     return text if len(text) <= limit else text[: limit - 1].rstrip() + "…"
 
 

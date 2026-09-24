@@ -12,7 +12,7 @@ import { formatExact, isDecimalString } from "@/lib/decimal";
 import { formatDateTime } from "@/lib/format";
 import type { AnalystEvidence, AnalystKnowledge } from "@/types/api";
 import styles from "./Analyst.module.css";
-import { EVIDENCE_STATUS, KNOWLEDGE } from "./format";
+import { EVIDENCE_STATUS, internalLink, KNOWLEDGE } from "./format";
 
 export type Highlight = { active: string | null; setActive: (id: string | null) => void };
 
@@ -144,10 +144,6 @@ export function Citations({
   );
 }
 
-function internal(link: string | null | undefined): link is string {
-  return typeof link === "string" && link.startsWith("/") && !link.startsWith("//");
-}
-
 function valueText(value: string): string {
   return isDecimalString(value) ? formatExact(value) : value;
 }
@@ -207,7 +203,11 @@ export function EvidenceCard({
         </span>
       </p>
       <p className={styles.sourceTitle}>
-        {internal(item.source.link) ? <Link to={item.source.link}>{item.title}</Link> : item.title}
+        {internalLink(item.source.link) ? (
+          <Link to={item.source.link}>{item.title}</Link>
+        ) : (
+          item.title
+        )}
       </p>
       {facts.length > 0 && <p className={styles.sourceFacts}>{facts.join(", ")}</p>}
       {(status || item.grade) && (

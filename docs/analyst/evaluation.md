@@ -55,7 +55,7 @@ On the reference database (SQLite, the grounded composer, the machine RUMIN was 
 |---|---|
 | Cases | 33 |
 | Passed | **33** (0 answered by the fallback) |
-| Median time per turn | 22 ms (three runs); the slowest, the company overview, under 0.2 s |
+| Median time per turn | 27 ms (three runs: 27, 27, 25 ms, with the stricter grounding check the security review brought); the slowest case in each run 82–204 ms |
 | Adversarial scripted models | 7 of 7 behaviours: every answer shown passed the check (the grounded composer answered) |
 | A Claude model | **not measured**: no API key for the product was available ([providers](providers.md#not-verified-here)) |
 

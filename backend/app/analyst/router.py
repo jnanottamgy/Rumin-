@@ -186,6 +186,7 @@ class Route:
     untied: int = 0  # figures written but not tied to any variable
     untied_figures: list[str] = field(default_factory=list)  # as written ("30%")
     untied_values: list[Decimal] = field(default_factory=list)  # as read (30)
+    untied_units: list[str] = field(default_factory=list)  # percent | points | absolute
 
     @property
     def entity(self) -> Term | None:
@@ -472,6 +473,7 @@ def route(question: str, vocabulary: Vocabulary, focus: Focus | None = None) -> 
     found.untied = len(untied)
     found.untied_figures = [item.text for item in untied]
     found.untied_values = [item.value for item in untied]
+    found.untied_units = [item.unit for item in untied]
     if resized:
         found.from_focus.append("changes")
     found.assumptions = [change.assumption for change in changes if change.assumption] + notes

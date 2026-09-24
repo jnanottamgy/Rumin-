@@ -17,10 +17,12 @@ order it is read: E1, E2 … Each item records:
 | `models`, `assumptions` | for simulated and preview results: the models and versions, and their assumptions |
 | `provenance` | ids and hashes: dataset and job, graph build, scenario version, inputs and result hashes |
 | `values` | the exact values a sentence may quote, as exact decimal strings |
+| `value_units` | which of those values are percentages (`percent`) and which are changes in percentage points (`points`); every other value is in the record's unit or currency, or is a count |
 
 The same record read twice in a turn is one item (deduplicated by source, period and kind).
 Text taken from stored records (names, descriptions, notes) is cleaned before it enters the
-ledger ([guardrails](guardrails.md#stored-text-is-data)).
+ledger ([guardrails](guardrails.md#prompt-injection)). Evidence holds only what RUMIN read:
+a tool's arguments (a model's search words, for instance) are never copied into it.
 
 ## Kinds of knowledge
 
@@ -51,21 +53,56 @@ path or per line. The interface turns each citation into a link to the source in
 `grounding.py` checks every answer before it is stored, whoever wrote it. It reads the
 headline, every paragraph and every notice sentence by sentence:
 
-1. **Figures.** It extracts each figure: signs (+, −), Western and Indian digit grouping,
-   decimals, percentages, percentage points, basis points and scale words (thousand, lakh,
-   crore, million, billion). Each must equal a value of the evidence the **sentence** cites
-   **at the precision displayed**: `24.29 %` matches a stored `24.2914979757…`,
-   `₹1.25 crore` matches `12,450,000` only to the nearest lakh. Rounding half-even and
-   half-up are both accepted. An unsigned figure may match a value's magnitude ("fell by
-   6,325,000" for −6,325,000); a written sign must match.
-2. **Dates, years and versions** must appear word for word in the cited evidence.
-3. **Citations** must name evidence that exists. A sentence with a figure and no citation
+1. **Figures.** It extracts each figure: signs (+, −, and an en or em dash written against
+   the digits), accounting brackets (`(5)` is −5), Western and Indian digit grouping,
+   decimals, percentages, percentage points, basis points, currencies (₹, $, €, £, INR,
+   USD, EUR, GBP, Rs, before or after the number) and scale words (thousand, lakh, crore,
+   lakh crore, million, billion, trillion, and k, m, b, bn, mn, tn). Each must equal a value
+   of the evidence the **sentence** cites **at the precision displayed**: `24.29 %` matches a
+   stored `24.2914979757…`, `₹1.25 crore` matches `12,450,000` only to the nearest lakh.
+   Rounding half-even and half-up are both accepted. An unsigned figure may match a value's
+   magnitude ("fell by 6,325,000" for −6,325,000); a written sign must match. "Doubles",
+   "halves" and "triples" are read as +100 %, −50 % and +200 %.
+2. **Of the same kind.** A figure matches only a value of its kind. Every tool marks which of
+   its values are **percentages** and which are **changes in percentage points**
+   (`value_units` on each piece of evidence): a series' values when it is a rate, a ratio or a
+   growth rate, the changes RUMIN computes (a percentage for levels and exchange rates, points
+   for rates), a stated change to a variable (a percentage change, or points for an absolute
+   change to a rate), a finding's facts by their unit, and every `…percent_change` and
+   `….share`. So `3 %` can match only a percentage, `+0.5 percentage points` only a change in
+   points, and an amount written with a currency or a scale word only a value that is
+   neither — in the same currency when both say which. A bare number may match any value.
+3. **Nothing unreadable passes.** Anything that looks like a figure but cannot be read
+   exactly fails the check rather than being skipped: digits left over once every figure is
+   read (`5-45%`, `+/-99%`, `a-700 crore`), other numerals (`½`, `²`, digits of other
+   scripts), scientific notation (`1e3`), decimal commas (`12,5 %`), digits grouped by spaces
+   (`5 000`), leading zeros (`000`), a figure run into letters (`5x`, `3rd`), a `±` range, and
+   figures written in words (`five hundred crore`, `a million`, `twenty-five percent`,
+   `thousands of crores`, `a third of`). A language model is asked to write figures as
+   digits; RUMIN's templates do.
+4. **Dates, periods and versions** (`2024-03-31`, `2024-03`, `2023-24`, `2024-Q1`, `Q3`,
+   `FY24`, `1.1.0`) must appear word for word in the cited evidence.
+5. **Citations** must name evidence that exists. A sentence with a figure and no citation
    fails. The headline may use any evidence of the answer.
-4. **Interpretation** and **general knowledge** paragraphs, which a language model may add
+6. **Interpretation** and **general knowledge** paragraphs, which a language model may add
    (labelled as such), may not contain any figure.
-5. **Phrasing**: nothing may predict ("will", "is expected to"), claim a cause ("caused",
+7. **Phrasing**: nothing may predict ("will", "is expected to"), claim a cause ("caused",
    "because of" a relationship), guarantee, advise ("should buy") or claim certainty, except
    inside a quotation that is word for word a cited record's text.
+
+What a cited record says itself is not the answer speaking: a **quotation** that is word for
+word in a cited record's text is exempt from the figure and phrasing checks, and a cited
+record's **name, title or identifier**, written exactly as stored, is exempt from the figure
+check ("Population ages 15-64 (% of total population)" names a series; it states no figure).
+Evidence holds only what RUMIN read: a tool's arguments — a model's search words, for
+instance — are never copied into evidence text, so a model cannot write a figure or a date
+into the evidence it then cites.
+
+**Follow-up questions** are offered as one-click questions, so they are checked too: at most
+160 characters, no citations, nothing the question screen would decline (instructions aimed
+at the Analyst, requests for secrets, advice, forecasts, live data), no forbidden phrasing,
+nothing unreadable, and figures only when the evidence holds them or when the follow-up is a
+what-if stating its own changes. The rest are dropped.
 
 Tables, series, paths and scenario cards are built by RUMIN from tool results, not written by
 a provider, so only their citations are checked.

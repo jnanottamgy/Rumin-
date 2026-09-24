@@ -12,7 +12,15 @@ from pydantic import Field, model_validator
 from sqlalchemy.orm import Session
 
 from app.analyst.answer import Block, Column, SeriesBlock, SeriesPoint, TableBlock, TableRow
-from app.analyst.evidence import Knowledge, SourceRef, exact, node_link, series_link
+from app.analyst.evidence import (
+    Knowledge,
+    SourceRef,
+    exact,
+    fact_unit,
+    node_link,
+    series_link,
+    series_units,
+)
 from app.analyst.policy import data_text
 from app.analyst.tools.common import THRESHOLDS, counted
 from app.analyst.tools.registry import RenderContext, Tool, ToolOutput, ToolProblem
@@ -42,6 +50,12 @@ def _provenance(detail: SeriesDetail | None, history: History) -> dict[str, str 
         if history.subject.variable_relation
         else None,
     }
+
+
+def _measure(change_unit: str | None) -> str:
+    """A series' measure from the unit of its changes: percentages for levels and exchange
+    rates (``relative``), percentage points for rates, ratios and growth rates."""
+    return "relative" if change_unit == "percent" else "points"
 
 
 # --- get_series --------------------------------------------------------------------------------
@@ -145,6 +159,15 @@ def _series_render(
             values["trend.relative_slope"] = trend.relative_slope
     if analysis.volatility is not None:
         values["volatility.latest"] = analysis.volatility.latest
+    levels = [point.label for point in points]
+    levels += ["min", "max", f"first.{first_point.label}", f"latest.{last_point.label}"]
+    units = series_units(
+        subject.measure,
+        levels=[*levels, "latest_change.earlier", "latest_change.later"],
+        changes=["latest_change", "volatility.latest"],
+        differences=["trend.slope"],
+    )
+    units["trend.relative_slope"] = "percent"
     notes = []
     if trend is not None:
         notes.append(
@@ -175,6 +198,7 @@ def _series_render(
             "last_confirmed": last.last_confirmed_at.isoformat(),
         },
         values=values,
+        value_units=units,
     )
     ids = [evidence]
     revisions = analysis.revisions[:5]
@@ -197,6 +221,15 @@ def _series_render(
                     **{f"{item.label}.revised": item.revised for item in revisions},
                     **{f"{item.label}.change": item.change for item in revisions},
                 },
+                value_units=series_units(
+                    subject.measure,
+                    levels=[
+                        f"{item.label}.{which}"
+                        for item in revisions
+                        for which in ("previous", "revised")
+                    ],
+                    changes=[f"{item.label}.change" for item in revisions],
+                ),
             )
         )
     block = SeriesBlock(
@@ -353,6 +386,12 @@ def _compare_render(
             "illustrative": "yes" if subject.dataset.is_illustrative else None,
         },
         values=values,
+        value_units=series_units(
+            subject.measure,
+            levels=[found.earlier.label, found.later.label],
+            changes=["change"],
+            differences=["difference"],
+        ),
     )
     display: list[Block] = [
         TableBlock(
@@ -469,6 +508,11 @@ def _changes_render(
                 change.later.label: change.later.value,
                 "change": change.value,
             },
+            value_units=series_units(
+                _measure(item.subject.change_unit),
+                levels=[change.earlier.label, change.later.label],
+                changes=["change"],
+            ),
         )
         ids.append(cited)
         observed.append(
@@ -514,6 +558,11 @@ def _changes_render(
                 "revised": revision.revised,
                 "change": revision.change,
             },
+            value_units=series_units(
+                _measure(revised.subject.change_unit),
+                levels=["previous", "revised"],
+                changes=["change"],
+            ),
         )
         ids.append(cited)
         rows.append(
@@ -696,6 +745,7 @@ def _findings_render(
                 for fact in insight.facts
                 if fact.value is not None and _number(fact.value)
             },
+            value_units={fact.label: fact_unit(fact.label, fact.unit) for fact in insight.facts},
         )
         ids.append(cited)
         rows.append(

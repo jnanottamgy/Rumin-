@@ -9,6 +9,7 @@ import {
   citedOrder,
   duration,
   fixed,
+  internalLink,
   moneyText,
   percentText,
   segments,
@@ -112,5 +113,33 @@ describe("Markdown", () => {
     expect(text).toMatch(/^# What does RUMIN know about Aerisca Airways\?/);
     expect(text).toContain("not forecasts");
     expect(text.match(/^### /gm)).toHaveLength(7);
+  });
+});
+
+describe("links in answers", () => {
+  it("follows paths on this site only", () => {
+    for (const link of [
+      "/scenarios/1?execution=2",
+      "/data/series/wb-ind",
+      "/intelligence/company%3Aa",
+    ]) {
+      expect(internalLink(link)).toBe(true);
+    }
+    for (const link of [
+      null,
+      undefined,
+      "",
+      "https://evil.example/",
+      "//evil.example",
+      "/\\evil.example",
+      "/\\/evil.example",
+      "/\t/evil.example",
+      "/\n/evil.example",
+      "/ /evil.example",
+      "javascript:alert(1)",
+      "scenarios/1",
+    ]) {
+      expect(internalLink(link)).toBe(false);
+    }
   });
 });

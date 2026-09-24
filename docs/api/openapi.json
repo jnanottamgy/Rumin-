@@ -14551,6 +14551,18 @@
             "type": "object",
             "title": "Values",
             "description": "The figures this record supports, as exact decimal strings."
+          },
+          "value_units": {
+            "additionalProperties": {
+              "type": "string",
+              "enum": [
+                "percent",
+                "points"
+              ]
+            },
+            "type": "object",
+            "title": "Value Units",
+            "description": "For the values that are percentages ('percent') or changes in percentage points ('points'). Every other value is in the record's unit or currency, or is a count."
           }
         },
         "type": "object",

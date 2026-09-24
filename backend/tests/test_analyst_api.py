@@ -339,3 +339,142 @@ def test_the_contract_lists_the_analyst_routes() -> None:
         "/api/v1/analyst/sessions/{session_id}/turns/{turn_id}",
     }
     assert "429" in paths["/api/v1/analyst/sessions/{session_id}/turns"]["post"]["responses"]
+
+
+# --- Hardening (the internal security review) ----------------------------------------------------
+
+
+def test_a_turn_whose_answer_cannot_be_stored_ends_failed_and_frees_the_conversation(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def unstorable(*_args: Any, **_kwargs: Any) -> None:
+        raise RuntimeError("the database refused the answer")
+
+    monkeypatch.setattr(AnalystRuntime, "_finish", unstorable)
+    session = new_session(client)
+    turn = ask(client, session["id"], "What can you do?")
+    assert turn["status"] == "failed" and turn["error"]["code"] == "failed"
+    monkeypatch.undo()
+    assert ask(client, session["id"], "What can you do?")["status"] == "completed"
+
+
+def test_an_abandoned_turn_expires_instead_of_blocking_its_conversation(
+    client: TestClient, session_factory: sessionmaker[Session]
+) -> None:
+    from datetime import timedelta
+
+    from app.db.base import utcnow
+    from app.services.analyst import stale_after
+
+    session = new_session(client)
+    abandoned = utcnow() - stale_after(runtime(client).settings) - timedelta(minutes=1)
+    with session_factory() as db:
+        db.add(
+            AnalystTurn(
+                id=uuid.uuid4(),
+                session_id=uuid.UUID(session["id"]),
+                position=1,
+                question="left running by a stopped process",
+                status="running",
+                configured_provider="grounded",
+                usage={},
+                tokens=0,
+                analyst_version="1.0.0",
+                requested_at=abandoned,
+            )
+        )
+        db.get_one(AnalystSession, uuid.UUID(session["id"])).turn_count = 1
+        db.commit()
+    assert ask(client, session["id"], "What can you do?")["status"] == "completed"
+    first = call(client, "GET", f"/sessions/{session['id']}", 200)["turns"][0]
+    assert first["status"] == "failed" and first["error"]["code"] == "interrupted"
+    call(client, "DELETE", f"/sessions/{session['id']}", 204)
+
+
+def test_two_questions_stored_at_once_answer_409_not_500(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from sqlalchemy.exc import IntegrityError
+    from sqlalchemy.orm import Session as OrmSession
+
+    session = new_session(client)
+    original = OrmSession.commit
+
+    def racing(self: OrmSession) -> None:
+        if any(isinstance(item, AnalystTurn) for item in self.new):
+            raise IntegrityError("INSERT", {}, Exception("duplicate position"))
+        original(self)
+
+    monkeypatch.setattr(OrmSession, "commit", racing)
+    error = ask(client, session["id"], "What can you do?", 409)["error"]
+    assert "just asked" in error["message"]
+    monkeypatch.undo()
+    pool = runtime(client).runner
+    assert pool.capacity > 0  # the reserved place was given back
+    assert ask(client, session["id"], "What can you do?")["status"] == "completed"
+
+
+def test_every_token_counts_against_the_daily_budget(
+    analyst_db: TestClient,  # noqa: F811
+    session_factory: sessionmaker[Session],
+) -> None:
+    from app.analyst.providers.anthropic import AnthropicConfig, AnthropicProvider
+    from app.analyst.providers.scripted import ScriptedClient, submit
+
+    answer = submit("Nothing to add", ("answer", "RUMIN has nothing to add."), status="no_data")
+    answer["usage"] = {
+        "input_tokens": 10,
+        "output_tokens": 5,
+        "cache_read_input_tokens": 100,
+        "cache_creation_input_tokens": 7,
+    }
+    active = runtime(analyst_db)
+    active._provider = AnthropicProvider(
+        AnthropicConfig(api_key="k", model="m"), client=ScriptedClient([answer])
+    )
+    try:
+        session = new_session(analyst_db)
+        turn = ask(analyst_db, session["id"], "Which companies are exposed to the rupee?")
+    finally:
+        active._provider = None
+    assert turn["provider"] == "anthropic", turn["fallback"]
+    with session_factory() as db:
+        assert db.get_one(AnalystTurn, uuid.UUID(turn["id"])).tokens == 122
+        assert active.tokens_today(db) >= 122
+
+
+@pytest.mark.parametrize(
+    ("url", "allowed"),
+    [
+        ("https://api.anthropic.com", True),
+        ("http://localhost:8080", True),
+        ("http://127.0.0.1:9", True),
+        ("http://[::1]:9", True),
+        ("http://localhost.attacker.example", False),
+        ("http://localhost@attacker.example", False),
+        ("http://127.0.0.1.nip.io", False),
+        ("https://user:secret@api.anthropic.com", False),
+        ("http://api.anthropic.com", False),
+        ("ftp://localhost", False),
+        ("http://localhost:99999", False),
+    ],
+)
+def test_provider_urls_are_parsed_before_they_are_trusted(url: str, allowed: bool) -> None:
+    from pydantic import ValidationError
+
+    from app.core.config import Settings, secure_url
+
+    assert secure_url(url) is allowed
+    if allowed:
+        assert Settings(anthropic_base_url=url, worldbank_base_url=url)
+    else:
+        with pytest.raises(ValidationError):
+            Settings(anthropic_base_url=url)
+        with pytest.raises(ValidationError):
+            Settings(worldbank_base_url=url)
+
+
+def test_sql_errors_never_carry_their_parameters(database_url: str) -> None:
+    from app.db.session import create_db_engine
+
+    assert create_db_engine(database_url).hide_parameters is True

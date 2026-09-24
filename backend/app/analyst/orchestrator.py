@@ -43,6 +43,9 @@ FIXED = {"injection", "secrets", "clarify", "capabilities", "unsupported"}
 class Limits:
     deadline_seconds: float = 30.0
     max_tool_calls: int = 12
+    # RUMIN's own answer, when it replaces a language model's, has its own budget of calls
+    # and this much time: the model may have used up the first.
+    fallback_seconds: float = 15.0
 
 
 @dataclass
@@ -163,6 +166,7 @@ class Orchestrator:
                 except ProviderFailed as failure:
                     usage = failure.usage
                     fallback = failure.reason
+                    runner.renew(time.monotonic() + self.limits.fallback_seconds)
                     result = self.grounded.answer(context)
                     provider_name = "grounded"
             draft = result.draft
@@ -180,6 +184,7 @@ class Orchestrator:
                     provider_name,
                     count,
                 )
+                runner.renew(time.monotonic() + self.limits.fallback_seconds)
                 draft = self.grounded.answer(context).draft
                 provider_name = "grounded"
                 checked = grounding.check(draft.headline, draft.blocks, ledger.items)
@@ -207,7 +212,9 @@ class Orchestrator:
                 headline=draft.headline,
                 blocks=draft.blocks,
                 evidence=ledger.items,
-                follow_ups=draft.follow_ups[:4],
+                # Offered as one-click questions, so held to the rules of a question and of
+                # the answer's own text (``grounding.follow_ups``).
+                follow_ups=grounding.follow_ups(draft.follow_ups, ledger.items),
                 provider=provider_name,
                 grounding=checked,
             )

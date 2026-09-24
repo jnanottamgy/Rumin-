@@ -30,7 +30,9 @@ from app.analyst.answer import (
 from app.analyst.evidence import (
     Knowledge,
     SourceRef,
+    change_unit,
     exact,
+    fact_unit,
     model_link,
     node_link,
     scenario_link,
@@ -79,6 +81,12 @@ from app.services.intelligence import build_info
 
 MAX_PATHS_SHOWN = 12
 EntityKey = Field(pattern=r"^(company|industry):[a-z0-9][a-z0-9_.-]{0,95}$", max_length=128)
+
+
+def _variable_unit(ctx: RenderContext, change: Any) -> str | None:
+    """The unit of the variable a stated change is to, from the turn's vocabulary."""
+    term = ctx.vocabulary.get(f"variable:{str(change.variable_id).lower()}")
+    return term.unit if term else None
 
 
 # --- search_records ----------------------------------------------------------------------------
@@ -135,9 +143,12 @@ def _search(session: Session, args: SearchInput, vocabulary: Vocabulary) -> list
                 term.kind, term.key, term.record_id, term.label, "part" if text else "filter"
             )
     if "scenario" in wanted and text and country is None:
-        pattern = f"%{args.query.lower()}%"
+        escaped = args.query.lower().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        pattern = f"%{escaped}%"
         for scenario in session.scalars(
-            select(Scenario).where(func.lower(Scenario.name).like(pattern)).limit(args.limit)
+            select(Scenario)
+            .where(func.lower(Scenario.name).like(pattern, escape="\\"))
+            .limit(args.limit)
         ):
             key = f"scenario:{scenario.id}"
             found.setdefault(key, Match("scenario", key, str(scenario.id), scenario.name, "name"))
@@ -157,9 +168,11 @@ KIND_PLURAL = {
 
 
 def search_title(args: SearchInput, vocabulary: Vocabulary) -> str:
-    """'Records matching "oil"', or for a listing 'Companies in India'."""
+    """'Records found by name', or for a listing 'Companies in India'. The words searched for
+    are never repeated here: they are a caller's text, and evidence holds only what RUMIN
+    read (the grounding check accepts what evidence says)."""
     if args.query:
-        head = f"Records matching '{data_text(args.query, 80)}'"
+        head = "Records found by name"
         if args.kinds:
             head += f" ({', '.join(args.kinds)})"
     else:
@@ -191,11 +204,7 @@ def _search_render(
         call=ctx.call,
         kind=Knowledge.RECORD,
         title=search_title(args, ctx.vocabulary),
-        source=SourceRef(
-            kind="catalogue",
-            id=f"search:{args.query.lower()}:{args.country_key or ''}:{','.join(args.kinds)}",
-            label="Search",
-        ),
+        source=SourceRef(kind="catalogue", id=f"search:{ctx.call}", label="Search"),
         retrieved_at=read_at,
         values={"matches": len(matches)},
     )
@@ -278,6 +287,10 @@ def simulation_block(
         line_values[f"{line.id}.percent_change"] = line.percent_change
     for change in drivers.changes:
         line_values[f"change.{change.variable_id}"] = change.value
+    change_units = {
+        f"change.{change.variable_id}": change_unit(change.change_type, change.unit)
+        for change in drivers.changes
+    }
     line_values["horizon_months"] = execution.horizon_months
     line_values["version"] = execution.version
     simulated = ctx.ledger.add(
@@ -304,6 +317,7 @@ def simulation_block(
             "graph_build": str(execution.graph_build_id) if execution.graph_build_id else None,
         },
         values=line_values,
+        value_units=change_units,
     )
     cited = [simulated]
     if drivers.figures:
@@ -497,6 +511,7 @@ def _dossier_render(
                 for fact in insight.facts
                 if fact.value is not None and _is_number(fact.value)
             },
+            value_units={fact.label: fact_unit(fact.label, fact.unit) for fact in insight.facts},
         )
         finding_ids.append(cited)
         findings.append(
@@ -1289,6 +1304,10 @@ def _templates_render(
             ),
             retrieved_at=read_at,
             values={f"change.{c.variable_id}": c.value for c in template.changes},
+            value_units={
+                f"change.{c.variable_id}": change_unit(c.change_type, _variable_unit(ctx, c))
+                for c in template.changes
+            },
         )
         ids.append(evidence)
         rows.append(

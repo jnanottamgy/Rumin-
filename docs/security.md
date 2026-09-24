@@ -8,7 +8,10 @@ and new versions of them, delete scenarios that were never executed, execute sce
 simulation runs and analyses, and read, ask in and delete AI Analyst conversations (and,
 when a language model is configured, spend its token budget). Run it on your own machine (the dev servers bind to `127.0.0.1`) and
 do not expose it to a network until Phase 10 adds access control. **This build has not had
-a security review and is not production-secure.**
+a formal security review and is not production-secure.** The AI Analyst (Phase 7) had an
+internal review by an independent review agent before it was pushed; its findings and fixes
+are listed [below](#the-internal-review-of-the-ai-analyst). That is not a substitute for a
+formal review.
 
 It stores no credentials, and no personal data beyond what a person types into an AI
 Analyst question (kept with the conversation until it is deleted). Since Phase 2 it stores **third-party data
@@ -219,37 +222,69 @@ The details are in [guardrails](analyst/guardrails.md); in short:
   reaches nothing the API does not already serve. Every call carries an access context for
   Phase 10's per-user checks.
 - **Nothing unsupported is shown.** Every answer passes the grounding check (every figure,
-  date and version in the evidence its sentence cites; citations exist; no predictive,
-  causal or advisory phrasing). A language model's draft that fails is discarded and RUMIN
-  answers instead; a part of RUMIN's own draft that fails is withheld.
+  date, period and version in the evidence its sentence cites, as a value of its own kind —
+  a percentage, percentage points, an amount in its currency; anything that looks like a
+  figure but cannot be read exactly fails; citations exist; no predictive, causal or
+  advisory phrasing). A language model's draft that fails is discarded and RUMIN answers
+  instead; a part of RUMIN's own draft that fails is withheld. Follow-up questions are checked
+  before they are offered. A tool's arguments are never copied into evidence, so a model
+  cannot write the evidence it cites.
 - **Prompt injection.** Questions carrying instructions aimed at the Analyst (to ignore its
   rules, reveal its prompt or configuration, act as another system, or containing SQL or
-  shell fragments) are declined before any tool runs. Stored text reaches a model only as
-  data inside a tool result, cleaned first: control and bidirectional characters removed,
-  length capped, instruction-like text withheld.
-- **The key.** `RUMIN_ANTHROPIC_API_KEY` is a secret value in the settings (never printed),
-  sent only to the configured base URL (`https://` only), never logged, never stored, never
-  returned: the capabilities endpoint says only whether a model is ready and which setting is
-  missing. RUMIN passes its own key, base URL, timeout and retry settings to the SDK, so the
+  shell fragments) are declined before any tool runs, also when written in full-width
+  letters or with invisible characters. Stored text reaches a model only as data inside a
+  tool result, every string of it cleaned first: invisible characters (control,
+  zero-width, bidirectional, tag) removed, length capped, instruction-like text withheld. The
+  model's own answer is validated against its schema and cleaned of invisible characters.
+- **The key.** `RUMIN_ANTHROPIC_API_KEY` is a secret value in the settings (never printed,
+  and left out of the provider configuration's `repr`), sent only to the configured base URL
+  (`https://`, or `http://` to this machine only, with the host parsed), never logged, never
+  stored, never returned: the capabilities endpoint says only whether a model is ready and
+  which setting is missing. RUMIN passes its own key, base URL, timeout and retry settings to the SDK, so the
   process environment's `ANTHROPIC_*` variables are never used; if `ANTHROPIC_CUSTOM_HEADERS`
   is set, the provider refuses to start rather than send headers RUMIN did not choose. Tests
   prove each of these.
 - **Bounded work and cost.** Question length (2,000 characters by default), questions per
   conversation (200), one pending question per conversation, a bounded pool (2 answering, 8
-  waiting; 429 beyond, before anything is stored), a deadline per question (90 s), tool
-  calls per question (12), a time limit per tool call, model requests per question (6),
-  output tokens per request (4,096) and model tokens per day (2,000,000; beyond it RUMIN
-  answers without the model).
+  waiting; 429 beyond, before anything is stored), a deadline per question (90 s) that every
+  model request's timeout and retries respect, tool calls per question (12, counting calls
+  to tools that do not exist), tool arguments (4,000 characters), a time limit per tool
+  call, model requests per question (6), output tokens per request (4,096) and model tokens
+  per day (2,000,000, cached tokens included; beyond it RUMIN answers without the model). A
+  turn that fails in any way ends *failed*; one left pending by a stopped process expires.
 - **Privacy.** Conversations are stored so they can be reopened, and deleted with everything
   in them. Logs record ids, intents, tool names, statuses, counts, tokens and timings, never
-  the question, the answer or a secret (a test reads the logs of a turn). A failed turn stores
-  a fixed message; the stack trace goes only to the server log.
+  the question, the answer or a secret (a test reads the logs of a turn). A failed database
+  statement is logged without its parameters, and the SDK's debug logging is held at
+  warnings. A failed turn stores a fixed message; the stack trace goes only to the server log.
 - **The browser.** Answers are rendered as text, never as HTML. Links in answers are
-  followed only when they are paths inside RUMIN. A what-if handed to the Scenario Lab
+  followed only when, resolved as the browser would resolve them, they stay on RUMIN's own
+  origin (`//host`, `/\host` and links with tabs or line breaks are not followed). A what-if handed to the Scenario Lab
   travels in the router's state (not the URL), is checked for shape before use, and is never
   saved without the person's action.
 - **No model is called unless configured.** The default provider makes no outbound request.
   No request to a language model was made while RUMIN was built (no key was available).
+
+#### The internal review of the AI Analyst
+
+Before the Analyst was pushed, an independent review agent read its code and tried to break
+it (the grounding check, the tools, the provider, the service, the API and the page). Every
+finding was verified against the code and fixed, with a test:
+
+| Finding | Severity | Fix |
+|---|---|---|
+| A model's search words were copied into evidence text, so it could plant a date, year or quotation and then cite it | Medium | Evidence holds only what RUMIN read; search evidence names the search, not its words |
+| Figures in other forms were not read: `$5m`, `5B`, `5 trillion`, `INR900 crore`, `Rs.900 crore`, `.75%`, `5-45%`, `+/-99%`, `five hundred crore`, `½`, `5 000`, `(5)`, `–5`; `3%` could match a count of 3 | Medium | More forms read (currencies, scales, dash minus, accounting brackets); anything unreadable fails; figures match only values of their kind (`value_units`) |
+| Follow-up questions from a model were shown unchecked | Medium | Checked like a question and like the answer's text; the rest dropped |
+| A failure while storing an answer left the turn *running*, blocking its conversation; a malformed `submit_answer` or a NUL in the model's text could cause it | Medium | Every claimed turn ends completed or failed; abandoned turns expire; `submit_answer` is validated; invisible characters removed |
+| A failed SQL statement's parameters (the question) reached the logs; two simultaneous questions answered 500 | Low | `hide_parameters`; 409 |
+| A model request could outlive the turn's deadline (60 s × 3 attempts) | Low | Each attempt's timeout ends at the deadline; retries only while it allows; RUMIN's fallback has its own budget |
+| Calls to unknown tool names were not counted against the limit; arguments were stored whatever their size | Low | Counted first; arguments capped |
+| Some stored text reached the model uncleaned; format characters (tags, soft hyphens) were kept | Low | Every string of a tool result cleaned; every invisible character removed; screening on folded forms |
+| `http://localhost.attacker.example` passed the base-URL check | Low | The URL is parsed; only this machine may use `http://` |
+| The provider configuration's `repr` included the key | Low | Left out |
+| `/\evil.example` passed the browser's internal-link check | Low | Links are resolved as the browser resolves them and must stay on RUMIN's origin |
+| The token budget ignored cached tokens; several API processes would each apply their own limits | Info | Cached tokens counted; per-process limits documented ([limitations](analyst/limitations.md#system)) |
 
 ### Secrets and supply chain
 

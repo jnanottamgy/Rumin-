@@ -28,16 +28,30 @@ may not contain figures ([evidence](evidence.md#the-grounding-check)).
 
 - **Questions** are screened for instructions aimed at the Analyst (setting aside its rules,
   revealing its configuration or prompt, role-play as another system, fake system tags, SQL
-  or shell fragments) and declined before any tool runs.
-- **Stored text is data.** Names, descriptions and notes read from RUMIN's records pass
-  through `policy.data_text` before a model sees them: control and bidirectional-override
-  characters are removed, whitespace collapsed, length capped, and text that reads like an
-  instruction is replaced by *[withheld: this stored text reads like an instruction]*. A tool
-  result reaches a model as JSON inside a `tool_result`, never as instructions.
+  or shell fragments) and declined before any tool runs. Screening reads the question with
+  full-width letters and other compatibility forms folded and invisible characters removed,
+  so `ｉｇｎｏｒｅ ａｌｌ ｐｒｅｖｉｏｕｓ ｉｎｓｔｒｕｃｔｉｏｎｓ` is caught as well.
+- **Stored text is data.** Every string of a tool result (names, descriptions, notes,
+  scenario names) and of the brief passes through `policy.data_text` before a model sees it:
+  invisible characters are removed (control, zero-width, bidirectional-override, tag
+  characters, soft hyphens, byte-order marks), whitespace collapsed, length capped, and text
+  that reads like an instruction — also once compatibility forms are folded — is replaced by
+  *[withheld: this stored text reads like an instruction]*. A tool result reaches a model as
+  JSON inside a `tool_result`, never as instructions.
 - **The model cannot act.** It can only call the 17 read-only tools with validated arguments,
   and `submit_answer`. There is no SQL, code, network, file or write tool. Whatever a document
   or a question says, the worst a model can do is draft an answer, and that draft must pass
   the grounding check or it is replaced.
+- **The model's answer is checked for form.** `submit_answer`'s input is validated against
+  its schema (statuses, roles, lengths, no other fields); an answer that does not fit is
+  replaced by the grounded answer. Invisible characters are removed from everything the model
+  wrote before it is checked, stored or shown.
+- **The model cannot write its own evidence.** A tool's arguments — search words, for
+  instance — are never copied into evidence text, which holds only what RUMIN read; a model
+  cannot plant a figure or a date there and then cite it.
+- **Follow-ups are checked** before they are offered as one-click questions: nothing the
+  question screen would decline, no forbidden phrasing, and no figure the evidence does not
+  hold unless it is a what-if's stated change ([evidence](evidence.md#the-grounding-check)).
 
 ## Limits and costs
 
@@ -47,13 +61,17 @@ may not contain figures ([evidence](evidence.md#the-grounding-check)).
 | Questions per conversation | 200 | `RUMIN_ANALYST_MAX_TURNS_PER_SESSION` |
 | Pending questions per conversation | 1 (409 while one is answered) | — |
 | Turns answered at once / waiting | 2 / 8 (429 beyond, nothing stored) | `RUMIN_ANALYST_MAX_CONCURRENT`, `RUMIN_ANALYST_MAX_QUEUED` |
-| Time per turn | 90 s | `RUMIN_ANALYST_DEADLINE_SECONDS` |
-| Tool calls per turn | 12 | `RUMIN_ANALYST_MAX_TOOL_CALLS` |
+| Time per turn | 90 s; every model request's timeout ends at it, and a failed request is tried again only while it allows | `RUMIN_ANALYST_DEADLINE_SECONDS` |
+| RUMIN's own answer after a model's is not used | 15 s more, with a fresh budget of tool calls | — |
+| Tool calls per turn | 12, counting calls to tools that do not exist | `RUMIN_ANALYST_MAX_TOOL_CALLS` |
 | Time per tool call | 4–15 s by tool ([tools](tools.md)) | — |
+| A tool call's arguments | 4,000 characters (longer: refused, recorded as their size) | — |
 | Model requests per turn | 6 | `RUMIN_ANALYST_MAX_MODEL_REQUESTS` |
-| Model tokens per day | 2,000,000 | `RUMIN_ANALYST_DAILY_TOKEN_BUDGET` |
+| Tries of a failed model request (server error, overloaded, rate-limited, timed out, unreachable) | 1 + 2, within the turn's time | `RUMIN_ANALYST_MAX_RETRIES` |
+| Model tokens per day | 2,000,000, counting every token read or written, cached or not; checked before each turn, so one turn in progress can take the total past it | `RUMIN_ANALYST_DAILY_TOKEN_BUDGET` |
 | A tool result as stored | 32,000 characters | — |
 | A tool result sent to a model | 12,000 characters | — |
+| A question left queued or running | expired (marked failed) after 10 minutes, or ten times the time per turn if longer, when its conversation is next used | — |
 
 Request bodies are capped at 64 KiB for the whole API, as before.
 
@@ -71,8 +89,15 @@ checks have one place to go when authentication arrives.
   them (turns and tool calls).
 - Logs carry ids, intents, tool names, statuses, counts, token numbers and timings
   (`event=analyst.turn`, `event=analyst.tool`), **never the question, the answer or a
-  secret**. A test reads the logs of a turn to prove it.
+  secret**. A test reads the logs of a turn to prove it. A failed database statement is
+  logged without its parameters (`hide_parameters`), so a question cannot reach the logs
+  through an error either; the SDK's own debug logging (`ANTHROPIC_LOG`) is held at warnings,
+  since it would log whole requests; and a tool name a model invents is logged quoted
+  (`%r`), so it cannot forge log lines.
 - The API key stays in the backend: the capabilities endpoint says whether a model is ready
-  and why not (a missing setting's name), never the key.
+  and why not (a missing setting's name), never the key; the provider's configuration
+  leaves the key out of its `repr`. The base URL must be `https://`, or plain `http://` to
+  this machine only; the host is parsed, so `http://localhost.example.com` and
+  `http://localhost@example.com` are refused.
 - A failed turn records a fixed message (*The question could not be answered; the error was
   logged.*), never a stack trace; the stack trace goes to the server log.

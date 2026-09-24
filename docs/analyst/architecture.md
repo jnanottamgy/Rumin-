@@ -59,8 +59,24 @@ at once and `RUMIN_ANALYST_MAX_QUEUED` waiting. A place is **reserved before any
 stored**, so a full pool answers 429 and leaves no trace. A worker claims a turn with a
 conditional update (`queued → running`), so a turn is never answered twice, even across
 processes. Each turn has its own deadline (`RUMIN_ANALYST_DEADLINE_SECONDS`), passed to every
-tool call as the time left. When the server starts, turns left queued or running by a
-stopped process are marked failed. `inline` mode answers in the request itself (tests).
+tool call and every model request as the time left. When RUMIN's composer answers after a
+language model's answer was not used, it has a fresh budget of tool calls and 15 seconds.
+
+**A claimed turn always ends.** Whatever fails after a worker claims a turn — the
+orchestrator, recording a tool call, or storing the answer itself — the turn is marked
+failed with a fixed message, so its conversation is never left blocked by a turn that stays
+*running*. If even that cannot be written (the database itself is failing), two things close
+it later: when the server starts, turns left queued or running are marked failed
+(`recover`), and when a conversation is next asked in or deleted, its turns pending for longer
+than any turn can take (10 minutes, or ten times the deadline) are marked failed
+(`expire_stale`). Two questions stored in one conversation at the same moment cannot both
+take the same position: the second answers 409. `inline` mode answers in the request itself
+(tests).
+
+The pool, its limits and the daily token budget are **per API process**. RUMIN runs one
+process (`make dev`, the Docker image); several processes would each apply their own limits,
+and `recover` on one process's start would mark the others' running turns failed. A shared
+queue and budget are future work ([limitations](limitations.md#system)).
 
 Each tool call runs in its own thread with its own database session and a time limit; a
 transient database error (`OperationalError`) is retried once. The tool's result is turned

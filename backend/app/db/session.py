@@ -17,7 +17,9 @@ from sqlalchemy.pool import StaticPool
 
 
 def create_db_engine(database_url: str) -> Engine:
-    kwargs: dict[str, Any] = {"pool_pre_ping": True}
+    # A failed statement's parameters (questions, names, figures) are kept out of the error
+    # text, which reaches the logs.
+    kwargs: dict[str, Any] = {"pool_pre_ping": True, "hide_parameters": True}
     is_sqlite = database_url.startswith("sqlite")
     if is_sqlite:
         # FastAPI runs synchronous endpoints in a thread pool; every request still gets

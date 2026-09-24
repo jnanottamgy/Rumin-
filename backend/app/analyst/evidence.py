@@ -5,17 +5,21 @@ Every tool result is turned into **evidence records**, each with a short id (``E
 record it comes from (with a link to it), for which period, when it was retrieved, in which
 units, with what provenance, and — for simulated results — which models, versions and
 assumptions produced it. Its ``values`` are the figures it supports: the grounding check
-(``grounding.py``) accepts a figure in the text only if a cited record carries it.
+(``grounding.py``) accepts a figure in the text only if a cited record carries it. Values that
+are percentages or percentage-point changes say so (``value_units``), so that "3 %" is never
+matched against a count of 3 or an amount.
 
 The same stored record reached by two tools is one piece of evidence.
 """
 
 from __future__ import annotations
 
+import re
 from collections.abc import Iterable, Mapping
 from datetime import datetime
 from decimal import Decimal
 from enum import StrEnum
+from typing import Literal
 from urllib.parse import quote
 
 from pydantic import Field
@@ -46,6 +50,63 @@ KNOWLEDGE_LABEL: dict[Knowledge, str] = {
     Knowledge.SIMULATED: "Simulated result",
     Knowledge.PREVIEW: "Preview, not stored",
 }
+
+
+ValueUnit = Literal["percent", "points"]
+# Values that are percentages by their name, wherever they are recorded.
+_PERCENT_NAMES = ("percent_change", ".share", "strict_equivalent")
+
+
+def percent_unit(unit: str | None) -> bool:
+    """Whether a unit is a percentage: 'percent per annum', '% change on previous year' …"""
+    text = (unit or "").lower()
+    return "%" in text or "percent" in text
+
+
+def change_unit(change_type: str, variable_unit: str | None) -> ValueUnit | None:
+    """What a stated change's value is: a percentage for a percentage change; percentage
+    points for an absolute change to a variable measured in percent (a rate); otherwise the
+    variable's own unit (``None``)."""
+    if change_type == "percent_change":
+        return "percent"
+    return "points" if percent_unit(variable_unit) else None
+
+
+def fact_unit(label: str, unit: str | None) -> ValueUnit | None:
+    """Whether a finding's figure is a percentage or a change in percentage points. A figure
+    in a rate's unit ('percent per annum', '% change on previous year') is a percentage when
+    it is a value, and percentage points when it is a change."""
+    text = (unit or "").lower().replace("_", " ").strip()
+    if text in ("percentage points", "percentage point", "pp", "points"):
+        return "points"
+    if text in ("percent", "%"):
+        return "percent"
+    if percent_unit(text):
+        return "points" if re.search(r"change|revision|difference", label, re.I) else "percent"
+    return None
+
+
+def series_units(
+    measure: str,
+    *,
+    levels: Iterable[str] = (),
+    changes: Iterable[str] = (),
+    differences: Iterable[str] = (),
+) -> dict[str, ValueUnit]:
+    """Which of a series' values are percentages or percentage points.
+
+    ``measure`` is the series' measure as Financial Intelligence reads it: ``relative`` for
+    levels and exchange rates (their changes are percentages), ``points`` for rates, ratios
+    and growth rates (their values are percentages, their changes percentage points).
+    ``levels`` are stored values, ``changes`` changes as RUMIN computes them for the
+    measure, ``differences`` plain differences in the series' unit."""
+    units: dict[str, ValueUnit] = {}
+    if measure == "points":
+        units.update({key: "percent" for key in levels})
+        units.update({key: "points" for key in (*changes, *differences)})
+    else:
+        units.update({key: "percent" for key in changes})
+    return units
 
 
 class SourceRef(ApiModel):
@@ -90,6 +151,12 @@ class Evidence(ApiModel):
         default_factory=dict,
         description="The figures this record supports, as exact decimal strings.",
     )
+    value_units: dict[str, ValueUnit] = Field(
+        default_factory=dict,
+        description="For the values that are percentages ('percent') or changes in percentage "
+        "points ('points'). Every other value is in the record's unit or currency, or is a "
+        "count.",
+    )
 
 
 def exact(value: Decimal | int | str | None) -> str | None:
@@ -130,18 +197,31 @@ class EvidenceLedger:
         models: Iterable[str] = (),
         assumptions: Iterable[str] = (),
         values: Mapping[str, Decimal | int | str | None] | None = None,
+        value_units: Mapping[str, ValueUnit | None] | None = None,
     ) -> str:
         """Record a piece of evidence (or add figures to one already recorded for the same
-        source, period and kind) and return its id."""
+        source, period and kind) and return its id. ``value_units`` says which values are
+        percentages or percentage points; values named as percentages (``…percent_change``,
+        ``….share``) are marked without being listed."""
         clean = {
             label: text
             for label, value in (values or {}).items()
             if (text := exact(value)) is not None
         }
+        stated = {k: v for k, v in (value_units or {}).items() if v is not None}
+        units: dict[str, ValueUnit] = {
+            label: stated.get(label) or "percent"
+            for label in clean
+            if label in stated or label.endswith(_PERCENT_NAMES)
+        }
         key = (source.kind, source.id, period, kind.value)
         existing = self._by_key.get(key)
         if existing is not None:
-            existing.values.update({k: v for k, v in clean.items() if k not in existing.values})
+            for label, text in clean.items():
+                if label not in existing.values:
+                    existing.values[label] = text
+                    if label in units:
+                        existing.value_units[label] = units[label]
             return existing.id
         item = Evidence(
             id=f"E{len(self._items) + 1}",
@@ -162,6 +242,7 @@ class EvidenceLedger:
             models=list(models),
             assumptions=list(assumptions),
             values=clean,
+            value_units=units,
         )
         self._items.append(item)
         self._by_key[key] = item

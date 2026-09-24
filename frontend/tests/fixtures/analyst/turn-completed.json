@@ -1,6 +1,6 @@
 {
-  "id": "398236d0-c2c0-4702-acc2-d09d11ab1faf",
-  "session_id": "cd75ea01-6ff2-47ed-8197-297c6f57e006",
+  "id": "e13a49f5-d5c9-4d0e-9107-bb512d5894bc",
+  "session_id": "417a09ab-8fb3-498f-9776-2d7c2a0c2f11",
   "position": 1,
   "question": "What does RUMIN know about Aerisca Airways?",
   "status": "completed",
@@ -359,9 +359,9 @@
         "models": ["airline_fuel_cost 1.1.0", "fx_exposure 1.0.0", "floating_rate_interest 1.0.0"],
         "missing": [],
         "headline": "profit_before_tax",
-        "scenario_id": "a331b2ea-f31d-4486-873a-d0a11e72c67c",
-        "execution_id": "d310954b-0d07-43be-954c-f33007711fa5",
-        "link": "/scenarios/a331b2ea-f31d-4486-873a-d0a11e72c67c?execution=d310954b-0d07-43be-954c-f33007711fa5",
+        "scenario_id": "b25b7263-1c64-4761-ad57-448cdf4a0bc0",
+        "execution_id": "285ddeea-1e37-4ccd-9075-08c324cfc4f7",
+        "link": "/scenarios/b25b7263-1c64-4761-ad57-448cdf4a0bc0?execution=285ddeea-1e37-4ccd-9075-08c324cfc4f7",
         "draft": null,
         "notes": [
           "Not modelled: Cash flow. No included model covers these lines, and not modelled is not the same as unchanged."
@@ -472,7 +472,7 @@
         },
         "period": null,
         "as_of": "graph build 1",
-        "retrieved_at": "2026-09-24T18:20:57.134103Z",
+        "retrieved_at": "2026-09-24T19:23:44.084845Z",
         "unit": null,
         "currency": null,
         "provenance": {
@@ -483,7 +483,8 @@
         "grade": null,
         "models": [],
         "assumptions": [],
-        "values": {}
+        "values": {},
+        "value_units": {}
       },
       {
         "id": "E2",
@@ -500,7 +501,7 @@
         },
         "period": null,
         "as_of": "graph build 1",
-        "retrieved_at": "2026-09-24T18:20:57.134103Z",
+        "retrieved_at": "2026-09-24T19:23:44.084845Z",
         "unit": null,
         "currency": null,
         "provenance": {},
@@ -515,7 +516,8 @@
           "how.direct": "1",
           "how.via_industry": "1",
           "how.upstream": "2"
-        }
+        },
+        "value_units": {}
       },
       {
         "id": "E3",
@@ -532,7 +534,7 @@
         },
         "period": null,
         "as_of": "graph build 1",
-        "retrieved_at": "2026-09-24T18:20:57.134103Z",
+        "retrieved_at": "2026-09-24T19:23:44.084845Z",
         "unit": null,
         "currency": null,
         "provenance": {
@@ -545,7 +547,8 @@
         "grade": null,
         "models": [],
         "assumptions": [],
-        "values": {}
+        "values": {},
+        "value_units": {}
       },
       {
         "id": "E4",
@@ -562,7 +565,7 @@
         },
         "period": null,
         "as_of": "graph build 1",
-        "retrieved_at": "2026-09-24T18:20:57.134103Z",
+        "retrieved_at": "2026-09-24T19:23:44.084845Z",
         "unit": null,
         "currency": null,
         "provenance": {
@@ -575,7 +578,8 @@
         "grade": null,
         "models": [],
         "assumptions": [],
-        "values": {}
+        "values": {},
+        "value_units": {}
       },
       {
         "id": "E5",
@@ -592,7 +596,7 @@
         },
         "period": null,
         "as_of": "graph build 1",
-        "retrieved_at": "2026-09-24T18:20:57.134103Z",
+        "retrieved_at": "2026-09-24T19:23:44.084845Z",
         "unit": null,
         "currency": null,
         "provenance": {
@@ -602,7 +606,8 @@
         "grade": null,
         "models": [],
         "assumptions": [],
-        "values": {}
+        "values": {},
+        "value_units": {}
       },
       {
         "id": "E6",
@@ -619,7 +624,7 @@
         },
         "period": null,
         "as_of": "graph build 1",
-        "retrieved_at": "2026-09-24T18:20:57.134103Z",
+        "retrieved_at": "2026-09-24T19:23:44.084845Z",
         "unit": null,
         "currency": null,
         "provenance": {
@@ -632,7 +637,8 @@
         "grade": null,
         "models": [],
         "assumptions": [],
-        "values": {}
+        "values": {},
+        "value_units": {}
       },
       {
         "id": "E7",
@@ -649,7 +655,7 @@
         },
         "period": null,
         "as_of": "graph build 1",
-        "retrieved_at": "2026-09-24T18:20:57.134103Z",
+        "retrieved_at": "2026-09-24T19:23:44.084845Z",
         "unit": null,
         "currency": null,
         "provenance": {
@@ -662,7 +668,8 @@
         "grade": null,
         "models": [],
         "assumptions": [],
-        "values": {}
+        "values": {},
+        "value_units": {}
       },
       {
         "id": "E8",
@@ -679,7 +686,7 @@
         },
         "period": null,
         "as_of": "graph build 1",
-        "retrieved_at": "2026-09-24T18:20:57.134103Z",
+        "retrieved_at": "2026-09-24T19:23:44.084845Z",
         "unit": null,
         "currency": null,
         "provenance": {
@@ -692,7 +699,8 @@
         "grade": null,
         "models": [],
         "assumptions": [],
-        "values": {}
+        "values": {},
+        "value_units": {}
       },
       {
         "id": "E9",
@@ -709,7 +717,7 @@
         },
         "period": null,
         "as_of": "graph build 1",
-        "retrieved_at": "2026-09-24T18:20:57.134103Z",
+        "retrieved_at": "2026-09-24T19:23:44.084845Z",
         "unit": null,
         "currency": null,
         "provenance": {
@@ -722,7 +730,8 @@
         "grade": null,
         "models": [],
         "assumptions": [],
-        "values": {}
+        "values": {},
+        "value_units": {}
       },
       {
         "id": "E10",
@@ -739,7 +748,7 @@
         },
         "period": null,
         "as_of": "graph build 1",
-        "retrieved_at": "2026-09-24T18:20:57.134103Z",
+        "retrieved_at": "2026-09-24T19:23:44.084845Z",
         "unit": null,
         "currency": null,
         "provenance": {
@@ -752,7 +761,8 @@
         "grade": null,
         "models": [],
         "assumptions": [],
-        "values": {}
+        "values": {},
+        "value_units": {}
       },
       {
         "id": "E11",
@@ -763,17 +773,17 @@
         "detail": "profit_before_tax",
         "source": {
           "kind": "execution",
-          "id": "d310954b-0d07-43be-954c-f33007711fa5",
+          "id": "285ddeea-1e37-4ccd-9075-08c324cfc4f7",
           "label": "Oil, rupee and rates on Aerisca",
-          "link": "/scenarios/a331b2ea-f31d-4486-873a-d0a11e72c67c?execution=d310954b-0d07-43be-954c-f33007711fa5"
+          "link": "/scenarios/b25b7263-1c64-4761-ad57-448cdf4a0bc0?execution=285ddeea-1e37-4ccd-9075-08c324cfc4f7"
         },
         "period": "12 months simulated",
-        "as_of": "2026-09-24T18:20:56.777476+00:00",
-        "retrieved_at": "2026-09-24T18:20:57.134103Z",
+        "as_of": "2026-09-24T19:23:43.745019+00:00",
+        "retrieved_at": "2026-09-24T19:23:44.084845Z",
         "unit": null,
         "currency": "INR",
         "provenance": {
-          "scenario": "a331b2ea-f31d-4486-873a-d0a11e72c67c",
+          "scenario": "b25b7263-1c64-4761-ad57-448cdf4a0bc0",
           "version": "1",
           "inputs_hash": "f6de3e60b25529da5405788ece8ab094fcbb2ff65a19f20c96c66310e77cd15b",
           "result_hash": "45fe9f3bf9a5d69b0f49f5e01ae5f6ebf291fc8e3f94635f5d6072c8e8dce622",
@@ -822,6 +832,16 @@
           "change.var_rbi_repo_rate": "0.5",
           "horizon_months": "12",
           "version": "1"
+        },
+        "value_units": {
+          "revenue.percent_change": "percent",
+          "operating_costs.percent_change": "percent",
+          "operating_profit.percent_change": "percent",
+          "interest_expense.percent_change": "percent",
+          "profit_before_tax.percent_change": "percent",
+          "change.var_brent_crude": "percent",
+          "change.var_usd_inr": "percent",
+          "change.var_rbi_repo_rate": "points"
         }
       },
       {
@@ -833,13 +853,13 @@
         "detail": "Entered by a person in the Scenario Lab; not RUMIN data.",
         "source": {
           "kind": "scenario",
-          "id": "a331b2ea-f31d-4486-873a-d0a11e72c67c",
+          "id": "b25b7263-1c64-4761-ad57-448cdf4a0bc0",
           "label": "Oil, rupee and rates on Aerisca",
-          "link": "/scenarios/a331b2ea-f31d-4486-873a-d0a11e72c67c"
+          "link": "/scenarios/b25b7263-1c64-4761-ad57-448cdf4a0bc0"
         },
         "period": "version 1",
         "as_of": null,
-        "retrieved_at": "2026-09-24T18:20:57.134103Z",
+        "retrieved_at": "2026-09-24T19:23:44.084845Z",
         "unit": null,
         "currency": null,
         "provenance": {},
@@ -859,7 +879,8 @@
           "Debt linked to US short-term rates": "0",
           "Annual revenue invoiced in US dollars": "500000",
           "Annual costs paid in US dollars": "200000"
-        }
+        },
+        "value_units": {}
       },
       {
         "id": "E13",
@@ -876,7 +897,7 @@
         },
         "period": null,
         "as_of": null,
-        "retrieved_at": "2026-09-24T18:20:57.134103Z",
+        "retrieved_at": "2026-09-24T19:23:44.084845Z",
         "unit": null,
         "currency": null,
         "provenance": {},
@@ -892,7 +913,8 @@
           "grade.simulated": "9",
           "grade.assumed": "7",
           "grade.unverified": "0"
-        }
+        },
+        "value_units": {}
       },
       {
         "id": "E14",
@@ -909,7 +931,7 @@
         },
         "period": "2024 to 2025",
         "as_of": null,
-        "retrieved_at": "2026-09-24T18:20:57.134103Z",
+        "retrieved_at": "2026-09-24T19:23:44.084845Z",
         "unit": null,
         "currency": null,
         "provenance": {},
@@ -922,6 +944,10 @@
           "2025": "92.1",
           "Change": "9.3824228029",
           "Threshold": "5"
+        },
+        "value_units": {
+          "Change": "percent",
+          "Threshold": "percent"
         }
       },
       {
@@ -939,7 +965,7 @@
         },
         "period": "2024",
         "as_of": null,
-        "retrieved_at": "2026-09-24T18:20:57.134103Z",
+        "retrieved_at": "2026-09-24T19:23:44.084845Z",
         "unit": null,
         "currency": null,
         "provenance": {},
@@ -949,6 +975,9 @@
         "assumptions": [],
         "values": {
           "Revision": "0.5973715651"
+        },
+        "value_units": {
+          "Revision": "percent"
         }
       },
       {
@@ -966,7 +995,7 @@
         },
         "period": "2021 to 2025",
         "as_of": null,
-        "retrieved_at": "2026-09-24T18:20:57.134103Z",
+        "retrieved_at": "2026-09-24T19:23:44.084845Z",
         "unit": null,
         "currency": null,
         "provenance": {},
@@ -980,6 +1009,9 @@
           "t statistic": "8.3511494668",
           "Critical value": "3.182",
           "Values in the window": "5"
+        },
+        "value_units": {
+          "Slope per period, relative to the window's mean": "percent"
         }
       },
       {
@@ -991,13 +1023,13 @@
         "detail": "In the stored execution of “Oil, rupee and rates on Aerisca” (version 1), with Brent crude oil price +20.00 %, USD/INR exchange rate +5.00 % and RBI policy repo rate +0.50 percentage points, Aerisca Airways's profit before tax changes by −6,700,000 INR (−17.63 %) over 12 months, from a baseline of 38,000,000 INR.",
         "source": {
           "kind": "insight",
-          "id": "ins-b0a18706c632be8a",
+          "id": "ins-4696a70fec81c9f8",
           "label": "Simulated impact",
           "link": "/intelligence/company%3Aco_aerisca_airways"
         },
         "period": "12 simulated months",
         "as_of": null,
-        "retrieved_at": "2026-09-24T18:20:57.134103Z",
+        "retrieved_at": "2026-09-24T19:23:44.084845Z",
         "unit": null,
         "currency": null,
         "provenance": {},
@@ -1014,6 +1046,9 @@
           "Profit before tax: baseline": "38000000",
           "Profit before tax: change": "-6700000",
           "Profit before tax: change in percent": "-17.6315789474"
+        },
+        "value_units": {
+          "Profit before tax: change in percent": "percent"
         }
       },
       {
@@ -1025,13 +1060,13 @@
         "detail": "Applied alone to the stored scenario “Oil, rupee and rates on Aerisca” (version 1) for Aerisca Airways, the latest observed change in Official exchange rate (INR per US$, period average) — India (+9.38 %, 2024 to 2025; applied as +9.38 % to USD/INR exchange rate) gives a change in operating profit of −1,032,064 INR (−2.06 %) over 12 months. This is a model interpretation computed on request, not stored, and not an observation.",
         "source": {
           "kind": "insight",
-          "id": "ins-bda325afd4dcf19d",
+          "id": "ins-cdde54c6f60358c2",
           "label": "Observed change through the models",
           "link": "/intelligence/company%3Aco_aerisca_airways"
         },
         "period": "2024 to 2025, applied over 12 simulated months",
         "as_of": null,
-        "retrieved_at": "2026-09-24T18:20:57.134103Z",
+        "retrieved_at": "2026-09-24T19:23:44.084845Z",
         "unit": null,
         "currency": null,
         "provenance": {},
@@ -1047,6 +1082,10 @@
           "Revenue: change": "6098560",
           "Operating costs: change": "7130624",
           "Operating profit: change": "-1032064"
+        },
+        "value_units": {
+          "Observed change": "percent",
+          "Applied change": "percent"
         }
       },
       {
@@ -1058,13 +1097,13 @@
         "detail": "For Aerisca Airways, the change in interest expense, +375,000 INR (+3.12 %), splits by the scenario's changes into RBI policy repo rate +375,000 INR (100.00 % of the change).",
         "source": {
           "kind": "insight",
-          "id": "ins-08879d97847419ce",
+          "id": "ins-7edc91c51ce9cef0",
           "label": "Contributions to a line",
           "link": "/intelligence/company%3Aco_aerisca_airways"
         },
         "period": "12 simulated months",
         "as_of": null,
-        "retrieved_at": "2026-09-24T18:20:57.134103Z",
+        "retrieved_at": "2026-09-24T19:23:44.084845Z",
         "unit": null,
         "currency": null,
         "provenance": {},
@@ -1082,6 +1121,10 @@
           "RBI policy repo rate: share of the change": "100",
           "RBI policy repo rate: points of the baseline": "3.125",
           "Unattributed": "0"
+        },
+        "value_units": {
+          "RBI policy repo rate: share of the change": "percent",
+          "RBI policy repo rate: points of the baseline": "percent"
         }
       }
     ],
@@ -1094,7 +1137,7 @@
     "provider": "grounded",
     "grounding": {
       "passed": true,
-      "figures_checked": 8,
+      "figures_checked": 7,
       "citations_checked": 33,
       "problems": []
     }
@@ -1123,14 +1166,14 @@
       "evidence": ["E1", "E2", "E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19"],
       "error": null,
       "attempts": 1,
-      "started_at": "2026-09-24T18:20:57.057405Z",
-      "duration_ms": 81
+      "started_at": "2026-09-24T19:23:44.005145Z",
+      "duration_ms": 90
     }
   ],
   "analyst_version": "1.0.0",
-  "requested_at": "2026-09-24T18:20:57.027450Z",
-  "started_at": "2026-09-24T18:20:57.035680Z",
-  "finished_at": "2026-09-24T18:20:57.157445Z",
-  "duration_ms": 123,
+  "requested_at": "2026-09-24T19:23:43.973727Z",
+  "started_at": "2026-09-24T19:23:43.982167Z",
+  "finished_at": "2026-09-24T19:23:44.124119Z",
+  "duration_ms": 145,
   "poll_after_ms": null
 }

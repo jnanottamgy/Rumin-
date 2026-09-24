@@ -1,6 +1,6 @@
 {
-  "id": "398236d0-c2c0-4702-acc2-d09d11ab1faf",
-  "session_id": "cd75ea01-6ff2-47ed-8197-297c6f57e006",
+  "id": "e13a49f5-d5c9-4d0e-9107-bb512d5894bc",
+  "session_id": "417a09ab-8fb3-498f-9776-2d7c2a0c2f11",
   "position": 1,
   "question": "What does RUMIN know about Aerisca Airways?",
   "status": "queued",
@@ -20,7 +20,7 @@
   },
   "tool_calls": [],
   "analyst_version": "1.0.0",
-  "requested_at": "2026-09-24T18:20:57.027450Z",
+  "requested_at": "2026-09-24T19:23:43.973727Z",
   "started_at": null,
   "finished_at": null,
   "duration_ms": null,

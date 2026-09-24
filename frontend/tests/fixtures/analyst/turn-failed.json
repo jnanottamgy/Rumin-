@@ -1,6 +1,6 @@
 {
-  "id": "c96e6304-a449-4c23-8146-7b2b2d0d4fc9",
-  "session_id": "70f97d83-8dae-4b19-87ae-bdfec3c2cfb2",
+  "id": "98844432-f273-42bd-bf57-0355d3aaca99",
+  "session_id": "b2656b65-45ed-45ca-be48-208112411719",
   "position": 1,
   "question": "What does RUMIN know about Anvaya Bank?",
   "status": "failed",
@@ -23,9 +23,9 @@
   },
   "tool_calls": [],
   "analyst_version": "1.0.0",
-  "requested_at": "2026-09-24T18:20:57.655935Z",
-  "started_at": "2026-09-24T18:20:57.658250Z",
-  "finished_at": "2026-09-24T18:20:57.663917Z",
-  "duration_ms": 5,
+  "requested_at": "2026-09-24T19:23:44.628295Z",
+  "started_at": "2026-09-24T19:23:44.630887Z",
+  "finished_at": "2026-09-24T19:23:44.638099Z",
+  "duration_ms": 7,
   "poll_after_ms": null
 }

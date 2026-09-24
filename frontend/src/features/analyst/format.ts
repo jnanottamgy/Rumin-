@@ -74,6 +74,29 @@ export type Segment = { kind: "text"; text: string } | { kind: "cite"; ids: stri
 
 const CITATION = /\[(E\d+(?:\s*,\s*E\d+)*)\]/g;
 
+/**
+ * Whether a link from an answer stays inside RUMIN: a path on this site. The link is
+ * resolved as the browser would resolve it, so "//evil.example", "/\\evil.example" and
+ * links with tabs or line breaks (which browsers drop) never leave the site.
+ */
+export function internalLink(link: string | null | undefined): link is string {
+  if (typeof link !== "string" || !link.startsWith("/") || link.includes("\\")) {
+    return false;
+  }
+  for (const character of link) {
+    const code = character.charCodeAt(0);
+    if (code < 0x21 || code === 0x7f) {
+      return false;
+    }
+  }
+  try {
+    const origin = window.location.origin;
+    return new URL(link, origin).origin === origin;
+  } catch {
+    return false;
+  }
+}
+
 export function segments(text: string): Segment[] {
   const found: Segment[] = [];
   let last = 0;

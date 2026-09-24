@@ -10,6 +10,7 @@ from __future__ import annotations
 from functools import lru_cache
 from pathlib import Path
 from typing import Annotated, Any, Literal
+from urllib.parse import urlsplit
 
 from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
@@ -21,6 +22,26 @@ DEFAULT_SQLITE_URL = f"sqlite:///{BACKEND_DIR / 'rumin.db'}"
 
 Environment = Literal["development", "test", "production"]
 LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR"]
+
+
+LOCAL_HOSTS = frozenset({"localhost", "127.0.0.1", "::1"})
+
+
+def secure_url(url: str) -> bool:
+    """Whether ``url`` is an https URL, or plain http to this machine only (a local test
+    server): the host is parsed, so ``http://localhost.example.com`` or
+    ``http://localhost@example.com`` are not local."""
+    try:
+        parts = urlsplit(url)
+        host = parts.hostname
+        parts.port  # noqa: B018 - raises on a malformed port
+    except ValueError:
+        return False
+    if not host or parts.username is not None or parts.password is not None:
+        return False
+    if parts.scheme == "https":
+        return True
+    return parts.scheme == "http" and host in LOCAL_HOSTS
 
 
 class Settings(BaseSettings):
@@ -107,17 +128,14 @@ class Settings(BaseSettings):
     @field_validator("worldbank_base_url")
     @classmethod
     def _validate_provider_url(cls, url: str) -> str:
-        # Plain http is allowed only for a local test server; real providers use https.
-        local = url.startswith(("http://127.0.0.1", "http://localhost"))
-        if not (url.startswith("https://") or local):
+        if not secure_url(url):
             raise ValueError("Provider URLs must use https:// (http:// only for localhost).")
         return url.rstrip("/")
 
     @field_validator("anthropic_base_url")
     @classmethod
     def _validate_anthropic_url(cls, url: str) -> str:
-        local = url.startswith(("http://127.0.0.1", "http://localhost"))
-        if not (url.startswith("https://") or local):
+        if not secure_url(url):
             raise ValueError(
                 "RUMIN_ANTHROPIC_BASE_URL must use https:// (http:// only for localhost)."
             )

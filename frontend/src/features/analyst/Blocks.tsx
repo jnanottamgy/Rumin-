@@ -27,7 +27,7 @@ import type {
 } from "@/types/api";
 import styles from "./Analyst.module.css";
 import { Citations, type Highlight } from "./Evidence";
-import { EVIDENCE_STATUS, moneyText, percentText, segments } from "./format";
+import { EVIDENCE_STATUS, internalLink, moneyText, percentText, segments } from "./format";
 
 export interface BlockContext {
   evidence: Map<string, AnalystEvidence>;
@@ -36,10 +36,6 @@ export interface BlockContext {
   onAsk: (question: string) => void;
   disabled: boolean;
   headline?: string; // the answer's headline, not repeated by a block
-}
-
-function internal(link: string | null | undefined): link is string {
-  return typeof link === "string" && link.startsWith("/") && !link.startsWith("//");
 }
 
 export function CitedText({ text, context }: { text: string; context: BlockContext }) {
@@ -121,7 +117,7 @@ function TableView({ block, context }: { block: AnalystTableBlock; context: Bloc
                 if (columnIndex === 0) {
                   return (
                     <th key={column.key} scope="row">
-                      {internal(row.link) ? <Link to={row.link}>{value}</Link> : value}
+                      {internalLink(row.link) ? <Link to={row.link}>{value}</Link> : value}
                     </th>
                   );
                 }
@@ -163,7 +159,7 @@ function SeriesView({ block, context }: { block: AnalystSeriesBlock; context: Bl
   return (
     <figure className={styles.figure}>
       <figcaption className={styles.figureHead}>
-        {internal(block.link) ? <Link to={block.link}>{block.title}</Link> : block.title}
+        {internalLink(block.link) ? <Link to={block.link}>{block.title}</Link> : block.title}
         <span className={styles.muted}>
           {" "}
           {block.unit}, {block.frequency}
@@ -247,7 +243,7 @@ function PathsView({ block, context }: { block: AnalystPathsBlock; context: Bloc
                       {path.links[stepIndex - 1]?.label ?? "linked to"}
                     </span>
                   )}
-                  {internal(step.link) ? (
+                  {internalLink(step.link) ? (
                     <Link to={step.link} className={styles.node}>
                       {step.name}
                     </Link>
@@ -315,7 +311,7 @@ function ScenarioView({ block, context }: { block: AnalystScenarioBlock; context
         {block.entity && (
           <p className={styles.muted}>
             For{" "}
-            {internal(block.entity.link) ? (
+            {internalLink(block.entity.link) ? (
               <Link to={block.entity.link}>{block.entity.name}</Link>
             ) : (
               block.entity.name
@@ -412,7 +408,7 @@ function ScenarioView({ block, context }: { block: AnalystScenarioBlock; context
             Open in the Scenario Lab
           </Button>
         )}
-        {block.status === "stored" && internal(block.link) && (
+        {block.status === "stored" && internalLink(block.link) && (
           <Link to={block.link} className={styles.textLink}>
             Open the stored execution
           </Link>

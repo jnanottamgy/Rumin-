@@ -17,6 +17,7 @@ other name is refused, and so is a call whose arguments do not validate.
 
 from __future__ import annotations
 
+import json
 import logging
 import time
 from collections.abc import Callable, Mapping
@@ -32,6 +33,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.analyst.answer import Block
 from app.analyst.evidence import EvidenceLedger
+from app.analyst.policy import data_text
 from app.analyst.vocabulary import Vocabulary
 from app.core.errors import AppError, NotFoundError
 
@@ -40,6 +42,8 @@ logger = logging.getLogger(__name__)
 ToolKind = Literal["read", "compute"]
 CallStatus = Literal["ok", "invalid", "refused", "not_found", "failed", "timeout", "skipped"]
 MAX_RESULT_CHARS = 12_000
+MAX_ARGUMENT_CHARS = 4_000  # arguments larger than this are recorded as their size only
+MAX_NAME_CHARS = 64
 
 
 class ToolProblem(Exception):
@@ -156,6 +160,13 @@ class ToolRunner:
     calls: list[ToolCall] = field(default_factory=list)
     on_call: Callable[[ToolCall], None] | None = None
     _pool: ThreadPoolExecutor | None = field(default=None, init=False, repr=False)
+    _first: int = field(default=0, init=False, repr=False)  # where the current budget began
+
+    def renew(self, deadline: float | None) -> None:
+        """A fresh budget of calls and time, for RUMIN's own answer after a language model
+        used up the first: the calls already made stay recorded, and positions go on."""
+        self.deadline = deadline
+        self._first = len(self.calls)
 
     def _executor(self) -> ThreadPoolExecutor:
         if self._pool is None:
@@ -178,7 +189,10 @@ class ToolRunner:
         position = len(self.calls) + 1
         started = self.clock()
         began = time.monotonic()
-        raw = dict(arguments or {})
+        name = data_text(name, MAX_NAME_CHARS)
+        raw = dict(arguments) if isinstance(arguments, Mapping) else {}
+        size = len(json.dumps(raw, default=str))
+        recorded = raw if size <= MAX_ARGUMENT_CHARS else {"truncated": True, "characters": size}
 
         def finish(
             status: CallStatus,
@@ -191,7 +205,7 @@ class ToolRunner:
             record = ToolCall(
                 position=position,
                 tool=name,
-                arguments=args if args is not None else raw,
+                arguments=args if args is not None else recorded,
                 status=status,
                 started_at=started,
                 duration_ms=int((time.monotonic() - began) * 1000),
@@ -201,7 +215,7 @@ class ToolRunner:
             )
             self.calls.append(record)
             logger.info(
-                "event=analyst.tool tool=%s status=%s duration_ms=%d attempts=%d",
+                "event=analyst.tool tool=%r status=%s duration_ms=%d attempts=%d",
                 name,
                 status,
                 record.duration_ms,
@@ -211,13 +225,15 @@ class ToolRunner:
                 self.on_call(record)
             return record
 
-        tool = self.registry.tools.get(name)
-        if tool is None:
-            return finish("refused", error=f"'{name}' is not one of the Analyst's tools.")
-        if len(self.calls) >= self.max_calls:
+        if len(self.calls) - self._first >= self.max_calls:
             return finish("skipped", error="The limit of tool calls for one question is reached.")
         if self.deadline is not None and time.monotonic() >= self.deadline:
             return finish("skipped", error="The time allowed for this question has run out.")
+        tool = self.registry.tools.get(name)
+        if tool is None:
+            return finish("refused", error=f"'{name}' is not one of the Analyst's tools.")
+        if size > MAX_ARGUMENT_CHARS:
+            return finish("invalid", error="Invalid arguments — they are too long.")
         if tool.kind == "compute" and not self.access.may_compute:
             return finish("refused", error="This tool is not available to you.")
         try:
@@ -260,7 +276,7 @@ class ToolRunner:
                     args=args,
                 )
             except Exception:
-                logger.exception("event=analyst.tool_error tool=%s", name)
+                logger.exception("event=analyst.tool_error tool=%r", name)
                 return finish(
                     "failed",
                     error="The tool failed unexpectedly; the error was logged.",
