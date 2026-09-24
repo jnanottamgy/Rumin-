@@ -1631,6 +1631,109 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/analyst/capabilities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * What the Analyst can do
+         * @description The provider that answers (RUMIN's grounded composer, or a language model when one is configured), the tools it may call, its limits, the kinds of knowledge it labels, and suggested questions built from what RUMIN holds.
+         */
+        get: operations["get_capabilities"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/analyst/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Conversations
+         * @description Stored conversations, most recently active first.
+         */
+        get: operations["list_sessions"];
+        put?: never;
+        /** Start a conversation */
+        post: operations["create_session"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/analyst/sessions/{session_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A conversation with every turn */
+        get: operations["get_session"];
+        /** Rename a conversation */
+        put: operations["rename_session"];
+        post?: never;
+        /**
+         * Delete a conversation
+         * @description Deletes the conversation with its questions, answers and tool calls. Refused (409) while a question in it is being answered.
+         */
+        delete: operations["delete_session"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/analyst/sessions/{session_id}/turns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ask a question
+         * @description Stores the question and answers it on the bounded worker pool (429 when it is full). Follow it at `Location` until it is `completed` or `failed`. One question at a time per conversation (409 otherwise).
+         */
+        post: operations["ask"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/analyst/sessions/{session_id}/turns/{turn_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * A question and its answer
+         * @description While not final, `poll_after_ms` says when to read it again; its tool calls appear as they are made.
+         */
+        get: operations["get_turn"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/system": {
         parameters: {
             query?: never;
@@ -1844,6 +1947,29 @@ export interface components {
              */
             created_at: string;
         };
+        /** AnalystProviderRead */
+        AnalystProviderRead: {
+            /**
+             * Configured
+             * @enum {string}
+             */
+            configured: "grounded" | "anthropic";
+            /**
+             * Active
+             * @description What answers now.
+             * @enum {string}
+             */
+            active: "grounded" | "anthropic";
+            /** Ready */
+            ready: boolean;
+            /**
+             * Reason
+             * @description Why the configured provider is not active.
+             */
+            reason: string | null;
+            /** Model */
+            model: string | null;
+        };
         /** AnomalyRead */
         AnomalyRead: {
             change: components["schemas"]["ChangeRead"];
@@ -1856,6 +1982,39 @@ export interface components {
              * @enum {string}
              */
             level: "unusual" | "not_unusual" | "undefined" | "insufficient_history";
+        };
+        /** Answer */
+        Answer: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "answered" | "partial" | "no_data" | "clarification" | "declined" | "unsupported" | "failed";
+            /** Intent */
+            intent: string;
+            /** Headline */
+            headline: string;
+            /** Blocks */
+            blocks: (components["schemas"]["TextBlock"] | components["schemas"]["TableBlock"] | components["schemas"]["SeriesBlock"] | components["schemas"]["PathsBlock"] | components["schemas"]["ScenarioBlock"] | components["schemas"]["NoticeBlock"] | components["schemas"]["ClarificationBlock"])[];
+            /** Evidence */
+            evidence: components["schemas"]["Evidence"][];
+            /** Follow Ups */
+            follow_ups?: string[];
+            /**
+             * Provider
+             * @description What composed the answer: grounded, anthropic, scripted.
+             */
+            provider: string;
+            grounding?: components["schemas"]["GroundingRead"] | null;
+        };
+        /** AskRequest */
+        AskRequest: {
+            /**
+             * Question
+             * @description The question, in plain English. The configured limit (`limits.max_question_chars`, 2000 by default) applies.
+             * @example Which companies are exposed to the rupee?
+             */
+            question: string;
         };
         /** BridgeItemRead */
         BridgeItemRead: {
@@ -2148,6 +2307,24 @@ export interface components {
             /** Status */
             status: string;
         };
+        /** CapabilitiesRead */
+        CapabilitiesRead: {
+            /** Version */
+            version: string;
+            provider: components["schemas"]["AnalystProviderRead"];
+            /** Tools */
+            tools: components["schemas"]["ToolInfoRead"][];
+            limits: components["schemas"]["LimitsRead"];
+            /**
+             * Suggestions
+             * @description Questions built from what RUMIN holds.
+             */
+            suggestions: components["schemas"]["SuggestionRead"][];
+            /** Knowledge Kinds */
+            knowledge_kinds: components["schemas"]["KnowledgeKindRead"][];
+            /** Notes */
+            notes: string[];
+        };
         /** Capability */
         Capability: {
             /** Id */
@@ -2336,6 +2513,41 @@ export interface components {
             executions: components["schemas"]["ExecutionChangeRead"][];
             /** Notes */
             notes: string[];
+        };
+        /** ClarificationBlock */
+        ClarificationBlock: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "clarification";
+            /** Question */
+            question: string;
+            /** Options */
+            options: components["schemas"]["ClarificationOption"][];
+        };
+        /** ClarificationOption */
+        ClarificationOption: {
+            /** Label */
+            label: string;
+            /**
+             * Question
+             * @description The question to ask instead, if this option is chosen.
+             */
+            question: string;
+        };
+        /** Column */
+        Column: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * Align
+             * @default start
+             * @enum {string}
+             */
+            align: "start" | "end";
         };
         /** CompanyInput */
         CompanyInput: {
@@ -3365,6 +3577,15 @@ export interface components {
             /** Nature */
             nature: string;
         };
+        /** EntityRef */
+        EntityRef: {
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /** Link */
+            link?: string | null;
+        };
         /** EntitySummaryRead */
         EntitySummaryRead: {
             entity: components["schemas"]["NodeRead"];
@@ -3486,6 +3707,81 @@ export interface components {
          */
         ErrorResponse: {
             error: components["schemas"]["ErrorBody"];
+        };
+        /** Evidence */
+        Evidence: {
+            /**
+             * Id
+             * @description Cited in answer text as [E1], [E2] …
+             */
+            id: string;
+            /**
+             * Tool
+             * @description The tool whose result it came from.
+             */
+            tool: string;
+            /**
+             * Call
+             * @description The position of that tool call in the turn (1-based).
+             */
+            call: number;
+            kind: components["schemas"]["Knowledge"];
+            /** Title */
+            title: string;
+            /** Detail */
+            detail?: string | null;
+            source: components["schemas"]["SourceRef"];
+            /**
+             * Period
+             * @description The period the figures describe.
+             */
+            period?: string | null;
+            /**
+             * As Of
+             * @description The data's own date: a period, or when a build finished.
+             */
+            as_of?: string | null;
+            /**
+             * Retrieved At
+             * Format: date-time
+             * @description When the tool read it.
+             */
+            retrieved_at: string;
+            /** Unit */
+            unit?: string | null;
+            /** Currency */
+            currency?: string | null;
+            /**
+             * Provenance
+             * @description Dataset, licence, provider, build … as available.
+             */
+            provenance?: {
+                [key: string]: string;
+            };
+            /**
+             * Evidence Status
+             * @description For relationships: evidence-backed, analyst-created, …
+             */
+            evidence_status?: string | null;
+            /**
+             * Grade
+             * @description For findings: the evidence grade.
+             */
+            grade?: string | null;
+            /**
+             * Models
+             * @description For simulated results: 'model_id version'.
+             */
+            models?: string[];
+            /** Assumptions */
+            assumptions?: string[];
+            /**
+             * Values
+             * @description The figures this record supports, as exact decimal strings.
+             */
+            values?: {
+                [key: string]: string;
+            };
         };
         /**
          * EvidenceLevel
@@ -4560,6 +4856,32 @@ export interface components {
             /** Validation Rules */
             validation_rules: components["schemas"]["ValidationRuleRead"][];
         };
+        /** GroundingProblem */
+        GroundingProblem: {
+            /**
+             * Block
+             * @description Index of the block; null for the headline.
+             */
+            block: number | null;
+            /**
+             * Text
+             * @description The sentence or figure concerned.
+             */
+            text: string;
+            /** Reason */
+            reason: string;
+        };
+        /** GroundingRead */
+        GroundingRead: {
+            /** Passed */
+            passed: boolean;
+            /** Figures Checked */
+            figures_checked: number;
+            /** Citations Checked */
+            citations_checked: number;
+            /** Problems */
+            problems: components["schemas"]["GroundingProblem"][];
+        };
         /** HeadlineRead */
         HeadlineRead: {
             /** Id */
@@ -5374,6 +5696,19 @@ export interface components {
              */
             kind: "derived" | "simulated";
         };
+        /**
+         * Knowledge
+         * @description What kind of knowledge a piece of evidence is, strongest claim to fact first.
+         * @enum {string}
+         */
+        Knowledge: "observed" | "record" | "relationship" | "finding" | "user_input" | "assumption" | "simulated" | "preview";
+        /** KnowledgeKindRead */
+        KnowledgeKindRead: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+        };
         /** LabEquationRead */
         LabEquationRead: {
             /** Id */
@@ -5700,6 +6035,23 @@ export interface components {
             id: string;
             /** Label */
             label: string;
+        };
+        /** LimitsRead */
+        LimitsRead: {
+            /** Max Question Chars */
+            max_question_chars: number;
+            /** Max Turns Per Session */
+            max_turns_per_session: number;
+            /** Max Tool Calls */
+            max_tool_calls: number;
+            /** Deadline Seconds */
+            deadline_seconds: number;
+            /** Max Model Requests */
+            max_model_requests: number;
+            /** Daily Token Budget */
+            daily_token_budget: number;
+            /** Tokens Used Today */
+            tokens_used_today: number;
         };
         /** LineDriversRead */
         LineDriversRead: {
@@ -6415,6 +6767,25 @@ export interface components {
             /** Reason */
             reason: string;
         };
+        /** NoticeBlock */
+        NoticeBlock: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "notice";
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "missing_data" | "assumption" | "limitation" | "conflict" | "policy" | "not_stored" | "illustrative" | "fallback";
+            /** Title */
+            title: string;
+            /** Text */
+            text: string;
+            /** Citations */
+            citations?: string[];
+        };
         /** ObservationPage */
         ObservationPage: {
             /** Items */
@@ -6717,6 +7088,40 @@ export interface components {
             /** Rationale */
             rationale: string | null;
         };
+        /** PathItem */
+        PathItem: {
+            /** Steps */
+            steps: components["schemas"]["PathStep"][];
+            /**
+             * Links
+             * @description Between consecutive steps.
+             */
+            links: components["schemas"]["PathLink"][];
+            /** Channel */
+            channel?: string | null;
+            /** Directness */
+            directness?: string | null;
+            /** Evidence Status */
+            evidence_status?: string | null;
+            /** Models */
+            models?: string[];
+            /** Citations */
+            citations?: string[];
+        };
+        /** PathLink */
+        PathLink: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Evidence Status */
+            evidence_status?: string | null;
+            /**
+             * Illustrative
+             * @default false
+             */
+            illustrative: boolean;
+        };
         /** PathRead */
         PathRead: {
             /** Nodes */
@@ -6725,6 +7130,35 @@ export interface components {
             edges: string[];
             /** Length */
             length: number;
+        };
+        /** PathStep */
+        PathStep: {
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /** Kind */
+            kind: string;
+            /** Link */
+            link?: string | null;
+        };
+        /** PathsBlock */
+        PathsBlock: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "paths";
+            /** Title */
+            title: string;
+            /** Paths */
+            paths: components["schemas"]["PathItem"][];
+            /** Total */
+            total: number;
+            /** Note */
+            note?: string | null;
+            /** Citations */
+            citations?: string[];
         };
         /** PathsResponse */
         PathsResponse: {
@@ -7559,6 +7993,75 @@ export interface components {
             /** Result Hash Matches */
             result_hash_matches: boolean;
         };
+        /**
+         * ScenarioBlock
+         * @description A stored execution, a preview computed on request, or a plan that still needs figures.
+         */
+        ScenarioBlock: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "scenario";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "stored" | "preview" | "plan";
+            /** Title */
+            title: string;
+            entity?: components["schemas"]["EntityRef"] | null;
+            /** Changes */
+            changes: components["schemas"]["ScenarioChange"][];
+            /** Horizon Months */
+            horizon_months?: number | null;
+            /** Lines */
+            lines?: components["schemas"]["ScenarioLine"][];
+            /**
+             * Models
+             * @description 'model_id version' or ids.
+             */
+            models?: string[];
+            /**
+             * Missing
+             * @description Figures a person must enter before it can run.
+             */
+            missing?: string[];
+            /** Headline */
+            headline?: string | null;
+            /** Scenario Id */
+            scenario_id?: string | null;
+            /** Execution Id */
+            execution_id?: string | null;
+            /** Link */
+            link?: string | null;
+            /**
+             * Draft
+             * @description A scenario body to open in the Scenario Lab; nothing is saved until a person saves it there.
+             */
+            draft?: {
+                [key: string]: unknown;
+            } | null;
+            /** Notes */
+            notes?: string[];
+            /** Citations */
+            citations?: string[];
+        };
+        /** ScenarioChange */
+        ScenarioChange: {
+            /** Variable Id */
+            variable_id: string;
+            /** Name */
+            name: string;
+            /** Change Type */
+            change_type: string;
+            /** Value */
+            value: string;
+            /** Unit */
+            unit: string;
+            /** Modelled */
+            modelled?: boolean | null;
+        };
         /** ScenarioCompanyRead */
         ScenarioCompanyRead: {
             /** Reporting Currency */
@@ -7626,6 +8129,25 @@ export interface components {
              * @default
              */
             note: string;
+        };
+        /** ScenarioLine */
+        ScenarioLine: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Currency */
+            currency: string;
+            /** Baseline */
+            baseline?: string | null;
+            /** Change */
+            change: string;
+            /** Scenario */
+            scenario?: string | null;
+            /** Percent Change */
+            percent_change?: string | null;
+            /** Citations */
+            citations?: string[];
         };
         /**
          * ScenarioPage
@@ -8000,6 +8522,35 @@ export interface components {
             /** Signals */
             signals: components["schemas"]["SignalRead"][];
         };
+        /** SeriesBlock */
+        SeriesBlock: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "series";
+            /** Title */
+            title: string;
+            /** Series Id */
+            series_id: string;
+            /** Unit */
+            unit: string;
+            /** Frequency */
+            frequency: string;
+            /** Points */
+            points: components["schemas"]["SeriesPoint"][];
+            /**
+             * Highlight
+             * @description Periods to mark.
+             */
+            highlight?: string[];
+            /** Link */
+            link?: string | null;
+            /** Note */
+            note?: string | null;
+            /** Citations */
+            citations?: string[];
+        };
         /** SeriesCoverageRead */
         SeriesCoverageRead: {
             /** Variable */
@@ -8161,6 +8712,18 @@ export interface components {
             /** Offset */
             offset: number;
         };
+        /** SeriesPoint */
+        SeriesPoint: {
+            /** Period */
+            period: string;
+            /**
+             * Start
+             * @description ISO date the period starts.
+             */
+            start: string;
+            /** Value */
+            value: string;
+        };
         /** SeriesRead */
         SeriesRead: {
             /** Id */
@@ -8289,6 +8852,90 @@ export interface components {
             anomaly: string | null;
             /** Revisions */
             revisions: number;
+        };
+        /** SessionCreate */
+        SessionCreate: {
+            /**
+             * Title
+             * @description Default: the first question, shortened.
+             */
+            title?: string | null;
+        };
+        /** SessionPage */
+        SessionPage: {
+            /** Items */
+            items: components["schemas"]["SessionSummaryRead"][];
+            /**
+             * Total
+             * @description Total number of items matching the query.
+             */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
+        /** SessionRead */
+        SessionRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /** Turn Count */
+            turn_count: number;
+            /** Last Question */
+            last_question: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /**
+             * Focus
+             * @description What the conversation is about (record keys only), used to read follow-up questions.
+             */
+            focus: {
+                [key: string]: unknown;
+            };
+            /** Turns */
+            turns: components["schemas"]["TurnRead"][];
+        };
+        /** SessionSummaryRead */
+        SessionSummaryRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /** Turn Count */
+            turn_count: number;
+            /** Last Question */
+            last_question: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** SessionUpdate */
+        SessionUpdate: {
+            /** Title */
+            title: string;
         };
         /** ShockInput */
         ShockInput: {
@@ -8734,6 +9381,26 @@ export interface components {
             /** Fields */
             fields?: string[];
         };
+        /**
+         * SourceRef
+         * @description The stored record a piece of evidence comes from.
+         */
+        SourceRef: {
+            /**
+             * Kind
+             * @description graph_node, graph_edge, graph_build, series, instrument, dataset, scenario, execution, run, model, template, insight or catalogue.
+             */
+            kind: string;
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /**
+             * Link
+             * @description Where the record can be opened.
+             */
+            link?: string | null;
+        };
         /** StageRead */
         StageRead: {
             /**
@@ -8926,6 +9593,13 @@ export interface components {
              */
             change_unit: "percent" | "percentage_points";
         };
+        /** SuggestionRead */
+        SuggestionRead: {
+            /** Label */
+            label: string;
+            /** Question */
+            question: string;
+        };
         /** SupportingRelationshipRead */
         SupportingRelationshipRead: {
             /** Id */
@@ -8961,6 +9635,40 @@ export interface components {
             data: components["schemas"]["DataStatus"];
             /** Capabilities */
             capabilities: components["schemas"]["Capability"][];
+        };
+        /** TableBlock */
+        TableBlock: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "table";
+            /** Title */
+            title: string;
+            /** Columns */
+            columns: components["schemas"]["Column"][];
+            /** Rows */
+            rows: components["schemas"]["TableRow"][];
+            /**
+             * Total
+             * @description Rows available when more exist.
+             */
+            total?: number | null;
+            /** Note */
+            note?: string | null;
+            /** Citations */
+            citations?: string[];
+        };
+        /** TableRow */
+        TableRow: {
+            /** Cells */
+            cells: {
+                [key: string]: string | null;
+            };
+            /** Link */
+            link?: string | null;
+            /** Citations */
+            citations?: string[];
         };
         /** TemplateChangeRead */
         TemplateChangeRead: {
@@ -9142,6 +9850,26 @@ export interface components {
             /** Unit */
             unit: string;
         };
+        /** TextBlock */
+        TextBlock: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "text";
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "answer" | "detail" | "interpretation" | "general" | "policy";
+            /**
+             * Text
+             * @description Cites evidence inline as [E1] or [E1, E4].
+             */
+            text: string;
+            /** Citations */
+            citations?: string[];
+        };
         /** ThresholdSpecRead */
         ThresholdSpecRead: {
             /** Name */
@@ -9283,6 +10011,52 @@ export interface components {
             /** Duration Months */
             duration_months: number;
         };
+        /** ToolCallRead */
+        ToolCallRead: {
+            /** Position */
+            position: number;
+            /** Tool */
+            tool: string;
+            /** Arguments */
+            arguments: {
+                [key: string]: unknown;
+            };
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ok" | "invalid" | "refused" | "not_found" | "failed" | "timeout" | "skipped";
+            /** Summary */
+            summary: string | null;
+            /**
+             * Evidence
+             * @description Evidence ids this call produced.
+             */
+            evidence: string[];
+            /** Error */
+            error: string | null;
+            /** Attempts */
+            attempts: number;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /** Duration Ms */
+            duration_ms: number;
+        };
+        /** ToolInfoRead */
+        ToolInfoRead: {
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "read" | "compute";
+        };
         /** TransmissionPathRead */
         TransmissionPathRead: {
             /** Input */
@@ -9386,6 +10160,82 @@ export interface components {
             /** Exact Fit */
             exact_fit: boolean;
         };
+        /** TurnErrorRead */
+        TurnErrorRead: {
+            /** Code */
+            code: string;
+            /** Message */
+            message: string;
+        };
+        /** TurnRead */
+        TurnRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Session Id
+             * Format: uuid
+             */
+            session_id: string;
+            /** Position */
+            position: number;
+            /** Question */
+            question: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "queued" | "running" | "completed" | "failed";
+            /** Intent */
+            intent: string | null;
+            /** @description Present once the turn has completed. */
+            answer: components["schemas"]["Answer"] | null;
+            /** @description Why the turn failed, if it did. */
+            error: components["schemas"]["TurnErrorRead"] | null;
+            /**
+             * Configured Provider
+             * @enum {string}
+             */
+            configured_provider: "grounded" | "anthropic";
+            /**
+             * Provider
+             * @description What composed the answer.
+             */
+            provider: ("grounded" | "anthropic") | null;
+            /**
+             * Model
+             * @description The language model that answered, if one did.
+             */
+            model: string | null;
+            /**
+             * Fallback
+             * @description Why RUMIN's grounded composer answered instead of the language model.
+             */
+            fallback: string | null;
+            usage: components["schemas"]["UsageRead"];
+            /** Tool Calls */
+            tool_calls: components["schemas"]["ToolCallRead"][];
+            /** Analyst Version */
+            analyst_version: string;
+            /**
+             * Requested At
+             * Format: date-time
+             */
+            requested_at: string;
+            /** Started At */
+            started_at: string | null;
+            /** Finished At */
+            finished_at: string | null;
+            /** Duration Ms */
+            duration_ms: number | null;
+            /**
+             * Poll After Ms
+             * @description While not final: when to read it again.
+             */
+            poll_after_ms: number | null;
+        };
         /** TypeMapLink */
         TypeMapLink: {
             source_type: components["schemas"]["GraphNodeType"];
@@ -9468,6 +10318,22 @@ export interface components {
             target: string;
             /** Evidence Status */
             evidence_status: string;
+        };
+        /** UsageRead */
+        UsageRead: {
+            /**
+             * Requests
+             * @description Requests to the language model (0 for grounded).
+             */
+            requests: number;
+            /** Input Tokens */
+            input_tokens: number;
+            /** Output Tokens */
+            output_tokens: number;
+            /** Cache Read Tokens */
+            cache_read_tokens: number;
+            /** Cache Write Tokens */
+            cache_write_tokens: number;
         };
         /** ValidationReport */
         ValidationReport: {
@@ -14173,6 +15039,414 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AnalysisRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_capabilities: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CapabilitiesRead"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_sessions: {
+        parameters: {
+            query?: {
+                /** @description Maximum number of items to return. */
+                limit?: number;
+                /** @description Items to skip. */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionPage"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_session: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SessionCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionRead"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_session: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A conversation. */
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    rename_session: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A conversation. */
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SessionUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_session: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A conversation. */
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description A question is still being answered. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    ask: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A conversation. */
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AskRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TurnRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description A question is still being answered. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Every worker is busy; ask again shortly. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_turn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A conversation. */
+                session_id: string;
+                /** @description A question in the conversation. */
+                turn_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TurnRead"];
                 };
             };
             /** @description Resource not found. */

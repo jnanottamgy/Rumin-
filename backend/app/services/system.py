@@ -159,10 +159,11 @@ CAPABILITIES: tuple[Capability, ...] = (
     Capability(
         id="ai_analyst",
         label="AI analyst",
-        available=False,
+        available=True,
         planned_phase=7,
-        note="No AI model is connected. The intelligence engine already prepares the "
-        "structured brief an analyst would narrate, with every number computed by RUMIN.",
+        note="Answers questions from RUMIN's records through read-only tools and cites the "
+        "record behind every figure; an answer whose figures are not in its evidence is not "
+        "shown. Composed by RUMIN's grounded composer unless a language model is configured.",
     ),
     Capability(
         id="authentication",
@@ -318,5 +319,29 @@ def get_system_status(session: Session, settings: Settings) -> SystemStatus:
         ),
         dataset=dataset,
         data=_data_status(session) if up_to_date else EMPTY_DATA,
-        capabilities=list(CAPABILITIES),
+        capabilities=[
+            _analyst(item, settings) if item.id == "ai_analyst" else item for item in CAPABILITIES
+        ],
+    )
+
+
+def _analyst(capability: Capability, settings: Settings) -> Capability:
+    """The Analyst's capability, saying which provider answers in this deployment."""
+    ready, reason = settings.analyst_ready
+    if settings.analyst_provider == "anthropic" and ready:
+        how = (
+            "A Claude model (configured) answers through the same tools; a draft that fails "
+            "the grounding check, or any model failure, falls back to RUMIN's grounded composer."
+        )
+    elif settings.analyst_provider == "anthropic":
+        how = f"A language model is configured but not ready ({reason}); RUMIN's grounded "
+        how += "composer answers."
+    else:
+        how = "RUMIN's grounded composer answers; no language model is configured."
+    return capability.model_copy(
+        update={
+            "note": "Answers questions from RUMIN's records through read-only tools and cites "
+            "the record behind every figure; an answer whose figures are not in its evidence "
+            f"is not shown. {how} No forecasts, no live data, no investment decisions."
+        }
     )

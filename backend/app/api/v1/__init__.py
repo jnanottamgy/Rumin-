@@ -4,6 +4,7 @@ from fastapi import APIRouter
 
 from app.api.deps import ERRORS
 from app.api.v1 import (
+    analyst,
     data,
     graph,
     ingestion,
@@ -29,4 +30,5 @@ router.include_router(graph.router)
 router.include_router(simulations.models_router)
 router.include_router(simulations.router)
 router.include_router(intelligence.router)
+router.include_router(analyst.router)
 router.include_router(system.router)

@@ -28,6 +28,7 @@ from app.core.middleware import REQUEST_ID_HEADER, BodySizeLimitMiddleware, Requ
 from app.db.session import create_db_engine, create_session_factory
 from app.scenario_lab.runner import ExecutionRunner
 from app.services import scenarios
+from app.services.analyst import AnalystRuntime
 
 logger = logging.getLogger(__name__)
 
@@ -78,6 +79,15 @@ RUMIN never blurs these categories; responses label them with `epistemic_categor
 * Results are calculations under stated assumptions — **not forecasts and not investment
   advice**.
 
+### AI Analyst
+* Answers questions from RUMIN's records through a fixed set of read-only tools (one of
+  them computes a scenario preview that is never stored), and cites the stored record
+  behind every figure. A **grounding check** rejects any answer whose figures are not in
+  the evidence it cites; a language model's draft that fails it is replaced by RUMIN's own
+  grounded composer.
+* It does not forecast, hold live data or make investment decisions. Conversations are
+  stored so they can be reopened, and can be deleted.
+
 ### Errors
 Every error response uses one envelope:
 `{"error": {"code", "message", "details", "request_id"}}`.
@@ -118,6 +128,12 @@ OPENAPI_TAGS = [
         "explanations and provenance, re-execution checks and one-at-a-time sensitivity "
         "analysis. Runs are append-only.",
     },
+    {
+        "name": "analyst",
+        "description": "Questions answered from RUMIN's records by the AI Analyst: "
+        "conversations, turns (asynchronous, bounded), the tool calls and evidence behind "
+        "every answer, and the grounding check each answer passed.",
+    },
     {"name": "system", "description": "Runtime status and capabilities."},
 ]
 
@@ -141,6 +157,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         timeout_seconds=settings.scenario_timeout_seconds,
     )
 
+    analyst = AnalystRuntime(settings, session_factory)
+
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         logger.info(
@@ -155,7 +173,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             # The schema may not be migrated yet; readiness reports it. Executions cannot
             # be requested until it is.
             logger.warning("Scenario executions could not be checked at startup.")
+        try:
+            analyst.start()
+        except SQLAlchemyError:
+            logger.warning("Analyst questions could not be checked at startup.")
         yield
+        analyst.stop()
         runner.stop()
         engine.dispose()
 
@@ -194,6 +217,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.engine = engine
     app.state.session_factory = session_factory
     app.state.scenario_runner = runner
+    app.state.analyst = analyst
 
     register_exception_handlers(app)
     app.include_router(health.router)

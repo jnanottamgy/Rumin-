@@ -690,4 +690,6 @@ def test_the_system_reports_financial_intelligence(client: TestClient) -> None:
 
     assert capabilities["financial_intelligence"]["available"] is True
     assert capabilities["financial_intelligence"]["planned_phase"] == 6
-    assert capabilities["ai_analyst"]["available"] is False
+    # Phase 7 delivered the analyst that narrates what Financial Intelligence prepares.
+    assert capabilities["ai_analyst"]["available"] is True
+    assert capabilities["ai_analyst"]["planned_phase"] == 7

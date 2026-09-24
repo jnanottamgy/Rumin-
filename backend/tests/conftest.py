@@ -29,6 +29,9 @@ from app.db.session import create_db_engine, create_session_factory
 from app.domain.enums import DatasetKind
 from app.main import create_app
 from app.models import (
+    AnalystSession,
+    AnalystToolCall,
+    AnalystTurn,
     DataProvider,
     DataQualityIssue,
     Dataset,
@@ -77,6 +80,10 @@ def make_settings(database_url: str, **overrides: object) -> Settings:
         # Executions complete within the request that creates them, so tests read them at
         # once; the threaded runner has its own tests.
         "scenario_execution_mode": "inline",
+        # The same for the Analyst's questions, answered by RUMIN's grounded composer: no
+        # test reaches a language model unless it configures one explicitly.
+        "analyst_execution_mode": "inline",
+        "analyst_provider": "grounded",
     }
     values.update(overrides)
     return Settings(_env_file=None, **values)  # type: ignore[arg-type]
@@ -122,9 +129,10 @@ def app(database_url: str, engine: Engine) -> FastAPI:
 def client(app: FastAPI, session_factory: sessionmaker[Session]) -> Iterator[TestClient]:
     with TestClient(app) as test_client:
         yield test_client
-    # Scenarios (with their executions and runs) are the only data tests create; remove
-    # them so tests stay independent.
+    # Conversations and scenarios (with their executions and runs) are the only data tests
+    # create; remove them so tests stay independent.
     with session_factory() as session:
+        wipe_analyst(session)
         wipe_scenarios(session)
 
 
@@ -132,6 +140,14 @@ def client(app: FastAPI, session_factory: sessionmaker[Session]) -> Iterator[Tes
 def fresh_sqlite_url(tmp_path: Path) -> str:
     """URL of a brand-new, empty SQLite database (no schema)."""
     return f"sqlite:///{tmp_path / 'fresh.db'}"
+
+
+def wipe_analyst(session: Session) -> None:
+    """Remove every conversation with its turns and tool calls."""
+    session.execute(delete(AnalystToolCall))
+    session.execute(delete(AnalystTurn))
+    session.execute(delete(AnalystSession))
+    session.commit()
 
 
 def wipe_scenarios(session: Session) -> None:

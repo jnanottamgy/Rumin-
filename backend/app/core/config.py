@@ -11,7 +11,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Annotated, Any, Literal
 
-from pydantic import Field, field_validator
+from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 BACKEND_DIR = Path(__file__).resolve().parents[2]
@@ -61,6 +61,30 @@ class Settings(BaseSettings):
     scenario_max_queued: int = Field(default=8, ge=0, le=64)
     scenario_timeout_seconds: float = Field(default=20.0, ge=1, le=120)
 
+    # --- AI Analyst (Phase 7) -------------------------------------------------------------
+    # "grounded": RUMIN's own composer, no language model (the default, and the fallback).
+    # "anthropic": a Claude model through the official SDK; needs a key and a model.
+    analyst_provider: Literal["grounded", "anthropic"] = "grounded"
+    # Read only from RUMIN_ settings: the SDK is never left to find ANTHROPIC_* variables.
+    anthropic_api_key: SecretStr | None = None
+    anthropic_base_url: str = "https://api.anthropic.com"
+    # The model is configuration: no model identifier is written in the code.
+    analyst_model: str | None = Field(default=None, max_length=100)
+    analyst_thinking: Literal["adaptive", "off"] = "adaptive"
+    analyst_max_tokens: int = Field(default=4096, ge=512, le=32000)
+    analyst_request_timeout_seconds: float = Field(default=60.0, ge=5, le=300)
+    analyst_max_retries: int = Field(default=2, ge=0, le=5)
+    analyst_max_model_requests: int = Field(default=6, ge=1, le=12)
+    # Input + output tokens a day across all turns; beyond it, the grounded composer answers.
+    analyst_daily_token_budget: int = Field(default=2_000_000, ge=0)
+    analyst_deadline_seconds: float = Field(default=90.0, ge=5, le=300)
+    analyst_max_tool_calls: int = Field(default=12, ge=1, le=32)
+    analyst_max_question_chars: int = Field(default=2000, ge=100, le=8000)
+    analyst_max_turns_per_session: int = Field(default=200, ge=1, le=1000)
+    analyst_execution_mode: Literal["thread", "inline"] = "thread"
+    analyst_max_concurrent: int = Field(default=2, ge=1, le=8)
+    analyst_max_queued: int = Field(default=8, ge=0, le=64)
+
     @field_validator("cors_origins", mode="before")
     @classmethod
     def _split_comma_separated(cls, value: Any) -> Any:
@@ -88,6 +112,38 @@ class Settings(BaseSettings):
         if not (url.startswith("https://") or local):
             raise ValueError("Provider URLs must use https:// (http:// only for localhost).")
         return url.rstrip("/")
+
+    @field_validator("anthropic_base_url")
+    @classmethod
+    def _validate_anthropic_url(cls, url: str) -> str:
+        local = url.startswith(("http://127.0.0.1", "http://localhost"))
+        if not (url.startswith("https://") or local):
+            raise ValueError(
+                "RUMIN_ANTHROPIC_BASE_URL must use https:// (http:// only for localhost)."
+            )
+        return url.rstrip("/")
+
+    @field_validator("analyst_model")
+    @classmethod
+    def _blank_model_is_none(cls, value: str | None) -> str | None:
+        return value.strip() or None if isinstance(value, str) else value
+
+    @property
+    def analyst_ready(self) -> tuple[bool, str | None]:
+        """Whether the configured provider can run, and why not."""
+        if self.analyst_provider == "grounded":
+            return True, None
+        missing = [
+            name
+            for name, value in (
+                ("RUMIN_ANTHROPIC_API_KEY", self.anthropic_api_key),
+                ("RUMIN_ANALYST_MODEL", self.analyst_model),
+            )
+            if not value
+        ]
+        if missing:
+            return False, f"{' and '.join(missing)} {'is' if len(missing) == 1 else 'are'} not set."
+        return True, None
 
     @field_validator("log_level", mode="before")
     @classmethod

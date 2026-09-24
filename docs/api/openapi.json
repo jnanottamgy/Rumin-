@@ -3,7 +3,7 @@
   "info": {
     "title": "RUMIN API",
     "summary": "Financial intelligence and economic simulation platform.",
-    "description": "\nRUMIN is an interactive financial intelligence and economic simulation platform.\nThis API covers the **Phase 1 foundation**, the **Phase 2 financial data\ninfrastructure**, the **Phase 3 knowledge graph** and the **Phase 4 simulation engine**\n(one model, in preview).\n\n### Five kinds of knowledge\nRUMIN never blurs these categories; responses label them with `epistemic_category`.\n\n| Category | Meaning | In this build |\n|---|---|---|\n| `observation` | Historical data from a cited source | World Bank series; licensed price files |\n| `assumption` | Rules, parameters and relationships defined by the model | Relationships, ranges |\n| `scenario_input` | Values changed by a user | Scenario shocks |\n| `simulated_output` | Results computed by a simulation engine | Simulation runs |\n| `uncertainty` | Limitations and ranges | Documented qualitatively |\n\n### Data\n* The curated **network** dataset is **illustrative**: companies are fictional; countries,\n  ISIC Rev. 4 industries and variable definitions are real concepts with references.\n* **Provider data** is historical, stored exactly as published and never live. Every value\n  carries its period, when RUMIN retrieved it, the stored response it came from and the\n  dataset's licence and attribution. Revisions are kept, not overwritten.\n* **Numbers are decimal strings** (`\"5.649\"`) so no digit is lost to floating point.\n* Ingestion is started from the command line only; these endpoints are read-only.\n\n### Knowledge graph\n* Built from the stored data by `python -m app.graph build`; the graph endpoints are\n  read-only and every traversal is bounded (depth, nodes, path length, number of paths).\n* Every edge carries an **evidence status** (`evidence_backed`, `analyst_created`,\n  `model_assumption`, `unverified`), says whether it is **illustrative**, and lists the\n  evidence records that explain why it exists.\n* A connection is not evidence of causation. A path shows how records are connected; it\n  is not an influence chain, and a shorter path is not a stronger relationship.\n\n### Simulation\n* Models are defined in code, **versioned** and stored with a definition hash; a changed\n  equation is a new version. Runs are **deterministic** and **append-only**: identical\n  inputs give an identical result hash, and `POST /simulations/{id}/verify` re-executes a\n  stored run from its snapshot.\n* Every input is labelled as historical data, a user input, an assumption, a scenario\n  change or a setting. Nothing missing is invented and no unit is converted silently.\n* A shock travels only along relationships a model rule accepts **and** the latest graph\n  build confirms as validated; other graph edges are listed, never followed.\n* Results are calculations under stated assumptions — **not forecasts and not investment\n  advice**.\n\n### Errors\nEvery error response uses one envelope:\n`{\"error\": {\"code\", \"message\", \"details\", \"request_id\"}}`.\n",
+    "description": "\nRUMIN is an interactive financial intelligence and economic simulation platform.\nThis API covers the **Phase 1 foundation**, the **Phase 2 financial data\ninfrastructure**, the **Phase 3 knowledge graph** and the **Phase 4 simulation engine**\n(one model, in preview).\n\n### Five kinds of knowledge\nRUMIN never blurs these categories; responses label them with `epistemic_category`.\n\n| Category | Meaning | In this build |\n|---|---|---|\n| `observation` | Historical data from a cited source | World Bank series; licensed price files |\n| `assumption` | Rules, parameters and relationships defined by the model | Relationships, ranges |\n| `scenario_input` | Values changed by a user | Scenario shocks |\n| `simulated_output` | Results computed by a simulation engine | Simulation runs |\n| `uncertainty` | Limitations and ranges | Documented qualitatively |\n\n### Data\n* The curated **network** dataset is **illustrative**: companies are fictional; countries,\n  ISIC Rev. 4 industries and variable definitions are real concepts with references.\n* **Provider data** is historical, stored exactly as published and never live. Every value\n  carries its period, when RUMIN retrieved it, the stored response it came from and the\n  dataset's licence and attribution. Revisions are kept, not overwritten.\n* **Numbers are decimal strings** (`\"5.649\"`) so no digit is lost to floating point.\n* Ingestion is started from the command line only; these endpoints are read-only.\n\n### Knowledge graph\n* Built from the stored data by `python -m app.graph build`; the graph endpoints are\n  read-only and every traversal is bounded (depth, nodes, path length, number of paths).\n* Every edge carries an **evidence status** (`evidence_backed`, `analyst_created`,\n  `model_assumption`, `unverified`), says whether it is **illustrative**, and lists the\n  evidence records that explain why it exists.\n* A connection is not evidence of causation. A path shows how records are connected; it\n  is not an influence chain, and a shorter path is not a stronger relationship.\n\n### Simulation\n* Models are defined in code, **versioned** and stored with a definition hash; a changed\n  equation is a new version. Runs are **deterministic** and **append-only**: identical\n  inputs give an identical result hash, and `POST /simulations/{id}/verify` re-executes a\n  stored run from its snapshot.\n* Every input is labelled as historical data, a user input, an assumption, a scenario\n  change or a setting. Nothing missing is invented and no unit is converted silently.\n* A shock travels only along relationships a model rule accepts **and** the latest graph\n  build confirms as validated; other graph edges are listed, never followed.\n* Results are calculations under stated assumptions — **not forecasts and not investment\n  advice**.\n\n### AI Analyst\n* Answers questions from RUMIN's records through a fixed set of read-only tools (one of\n  them computes a scenario preview that is never stored), and cites the stored record\n  behind every figure. A **grounding check** rejects any answer whose figures are not in\n  the evidence it cites; a language model's draft that fails it is replaced by RUMIN's own\n  grounded composer.\n* It does not forecast, hold live data or make investment decisions. Conversations are\n  stored so they can be reopened, and can be deleted.\n\n### Errors\nEvery error response uses one envelope:\n`{\"error\": {\"code\", \"message\", \"details\", \"request_id\"}}`.\n",
     "version": "0.1.0"
   },
   "paths": {
@@ -8469,6 +8469,548 @@
         }
       }
     },
+    "/api/v1/analyst/capabilities": {
+      "get": {
+        "tags": [
+          "analyst"
+        ],
+        "summary": "What the Analyst can do",
+        "description": "The provider that answers (RUMIN's grounded composer, or a language model when one is configured), the tools it may call, its limits, the kinds of knowledge it labels, and suggested questions built from what RUMIN holds.",
+        "operationId": "get_capabilities",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CapabilitiesRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analyst/sessions": {
+      "get": {
+        "tags": [
+          "analyst"
+        ],
+        "summary": "Conversations",
+        "description": "Stored conversations, most recently active first.",
+        "operationId": "list_sessions",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "description": "Maximum number of items to return.",
+              "default": 100,
+              "title": "Limit"
+            },
+            "description": "Maximum number of items to return."
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0,
+              "description": "Items to skip.",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Items to skip."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "analyst"
+        ],
+        "summary": "Start a conversation",
+        "operationId": "create_session",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analyst/sessions/{session_id}": {
+      "get": {
+        "tags": [
+          "analyst"
+        ],
+        "summary": "A conversation with every turn",
+        "operationId": "get_session",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "A conversation.",
+              "title": "Session Id"
+            },
+            "description": "A conversation."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "analyst"
+        ],
+        "summary": "Rename a conversation",
+        "operationId": "rename_session",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "A conversation.",
+              "title": "Session Id"
+            },
+            "description": "A conversation."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "analyst"
+        ],
+        "summary": "Delete a conversation",
+        "description": "Deletes the conversation with its questions, answers and tool calls. Refused (409) while a question in it is being answered.",
+        "operationId": "delete_session",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "A conversation.",
+              "title": "Session Id"
+            },
+            "description": "A conversation."
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A question is still being answered.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analyst/sessions/{session_id}/turns": {
+      "post": {
+        "tags": [
+          "analyst"
+        ],
+        "summary": "Ask a question",
+        "description": "Stores the question and answers it on the bounded worker pool (429 when it is full). Follow it at `Location` until it is `completed` or `failed`. One question at a time per conversation (409 otherwise).",
+        "operationId": "ask",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "A conversation.",
+              "title": "Session Id"
+            },
+            "description": "A conversation."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AskRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TurnRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A question is still being answered.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Every worker is busy; ask again shortly.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analyst/sessions/{session_id}/turns/{turn_id}": {
+      "get": {
+        "tags": [
+          "analyst"
+        ],
+        "summary": "A question and its answer",
+        "description": "While not final, `poll_after_ms` says when to read it again; its tool calls appear as they are made.",
+        "operationId": "get_turn",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "A conversation.",
+              "title": "Session Id"
+            },
+            "description": "A conversation."
+          },
+          {
+            "name": "turn_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "A question in the conversation.",
+              "title": "Turn Id"
+            },
+            "description": "A question in the conversation."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TurnRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/system": {
       "get": {
         "tags": [
@@ -9001,6 +9543,63 @@
         ],
         "title": "AnalysisSummaryRead"
       },
+      "AnalystProviderRead": {
+        "properties": {
+          "configured": {
+            "type": "string",
+            "enum": [
+              "grounded",
+              "anthropic"
+            ],
+            "title": "Configured"
+          },
+          "active": {
+            "type": "string",
+            "enum": [
+              "grounded",
+              "anthropic"
+            ],
+            "title": "Active",
+            "description": "What answers now."
+          },
+          "ready": {
+            "type": "boolean",
+            "title": "Ready"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason",
+            "description": "Why the configured provider is not active."
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          }
+        },
+        "type": "object",
+        "required": [
+          "configured",
+          "active",
+          "ready",
+          "reason",
+          "model"
+        ],
+        "title": "AnalystProviderRead"
+      },
       "AnomalyRead": {
         "properties": {
           "change": {
@@ -9045,6 +9644,131 @@
           "level"
         ],
         "title": "AnomalyRead"
+      },
+      "Answer": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "answered",
+              "partial",
+              "no_data",
+              "clarification",
+              "declined",
+              "unsupported",
+              "failed"
+            ],
+            "title": "Status"
+          },
+          "intent": {
+            "type": "string",
+            "title": "Intent"
+          },
+          "headline": {
+            "type": "string",
+            "title": "Headline"
+          },
+          "blocks": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/TextBlock"
+                },
+                {
+                  "$ref": "#/components/schemas/TableBlock"
+                },
+                {
+                  "$ref": "#/components/schemas/SeriesBlock"
+                },
+                {
+                  "$ref": "#/components/schemas/PathsBlock"
+                },
+                {
+                  "$ref": "#/components/schemas/ScenarioBlock"
+                },
+                {
+                  "$ref": "#/components/schemas/NoticeBlock"
+                },
+                {
+                  "$ref": "#/components/schemas/ClarificationBlock"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "type",
+                "mapping": {
+                  "clarification": "#/components/schemas/ClarificationBlock",
+                  "notice": "#/components/schemas/NoticeBlock",
+                  "paths": "#/components/schemas/PathsBlock",
+                  "scenario": "#/components/schemas/ScenarioBlock",
+                  "series": "#/components/schemas/SeriesBlock",
+                  "table": "#/components/schemas/TableBlock",
+                  "text": "#/components/schemas/TextBlock"
+                }
+              }
+            },
+            "type": "array",
+            "title": "Blocks"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/Evidence"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "follow_ups": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Follow Ups"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider",
+            "description": "What composed the answer: grounded, anthropic, scripted."
+          },
+          "grounding": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GroundingRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "intent",
+          "headline",
+          "blocks",
+          "evidence",
+          "provider"
+        ],
+        "title": "Answer"
+      },
+      "AskRequest": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "maxLength": 8000,
+            "minLength": 1,
+            "title": "Question",
+            "description": "The question, in plain English. The configured limit (`limits.max_question_chars`, 2000 by default) applies.",
+            "examples": [
+              "Which companies are exposed to the rupee?"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "question"
+        ],
+        "title": "AskRequest"
       },
       "BridgeItemRead": {
         "properties": {
@@ -9889,6 +10613,60 @@
         ],
         "title": "BuildRefRead"
       },
+      "CapabilitiesRead": {
+        "properties": {
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "provider": {
+            "$ref": "#/components/schemas/AnalystProviderRead"
+          },
+          "tools": {
+            "items": {
+              "$ref": "#/components/schemas/ToolInfoRead"
+            },
+            "type": "array",
+            "title": "Tools"
+          },
+          "limits": {
+            "$ref": "#/components/schemas/LimitsRead"
+          },
+          "suggestions": {
+            "items": {
+              "$ref": "#/components/schemas/SuggestionRead"
+            },
+            "type": "array",
+            "title": "Suggestions",
+            "description": "Questions built from what RUMIN holds."
+          },
+          "knowledge_kinds": {
+            "items": {
+              "$ref": "#/components/schemas/KnowledgeKindRead"
+            },
+            "type": "array",
+            "title": "Knowledge Kinds"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "version",
+          "provider",
+          "tools",
+          "limits",
+          "suggestions",
+          "knowledge_kinds",
+          "notes"
+        ],
+        "title": "CapabilitiesRead"
+      },
       "Capability": {
         "properties": {
           "id": {
@@ -10350,6 +11128,79 @@
           "notes"
         ],
         "title": "ChangesRead"
+      },
+      "ClarificationBlock": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "clarification",
+            "title": "Type",
+            "default": "clarification"
+          },
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/ClarificationOption"
+            },
+            "type": "array",
+            "title": "Options"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question",
+          "options"
+        ],
+        "title": "ClarificationBlock"
+      },
+      "ClarificationOption": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "question": {
+            "type": "string",
+            "title": "Question",
+            "description": "The question to ask instead, if this option is chosen."
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "question"
+        ],
+        "title": "ClarificationOption"
+      },
+      "Column": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "align": {
+            "type": "string",
+            "enum": [
+              "start",
+              "end"
+            ],
+            "title": "Align",
+            "default": "start"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label"
+        ],
+        "title": "Column"
       },
       "CompanyInput": {
         "properties": {
@@ -13190,6 +14041,35 @@
         ],
         "title": "EntityRead"
       },
+      "EntityRef": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "link": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Link"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "name"
+        ],
+        "title": "EntityRef"
+      },
       "EntitySummaryRead": {
         "properties": {
           "entity": {
@@ -13526,6 +14406,164 @@
         ],
         "title": "ErrorResponse",
         "description": "Every non-2xx response from the API uses this envelope."
+      },
+      "Evidence": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Cited in answer text as [E1], [E2] …"
+          },
+          "tool": {
+            "type": "string",
+            "title": "Tool",
+            "description": "The tool whose result it came from."
+          },
+          "call": {
+            "type": "integer",
+            "title": "Call",
+            "description": "The position of that tool call in the turn (1-based)."
+          },
+          "kind": {
+            "$ref": "#/components/schemas/Knowledge"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "source": {
+            "$ref": "#/components/schemas/SourceRef"
+          },
+          "period": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period",
+            "description": "The period the figures describe."
+          },
+          "as_of": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "As Of",
+            "description": "The data's own date: a period, or when a build finished."
+          },
+          "retrieved_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Retrieved At",
+            "description": "When the tool read it."
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "provenance": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Provenance",
+            "description": "Dataset, licence, provider, build … as available."
+          },
+          "evidence_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Status",
+            "description": "For relationships: evidence-backed, analyst-created, …"
+          },
+          "grade": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Grade",
+            "description": "For findings: the evidence grade."
+          },
+          "models": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Models",
+            "description": "For simulated results: 'model_id version'."
+          },
+          "assumptions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Assumptions"
+          },
+          "values": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Values",
+            "description": "The figures this record supports, as exact decimal strings."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "tool",
+          "call",
+          "kind",
+          "title",
+          "source",
+          "retrieved_at"
+        ],
+        "title": "Evidence"
       },
       "EvidenceLevel": {
         "type": "string",
@@ -16607,6 +17645,69 @@
         ],
         "title": "GraphTypesResponse"
       },
+      "GroundingProblem": {
+        "properties": {
+          "block": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Block",
+            "description": "Index of the block; null for the headline."
+          },
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "The sentence or figure concerned."
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "block",
+          "text",
+          "reason"
+        ],
+        "title": "GroundingProblem"
+      },
+      "GroundingRead": {
+        "properties": {
+          "passed": {
+            "type": "boolean",
+            "title": "Passed"
+          },
+          "figures_checked": {
+            "type": "integer",
+            "title": "Figures Checked"
+          },
+          "citations_checked": {
+            "type": "integer",
+            "title": "Citations Checked"
+          },
+          "problems": {
+            "items": {
+              "$ref": "#/components/schemas/GroundingProblem"
+            },
+            "type": "array",
+            "title": "Problems"
+          }
+        },
+        "type": "object",
+        "required": [
+          "passed",
+          "figures_checked",
+          "citations_checked",
+          "problems"
+        ],
+        "title": "GroundingRead"
+      },
       "HeadlineRead": {
         "properties": {
           "id": {
@@ -18805,6 +19906,39 @@
         ],
         "title": "KeyOutputRead"
       },
+      "Knowledge": {
+        "type": "string",
+        "enum": [
+          "observed",
+          "record",
+          "relationship",
+          "finding",
+          "user_input",
+          "assumption",
+          "simulated",
+          "preview"
+        ],
+        "title": "Knowledge",
+        "description": "What kind of knowledge a piece of evidence is, strongest claim to fact first."
+      },
+      "KnowledgeKindRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label"
+        ],
+        "title": "KnowledgeKindRead"
+      },
       "LabEquationRead": {
         "properties": {
           "id": {
@@ -19787,6 +20921,49 @@
           "label"
         ],
         "title": "LevelRead"
+      },
+      "LimitsRead": {
+        "properties": {
+          "max_question_chars": {
+            "type": "integer",
+            "title": "Max Question Chars"
+          },
+          "max_turns_per_session": {
+            "type": "integer",
+            "title": "Max Turns Per Session"
+          },
+          "max_tool_calls": {
+            "type": "integer",
+            "title": "Max Tool Calls"
+          },
+          "deadline_seconds": {
+            "type": "number",
+            "title": "Deadline Seconds"
+          },
+          "max_model_requests": {
+            "type": "integer",
+            "title": "Max Model Requests"
+          },
+          "daily_token_budget": {
+            "type": "integer",
+            "title": "Daily Token Budget"
+          },
+          "tokens_used_today": {
+            "type": "integer",
+            "title": "Tokens Used Today"
+          }
+        },
+        "type": "object",
+        "required": [
+          "max_question_chars",
+          "max_turns_per_session",
+          "max_tool_calls",
+          "deadline_seconds",
+          "max_model_requests",
+          "daily_token_budget",
+          "tokens_used_today"
+        ],
+        "title": "LimitsRead"
       },
       "LineDriversRead": {
         "properties": {
@@ -21683,6 +22860,52 @@
         ],
         "title": "NotModelledRead"
       },
+      "NoticeBlock": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "notice",
+            "title": "Type",
+            "default": "notice"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "missing_data",
+              "assumption",
+              "limitation",
+              "conflict",
+              "policy",
+              "not_stored",
+              "illustrative",
+              "fallback"
+            ],
+            "title": "Kind"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "citations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Citations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "title",
+          "text"
+        ],
+        "title": "NoticeBlock"
+      },
       "ObservationPage": {
         "properties": {
           "items": {
@@ -22461,6 +23684,112 @@
         ],
         "title": "ParameterRead"
       },
+      "PathItem": {
+        "properties": {
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/PathStep"
+            },
+            "type": "array",
+            "title": "Steps"
+          },
+          "links": {
+            "items": {
+              "$ref": "#/components/schemas/PathLink"
+            },
+            "type": "array",
+            "title": "Links",
+            "description": "Between consecutive steps."
+          },
+          "channel": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Channel"
+          },
+          "directness": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Directness"
+          },
+          "evidence_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Status"
+          },
+          "models": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Models"
+          },
+          "citations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Citations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "steps",
+          "links"
+        ],
+        "title": "PathItem"
+      },
+      "PathLink": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "evidence_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Status"
+          },
+          "illustrative": {
+            "type": "boolean",
+            "title": "Illustrative",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label"
+        ],
+        "title": "PathLink"
+      },
       "PathRead": {
         "properties": {
           "nodes": {
@@ -22489,6 +23818,90 @@
           "length"
         ],
         "title": "PathRead"
+      },
+      "PathStep": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "link": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Link"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "name",
+          "kind"
+        ],
+        "title": "PathStep"
+      },
+      "PathsBlock": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "paths",
+            "title": "Type",
+            "default": "paths"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "paths": {
+            "items": {
+              "$ref": "#/components/schemas/PathItem"
+            },
+            "type": "array",
+            "title": "Paths"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "citations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Citations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "paths",
+          "total"
+        ],
+        "title": "PathsBlock"
       },
       "PathsResponse": {
         "properties": {
@@ -24723,6 +26136,203 @@
         ],
         "title": "RunCheckRead"
       },
+      "ScenarioBlock": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "scenario",
+            "title": "Type",
+            "default": "scenario"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "stored",
+              "preview",
+              "plan"
+            ],
+            "title": "Status"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "entity": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EntityRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/ScenarioChange"
+            },
+            "type": "array",
+            "title": "Changes"
+          },
+          "horizon_months": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Horizon Months"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/ScenarioLine"
+            },
+            "type": "array",
+            "title": "Lines"
+          },
+          "models": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Models",
+            "description": "'model_id version' or ids."
+          },
+          "missing": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing",
+            "description": "Figures a person must enter before it can run."
+          },
+          "headline": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Headline"
+          },
+          "scenario_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scenario Id"
+          },
+          "execution_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Execution Id"
+          },
+          "link": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Link"
+          },
+          "draft": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Draft",
+            "description": "A scenario body to open in the Scenario Lab; nothing is saved until a person saves it there."
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes"
+          },
+          "citations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Citations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "title",
+          "changes"
+        ],
+        "title": "ScenarioBlock",
+        "description": "A stored execution, a preview computed on request, or a plan that still needs figures."
+      },
+      "ScenarioChange": {
+        "properties": {
+          "variable_id": {
+            "type": "string",
+            "title": "Variable Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "change_type": {
+            "type": "string",
+            "title": "Change Type"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "modelled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Modelled"
+          }
+        },
+        "type": "object",
+        "required": [
+          "variable_id",
+          "name",
+          "change_type",
+          "value",
+          "unit"
+        ],
+        "title": "ScenarioChange"
+      },
       "ScenarioCompanyRead": {
         "properties": {
           "reporting_currency": {
@@ -24916,6 +26526,74 @@
         ],
         "title": "ScenarioInput",
         "description": "A scenario version's content: the body of POST, PUT and the plan and preview."
+      },
+      "ScenarioLine": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency"
+          },
+          "baseline": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline"
+          },
+          "change": {
+            "type": "string",
+            "title": "Change"
+          },
+          "scenario": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scenario"
+          },
+          "percent_change": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Percent Change"
+          },
+          "citations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Citations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "currency",
+          "change"
+        ],
+        "title": "ScenarioLine"
       },
       "ScenarioPage": {
         "properties": {
@@ -25915,6 +27593,85 @@
         ],
         "title": "SeriesAnalysisRead"
       },
+      "SeriesBlock": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "series",
+            "title": "Type",
+            "default": "series"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "series_id": {
+            "type": "string",
+            "title": "Series Id"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "frequency": {
+            "type": "string",
+            "title": "Frequency"
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/SeriesPoint"
+            },
+            "type": "array",
+            "title": "Points"
+          },
+          "highlight": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Highlight",
+            "description": "Periods to mark."
+          },
+          "link": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Link"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "citations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Citations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "series_id",
+          "unit",
+          "frequency",
+          "points"
+        ],
+        "title": "SeriesBlock"
+      },
       "SeriesCoverageRead": {
         "properties": {
           "variable": {
@@ -26409,6 +28166,30 @@
         "title": "SeriesPage",
         "description": "A page of economic series."
       },
+      "SeriesPoint": {
+        "properties": {
+          "period": {
+            "type": "string",
+            "title": "Period"
+          },
+          "start": {
+            "type": "string",
+            "title": "Start",
+            "description": "ISO date the period starts."
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "period",
+          "start",
+          "value"
+        ],
+        "title": "SeriesPoint"
+      },
       "SeriesRead": {
         "properties": {
           "id": {
@@ -26854,6 +28635,189 @@
           "revisions"
         ],
         "title": "SeriesSummaryRead"
+      },
+      "SessionCreate": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title",
+            "description": "Default: the first question, shortened."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "SessionCreate"
+      },
+      "SessionPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SessionSummaryRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total",
+            "description": "Total number of items matching the query."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "SessionPage"
+      },
+      "SessionRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "turn_count": {
+            "type": "integer",
+            "title": "Turn Count"
+          },
+          "last_question": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Question"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "focus": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Focus",
+            "description": "What the conversation is about (record keys only), used to read follow-up questions."
+          },
+          "turns": {
+            "items": {
+              "$ref": "#/components/schemas/TurnRead"
+            },
+            "type": "array",
+            "title": "Turns"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "turn_count",
+          "last_question",
+          "created_at",
+          "updated_at",
+          "focus",
+          "turns"
+        ],
+        "title": "SessionRead"
+      },
+      "SessionSummaryRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "turn_count": {
+            "type": "integer",
+            "title": "Turn Count"
+          },
+          "last_question": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Question"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "turn_count",
+          "last_question",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "SessionSummaryRead"
+      },
+      "SessionUpdate": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Title"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "title": "SessionUpdate"
       },
       "ShockInput": {
         "properties": {
@@ -28104,6 +30068,43 @@
         ],
         "title": "SourceRecordRead"
       },
+      "SourceRef": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "description": "graph_node, graph_edge, graph_build, series, instrument, dataset, scenario, execution, run, model, template, insight or catalogue."
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "link": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Link",
+            "description": "Where the record can be opened."
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "id",
+          "label"
+        ],
+        "title": "SourceRef",
+        "description": "The stored record a piece of evidence comes from."
+      },
       "StageRead": {
         "properties": {
           "stage": {
@@ -28607,6 +30608,24 @@
         ],
         "title": "SubjectRead"
       },
+      "SuggestionRead": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "question": {
+            "type": "string",
+            "title": "Question"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "question"
+        ],
+        "title": "SuggestionRead"
+      },
       "SupportingRelationshipRead": {
         "properties": {
           "id": {
@@ -28698,6 +30717,112 @@
           "capabilities"
         ],
         "title": "SystemStatus"
+      },
+      "TableBlock": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "table",
+            "title": "Type",
+            "default": "table"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "columns": {
+            "items": {
+              "$ref": "#/components/schemas/Column"
+            },
+            "type": "array",
+            "title": "Columns"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/TableRow"
+            },
+            "type": "array",
+            "title": "Rows"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total",
+            "description": "Rows available when more exist."
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "citations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Citations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "columns",
+          "rows"
+        ],
+        "title": "TableBlock"
+      },
+      "TableRow": {
+        "properties": {
+          "cells": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Cells"
+          },
+          "link": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Link"
+          },
+          "citations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Citations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cells"
+        ],
+        "title": "TableRow"
       },
       "TemplateChangeRead": {
         "properties": {
@@ -29212,6 +31337,45 @@
         ],
         "title": "TermRead"
       },
+      "TextBlock": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "text",
+            "title": "Type",
+            "default": "text"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "answer",
+              "detail",
+              "interpretation",
+              "general",
+              "policy"
+            ],
+            "title": "Role"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "Cites evidence inline as [E1] or [E1, E4]."
+          },
+          "citations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Citations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "text"
+        ],
+        "title": "TextBlock"
+      },
       "ThresholdSpecRead": {
         "properties": {
           "name": {
@@ -29562,6 +31726,120 @@
         ],
         "title": "TimingResultRead"
       },
+      "ToolCallRead": {
+        "properties": {
+          "position": {
+            "type": "integer",
+            "title": "Position"
+          },
+          "tool": {
+            "type": "string",
+            "title": "Tool"
+          },
+          "arguments": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Arguments"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "invalid",
+              "refused",
+              "not_found",
+              "failed",
+              "timeout",
+              "skipped"
+            ],
+            "title": "Status"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "evidence": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidence",
+            "description": "Evidence ids this call produced."
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "attempts": {
+            "type": "integer",
+            "title": "Attempts"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Started At"
+          },
+          "duration_ms": {
+            "type": "integer",
+            "title": "Duration Ms"
+          }
+        },
+        "type": "object",
+        "required": [
+          "position",
+          "tool",
+          "arguments",
+          "status",
+          "summary",
+          "evidence",
+          "error",
+          "attempts",
+          "started_at",
+          "duration_ms"
+        ],
+        "title": "ToolCallRead"
+      },
+      "ToolInfoRead": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "read",
+              "compute"
+            ],
+            "title": "Kind"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "description",
+          "kind"
+        ],
+        "title": "ToolInfoRead"
+      },
       "TransmissionPathRead": {
         "properties": {
           "input": {
@@ -29877,6 +32155,227 @@
         ],
         "title": "TrendRead"
       },
+      "TurnErrorRead": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "TurnErrorRead"
+      },
+      "TurnRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "session_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Session Id"
+          },
+          "position": {
+            "type": "integer",
+            "title": "Position"
+          },
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "running",
+              "completed",
+              "failed"
+            ],
+            "title": "Status"
+          },
+          "intent": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Intent"
+          },
+          "answer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Answer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Present once the turn has completed."
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TurnErrorRead"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why the turn failed, if it did."
+          },
+          "configured_provider": {
+            "type": "string",
+            "enum": [
+              "grounded",
+              "anthropic"
+            ],
+            "title": "Configured Provider"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "grounded",
+                  "anthropic"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider",
+            "description": "What composed the answer."
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model",
+            "description": "The language model that answered, if one did."
+          },
+          "fallback": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fallback",
+            "description": "Why RUMIN's grounded composer answered instead of the language model."
+          },
+          "usage": {
+            "$ref": "#/components/schemas/UsageRead"
+          },
+          "tool_calls": {
+            "items": {
+              "$ref": "#/components/schemas/ToolCallRead"
+            },
+            "type": "array",
+            "title": "Tool Calls"
+          },
+          "analyst_version": {
+            "type": "string",
+            "title": "Analyst Version"
+          },
+          "requested_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Requested At"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "duration_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Ms"
+          },
+          "poll_after_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Poll After Ms",
+            "description": "While not final: when to read it again."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "session_id",
+          "position",
+          "question",
+          "status",
+          "intent",
+          "answer",
+          "error",
+          "configured_provider",
+          "provider",
+          "model",
+          "fallback",
+          "usage",
+          "tool_calls",
+          "analyst_version",
+          "requested_at",
+          "started_at",
+          "finished_at",
+          "duration_ms",
+          "poll_after_ms"
+        ],
+        "title": "TurnRead"
+      },
       "TypeMapLink": {
         "properties": {
           "source_type": {
@@ -30096,6 +32595,40 @@
           "evidence_status"
         ],
         "title": "UnusedEdgeRead"
+      },
+      "UsageRead": {
+        "properties": {
+          "requests": {
+            "type": "integer",
+            "title": "Requests",
+            "description": "Requests to the language model (0 for grounded)."
+          },
+          "input_tokens": {
+            "type": "integer",
+            "title": "Input Tokens"
+          },
+          "output_tokens": {
+            "type": "integer",
+            "title": "Output Tokens"
+          },
+          "cache_read_tokens": {
+            "type": "integer",
+            "title": "Cache Read Tokens"
+          },
+          "cache_write_tokens": {
+            "type": "integer",
+            "title": "Cache Write Tokens"
+          }
+        },
+        "type": "object",
+        "required": [
+          "requests",
+          "input_tokens",
+          "output_tokens",
+          "cache_read_tokens",
+          "cache_write_tokens"
+        ],
+        "title": "UsageRead"
       },
       "ValidationReport": {
         "properties": {
@@ -30709,6 +33242,10 @@
     {
       "name": "simulation",
       "description": "Versioned models, input validation, deterministic runs with explanations and provenance, re-execution checks and one-at-a-time sensitivity analysis. Runs are append-only."
+    },
+    {
+      "name": "analyst",
+      "description": "Questions answered from RUMIN's records by the AI Analyst: conversations, turns (asynchronous, bounded), the tool calls and evidence behind every answer, and the grounding check each answer passed."
     },
     {
       "name": "system",

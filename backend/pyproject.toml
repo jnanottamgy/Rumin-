@@ -10,6 +10,9 @@ dependencies = [
   "pydantic-settings~=2.15",
   "sqlalchemy~=2.0.54",
   "alembic~=1.20",
+  # The official SDK for the optional language-model provider of the AI Analyst (Phase 7).
+  # Imported only when RUMIN_ANALYST_PROVIDER=anthropic.
+  "anthropic~=1.8",
 ]
 
 [project.optional-dependencies]
@@ -40,6 +43,7 @@ pythonpath = ["."]
 addopts = "-ra --strict-markers"
 markers = [
   "postgres: requires a PostgreSQL server (set RUMIN_TEST_POSTGRES_URL)",
+  "live: calls a real external API; skipped unless its credentials are configured",
 ]
 filterwarnings = ["error::DeprecationWarning:app.*"]
 
