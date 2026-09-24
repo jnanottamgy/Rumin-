@@ -371,13 +371,22 @@ def exposure_insights(
                             Ref("template", template_id, title),
                         )
                     )
-        if any(e.evidence_status == "model_assumption" for p in paths for e in p.edges):
+        assumed: dict[str, str] = {}
+        for path in paths:
+            for edge in path.edges:
+                if edge.evidence_status == "model_assumption":
+                    assumed.setdefault(edge.key, edge_step(edge, names).text)
+        if assumed:
+            key, first = next(iter(assumed.items()))
+            one = len(assumed) == 1
+            quoted = fmt.listing([f"“{text}”" for text in assumed.values()])
             draft.next_steps.append(
                 NextStep(
                     "find_evidence",
-                    "The relationship is recorded as a model assumption: look for a cited source "
-                    "before relying on it.",
-                    Ref("graph_edge", paths[0].affect_edge.key),
+                    f"Recorded as {'a model assumption' if one else 'model assumptions'}: "
+                    f"{quoted}. Look for a cited source before relying on "
+                    f"{'it' if one else 'them'}.",
+                    Ref("graph_edge", key, first),
                 )
             )
         for measured in exposure.series:
@@ -621,14 +630,7 @@ def coverage_insight(exposure: ExposureMap, drivers: DriverAnalysis | None) -> I
             )
         )
     elif drivers.sensitivity is None:
-        draft.next_steps.append(
-            NextStep(
-                "run_sensitivity",
-                "Run a sensitivity analysis on the latest execution to see "
-                "which assumptions move the result most.",
-                execution_ref(drivers),
-            )
-        )
+        draft.next_steps.append(sensitivity_step(drivers))
     draft.limitations.append(NOT_SIZE)
     return draft.build()
 
@@ -777,6 +779,16 @@ def _graph_steps(
     return found
 
 
+def sensitivity_step(drivers: DriverAnalysis) -> NextStep:
+    """One wording for S01 and C01, so the gathered next steps name it once."""
+    return NextStep(
+        "run_sensitivity",
+        "Run a sensitivity analysis on the latest execution to see which inputs and "
+        "assumptions move its result most.",
+        execution_ref(drivers),
+    )
+
+
 def size_of(change: ChangeInput) -> str:
     """A scenario change in its own terms: percent, or percentage points."""
     if change.change_type == "percent_change":
@@ -868,14 +880,7 @@ def impact_insight(
     draft.limitations.extend(f"Not modelled: {item}." for item in not_modelled)
     draft.sources.append(execution_ref(drivers))
     if drivers.sensitivity is None:
-        draft.next_steps.append(
-            NextStep(
-                "run_sensitivity",
-                "Run a sensitivity analysis to see which inputs and "
-                "assumptions move this result most.",
-                execution_ref(drivers),
-            )
-        )
+        draft.next_steps.append(sensitivity_step(drivers))
     return draft.build()
 
 

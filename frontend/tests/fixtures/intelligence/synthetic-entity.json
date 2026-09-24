@@ -11,7 +11,7 @@
   },
   "build": {
     "id": 1,
-    "finished_at": "2026-09-24T10:20:51.248869Z",
+    "finished_at": "2026-09-24T10:33:40.090775Z",
     "freshness": "stale",
     "message": "The sources changed after build #1. The graph shows the data as it was then; run `make graph` to rebuild it."
   },
@@ -861,11 +861,11 @@
   },
   "executions": [
     {
-      "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
-      "scenario_id": "1f211e66-f8d4-4325-b812-c3c1c9b4445f",
+      "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
+      "scenario_id": "03ae5ef9-1685-4178-8df4-3720a34c20bb",
       "scenario_name": "Oil, rupee and rates on Aerisca",
       "version": 1,
-      "finished_at": "2026-09-24T10:20:53.652675Z",
+      "finished_at": "2026-09-24T10:33:42.269272Z",
       "currency": "INR",
       "horizon_months": 12,
       "graph_build_id": 1,
@@ -877,11 +877,11 @@
   "drivers": {
     "entity_key": "company:co_aerisca_airways",
     "execution": {
-      "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
-      "scenario_id": "1f211e66-f8d4-4325-b812-c3c1c9b4445f",
+      "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
+      "scenario_id": "03ae5ef9-1685-4178-8df4-3720a34c20bb",
       "scenario_name": "Oil, rupee and rates on Aerisca",
       "version": 1,
-      "finished_at": "2026-09-24T10:20:53.652675Z",
+      "finished_at": "2026-09-24T10:33:42.269272Z",
       "currency": "INR",
       "horizon_months": 12,
       "graph_build_id": 1,
@@ -1167,21 +1167,21 @@
         "model_id": "airline_fuel_cost",
         "version": "1.1.0",
         "name": "Airline fuel-cost shock",
-        "run_id": "14637acf-ca8c-4bbd-a3be-87f71b35cc2f",
+        "run_id": "ae4dbc3e-0a4a-47fa-b982-b58f3ff011ba",
         "definition_hash": "1e6ddaac9f18fed44bab55dd1bb12f192ff50326438aa331c7cb295ada15ed6f"
       },
       {
         "model_id": "fx_exposure",
         "version": "1.0.0",
         "name": "Foreign-currency revenue and costs",
-        "run_id": "c7079cc5-9783-4698-978a-264a11266e2a",
+        "run_id": "5daea7cc-4b86-47a7-bbc9-c09ffdca4ce7",
         "definition_hash": "1d0da6e5da1964c8910696394f6c905b4c2d5016c4bb9ed70dd94253890492a3"
       },
       {
         "model_id": "floating_rate_interest",
         "version": "1.0.0",
         "name": "Floating-rate interest costs",
-        "run_id": "3758e862-c4f5-4d3e-b6f3-a26543d54d11",
+        "run_id": "d229516f-6ed4-49cd-bf9c-28319d8a1dc7",
         "definition_hash": "e11b2df833e9dbe2cb7146b0c3d0719304260e8a5c74852127996c64979fbe2d"
       }
     ],
@@ -2315,7 +2315,7 @@
   ],
   "interpretations": [
     {
-      "execution_id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+      "execution_id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
       "scenario_name": "Oil, rupee and rates on Aerisca",
       "version": 1,
       "variable_id": "var_usd_inr",
@@ -2649,7 +2649,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca v1"
             }
           ],
@@ -2679,7 +2679,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca v1"
             }
           ],
@@ -2709,7 +2709,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca v1"
             }
           ],
@@ -2741,7 +2741,7 @@
       "inputs": [
         {
           "kind": "execution",
-          "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+          "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
           "label": "Oil, rupee and rates on Aerisca v1"
         }
       ],
@@ -3137,7 +3137,7 @@
       ]
     },
     {
-      "id": "ins-18077d8bc1462092",
+      "id": "ins-b7ccc3e06f87d89e",
       "rule": "S01",
       "rule_title": "Simulated impact",
       "kind": "impact",
@@ -3216,7 +3216,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -3230,7 +3230,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -3248,7 +3248,7 @@
       "models": [
         {
           "kind": "execution",
-          "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+          "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
           "label": "Oil, rupee and rates on Aerisca, version 1",
           "models": ["airline_fuel_cost 1.1.0", "fx_exposure 1.0.0", "floating_rate_interest 1.0.0"]
         }
@@ -3323,7 +3323,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -3337,22 +3337,22 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             },
             {
               "kind": "run",
-              "id": "14637acf-ca8c-4bbd-a3be-87f71b35cc2f",
+              "id": "ae4dbc3e-0a4a-47fa-b982-b58f3ff011ba",
               "label": "airline_fuel_cost 1.1.0"
             },
             {
               "kind": "run",
-              "id": "c7079cc5-9783-4698-978a-264a11266e2a",
+              "id": "5daea7cc-4b86-47a7-bbc9-c09ffdca4ce7",
               "label": "fx_exposure 1.0.0"
             },
             {
               "kind": "run",
-              "id": "3758e862-c4f5-4d3e-b6f3-a26543d54d11",
+              "id": "d229516f-6ed4-49cd-bf9c-28319d8a1dc7",
               "label": "floating_rate_interest 1.0.0"
             }
           ],
@@ -3384,10 +3384,10 @@
       "next_steps": [
         {
           "action": "run_sensitivity",
-          "text": "Run a sensitivity analysis to see which inputs and assumptions move this result most.",
+          "text": "Run a sensitivity analysis on the latest execution to see which inputs and assumptions move its result most.",
           "target": {
             "kind": "execution",
-            "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+            "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
             "label": "Oil, rupee and rates on Aerisca · version 1"
           }
         }
@@ -3395,13 +3395,13 @@
       "sources": [
         {
           "kind": "execution",
-          "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+          "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
           "label": "Oil, rupee and rates on Aerisca · version 1"
         }
       ]
     },
     {
-      "id": "ins-37d99728412b7ce7",
+      "id": "ins-52a1e0dc657411bd",
       "rule": "S06",
       "rule_title": "Observed change through the models",
       "kind": "interpretation",
@@ -3516,7 +3516,7 @@
       "models": [
         {
           "kind": "execution",
-          "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+          "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
           "label": "Oil, rupee and rates on Aerisca, version 1 (interpreted)",
           "models": ["airline_fuel_cost 1.1.0", "fx_exposure 1.0.0"]
         }
@@ -3585,7 +3585,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca"
             }
           ],
@@ -3599,7 +3599,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca"
             }
           ],
@@ -3623,13 +3623,13 @@
         },
         {
           "kind": "execution",
-          "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+          "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
           "label": null
         }
       ]
     },
     {
-      "id": "ins-b8e45b9fe47ab6df",
+      "id": "ins-cd7abdb4fd2f24a0",
       "rule": "S02",
       "rule_title": "Contributions to a line",
       "kind": "contribution",
@@ -3663,7 +3663,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -3697,7 +3697,7 @@
       "models": [
         {
           "kind": "execution",
-          "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+          "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
           "label": "Oil, rupee and rates on Aerisca, version 1",
           "models": ["airline_fuel_cost 1.1.0", "fx_exposure 1.0.0", "floating_rate_interest 1.0.0"]
         }
@@ -3716,7 +3716,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -3738,7 +3738,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -3771,7 +3771,7 @@
       "sources": []
     },
     {
-      "id": "ins-37c9c849cfb963ca",
+      "id": "ins-c1b10d124be6ff23",
       "rule": "S02",
       "rule_title": "Contributions to a line",
       "kind": "contribution",
@@ -3805,7 +3805,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -3835,7 +3835,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -3869,7 +3869,7 @@
       "models": [
         {
           "kind": "execution",
-          "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+          "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
           "label": "Oil, rupee and rates on Aerisca, version 1",
           "models": ["airline_fuel_cost 1.1.0", "fx_exposure 1.0.0", "floating_rate_interest 1.0.0"]
         }
@@ -3888,7 +3888,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -3910,7 +3910,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -3942,7 +3942,7 @@
       "sources": []
     },
     {
-      "id": "ins-d1c1d3e1b474f350",
+      "id": "ins-62b2b60f186993fd",
       "rule": "S02",
       "rule_title": "Contributions to a line",
       "kind": "contribution",
@@ -3976,7 +3976,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -4006,7 +4006,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -4040,7 +4040,7 @@
       "models": [
         {
           "kind": "execution",
-          "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+          "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
           "label": "Oil, rupee and rates on Aerisca, version 1",
           "models": ["airline_fuel_cost 1.1.0", "fx_exposure 1.0.0", "floating_rate_interest 1.0.0"]
         }
@@ -4059,7 +4059,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -4081,7 +4081,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -4113,7 +4113,7 @@
       "sources": []
     },
     {
-      "id": "ins-9dfa96478c48f4d0",
+      "id": "ins-517336cec00684d9",
       "rule": "S02",
       "rule_title": "Contributions to a line",
       "kind": "contribution",
@@ -4147,7 +4147,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -4177,7 +4177,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -4207,7 +4207,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -4241,7 +4241,7 @@
       "models": [
         {
           "kind": "execution",
-          "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+          "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
           "label": "Oil, rupee and rates on Aerisca, version 1",
           "models": ["airline_fuel_cost 1.1.0", "fx_exposure 1.0.0", "floating_rate_interest 1.0.0"]
         }
@@ -4260,7 +4260,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -4282,7 +4282,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -4315,7 +4315,7 @@
       "sources": []
     },
     {
-      "id": "ins-ff5c3f5f5c572995",
+      "id": "ins-5ed1a5267cc7640e",
       "rule": "S02",
       "rule_title": "Contributions to a line",
       "kind": "contribution",
@@ -4349,7 +4349,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -4379,7 +4379,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -4413,7 +4413,7 @@
       "models": [
         {
           "kind": "execution",
-          "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+          "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
           "label": "Oil, rupee and rates on Aerisca, version 1",
           "models": ["airline_fuel_cost 1.1.0", "fx_exposure 1.0.0", "floating_rate_interest 1.0.0"]
         }
@@ -4432,7 +4432,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -4454,7 +4454,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -4486,7 +4486,7 @@
       "sources": []
     },
     {
-      "id": "ins-66a5f89ca97b2777",
+      "id": "ins-b8a80b6628c98e20",
       "rule": "S03",
       "rule_title": "Effect per unit of a change",
       "kind": "sensitivity",
@@ -4520,7 +4520,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -4546,7 +4546,7 @@
       "models": [
         {
           "kind": "execution",
-          "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+          "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
           "label": "Oil, rupee and rates on Aerisca, version 1",
           "models": ["airline_fuel_cost 1.1.0", "fx_exposure 1.0.0", "floating_rate_interest 1.0.0"]
         }
@@ -4565,7 +4565,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -4587,7 +4587,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -4619,7 +4619,7 @@
       "sources": []
     },
     {
-      "id": "ins-d84ced7a559b2ab5",
+      "id": "ins-033bcda46c45c97d",
       "rule": "S03",
       "rule_title": "Effect per unit of a change",
       "kind": "sensitivity",
@@ -4653,7 +4653,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -4679,7 +4679,7 @@
       "models": [
         {
           "kind": "execution",
-          "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+          "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
           "label": "Oil, rupee and rates on Aerisca, version 1",
           "models": ["airline_fuel_cost 1.1.0", "fx_exposure 1.0.0", "floating_rate_interest 1.0.0"]
         }
@@ -4698,7 +4698,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -4720,7 +4720,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -4752,7 +4752,7 @@
       "sources": []
     },
     {
-      "id": "ins-1d30a3e0129d578e",
+      "id": "ins-99f65c311b87f941",
       "rule": "S03",
       "rule_title": "Effect per unit of a change",
       "kind": "sensitivity",
@@ -4786,7 +4786,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -4812,7 +4812,7 @@
       "models": [
         {
           "kind": "execution",
-          "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+          "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
           "label": "Oil, rupee and rates on Aerisca, version 1",
           "models": ["airline_fuel_cost 1.1.0", "fx_exposure 1.0.0", "floating_rate_interest 1.0.0"]
         }
@@ -4831,7 +4831,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -4853,7 +4853,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -5062,11 +5062,11 @@
       "next_steps": [
         {
           "action": "find_evidence",
-          "text": "The relationship is recorded as a model assumption: look for a cited source before relying on it.",
+          "text": "Recorded as model assumptions: “Brent crude oil price influences Jet fuel price (U.S. Gulf Coast)” and “Jet fuel price (U.S. Gulf Coast) affects costs of Air transport”. Look for a cited source before relying on them.",
           "target": {
             "kind": "graph_edge",
-            "id": "e-df536e008d0660a5",
-            "label": null
+            "id": "e-ea305310288a3f88",
+            "label": "Brent crude oil price influences Jet fuel price (U.S. Gulf Coast)"
           }
         }
       ],
@@ -5232,11 +5232,11 @@
         },
         {
           "action": "find_evidence",
-          "text": "The relationship is recorded as a model assumption: look for a cited source before relying on it.",
+          "text": "Recorded as a model assumption: “Jet fuel price (U.S. Gulf Coast) affects costs of Air transport”. Look for a cited source before relying on it.",
           "target": {
             "kind": "graph_edge",
             "id": "e-df536e008d0660a5",
-            "label": null
+            "label": "Jet fuel price (U.S. Gulf Coast) affects costs of Air transport"
           }
         }
       ],
@@ -5407,11 +5407,11 @@
         },
         {
           "action": "find_evidence",
-          "text": "The relationship is recorded as a model assumption: look for a cited source before relying on it.",
+          "text": "Recorded as model assumptions: “U.S. effective federal funds rate influences USD/INR exchange rate” and “USD/INR exchange rate affects costs of Aerisca Airways”. Look for a cited source before relying on them.",
           "target": {
             "kind": "graph_edge",
-            "id": "e-2afc04ee80f0699e",
-            "label": null
+            "id": "e-0ad272aa06e1d7d6",
+            "label": "U.S. effective federal funds rate influences USD/INR exchange rate"
           }
         }
       ],
@@ -5541,11 +5541,11 @@
       "next_steps": [
         {
           "action": "find_evidence",
-          "text": "The relationship is recorded as a model assumption: look for a cited source before relying on it.",
+          "text": "Recorded as a model assumption: “USD/INR exchange rate affects costs of Aerisca Airways”. Look for a cited source before relying on it.",
           "target": {
             "kind": "graph_edge",
             "id": "e-2afc04ee80f0699e",
-            "label": null
+            "label": "USD/INR exchange rate affects costs of Aerisca Airways"
           }
         }
       ],
@@ -6083,7 +6083,7 @@
       "models": [
         {
           "kind": "execution",
-          "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+          "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
           "label": "Oil, rupee and rates on Aerisca, version 1",
           "models": ["airline_fuel_cost 1.1.0", "fx_exposure 1.0.0", "floating_rate_interest 1.0.0"]
         }
@@ -6116,7 +6116,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -6133,10 +6133,10 @@
       "next_steps": [
         {
           "action": "run_sensitivity",
-          "text": "Run a sensitivity analysis on the latest execution to see which assumptions move the result most.",
+          "text": "Run a sensitivity analysis on the latest execution to see which inputs and assumptions move its result most.",
           "target": {
             "kind": "execution",
-            "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+            "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
             "label": "Oil, rupee and rates on Aerisca · version 1"
           }
         }
@@ -6177,20 +6177,20 @@
     },
     {
       "action": "run_sensitivity",
-      "text": "Run a sensitivity analysis to see which inputs and assumptions move this result most.",
+      "text": "Run a sensitivity analysis on the latest execution to see which inputs and assumptions move its result most.",
       "target": {
         "kind": "execution",
-        "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+        "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
         "label": "Oil, rupee and rates on Aerisca · version 1"
       }
     },
     {
       "action": "find_evidence",
-      "text": "The relationship is recorded as a model assumption: look for a cited source before relying on it.",
+      "text": "Recorded as model assumptions: “Brent crude oil price influences Jet fuel price (U.S. Gulf Coast)” and “Jet fuel price (U.S. Gulf Coast) affects costs of Air transport”. Look for a cited source before relying on them.",
       "target": {
         "kind": "graph_edge",
-        "id": "e-df536e008d0660a5",
-        "label": null
+        "id": "e-ea305310288a3f88",
+        "label": "Brent crude oil price influences Jet fuel price (U.S. Gulf Coast)"
       }
     },
     {
@@ -6200,6 +6200,15 @@
         "kind": "template",
         "id": "jet_fuel_airline",
         "label": "Jet fuel price shock"
+      }
+    },
+    {
+      "action": "find_evidence",
+      "text": "Recorded as a model assumption: “Jet fuel price (U.S. Gulf Coast) affects costs of Air transport”. Look for a cited source before relying on it.",
+      "target": {
+        "kind": "graph_edge",
+        "id": "e-df536e008d0660a5",
+        "label": "Jet fuel price (U.S. Gulf Coast) affects costs of Air transport"
       }
     },
     {
@@ -6213,20 +6222,20 @@
     },
     {
       "action": "find_evidence",
-      "text": "The relationship is recorded as a model assumption: look for a cited source before relying on it.",
+      "text": "Recorded as model assumptions: “U.S. effective federal funds rate influences USD/INR exchange rate” and “USD/INR exchange rate affects costs of Aerisca Airways”. Look for a cited source before relying on them.",
       "target": {
         "kind": "graph_edge",
-        "id": "e-2afc04ee80f0699e",
-        "label": null
+        "id": "e-0ad272aa06e1d7d6",
+        "label": "U.S. effective federal funds rate influences USD/INR exchange rate"
       }
     },
     {
-      "action": "run_sensitivity",
-      "text": "Run a sensitivity analysis on the latest execution to see which assumptions move the result most.",
+      "action": "find_evidence",
+      "text": "Recorded as a model assumption: “USD/INR exchange rate affects costs of Aerisca Airways”. Look for a cited source before relying on it.",
       "target": {
-        "kind": "execution",
-        "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
-        "label": "Oil, rupee and rates on Aerisca · version 1"
+        "kind": "graph_edge",
+        "id": "e-2afc04ee80f0699e",
+        "label": "USD/INR exchange rate affects costs of Aerisca Airways"
       }
     }
   ]

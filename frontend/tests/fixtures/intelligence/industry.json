@@ -13,7 +13,7 @@
   },
   "build": {
     "id": 1,
-    "finished_at": "2026-09-24T10:20:51.248869Z",
+    "finished_at": "2026-09-24T10:33:40.090775Z",
     "freshness": "current",
     "message": "Built from the current sources (build #1)."
   },
@@ -715,11 +715,11 @@
         },
         {
           "action": "find_evidence",
-          "text": "The relationship is recorded as a model assumption: look for a cited source before relying on it.",
+          "text": "Recorded as model assumptions: “Brent crude oil price influences Jet fuel price (U.S. Gulf Coast)” and “Jet fuel price (U.S. Gulf Coast) affects costs of Air transport”. Look for a cited source before relying on them.",
           "target": {
             "kind": "graph_edge",
-            "id": "e-df536e008d0660a5",
-            "label": null
+            "id": "e-ea305310288a3f88",
+            "label": "Brent crude oil price influences Jet fuel price (U.S. Gulf Coast)"
           }
         }
       ],
@@ -858,11 +858,11 @@
         },
         {
           "action": "find_evidence",
-          "text": "The relationship is recorded as a model assumption: look for a cited source before relying on it.",
+          "text": "Recorded as a model assumption: “Jet fuel price (U.S. Gulf Coast) affects costs of Air transport”. Look for a cited source before relying on it.",
           "target": {
             "kind": "graph_edge",
             "id": "e-df536e008d0660a5",
-            "label": null
+            "label": "Jet fuel price (U.S. Gulf Coast) affects costs of Air transport"
           }
         }
       ],
@@ -1317,11 +1317,11 @@
     },
     {
       "action": "find_evidence",
-      "text": "The relationship is recorded as a model assumption: look for a cited source before relying on it.",
+      "text": "Recorded as model assumptions: “Brent crude oil price influences Jet fuel price (U.S. Gulf Coast)” and “Jet fuel price (U.S. Gulf Coast) affects costs of Air transport”. Look for a cited source before relying on them.",
       "target": {
         "kind": "graph_edge",
-        "id": "e-df536e008d0660a5",
-        "label": null
+        "id": "e-ea305310288a3f88",
+        "label": "Brent crude oil price influences Jet fuel price (U.S. Gulf Coast)"
       }
     },
     {
@@ -1331,6 +1331,15 @@
         "kind": "template",
         "id": "jet_fuel_airline",
         "label": "Jet fuel price shock"
+      }
+    },
+    {
+      "action": "find_evidence",
+      "text": "Recorded as a model assumption: “Jet fuel price (U.S. Gulf Coast) affects costs of Air transport”. Look for a cited source before relying on it.",
+      "target": {
+        "kind": "graph_edge",
+        "id": "e-df536e008d0660a5",
+        "label": "Jet fuel price (U.S. Gulf Coast) affects costs of Air transport"
       }
     },
     {

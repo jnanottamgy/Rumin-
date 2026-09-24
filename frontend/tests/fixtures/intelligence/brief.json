@@ -1,7 +1,7 @@
 {
   "format": "rumin.intelligence.brief/1",
   "engine_version": "1.0.0",
-  "generated_at": "2026-09-24T10:20:53.909453Z",
+  "generated_at": "2026-09-24T10:33:42.509280Z",
   "entity": {
     "key": "company:co_aerisca_airways",
     "name": "Aerisca Airways",
@@ -13,7 +13,7 @@
   },
   "build": {
     "id": 1,
-    "finished_at": "2026-09-24T10:20:51.248869Z",
+    "finished_at": "2026-09-24T10:33:40.090775Z",
     "freshness": "current",
     "message": "Built from the current sources (build #1)."
   },
@@ -1081,11 +1081,11 @@
   },
   "simulation_results": {
     "execution": {
-      "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
-      "scenario_id": "1f211e66-f8d4-4325-b812-c3c1c9b4445f",
+      "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
+      "scenario_id": "03ae5ef9-1685-4178-8df4-3720a34c20bb",
       "scenario_name": "Oil, rupee and rates on Aerisca",
       "version": 1,
-      "finished_at": "2026-09-24T10:20:53.652675Z",
+      "finished_at": "2026-09-24T10:33:42.269272Z",
       "currency": "INR",
       "horizon_months": 12,
       "graph_build_id": 1,
@@ -1291,7 +1291,7 @@
   ],
   "evidence": [
     {
-      "insight_id": "ins-18077d8bc1462092",
+      "insight_id": "ins-b7ccc3e06f87d89e",
       "rule": "S01",
       "kind": "impact",
       "statement": "In the stored execution of “Oil, rupee and rates on Aerisca” (version 1), with Brent crude oil price +20.00 %, USD/INR exchange rate +5.00 % and RBI policy repo rate +0.50 percentage points, Aerisca Airways's profit before tax changes by −6,700,000 INR (−17.63 %) over 12 months, from a baseline of 38,000,000 INR.",
@@ -1306,7 +1306,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -1320,7 +1320,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -1398,7 +1398,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -1412,22 +1412,22 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             },
             {
               "kind": "run",
-              "id": "14637acf-ca8c-4bbd-a3be-87f71b35cc2f",
+              "id": "ae4dbc3e-0a4a-47fa-b982-b58f3ff011ba",
               "label": "airline_fuel_cost 1.1.0"
             },
             {
               "kind": "run",
-              "id": "c7079cc5-9783-4698-978a-264a11266e2a",
+              "id": "5daea7cc-4b86-47a7-bbc9-c09ffdca4ce7",
               "label": "fx_exposure 1.0.0"
             },
             {
               "kind": "run",
-              "id": "3758e862-c4f5-4d3e-b6f3-a26543d54d11",
+              "id": "d229516f-6ed4-49cd-bf9c-28319d8a1dc7",
               "label": "floating_rate_interest 1.0.0"
             }
           ],
@@ -1438,7 +1438,7 @@
       ]
     },
     {
-      "insight_id": "ins-b8e45b9fe47ab6df",
+      "insight_id": "ins-cd7abdb4fd2f24a0",
       "rule": "S02",
       "kind": "contribution",
       "statement": "For Aerisca Airways, the change in interest expense, +375,000 INR (+3.12 %), splits by the scenario's changes into RBI policy repo rate +375,000 INR (100.00 % of the change).",
@@ -1453,7 +1453,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -1491,7 +1491,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -1513,7 +1513,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -1524,7 +1524,7 @@
       ]
     },
     {
-      "insight_id": "ins-37c9c849cfb963ca",
+      "insight_id": "ins-c1b10d124be6ff23",
       "rule": "S02",
       "kind": "contribution",
       "statement": "For Aerisca Airways, the change in operating costs, +13,250,000 INR (+5.30 %), splits by the scenario's changes into Brent crude oil price +9,225,000 INR (69.62 % of the change) and USD/INR exchange rate +4,025,000 INR (30.38 % of the change).",
@@ -1539,7 +1539,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -1569,7 +1569,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -1607,7 +1607,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -1629,7 +1629,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -1640,7 +1640,7 @@
       ]
     },
     {
-      "insight_id": "ins-d1c1d3e1b474f350",
+      "insight_id": "ins-62b2b60f186993fd",
       "rule": "S02",
       "kind": "contribution",
       "statement": "For Aerisca Airways, the change in operating profit, −6,325,000 INR (−12.65 %), splits by the scenario's changes into Brent crude oil price −5,637,500 INR (89.13 % of the change) and USD/INR exchange rate −687,500 INR (10.87 % of the change).",
@@ -1655,7 +1655,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -1685,7 +1685,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -1723,7 +1723,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -1745,7 +1745,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -1756,7 +1756,7 @@
       ]
     },
     {
-      "insight_id": "ins-9dfa96478c48f4d0",
+      "insight_id": "ins-517336cec00684d9",
       "rule": "S02",
       "kind": "contribution",
       "statement": "For Aerisca Airways, the change in profit before tax, −6,700,000 INR (−17.63 %), splits by the scenario's changes into Brent crude oil price −5,637,500 INR (84.14 % of the change), USD/INR exchange rate −687,500 INR (10.26 % of the change) and RBI policy repo rate −375,000 INR (5.60 % of the change).",
@@ -1771,7 +1771,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -1801,7 +1801,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -1831,7 +1831,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -1869,7 +1869,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -1891,7 +1891,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -1902,7 +1902,7 @@
       ]
     },
     {
-      "insight_id": "ins-ff5c3f5f5c572995",
+      "insight_id": "ins-5ed1a5267cc7640e",
       "rule": "S02",
       "kind": "contribution",
       "statement": "For Aerisca Airways, the change in revenue, +6,925,000 INR (+2.31 %), splits by the scenario's changes into Brent crude oil price +3,587,500 INR (51.81 % of the change) and USD/INR exchange rate +3,337,500 INR (48.19 % of the change).",
@@ -1917,7 +1917,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -1947,7 +1947,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -1985,7 +1985,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -2007,7 +2007,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -2018,7 +2018,7 @@
       ]
     },
     {
-      "insight_id": "ins-66a5f89ca97b2777",
+      "insight_id": "ins-b8a80b6628c98e20",
       "rule": "S03",
       "kind": "sensitivity",
       "statement": "Per 1 % of Brent crude oil price, Aerisca Airways's profit before tax changes by −281,875 INR on average over this scenario's +20.00 %.",
@@ -2033,7 +2033,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -2063,7 +2063,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -2085,7 +2085,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -2096,7 +2096,7 @@
       ]
     },
     {
-      "insight_id": "ins-d84ced7a559b2ab5",
+      "insight_id": "ins-033bcda46c45c97d",
       "rule": "S03",
       "kind": "sensitivity",
       "statement": "Per 1 % of USD/INR exchange rate, Aerisca Airways's profit before tax changes by −137,500 INR on average over this scenario's +5.00 %.",
@@ -2111,7 +2111,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -2141,7 +2141,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -2163,7 +2163,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -2174,7 +2174,7 @@
       ]
     },
     {
-      "insight_id": "ins-1d30a3e0129d578e",
+      "insight_id": "ins-99f65c311b87f941",
       "rule": "S03",
       "kind": "sensitivity",
       "statement": "Per 1 percentage point of RBI policy repo rate, Aerisca Airways's profit before tax changes by −750,000 INR on average over this scenario's +0.50 percentage points.",
@@ -2189,7 +2189,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -2219,7 +2219,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -2241,7 +2241,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -2893,7 +2893,7 @@
           "refs": [
             {
               "kind": "execution",
-              "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+              "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
               "label": "Oil, rupee and rates on Aerisca · version 1"
             }
           ],
@@ -2924,20 +2924,20 @@
   "next_steps": [
     {
       "action": "run_sensitivity",
-      "text": "Run a sensitivity analysis to see which inputs and assumptions move this result most.",
+      "text": "Run a sensitivity analysis on the latest execution to see which inputs and assumptions move its result most.",
       "target": {
         "kind": "execution",
-        "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
+        "id": "7701aa9a-e760-44e9-b3f4-2f761a727ca6",
         "label": "Oil, rupee and rates on Aerisca · version 1"
       }
     },
     {
       "action": "find_evidence",
-      "text": "The relationship is recorded as a model assumption: look for a cited source before relying on it.",
+      "text": "Recorded as model assumptions: “Brent crude oil price influences Jet fuel price (U.S. Gulf Coast)” and “Jet fuel price (U.S. Gulf Coast) affects costs of Air transport”. Look for a cited source before relying on them.",
       "target": {
         "kind": "graph_edge",
-        "id": "e-df536e008d0660a5",
-        "label": null
+        "id": "e-ea305310288a3f88",
+        "label": "Brent crude oil price influences Jet fuel price (U.S. Gulf Coast)"
       }
     },
     {
@@ -2947,6 +2947,15 @@
         "kind": "template",
         "id": "jet_fuel_airline",
         "label": "Jet fuel price shock"
+      }
+    },
+    {
+      "action": "find_evidence",
+      "text": "Recorded as a model assumption: “Jet fuel price (U.S. Gulf Coast) affects costs of Air transport”. Look for a cited source before relying on it.",
+      "target": {
+        "kind": "graph_edge",
+        "id": "e-df536e008d0660a5",
+        "label": "Jet fuel price (U.S. Gulf Coast) affects costs of Air transport"
       }
     },
     {
@@ -2960,11 +2969,20 @@
     },
     {
       "action": "find_evidence",
-      "text": "The relationship is recorded as a model assumption: look for a cited source before relying on it.",
+      "text": "Recorded as model assumptions: “U.S. effective federal funds rate influences USD/INR exchange rate” and “USD/INR exchange rate affects costs of Aerisca Airways”. Look for a cited source before relying on them.",
+      "target": {
+        "kind": "graph_edge",
+        "id": "e-0ad272aa06e1d7d6",
+        "label": "U.S. effective federal funds rate influences USD/INR exchange rate"
+      }
+    },
+    {
+      "action": "find_evidence",
+      "text": "Recorded as a model assumption: “USD/INR exchange rate affects costs of Aerisca Airways”. Look for a cited source before relying on it.",
       "target": {
         "kind": "graph_edge",
         "id": "e-2afc04ee80f0699e",
-        "label": null
+        "label": "USD/INR exchange rate affects costs of Aerisca Airways"
       }
     },
     {
@@ -2974,15 +2992,6 @@
         "kind": "series",
         "id": "wb-ind-pa-nus-fcrf",
         "label": "Official exchange rate (INR per US$, period average) — India"
-      }
-    },
-    {
-      "action": "run_sensitivity",
-      "text": "Run a sensitivity analysis on the latest execution to see which assumptions move the result most.",
-      "target": {
-        "kind": "execution",
-        "id": "ec0109e4-a554-4eb0-90d7-fedaf2b91fff",
-        "label": "Oil, rupee and rates on Aerisca · version 1"
       }
     }
   ],

@@ -232,6 +232,22 @@ def test_an_entity_without_executions_has_no_drivers(intel: TestClient) -> None:
     assert "No completed execution" in found["note"]
 
 
+def test_next_steps_are_gathered_once_and_name_what_to_check(intel: TestClient) -> None:
+    execute(intel)
+
+    dossier = get(intel, f"/intelligence/entities/{AERISCA}")
+
+    gathered = dossier["next_steps"]
+    assert [step["action"] for step in gathered].count("run_sensitivity") == 1
+    edges = {e["key"]: e for p in dossier["exposure"]["paths"] for e in p["edges"]}
+    evidence = [step for step in gathered if step["action"] == "find_evidence"]
+    assert len(evidence) == 4  # one per variable reaching Aerisca
+    for step in evidence:
+        assert step["target"]["kind"] == "graph_edge"
+        assert edges[step["target"]["id"]]["evidence_status"] == "model_assumption"
+        assert f"“{step['target']['label']}”" in step["text"]
+
+
 # --- The dossier -------------------------------------------------------------------------------
 
 

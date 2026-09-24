@@ -1,18 +1,18 @@
 {
   "items": [
     {
-      "id": "8c30cfca-766c-4b76-8725-4d36f1747efd",
+      "id": "651bd9cf-45cf-4587-9593-fb176846b4ad",
       "scope": "entity",
       "subject_key": "company:co_aerisca_airways",
       "subject_name": "Aerisca Airways",
       "label": "Before the data arrived",
       "engine_version": "1.0.0",
       "graph_build_id": 1,
-      "inputs_hash": "81574e4b4c25bc4dc51f5a8bd8aedf64cc3068b86d6ce930d9f464b5366cdf93",
-      "result_hash": "b79144bc489e8a640da898fca62d527c6c4fbb20b2fb6749a26981f6de2eaf3e",
+      "inputs_hash": "3fca5650ea50e9d7a8e5b640f28709e0b73594cb26cdaadd0859ec3c755a14c1",
+      "result_hash": "2f2d9c7941f614b4745ef69d201b66035b8b0defe57fa28d0e4dc3932f002320",
       "insight_count": 16,
-      "duration_ms": 46,
-      "created_at": "2026-09-24T10:20:53.991295Z"
+      "duration_ms": 45,
+      "created_at": "2026-09-24T10:33:42.591293Z"
     }
   ],
   "total": 1,
