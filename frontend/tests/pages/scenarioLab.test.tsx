@@ -328,6 +328,28 @@ describe("Scenario Lab — a saved scenario", () => {
     );
   });
 
+  it("discards unsaved edits and returns to the saved version", async () => {
+    const api = mockApi(labRoutes());
+    const user = userEvent.setup();
+    await openSaved();
+    expect(screen.queryByRole("button", { name: "Discard changes" })).toBeNull();
+
+    const magnitude = screen.getByRole("textbox", { name: "Magnitude of change 1" });
+    await user.clear(magnitude);
+    await user.type(magnitude, "35");
+    expect(screen.getByText("Unsaved changes")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Discard changes" }));
+    expect(screen.getByRole("textbox", { name: "Magnitude of change 1" })).toHaveValue("20");
+    expect(screen.queryByText("Unsaved changes")).toBeNull();
+    expect(screen.getByText("Unsaved changes discarded.")).toBeInTheDocument();
+    expect(await screen.findByText(/^Showing stored execution · v1/)).toBeInTheDocument();
+    // Nothing was saved: only previews were asked for.
+    expect(api.writes().every((request) => request.path === "/api/v1/scenarios/preview")).toBe(
+      true,
+    );
+  });
+
   it("follows an execution through the stages the server reports until it is final", async () => {
     const NEW_ID = "00000000-0000-4000-8000-000000000001";
     const stored = labFixtures.execution();
@@ -343,14 +365,16 @@ describe("Scenario Lab — a saved scenario", () => {
       poll_after_ms: 10,
     };
     const polls: string[] = [];
+    // The server keeps the execution in "simulating" until the test lets it finish.
+    let finished = false;
     const api = mockApi(
       labRoutes({
         [`POST /api/v1/scenarios/${SCENARIO_ID}/executions`]: { status: 202, body: queued },
         [execution(NEW_ID)]: () => {
           polls.push(NEW_ID);
-          return polls.length < 3
-            ? { body: { ...queued, status: "simulating", stages: stored.stages.slice(0, 1) } }
-            : { body: { ...stored, id: NEW_ID } };
+          return finished
+            ? { body: { ...stored, id: NEW_ID } }
+            : { body: { ...queued, status: "simulating", stages: stored.stages.slice(0, 1) } };
         },
         [`${execution(NEW_ID)}/results`]: {
           body: { ...labFixtures.results(), execution_id: NEW_ID },
@@ -363,6 +387,9 @@ describe("Scenario Lab — a saved scenario", () => {
 
     await user.click(screen.getByRole("button", { name: "Execute" }));
     expect(await screen.findByText("Simulating — as reported by the server")).toBeInTheDocument();
+    // Still running: the page keeps asking at the interval the server set.
+    await waitFor(() => expect(polls.length).toBeGreaterThan(2));
+    finished = true;
     expect(
       await screen.findByText(/^Completed in .* · version 1 · stored and reproducible$/),
     ).toBeInTheDocument();

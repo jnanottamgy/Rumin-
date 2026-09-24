@@ -95,6 +95,8 @@ function Workspace({
   );
   const [draft, dispatch] = useReducer(draftReducer, initial);
   const saved = useMemo(() => (scenario ? draftFromScenario(scenario) : null), [scenario]);
+  /** Whether "discard" has anything to undo: edits since the saved version, or since the start. */
+  const discardable = saved ? !sameScenario(draft, saved) : !sameScenario(draft, initial);
   const dirty = saved ? !sameScenario(draft, saved) : true;
 
   const [saveErrors, setSaveErrors] = useState<FieldMessages>({});
@@ -423,6 +425,20 @@ function Workspace({
           >
             {busy === "save" ? "Saving…" : scenario ? "Save new version" : "Save scenario"}
           </Button>
+          {discardable && (
+            <Button
+              variant="ghost"
+              disabled={busy !== null}
+              onClick={() => {
+                dispatch({ type: "load", draft: saved ?? initial });
+                setAttempted(false);
+                setSaveErrors({});
+                setNotice(scenario ? "Unsaved changes discarded." : null);
+              }}
+            >
+              {scenario ? "Discard changes" : "Start over"}
+            </Button>
+          )}
           {scenario && (
             <Button variant="ghost" onClick={() => void duplicate()}>
               Duplicate
