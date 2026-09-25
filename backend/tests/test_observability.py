@@ -153,6 +153,45 @@ def test_json_logs_carry_the_request_id_and_structured_access_fields(
     assert "cookie" not in stream.getvalue().lower()
 
 
+def test_invented_methods_share_one_label_and_a_logged_path_stays_on_one_line(
+    database_url: str, admin_token: str
+) -> None:
+    """A client chooses the method and the path: neither may grow the metrics without bound
+    or forge a log entry (the independent review's F1 and F6)."""
+    app = create_app(make_settings(database_url, log_level="INFO"))
+    stream = io.StringIO()
+    handler = logging.getLogger("app").handlers[0]
+    assert isinstance(handler, logging.StreamHandler)
+    previous = handler.setStream(stream)
+    try:
+        with TestClient(app) as client:
+            for index in range(3):
+                assert client.request(f"INVENTED{index}" * 20, "/health").status_code == 405
+            client.get("/health%0AINFO forged entry")
+            client.cookies.set(COOKIE, admin_token)
+            text = client.get("/metrics").text
+    finally:
+        handler.setStream(previous)
+        configure_logging("WARNING")
+
+    assert "INVENTED" not in text and 'method="OTHER"' in text
+    other = r'rumin_http_requests_total\{method="OTHER",route="[^"]*",status="405"\} 3'
+    assert re.search(other, text)
+    lines = stream.getvalue().splitlines()
+    assert not any(line.startswith("INFO forged entry") for line in lines)
+    assert any("/health\\x0aINFO forged entry" in line for line in lines)
+    assert not any("INVENTED" in line for line in lines)
+
+
+def test_api_answers_are_never_cached(database_url: str, admin_token: str) -> None:
+    app = create_app(make_settings(database_url))
+    with TestClient(app) as client:
+        client.cookies.set(COOKIE, admin_token)
+        assert client.get(f"{API}/entities").headers["cache-control"] == "no-store"
+        assert client.get(f"{API}/nothing-here").headers["cache-control"] == "no-store"
+        assert "cache-control" not in client.get("/health").headers
+
+
 # --- Guessing a current password ----------------------------------------------------------------
 
 

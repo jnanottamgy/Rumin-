@@ -14,11 +14,25 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from contextvars import ContextVar
 from datetime import UTC, datetime
 from typing import Literal
 
 request_id_ctx: ContextVar[str] = ContextVar("request_id", default="-")
+
+_CONTROL = re.compile(r"[\x00-\x1f\x7f-\x9f]")
+_PRINTABLE_LIMIT = 2048
+
+
+def printable(text: str) -> str:
+    """Text a client sent, safe on one log line: control characters are escaped (a path can
+    carry a decoded line break that would forge a log entry) and long values are cut."""
+    cleaned = _CONTROL.sub(lambda match: f"\\x{ord(match.group()):02x}", text)
+    if len(cleaned) > _PRINTABLE_LIMIT:
+        return cleaned[:_PRINTABLE_LIMIT] + "…"
+    return cleaned
+
 
 LOG_FORMAT = "%(asctime)s %(levelname)-7s [%(request_id)s] %(name)s: %(message)s"
 

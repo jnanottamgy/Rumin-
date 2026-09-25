@@ -167,10 +167,12 @@ CAPABILITIES: tuple[Capability, ...] = (
     ),
     Capability(
         id="authentication",
-        label="Authentication",
-        available=False,
+        label="Accounts and access",
+        available=True,
         planned_phase=10,
-        note="Not implemented. Run this build locally only.",
+        note="Sign-in with accounts an administrator creates; viewer, analyst and admin "
+        "roles; only a record's owner or an administrator changes it; Analyst conversations "
+        "are private. Enforced by the API on every request.",
     ),
     Capability(
         id="live_market_data",

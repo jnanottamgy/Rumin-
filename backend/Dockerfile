@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 #
-# The RUMIN API (Phase 10): one uvicorn process (ADR 58), running as an unprivileged user
+# The RUMIN API (Phase 10): one uvicorn process (ADR 95), running as an unprivileged user
 # from a read-only image. Build from backend/:
 #
 #   docker build -t rumin-api:<version> backend
@@ -51,7 +51,7 @@ EXPOSE 8000
 HEALTHCHECK --interval=15s --timeout=3s --start-period=10s --retries=3 \
   CMD ["python", "-c", "import sys, urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2).status == 200 else 1)"]
 # One process: the scenario and analyst runners, the login throttle and the metrics live
-# in it (ADR 58). --proxy-headers takes the client address and scheme from the web server
+# in it (ADR 95). --proxy-headers takes the client address and scheme from the web server
 # listed in FORWARDED_ALLOW_IPS; uvicorn's access log is off (the API logs each request
 # with its request ID).
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", \

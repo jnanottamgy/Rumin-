@@ -16,7 +16,7 @@ from starlette.responses import JSONResponse
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from app.core.errors import error_payload
-from app.core.logging import request_id_ctx
+from app.core.logging import printable, request_id_ctx
 from app.core.metrics import Metrics
 
 logger = logging.getLogger(__name__)
@@ -34,6 +34,14 @@ _SECURITY_HEADERS = {
     "Referrer-Policy": "no-referrer",
 }
 _API_CSP = "default-src 'none'; frame-ancestors 'none'"
+
+# A client chooses the method; a label must not multiply with every token it invents.
+_KNOWN_METHODS = frozenset({"GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"})
+
+
+def _method(scope: Scope) -> str:
+    method: str = scope.get("method", "")
+    return method if method in _KNOWN_METHODS else "OTHER"
 
 
 class RequestContextMiddleware:
@@ -60,6 +68,8 @@ class RequestContextMiddleware:
         request_id = incoming if _VALID_REQUEST_ID.match(incoming) else uuid.uuid4().hex
         token = request_id_ctx.set(request_id)
         path: str = scope.get("path", "")
+        method = _method(scope)
+        logged_path = printable(path)
         started = time.perf_counter()
         status_code = 500
         response_started = False
@@ -75,12 +85,16 @@ class RequestContextMiddleware:
                     headers.setdefault(name, value)
                 if not path.startswith(_DOCS_PATHS):
                     headers.setdefault("Content-Security-Policy", _API_CSP)
+                if path.startswith("/api/"):
+                    # People, the audit trail and conversations must not stay in a shared
+                    # browser's cache.
+                    headers.setdefault("Cache-Control", "no-store")
             await send(message)
 
         try:
             await self.app(scope, receive, send_wrapper)
         except Exception:
-            logger.exception("Unhandled error while processing %s %s", scope["method"], path)
+            logger.exception("Unhandled error while processing %s %s", method, logged_path)
             if response_started:
                 raise  # Too late to send an error response; let the server close it.
             response = JSONResponse(
@@ -93,14 +107,14 @@ class RequestContextMiddleware:
             duration_ms = elapsed * 1000
             logger.info(
                 "%s %s -> %d (%.1f ms)",
-                scope["method"],
-                path,
+                method,
+                logged_path,
                 status_code,
                 duration_ms,
                 extra={
                     "http": {
-                        "method": scope["method"],
-                        "path": path,
+                        "method": method,
+                        "path": logged_path,
                         "status": status_code,
                         "duration_ms": round(duration_ms, 1),
                     }
@@ -108,8 +122,8 @@ class RequestContextMiddleware:
             )
             if self.metrics is not None:
                 route = _route_template(scope)
-                self.metrics.requests.inc(scope["method"], route, str(status_code))
-                self.metrics.durations.observe(elapsed, scope["method"], route)
+                self.metrics.requests.inc(method, route, str(status_code))
+                self.metrics.durations.observe(elapsed, method, route)
                 self.metrics.in_flight.add(-1)
             request_id_ctx.reset(token)
 
@@ -222,7 +236,10 @@ class CrossSiteRequestMiddleware:
         foreign = origin is not None and origin.rstrip("/") not in self.allowed | {own}
         if cross_site or foreign:
             logger.warning(
-                "Refused a cross-site %s %s (origin %s)", scope["method"], scope["path"], origin
+                "Refused a cross-site %s %s (origin %s)",
+                scope["method"],
+                printable(scope["path"]),
+                printable(origin or "none"),
             )
             response = JSONResponse(
                 error_payload(403, "Requests that change data must come from RUMIN's own pages."),

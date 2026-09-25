@@ -7,7 +7,7 @@ Label values are route *templates* (``/api/v1/scenarios/{scenario_id}``), never 
 or anything a client chose, so the number of series stays bounded.
 
 No third-party client library: the exposition format is small and stable, and one API
-process (ADR 58) needs no multi-process aggregation. Values reset when the process
+process (ADR 95) needs no multi-process aggregation. Values reset when the process
 restarts, as Prometheus counters are expected to.
 """
 
