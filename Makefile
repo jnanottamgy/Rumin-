@@ -8,7 +8,7 @@ UV_RUN   := cd $(BACKEND) && uv run --frozen
 .DEFAULT_GOAL := help
 .PHONY: help install migrate seed catalog ingest ingest-jobs graph graph-status backend \
         frontend test test-backend test-frontend smoke lint typecheck check openapi \
-        api-types verify-models db-up db-down
+        api-types verify-models db-up db-down audit
 
 help: ## List the available targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -54,6 +54,17 @@ test-frontend: ## Frontend tests (Vitest)
 
 smoke: ## End-to-end: fresh database, live API, frontend integration suite
 	scripts/smoke_test.sh
+
+GITLEAKS_IMAGE := zricethezav/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
+
+audit: ## Known vulnerabilities in the dependencies, and secrets in the git history (network, Docker)
+	cd $(BACKEND) && uv export --frozen --all-extras --format requirements-txt --no-emit-project \
+		--no-hashes > .audit-requirements.txt && \
+		uvx --from pip-audit==2.9.0 pip-audit -r .audit-requirements.txt --disable-pip --no-deps \
+		--progress-spinner off; status=$$?; rm -f .audit-requirements.txt; exit $$status
+	cd $(FRONTEND) && npm audit --audit-level=high
+	docker run --rm -v "$(CURDIR)":/repo -w /repo $(GITLEAKS_IMAGE) git --config /repo/.gitleaks.toml \
+		--redact --no-banner .
 
 lint: ## Lint and format checks
 	$(UV_RUN) ruff check .

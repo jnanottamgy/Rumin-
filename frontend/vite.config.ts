@@ -37,7 +37,10 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       target: "es2022",
-      sourcemap: true,
+      // Maps are written for decoding a reported stack trace, but the bundles do not point
+      // to them and the production web server refuses to serve them (Phase 10): the
+      // readable source is not published.
+      sourcemap: "hidden",
     },
     test: {
       environment: "jsdom",

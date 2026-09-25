@@ -20,11 +20,13 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app import API_VERSION, __version__
 from app.api import health
+from app.api import metrics as metrics_api
 from app.api.v1 import router as api_v1_router
 from app.auth.throttle import ClientThrottle
 from app.core.config import Settings, get_settings
 from app.core.errors import register_exception_handlers
 from app.core.logging import configure_logging
+from app.core.metrics import Metrics, count_security_events_in
 from app.core.middleware import (
     REQUEST_ID_HEADER,
     BodySizeLimitMiddleware,
@@ -150,7 +152,7 @@ def _operation_id(route: APIRoute) -> str:
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
-    configure_logging(settings.log_level)
+    configure_logging(settings.log_level, settings.log_format)
     engine = create_db_engine(settings.database_url)
 
     session_factory = create_session_factory(engine)
@@ -164,6 +166,29 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
 
     analyst = AnalystRuntime(settings, session_factory)
+
+    metrics = Metrics()
+    metrics.watch(
+        "rumin_scenario_executions_pending",
+        "Scenario executions running or waiting in this process.",
+        lambda: runner.pending,
+    )
+    metrics.watch(
+        "rumin_scenario_executions_capacity",
+        "Scenario executions this process accepts at once (running and waiting).",
+        lambda: runner.capacity,
+    )
+    metrics.watch(
+        "rumin_analyst_turns_pending",
+        "Analyst questions being answered or waiting in this process.",
+        lambda: analyst.runner.pending,
+    )
+    metrics.watch(
+        "rumin_analyst_turns_capacity",
+        "Analyst questions this process accepts at once (answering and waiting).",
+        lambda: analyst.runner.capacity,
+    )
+    count_security_events_in(metrics)
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
@@ -215,7 +240,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 max_age=600,
             ),
             Middleware(GZipMiddleware, minimum_size=1024),
-            Middleware(RequestContextMiddleware),
+            Middleware(RequestContextMiddleware, metrics=metrics),
             Middleware(CrossSiteRequestMiddleware, allowed_origins=settings.cors_origins),
             Middleware(BodySizeLimitMiddleware, max_bytes=settings.max_request_body_bytes),
         ],
@@ -225,6 +250,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.session_factory = session_factory
     app.state.scenario_runner = runner
     app.state.analyst = analyst
+    app.state.metrics = metrics
     app.state.login_throttle = ClientThrottle(
         max_failures=settings.login_client_max_failures,
         window_seconds=settings.login_client_window_seconds,
@@ -232,6 +258,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     register_exception_handlers(app)
     app.include_router(health.router)
+    app.include_router(metrics_api.router)
     app.include_router(api_v1_router, prefix=f"/api/{API_VERSION}")
     return app
 

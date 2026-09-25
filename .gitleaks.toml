@@ -1,0 +1,19 @@
+# Secret scanning (Phase 10): gitleaks' default rules, plus one narrow allowance.
+#
+# The frontend's API fixtures hold graph identifiers that the generic-api-key rule mistakes
+# for credentials: edge keys are hashes of an edge's type and ends ("e-" and 16 hex digits),
+# and entity keys name fictional sample entities ("company:co_aerisca_airways"). Neither is
+# a secret. The allowance applies only to those two shapes, only in those fixtures.
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Graph edge and entity keys in API fixtures"
+condition = "AND"
+paths = ['''^frontend/tests/fixtures/''']
+regexTarget = "match"
+regexes = [
+  '''key"\s*:\s*"e-[0-9a-f]{16}"''',
+  '''"key"\s*:\s*"[a-z_]+:[a-z0-9_]+"''',
+]

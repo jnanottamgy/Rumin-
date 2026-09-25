@@ -23,6 +23,7 @@ from sqlalchemy.orm import Session
 
 from app.auth import passwords, tokens
 from app.auth.throttle import ClientThrottle
+from app.core import metrics
 from app.core.config import Settings
 from app.core.errors import AppError, ConflictError, DomainValidationError, NotFoundError
 from app.core.logging import request_id_ctx
@@ -81,10 +82,10 @@ class TooManyAttempts(AppError):
     status_code = 429
     code = "rate_limited"
 
-    def __init__(self, retry_after: int) -> None:
+    def __init__(self, retry_after: int, what: str = "sign-in attempts") -> None:
         minutes = max(1, round(retry_after / 60))
         super().__init__(
-            f"Too many sign-in attempts. Try again in {minutes} minute{'s' if minutes > 1 else ''}."
+            f"Too many {what}. Try again in {minutes} minute{'s' if minutes > 1 else ''}."
         )
         self.headers = {"Retry-After": str(retry_after)}
 
@@ -136,6 +137,7 @@ def record(
         )
     )
     logger.info("Security event %s (actor %s, subject %s)", event, actor, subject)
+    metrics.security_event(event)
 
 
 # --- People --------------------------------------------------------------------------------------
@@ -458,9 +460,28 @@ def change_password(
     new_password: str,
     settings: Settings,
     client: str | None = None,
+    throttle: ClientThrottle | None = None,
 ) -> Principal:
+    """Change one's own password. A stolen session must not become a way to guess the
+    password (and then lock its owner out), so wrong current passwords count towards the
+    same per-client limit as failed sign-ins."""
+    if throttle is not None and client:
+        wait = throttle.retry_after(client)
+        if wait:
+            record(
+                session,
+                "login_throttled",
+                actor=principal.id,
+                subject=principal.id,
+                client=client,
+                detail={"scope": "client", "during": "password_change"},
+            )
+            session.commit()
+            raise TooManyAttempts(wait, "failed attempts from this address")
     user = user_or_404(session, principal.id)
     if not passwords.verify_password(user.password_hash, current_password):
+        if throttle is not None and client:
+            throttle.failed(client)
         record(session, "password_change_failed", actor=user.id, subject=user.id, client=client)
         session.commit()
         raise DomainValidationError(

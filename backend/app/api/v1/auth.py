@@ -132,12 +132,14 @@ def get_session_info(
     summary="Change one's own password",
     description="Needs the current password. The new one must meet the policy (at least 12 "
     "characters, not a common password, not one's e-mail or name). Every other session of "
-    "the account ends; this one continues.",
-    responses=NOT_SIGNED_IN,
+    "the account ends; this one continues. Wrong current passwords count towards the same "
+    "per-client limit as failed sign-ins (429 with `Retry-After`).",
+    responses={**NOT_SIGNED_IN, 429: SIGN_IN_ERRORS[429]},
 )
 def change_password(
     session: SessionDep,
     settings: SettingsDep,
+    throttle: ThrottleDep,
     principal: PrincipalDep,
     client: ClientDep,
     payload: PasswordChangeRequest,
@@ -149,5 +151,6 @@ def change_password(
         new_password=payload.new_password,
         settings=settings,
         client=client,
+        throttle=throttle,
     )
     return auth.session_read(session, updated)

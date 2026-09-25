@@ -41,3 +41,6 @@ Thumbs.db
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# Temporary file written by `make audit`
+backend/.audit-requirements.txt

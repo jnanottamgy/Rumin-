@@ -17,6 +17,7 @@ from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from app.core.errors import error_payload
 from app.core.logging import request_id_ctx
+from app.core.metrics import Metrics
 
 logger = logging.getLogger(__name__)
 
@@ -44,14 +45,17 @@ class RequestContextMiddleware:
       500 response in the standard error envelope — internals never reach the client.
     """
 
-    def __init__(self, app: ASGIApp) -> None:
+    def __init__(self, app: ASGIApp, metrics: Metrics | None = None) -> None:
         self.app = app
+        self.metrics = metrics
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http":
             await self.app(scope, receive, send)
             return
 
+        if self.metrics is not None:
+            self.metrics.in_flight.add(1)
         incoming = Headers(scope=scope).get(REQUEST_ID_HEADER, "")
         request_id = incoming if _VALID_REQUEST_ID.match(incoming) else uuid.uuid4().hex
         token = request_id_ctx.set(request_id)
@@ -85,9 +89,48 @@ class RequestContextMiddleware:
             )
             await response(scope, receive, send_wrapper)
         finally:
-            duration_ms = (time.perf_counter() - started) * 1000
-            logger.info("%s %s -> %d (%.1f ms)", scope["method"], path, status_code, duration_ms)
+            elapsed = time.perf_counter() - started
+            duration_ms = elapsed * 1000
+            logger.info(
+                "%s %s -> %d (%.1f ms)",
+                scope["method"],
+                path,
+                status_code,
+                duration_ms,
+                extra={
+                    "http": {
+                        "method": scope["method"],
+                        "path": path,
+                        "status": status_code,
+                        "duration_ms": round(duration_ms, 1),
+                    }
+                },
+            )
+            if self.metrics is not None:
+                route = _route_template(scope)
+                self.metrics.requests.inc(scope["method"], route, str(status_code))
+                self.metrics.durations.observe(elapsed, scope["method"], route)
+                self.metrics.in_flight.add(-1)
             request_id_ctx.reset(token)
+
+
+def _route_template(scope: Scope) -> str:
+    """The matched route's template (``/api/v1/scenarios/{scenario_id}``), never the raw
+    path: a label must not multiply with every identifier a client sends.
+
+    Routes of an included router know only their own part (``/scenarios/{scenario_id}``);
+    the router's prefix is what precedes the part of the path the route matched — fixed
+    text, since the route matched only below that prefix."""
+    route = scope.get("route")
+    template = getattr(route, "path_format", None)
+    regex = getattr(route, "path_regex", None)
+    if not isinstance(template, str) or not template or regex is None:
+        return "unmatched"
+    path: str = scope.get("path", "")
+    for index, character in enumerate(path):
+        if character == "/" and regex.match(path[index:]):
+            return path[:index] + template
+    return template
 
 
 class BodySizeLimitMiddleware:

@@ -44,6 +44,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/metrics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Operational metrics
+         * @description Requests by route template and status, their durations, requests in flight, security events by kind and the scenario and analyst queues, in the Prometheus text format. For the scrapers listed in `RUMIN_METRICS_ALLOWED_CLIENTS` and for administrators.
+         */
+        get: operations["read_metrics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/login": {
         parameters: {
             query?: never;
@@ -115,7 +135,7 @@ export interface paths {
         put?: never;
         /**
          * Change one's own password
-         * @description Needs the current password. The new one must meet the policy (at least 12 characters, not a common password, not one's e-mail or name). Every other session of the account ends; this one continues.
+         * @description Needs the current password. The new one must meet the policy (at least 12 characters, not a common password, not one's e-mail or name). Every other session of the account ends; this one continues. Wrong current passwords count towards the same per-client limit as failed sign-ins (429 with `Retry-After`).
          */
         post: operations["change_password"];
         delete?: never;
@@ -11882,6 +11902,45 @@ export interface operations {
             };
         };
     };
+    read_metrics: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                    "text/plain; version=0.0.4; charset=utf-8": unknown;
+                };
+            };
+            /** @description Not a listed scraper, and not signed in. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Signed in, but not an administrator. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     login: {
         parameters: {
             query?: never;
@@ -12058,6 +12117,15 @@ export interface operations {
             };
             /** @description The request contains invalid values. */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many failed attempts from this client or for this account; `Retry-After` says how many seconds to wait. */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

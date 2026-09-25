@@ -61,6 +61,49 @@
         }
       }
     },
+    "/metrics": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Operational metrics",
+        "description": "Requests by route template and status, their durations, requests in flight, security events by kind and the scenario and analyst queues, in the Prometheus text format. For the scrapers listed in `RUMIN_METRICS_ALLOWED_CLIENTS` and for administrators.",
+        "operationId": "read_metrics",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/plain; version=0.0.4; charset=utf-8": {}
+            }
+          },
+          "401": {
+            "description": "Not a listed scraper, and not signed in.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not an administrator.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/login": {
       "post": {
         "tags": [
@@ -226,7 +269,7 @@
           "accounts"
         ],
         "summary": "Change one's own password",
-        "description": "Needs the current password. The new one must meet the policy (at least 12 characters, not a common password, not one's e-mail or name). Every other session of the account ends; this one continues.",
+        "description": "Needs the current password. The new one must meet the policy (at least 12 characters, not a common password, not one's e-mail or name). Every other session of the account ends; this one continues. Wrong current passwords count towards the same per-client limit as failed sign-ins (429 with `Retry-After`).",
         "operationId": "change_password",
         "requestBody": {
           "content": {
@@ -271,6 +314,16 @@
           },
           "401": {
             "description": "Not signed in, or the session has ended.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many failed attempts from this client or for this account; `Retry-After` says how many seconds to wait.",
             "content": {
               "application/json": {
                 "schema": {
