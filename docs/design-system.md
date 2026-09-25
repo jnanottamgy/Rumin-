@@ -234,6 +234,24 @@ avatars, no typing effect. It adds no colour token. Details: [the interface](ana
 | The method | *How this was answered*, collapsed: tool calls with status and timing in the mono face, the grounding check, who composed the answer | Provenance of the answer itself |
 | Accent | Sky blue only for citation chips, links and focus | Blue marks where to look, never a value |
 
+## The 3D universe (Phase 8)
+
+The universe (`/universe/3d`) is the knowledge graph in three dimensions. It adds no colour
+token: it reads the graph's own (`--viz-node`, `--viz-node-hollow`, `--viz-edge-*`,
+`--viz-dimmed`, `--viz-label*`) and the accent, and re-reads them when the theme changes.
+Details: [encoding](universe/encoding.md), [accessibility](universe/accessibility.md).
+
+| What | Encoding | Why |
+|---|---|---|
+| Height | The stratum of the record's kind: data, drivers, industries, companies, places (top to base), named at each ring's edge | A stable frame of reference; never a magnitude |
+| Shape | The 2D glyphs as solids: sphere, hollow sphere, hexagonal prism, cube, ring with a core, octahedron, capsule, pyramid, inverted pyramid | Kind is readable without colour or position |
+| Outline, halo | Hollow kinds and records without stored values as outlines; dashed halo fictional, dotted halo sample | As in 2D |
+| Lines | Evidence by pattern (measured in screen pixels, so it reads the same near and far), category by weight, direction by an arrowhead | As in 2D |
+| Emphasis | Sky blue and weight for the selection and what it touches, or an overlay's modelled pathway (propagated solid, cited dashed); everything else dimmed | Blue marks where to look, never a value |
+| Names | DOM text over the canvas in the body face, with a surface-coloured halo; strata names in tracked small capitals; placed by priority, never on other nodes | Legible, never overlapping, never pretending |
+| Motion | A 480 ms eased fly-to when the focus changes; a jump under reduced motion; no idle animation | Motion only when asked for |
+| Focus | A 2 px sky-blue outline inside the canvas's edge | Visible over the drawing |
+
 ## Knowledge labels
 
 The five epistemic categories use one glyph each, everywhere (badges, legend, landing):

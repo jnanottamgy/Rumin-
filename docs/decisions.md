@@ -848,3 +848,78 @@ composer, interface) is written in the project.
 retries with backoff, timeouts and the current request shapes. Writing an HTTP client for it
 would duplicate that and drift. `pip-audit` found no known vulnerability in the lock file.
 **Revisit** with each SDK major version.
+
+## 73. Plain Three.js, loaded only with the 3D page
+
+**Decision.** The 3D universe draws with `three` (and `@types/three` for development), used
+directly, behind a small renderer contract (`rendererTypes.ts`). The renderer is imported
+only when the canvas mounts and only when the browser has WebGL 2, as its own chunk (553 kB
+minified, 139 kB gzip); the rest of the product does not load it.
+**Why.** A 3D graph needs a WebGL scene graph, instancing and shaders; writing those against
+raw WebGL would be a renderer project of its own. React Three Fiber was considered: it adds a
+reconciler and more packages for a scene this simple, while the explorer's pattern is already
+a pure model feeding a renderer. Keeping the meaning in plain data (`scene.ts`) and the
+renderer behind a contract lets the tests run the host with a stand-in, keeps disposal
+explicit, and keeps the draw calls few (about twenty for any graph size). `npm audit` reports
+no known vulnerability.
+**Revisit** with each Three.js release that changes `WebGLRenderer` or instancing.
+
+## 74. Height is kind, never importance
+
+**Decision.** Each kind of record sits on a stratum (data, drivers, industries, companies,
+places), in the Phase 1 network's order turned upright; within a stratum a seeded force
+layout places connected records near each other. Node size is by kind only, and depth,
+height and brightness encode no magnitude.
+**Why.** In three dimensions every channel competes with perspective. Using height for a
+categorical, stable property gives the reader a frame of reference (an assumed effect reads
+downwards) without implying that anything is bigger or matters more. A second size channel
+(degree, as in 2D) would be unreadable under perspective.
+**Revisit** if the graph gains a genuinely ordinal dimension worth the vertical axis.
+
+## 75. The whole build only within a budget
+
+**Decision.** The universe draws the whole current build only when it holds at most 500
+nodes and 2,500 edges (read 500 per page, at most six requests). A larger build starts from a
+search and grows by neighbourhoods, through the 2D explorer's own state and limits.
+**Why.** Everything is laid out and labelled on the main thread; measured, the first layout
+takes about half a second at the budget in this environment. A hard budget keeps the page
+responsive and honest (a truncated read says so) without a second data path.
+**Revisit** with a Web Worker layout or a level-of-detail view.
+
+## 76. Overlays come only from stored, completed executions
+
+**Decision.** A scenario overlay reads one stored execution, and only if it completed: its
+plan (the stated changes and the simulated entity), its modelled pathway (propagated and
+cited links that carry a graph edge key, and the graph edges no included model simulates)
+and its results. Figures appear only in the panel, from the stored strings; the canvas shows
+roles, never values.
+**Why.** An overlay that inferred impacts from graph relationships, or recomputed anything,
+would turn the graph's recorded or assumed links into claimed effects. The Scenario Lab
+already records exactly what a model propagated and what it did not; the universe only shows
+it where it sits in the graph.
+**Revisit** to compare two executions (the extension point is `overlay.ts`).
+
+## 77. The list is the canvas's twin, and the keyboard operates the canvas
+
+**Decision.** A *List* view shows every node and relationship in view as tables, opens the
+same panels, is remembered on the device, and replaces the canvas when WebGL 2 is missing or
+the context is lost. The canvas is one tab stop (`role="application"`): arrow keys move the
+selection to the nearest node on screen, with Enter, E, C, Escape, zoom, turn and reset keys.
+The selection is announced politely; the camera jumps instead of flying under reduced
+motion; the previous view stays mounted while the next one loads so focus is kept.
+**Why.** A 3D canvas cannot be read by assistive technology or used without a pointer by
+itself; the list makes every record reachable, and the keyboard model makes the canvas
+itself usable. Nothing may depend on seeing the canvas.
+**Revisit** never for the principle.
+
+## 78. Rendering on demand; names in the DOM, placed by priority
+
+**Decision.** The universe draws a frame only when something changes (scene, size, theme,
+camera, or a fly-to frame) — no idle loop. Nodes are instanced per shape with a coarser
+silhouette mesh for their outlines; edges are one instanced quad per edge with a screen-space
+pattern shader. Names are DOM elements over the canvas, placed greedily by priority, kept off
+other nodes and inside the canvas, at most 36 at a time.
+**Why.** An analytical view should cost nothing while it is read. Instancing keeps draw calls
+constant as the graph grows; the coarser outline mesh halved the triangles; DOM names stay
+sharp, use the product's type, and never pretend a label that does not fit was written.
+**Revisit** if names need to be selectable on the canvas itself.

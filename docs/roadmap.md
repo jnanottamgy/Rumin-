@@ -12,8 +12,8 @@ uncertainty are never blurred.
 | **4** | **Simulation engine** | **Done:** a versioned model registry and its first model (an airline fuel-cost shock: crude oil, jet fuel and the exchange rate through hedging and a lagged fare pass-through), exact decimals, propagation only along confirmed graph relationships, Shapley contributions, one-at-a-time sensitivity, append-only runs with provenance and verification, the simulation API and the Simulation preview ([report](phases/phase-4-report.md)). Monte Carlo was deliberately deferred ([why](decisions.md#39-one-at-a-time-sensitivity-points-outside-a-range-are-skipped)) |
 | **5** | **Scenario Lab** | **Done:** versioned scenarios executed through the model registry (five models, six versions), a planner that says which models apply and why, a bounded background runner with recorded stages, cancellation and time limits, the Lab's aggregation equations, the modelled pathway with graph context kept apart, baseline against scenario, months with a replay, stress cases, one-at-a-time sensitivity, explanations from stored runs, history, reproducibility checks and comparisons, templates built on implemented models, and the Scenario Lab interface ([report](phases/phase-5-report.md)). Demand and supply-chain shocks were deliberately left out ([why](decisions.md#43-several-narrow-models-composed-by-line-items)) |
 | **6** | **Financial intelligence** | **Done:** findings from 19 documented rules over stored observations, validated graph relationships and stored executions, each with its evidence chain and grade (the weakest link); change detection, revisions, trends, volatility and unusual moves against configurable thresholds; exposure paths and a companies × variables matrix; drivers from stored contributions; model interpretations of observed changes; dossiers per company and industry; a structured brief for the AI Analyst; stored, fingerprinted analyses that know when they are stale; the Financial Intelligence interface ([report](phases/phase-6-report.md)). Exposure sizes and reports as documents were left for later ([why](phases/phase-6-report.md#10-verification-against-the-brief)) |
-| **7** | **AI Analyst** | **Done in this build:** questions answered from RUMIN's records through 17 allowlisted, read-only tools over the Phase 2–6 services (one compute tool: an unstored scenario preview); an evidence ledger with eight kinds of knowledge; every figure cited and checked mechanically against its evidence, unsupported parts never shown; RUMIN's grounded composer by default and an optional Claude model through the official SDK, held to the same check with fallback; conversations with focus, follow-ups and clarifications; guardrails for advice, forecasts, live data, injection and secrets; bounded work and cost; the evidence-margin workspace with the Scenario Lab hand-over; a 33-case evaluation set ([report](phases/phase-7-report.md)). A language model has **not** been measured: no key was available ([why](analyst/providers.md#not-verified-here)) |
-| 8 | 3D financial universe | A Three.js view of the same model and layout |
+| **7** | **AI Analyst** | **Done:** questions answered from RUMIN's records through 17 allowlisted, read-only tools over the Phase 2–6 services (one compute tool: an unstored scenario preview); an evidence ledger with eight kinds of knowledge; every figure cited and checked mechanically against its evidence, unsupported parts never shown; RUMIN's grounded composer by default and an optional Claude model through the official SDK, held to the same check with fallback; conversations with focus, follow-ups and clarifications; guardrails for advice, forecasts, live data, injection and secrets; bounded work and cost; the evidence-margin workspace with the Scenario Lab hand-over; a 33-case evaluation set ([report](phases/phase-7-report.md)). A language model has **not** been measured: no key was available ([why](analyst/providers.md#not-verified-here)) |
+| **8** | **3D financial universe** | **Done in this build:** the knowledge graph in three dimensions (`/universe/3d`) — strata by kind, the graph's own marks, the whole build within a budget, neighbourhoods and paths through the 2D explorer's state, every record's provenance and evidence in the same panels, overlays of stored executions (changed, simulated, propagated, cited, not simulated, with their stored results), a keyboard model and a list twin, rendering on demand, lazily loaded Three.js ([report](phases/phase-8-report.md), [guide](universe/README.md)). Hardware GPU frame rates were not measured: none was available ([why](universe/performance.md)) |
 | 9 | Advanced simulation & validation | Back-testing, calibration, model validation, evidence upgrades |
 | 10 | Productization, security & launch | Accounts and access control, deployment, monitoring, hardening |
 
@@ -127,9 +127,30 @@ scenario profile in the Lab. Still open:
    from it.
 7. **Reports**: a conversation exported as a document whose every figure keeps its citation.
 
+## Universe follow-ups
+
+1. **Measure on a GPU.** The Phase 8 measurements ran on software WebGL; record frame times
+   on an integrated and a discrete GPU, and on a phone, for the sample and at the budget.
+2. **Layout off the main thread** (a Web Worker) before raising the 500-node budget.
+3. **Fetch an overlay's missing records** by key, so a neighbourhood can show an overlay
+   whole without switching to the universe.
+4. **Compare two executions** as an overlay (`overlay.ts` is the extension point).
+5. **Relationships from the keyboard on the canvas** (today they are reached through the node
+   panel and the list).
+6. **A screen-reader session** with a user, beyond the automated checks.
+
 ## Recommendations for Phase 8 (3D financial universe)
 
-Phase 8 should add a view, not a new model of the economy:
+Written at the end of Phase 7. Phase 8 built the view over the **knowledge graph** rather
+than the Phase 1 network (the graph carries provenance and evidence for every record, and the
+2D network stays at `/universe`); items 2, 4 (paths → 3D, *Ask the Analyst* from a node) and
+5 were done; the synthetic measurements went to 2,000 nodes and 8,000 edges rather than
+20,000 companies, because the universe never draws a build that large at once (it grows by
+neighbourhoods, which the graph benchmarks already cover); *Open in the Scenario Lab from an
+exposure* and item 6 were not done (no model key was available, and this environment's network
+policy blocks `api.worldbank.org`).
+
+The recommendations as written:
 
 1. **Reuse the model and the layout.** The network's model, filters, selection and layout are
    pure and renderer-agnostic (Phase 1); a Three.js renderer should consume them, keep the 2D

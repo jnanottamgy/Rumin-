@@ -3,13 +3,14 @@
 | Suite | Tool | Tests | Runs against | Command |
 |---|---|---|---|---|
 | Backend | pytest | 1,059 (one skipped without a key) | the FastAPI app, the ingestion pipeline, the graph build, the simulation engine, the Scenario Lab, Financial Intelligence and the AI Analyst with a real, migrated database (SQLite; PostgreSQL optional); providers answered by scripted responses; the Anthropic SDK over a mocked transport | `uv run pytest` in `backend/` |
-| Frontend unit and pages | Vitest + Testing Library (jsdom) | 321 | the real route table, with `fetch` replaced by a fake API serving recorded responses | `npm test` in `frontend/` |
-| Integration | Vitest (Node) | 57 | a live API: the frontend's real service layer over HTTP | `npm run test:integration` with `RUMIN_API_URL` |
+| Frontend unit and pages | Vitest + Testing Library (jsdom) | 380 | the real route table, with `fetch` replaced by a fake API serving recorded responses (and, for the 3D universe, the WebGL renderer replaced by a stand-in) | `npm test` in `frontend/` |
+| Integration | Vitest (Node) | 60 | a live API: the frontend's real service layer over HTTP | `npm run test:integration` with `RUMIN_API_URL` |
 | Analyst evaluation | `python -m app.analyst.evaluation` | 33 cases | the configured provider on the configured database (in CI: the grounded composer and seven adversarial scripted models, inside the backend suite) | see [evaluation](analyst/evaluation.md) |
 | End-to-end smoke | `scripts/smoke_test.sh` | — | fresh database → migrate → seed → load the catalogue → import a synthetic price file → build the knowledge graph, rebuild it and fail if anything changed → start API → integration suite (including a simulation run and a background scenario execution, both checked against hand calculations) | `make smoke` |
 | Graph benchmark | `backend/scripts/benchmark_graph.py`, `frontend/scripts/measure-graph.mjs` | — | synthetic networks up to 20,000 companies; not part of CI | see [performance](graph/performance.md#how-it-was-measured) |
 | Scenario Lab benchmark | `backend/scripts/benchmark_lab.py`, `frontend/scripts/measure-lab.mjs` | — | the reference scenario and a large one on SQLite and PostgreSQL; not part of CI | see [performance](scenario-lab/performance.md#how-it-was-measured) |
 | Intelligence benchmark | `backend/scripts/benchmark_intelligence.py` | — | the sample network with the reference execution, and synthetic networks up to 20,000 companies; not part of CI | see [performance](intelligence/performance.md#method) |
+| Universe measurement | `frontend/scripts/measure-universe.mjs` | — | the 3D universe's layout, scene and name placement on SYNTHETIC graphs up to 2,000 nodes and 8,000 edges; not part of CI (rendering was measured in Chromium) | see [performance](universe/performance.md) |
 
 **No automated test calls a real provider.** Provider behaviour is tested with scripted
 HTTP responses whose structure follows the providers' documentation and whose numbers are
@@ -152,6 +153,17 @@ pipeline, the files named `synthetic-*` (overview, dossier, series, the stored a
 stale) and the list of analyses. The script formats them with the frontend's formatter and
 edits nothing by hand. Recapture them whenever an intelligence response changes.
 
+The Phase 8 fixtures (`tests/fixtures/universe/`) are written by
+`backend/scripts/capture_universe_fixtures.py` from a fresh database with the sample dataset,
+the series catalogue and a graph build, after executing the backend tests' reference scenario
+(HYPOTHETICAL round figures on the fictional Aerisca Airways): the overview, the vocabulary,
+every node and edge (one page each), two nodes, two neighbourhoods, a path answer, a
+transmission edge, the scenarios, and the execution with its pathway and results. Nothing is
+edited by hand. jsdom has no WebGL, so the universe's canvas and page tests hand the canvas a
+stand-in renderer (`tests/utils/universe.ts`) that records the scene, the palette, the camera
+and the frames, and projects points with a plain top-down camera at the real camera's scale,
+so a test can click a node where it is drawn.
+
 The Phase 5 fixtures (`tests/fixtures/lab/`) are written by
 `backend/scripts/capture_lab_fixtures.py`, which builds a fresh database and drives the API
 in-process: the templates, the airline template before any figure, the reference scenario
@@ -175,7 +187,10 @@ pathway and checked against the contract like the others.
 | `scenarioLab/format` | 7 | Compact and full money with signs; changes in the variable's unit (%, pp, its own); metrics and their changes; step values by unit; model unit identifiers read as a reader expects; stage durations from the server's timestamps |
 | `app/navigation` | 8 | Landing, navigation between modules, 404, live workspace status, the AI Analyst opened with who answers and nothing sent, System capabilities, theme persistence |
 | `analyst/format` | 8 | Citations split out of a paragraph; sources ordered by first citation, unknown ids dropped; **figures rounded half-even at fixed places as the API's sentences are**; percentages and amounts with signs and units; durations; Markdown answers with their cards and sources; table cells escaped and records linked; a failed question and a conversation's header |
-| `pages/analyst` | 18 | Against fixtures captured from a real backend (`backend/scripts/capture_analyst_fixtures.py`): starting with the provider stated and suggestions from the API; a model configured but not ready; **asking: the question stored, each recorded step shown (queued, running with its tool call), then the answer**, the URL naming the conversation; a suggestion asked in one click; Shift+Enter and the length limit; a stored conversation as notes with **citations linked to their sources in the margin**, paths, tables, the stored card and what is not modelled; a series as a chart with its table and its limitation said once; **a preview card whose figures read as its sentences do** (+3.60 %); a clarification's option and a follow-up asked; an injection declined; the method (tool calls, the check, who composed it); a question still being answered followed when the conversation opens; a failed question asked again; a refusal (429) shown and retried; rename; delete only after confirming; export and copy as Markdown with sources; **a what-if opened in the Scenario Lab as an unsaved draft**, with only an unstored preview asked for |
+| `pages/analyst` | 19 | Against fixtures captured from a real backend (`backend/scripts/capture_analyst_fixtures.py`): starting with the provider stated and suggestions from the API; a model configured but not ready; **asking: the question stored, each recorded step shown (queued, running with its tool call), then the answer**, the URL naming the conversation; a suggestion asked in one click; Shift+Enter and the length limit; a stored conversation as notes with **citations linked to their sources in the margin**, paths, tables, the stored card and what is not modelled; a series as a chart with its table and its limitation said once; **a preview card whose figures read as its sentences do** (+3.60 %); a clarification's option and a follow-up asked; an injection declined; the method (tool calls, the check, who composed it); a question still being answered followed when the conversation opens; a failed question asked again; a refusal (429) shown and retried; rename; delete only after confirming; export and copy as Markdown with sources; **a what-if opened in the Scenario Lab as an unsaved draft**, with only an unstored preview asked for; each relationship path linked to the 3D universe; a question handed over by another page read as text only, never sent |
+| `universe/model` | 22 | On the captured sample graph: strata by kind; the filters on the whole build with the API's meaning (an illustrative relationship is left out, the records it joins are not; never an edge to a node left out); the layout deterministic, stable as the view grows, new nodes beside their anchor; the camera (framing every point tightly, poles, zoom limits, pan, the short way round); keys to actions, browser shortcuts left alone; names by priority, beyond the node's edge, off other nodes unless essential, a line up or down when both sides are taken, the strata's names kept inside; the scene's marks (shape by kind, pattern by evidence, **size by kind only**), emphasis and dimming, label priority; the overlay: pathway keys to graph keys, roles (changed, entity, modelled, context; propagated, cited, not simulated), the stored lines and models, every overlay record present in the graph |
+| `universe/canvas` | 13 | The canvas host with a stand-in renderer: the graph drawn once and framed, **no frame while nothing changes**; names and strata names written without overlaps; a node, a line and empty space picked; the tooltip, double-click; drag turns without selecting, the wheel zooms; **a one-finger drag after a mouse has hovered turns rather than zooms**; **the latest scene's names and picking positions after the graph changes during a flight**; the keyboard (arrow keys by screen direction, Enter, E, C, turn, zoom, reset, Escape, modified keys ignored); **a jump under reduced motion and a flight otherwise**; emphasis and dimming; disposal on unmount; a lost context, no WebGL (Three.js never requested) and a failed renderer reported; positions kept as the graph grows |
+| `pages/universeSpace` | 23 | Against fixtures captured from a real backend: the whole build read in 500-row pages and drawn, heights by kind; a node picked on the canvas opens its panel with its sources and links out; arrow keys, Enter and E; **the canvas and its focus kept while the next view loads**; a relationship's evidence from the overlay; **an overlay laid over from `?execution=`: its identity, badges, stated changes (+20 %, +5 %, +0.5 percentage points), roles with rule, coefficient and lag, the stored results and the link to the Lab, the canvas's emphasis and dimming, nothing written**; the overlay picked and cleared through the URL; **a running execution read again at the server's interval until it completes, then laid over**; a failed one said to have nothing to lay over and never read again; *Reset view* moving the camera only; overlay and build errors retried; a neighbourhood and Back; **a failed expansion said and retried** (the explorer's own notices); **filters said with how much of the build they show, and reset**; paths from the URL; the list view remembered; fallbacks without WebGL and after a lost context; a build too large to draw; no build; a question handed to the Analyst, never sent, and the renderer disposed on leaving; the 2D explorer's link to 3D |
 | `pages/universe` | 11 | Exactly the API's nodes and links drawn; selection highlights neighbours and dims the rest; Escape and close reset; keyboard selection; search; filters never leave dangling links; table view; phone layout; inconsistent data refused; unreachable API and retry |
 | `pages/scenarioLab` | 14 | Against fixtures captured from a real backend: the library — templates with names and units from the API, the ones not offered with the reason, saved scenarios with their headline; comparing two executions, differenced only like with like and not ranked; a saved scenario opened on its stored execution (headline, baseline against scenario, cash flow listed as not modelled, reading writes nothing but the unstored preview); the pathway drawn from what the engine computed, **graph context listed apart with the causation caveat**, a relationship's evidence, β and lag, Escape, not-modelled relationships, the list view; the month replay (values per month, dimmed until reached, metrics "Horizon only"); plan, months, stress (changes in their units, not ranked) and explanation tabs; sensitivity labelled as not Monte Carlo; verification; an edit previewed on the server and labelled, then discarded back to the saved version with nothing saved; an execution followed through the server's stages until final, polling then stopping; a failed execution explained; a missing scenario and an unreachable API; a template's missing figures shown as notes until a save is attempted |
 | `intelligence/format` | 3 | Rounding for display only, from the exact strings; grades strongest first and kinds of finding grouped; a cited record linked to the view that shows it, when there is one |
@@ -255,6 +270,14 @@ tool call recorded and the conversation titled after it; a what-if previewed (no
 an injection declined without a tool; an over-long question refused before it is stored and
 a deleted conversation gone. Every response is checked against the contract.
 
+Phase 8 adds `universe.integration.test.ts` (3 tests): the whole build read page by page
+through the page's own reader (every node and edge exactly once, every edge between nodes
+read, the counts equal to the build's, both pages matching the contract); the real build
+laid out and marked the same way twice; and the reference scenario executed (through the
+shared `reference.ts`, the Lab's own draft code) and laid over the graph — every overlay
+record a current node, every marked relationship a current edge between the records it
+names, the figures exactly the stored results and the models exactly the execution's runs.
+
 It creates scenarios (deleting those it can), adds simulation runs and executions, and
 creates conversations (deleting them), so point it only at a disposable database — which is
 what `scripts/smoke_test.sh` provides.
@@ -292,8 +315,18 @@ every run checked for console errors and sideways scrolling (none remain at 320,
 900 px). The review changed wording (possessives, articles, *contribution* for *credit*),
 removed repeated captions and notices, aligned table rounding with the sentences, let long
 suggestions wrap, and fixed a follow-up that answered a different question
-([interface](analyst/interface.md#accessibility-and-responsiveness)). These checks are not
-automated yet (see [known-limitations.md](known-limitations.md)).
+([interface](analyst/interface.md#accessibility-and-responsiveness)). For Phase 8, the 3D
+universe was rendered with real WebGL (software, SwiftShader) in a production build: the
+universe, a selection, an overlay, a neighbourhood, paths, the legend and help, and the list,
+at 1440, 900 and 390 px in both themes, with no console error or warning and no sideways
+scrolling; a keyboard walk-through (tab to the canvas, arrows, E, Escape) and `axe-core` on
+seven views; frame counts under reduced motion and when idle; memory over 50 visits with a
+heap-snapshot diff. The review found and fixed a shader that did not compile (`half` is
+reserved in GLSL ES, so no relationship line was drawn), an invisible focus ring, focus lost
+while the next view loaded, names covering nodes and overlay records left unnamed, strata
+names clipped on phones, a loose initial framing and a scrolling table unreachable from the
+keyboard ([accessibility](universe/accessibility.md), [performance](universe/performance.md)).
+These checks are not automated yet (see [known-limitations.md](known-limitations.md)).
 
 ## Conventions
 

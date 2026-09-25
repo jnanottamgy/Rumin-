@@ -163,9 +163,10 @@ pages).
 |---|---|
 | `app/` | Route table, theme and motion preferences, the module registry (names, status, phase of each product area) |
 | `layouts/` | The application shell: header, navigation, live workspace status, footer |
-| `pages/` | One component per route: Landing, Overview, Universe, Knowledge Graph, Data Explorer (with series, instrument and ingestion-run pages), Simulation (with a stored run's page), Scenario Lab, Financial Intelligence (the workspace, a dossier, a stored analysis), AI Analyst, System, not-found and error pages |
+| `pages/` | One component per route: Landing, Overview, Universe (2D network, and the 3D universe of the knowledge graph), Knowledge Graph, Data Explorer (with series, instrument and ingestion-run pages), Simulation (with a stored run's page), Scenario Lab, Financial Intelligence (the workspace, a dossier, a stored analysis), AI Analyst, System, not-found and error pages |
 | `features/network/` | Everything about the financial network (below) |
 | `features/graph/` | The Knowledge Graph explorer: its state and history, the view model, deterministic layouts, encoding, canvas and panels ([details](graph/explorer.md)) |
+| `features/universe/` | The 3D universe: strata, the 3D layout, the scene model, camera maths, keyboard navigation, name placement, the overlay of a stored execution (all pure), the whole-build and overlay loaders, the canvas host and the lazily loaded Three.js renderer ([details](universe/architecture.md)) |
 | `features/data/` | The time-series chart and its arithmetic, exact-value tables, provenance, freshness and quality components |
 | `features/scenarioLab/` | The Scenario Lab: the draft model and its conversion to the API body (pure), the builder, the live preview and execution hooks, the pathway layout (pure) and canvas, the results panel, execution strip, timeline and the analysis, explanation, history and comparison views ([details](scenario-lab/interface.md)) |
 | `features/intelligence/` | Financial Intelligence: the findings ledger and the evidence chain, grade marks, the exposure matrix and paths, drivers, signals, history, sources and the brief, the thresholds panel and subjects, the dashboard's latest findings, and display formatting that only rounds the API's exact strings ([details](intelligence/interface.md)) |
@@ -199,9 +200,9 @@ GET /api/v1/network
 
 The model and layout are pure functions with no React or DOM dependency, cached per
 payload and shared by the landing page, the dashboard preview and the Universe. The
-renderer only consumes plain coordinates, so a **Three.js renderer (Phase 8)** can reuse
-the model, the filters, the selection state and the layout (or a 3D extension of it)
-without touching the data layer; the layout can also move to a Web Worker when graphs grow.
+renderer only consumes plain coordinates. (Phase 8's 3D universe is drawn from the
+knowledge graph instead of this network — it carries provenance and evidence for every
+record — and reuses the graph explorer's state and panels; see below.)
 
 ### The graph explorer
 
@@ -211,6 +212,14 @@ server answers are cached by request; the view is derived from the snapshot and 
 answers (`view.ts`), then laid out deterministically (`layout.ts`: a radial tree for
 neighbourhoods, columns for paths). Traversal and filtering happen on the server, so the
 frontend holds no relationship logic. See [the explorer](graph/explorer.md).
+
+### The 3D universe
+
+The universe (`/universe/3d`) is a view over the same graph API as the explorer, with the
+explorer's state (`useGraphExplorer`) and panels. The meaning of every mark is decided in
+plain data (`scene.ts`); a small renderer contract hides Three.js, which is imported only
+when the canvas mounts and WebGL 2 is present, and renders only when something changes.
+Scenario overlays read stored executions only. See [the universe](universe/architecture.md).
 
 ## Contract between the two
 

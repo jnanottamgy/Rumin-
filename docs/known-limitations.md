@@ -161,6 +161,20 @@ The module's own list is in [analyst/limitations.md](analyst/limitations.md). In
 - **Conversations are open to anyone who can reach the API** until authentication (Phase 10),
   and the worker pool and token budget are per API process.
 
+## 3D universe (Phase 8)
+
+The module's own list is in [universe/limitations.md](universe/limitations.md). In short:
+
+- **Measured on software WebGL only.** No GPU was available where RUMIN was built; frame
+  times on real hardware have not been recorded.
+- **The whole build is drawn only up to 500 nodes and 2,500 edges**; larger builds start from
+  a search and grow by neighbourhoods. The layout runs on the main thread (about 0.5 s at the
+  budget in this environment).
+- **One overlay at a time**, showing an execution's modelled pathway and line results;
+  records an overlay mentions but the current view lacks are counted, not fetched.
+- **Keyboard selection on the canvas covers nodes**; relationships are reached through the
+  node panel and the list. No screen-reader session with a user has been run.
+
 ## Product
 
 - **Deterministic results on stated inputs.** The Simulation page runs one model at a time;
@@ -175,9 +189,9 @@ The module's own list is in [analyst/limitations.md](analyst/limitations.md). In
   centrality, no weighted path and no community detection, and effects are propagated
   only by the simulation engine, along relationships its model declares:
   see [above](#knowledge-graph-phase-3).
-- **2D only.** The 3D financial universe is Phase 8.
-- **Small-graph rendering.** SVG and a synchronous layout are right for tens to a few
-  hundred nodes; thousands will need a Web Worker layout and canvas/WebGL rendering.
+- **Small-graph rendering.** The 2D views use SVG and a synchronous layout, right for tens
+  to a few hundred nodes; the 3D universe (Phase 8) renders with WebGL but still lays out on
+  the main thread.
 - **English only**, no localisation; numbers use an English locale format.
 
 ## Platform

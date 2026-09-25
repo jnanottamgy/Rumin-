@@ -7,10 +7,16 @@ runs documented, versioned models on those connections with every step explained
 reproducible, and labels everything it shows as one of five kinds of knowledge:
 observation, assumption, scenario input, simulated output or uncertainty.
 
-> **Status: Phase 7 — AI Analyst** (on top of the Phase 1 foundation, the Phase 2 data
-> infrastructure, the Phase 3 knowledge graph, the Phase 4 simulation engine, the Phase 5
-> Scenario Lab and Phase 6 Financial Intelligence).
+> **Status: Phase 8 — 3D Financial Universe** (on top of the Phase 1 foundation, the Phase 2
+> data infrastructure, the Phase 3 knowledge graph, the Phase 4 simulation engine, the Phase 5
+> Scenario Lab, Phase 6 Financial Intelligence and the Phase 7 AI Analyst).
 >
+> - **The knowledge graph in three dimensions.** The 3D universe shows every record and
+>   relationship the graph holds, each kind on its own layer — height says what a record is,
+>   never how large or important it is — with the evidence behind every line one click away.
+>   A stored scenario execution can be laid over it: what it changed, which relationships a
+>   model propagated or only cited, which ones no model simulates, and its stored results. It
+>   computes nothing, and a list view shows the same records without WebGL.
 > - **Answers that cite their evidence.** The AI Analyst answers questions about RUMIN's
 >   records in plain language, through 17 read-only tools over the services below, and every
 >   figure it writes cites the record it came from, shown beside the answer. An answer, or a
@@ -58,7 +64,7 @@ observation, assumption, scenario input, simulated output or uncertainty.
 |---|---|---|
 | Landing page | Available | What RUMIN is, the five kinds of knowledge, what exists in this build, the roadmap |
 | Overview (dashboard) | Available | Live workspace figures from the API, network preview, the latest findings with their grades, recent scenarios, system and data status |
-| Financial Universe | Available (2D) | Interactive network: selection, hover details, search, filters, legend, pan/zoom, deep links, keyboard access, table view |
+| Financial Universe | Available (2D network; **3D universe, Phase 8**) | The 2D network of the sample dataset: selection, hover details, search, filters, legend, pan/zoom, deep links, keyboard access, table view. The **3D universe** of the knowledge graph (`/universe/3d`): strata by kind, the graph's own marks, the whole build within a budget, neighbourhoods and paths, the node and evidence panels, overlays of stored executions, a keyboard model and a list twin, links with the 2D explorer, the Scenario Lab and the Analyst ([guide](docs/universe/README.md)) |
 | **Knowledge Graph** | Available (Phase 3) | The graph of every record RUMIN holds (9 node types, 18 relationship types): aggregate map, search by name or code, neighbourhoods on a radial layout, step-by-step expansion, filters by type and evidence, the evidence behind every edge, shortest paths, history, table view |
 | **Graph build** | Available (command line) | Builds the graph from the stored records with entity resolution (flag, never merge), 26 validation rules and a validation report; rebuilding unchanged sources changes nothing |
 | **Data Explorer** | Available (Phase 2) | Stored series and prices with their source, licence, freshness and quality; exact-value tables; accessible charts; revision history; ingestion runs |
@@ -221,14 +227,16 @@ frontend/           React + TypeScript web client (Vite)
                     freshness), simulation (the preview: form, pathway, charts, panels),
                     scenarioLab (builder, pathway, results, timeline, views), intelligence
                     (the ledger, evidence chains, exposure matrix, drivers, signals, history),
-                    analyst (notes, answer blocks, the evidence margin, conversations, export)
+                    analyst (notes, answer blocks, the evidence margin, conversations, export),
+                    universe (the 3D view: strata, layout, scene, camera, names, overlays, the
+                    canvas host and the lazily loaded Three.js renderer)
   src/pages/        one component per route
   tests/            unit and page tests; tests/integration runs against a live API
 docs/               architecture, API, data model, data pipeline, testing, roadmap and more
   api/openapi.json  committed API contract (the frontend's types are generated from it)
-scripts/            smoke_test.sh (backend/scripts and frontend/scripts: graph, Scenario Lab and
-                    Financial Intelligence benchmarks, fixture capture from a real backend,
-                    including the Analyst's)
+scripts/            smoke_test.sh (backend/scripts and frontend/scripts: graph, Scenario Lab,
+                    Financial Intelligence and 3D universe measurements, fixture capture from
+                    a real backend, including the Analyst's and the universe's)
 ```
 
 ## Documentation
@@ -270,6 +278,11 @@ scripts/            smoke_test.sh (backend/scripts and frontend/scripts: graph, 
   [conversations](docs/analyst/conversations.md) · [guardrails](docs/analyst/guardrails.md) ·
   [the interface](docs/analyst/interface.md) · [evaluation](docs/analyst/evaluation.md) ·
   [limitations](docs/analyst/limitations.md)
+- 3D universe: [overview](docs/universe/README.md) ·
+  [architecture](docs/universe/architecture.md) · [encoding](docs/universe/encoding.md) ·
+  [interaction](docs/universe/interaction.md) · [scenario overlays](docs/universe/overlays.md) ·
+  [accessibility](docs/universe/accessibility.md) · [performance](docs/universe/performance.md) ·
+  [limitations](docs/universe/limitations.md)
 - [Design system](docs/design-system.md)
 - [Testing](docs/testing.md)
 - [Security](docs/security.md)
@@ -281,7 +294,8 @@ scripts/            smoke_test.sh (backend/scripts and frontend/scripts: graph, 
   [Phase 4 plan](docs/phases/phase-4-plan.md) · [Phase 4 report](docs/phases/phase-4-report.md) ·
   [Phase 5 plan](docs/phases/phase-5-plan.md) · [Phase 5 report](docs/phases/phase-5-report.md) ·
   [Phase 6 plan](docs/phases/phase-6-plan.md) · [Phase 6 report](docs/phases/phase-6-report.md) ·
-  [Phase 7 plan](docs/phases/phase-7-plan.md) · [Phase 7 report](docs/phases/phase-7-report.md)
+  [Phase 7 plan](docs/phases/phase-7-plan.md) · [Phase 7 report](docs/phases/phase-7-report.md) ·
+  [Phase 8 plan](docs/phases/phase-8-plan.md) · [Phase 8 report](docs/phases/phase-8-report.md)
 
 ## Licence
 

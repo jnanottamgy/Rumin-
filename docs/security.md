@@ -286,6 +286,23 @@ finding was verified against the code and fixed, with a test:
 | `/\evil.example` passed the browser's internal-link check | Low | Links are resolved as the browser resolves them and must stay on RUMIN's origin |
 | The token budget ignored cached tokens; several API processes would each apply their own limits | Info | Cached tokens counted; per-process limits documented ([limitations](analyst/limitations.md#system)) |
 
+### 3D universe (Phase 8)
+
+- **No new server surface.** The universe reads the graph API and stored executions through
+  the existing read-only endpoints; Phase 8 changed no backend code, schema or route.
+- **Untrusted text is never HTML.** Names written on the canvas are set with `textContent`
+  on elements the page creates; tooltips and panels are React text. Node names come from the
+  database and could hold markup; none is interpreted.
+- **Bounded work in the browser.** The whole build is read only within the budget (≤ 500
+  nodes, ≤ 2,500 edges, at most six requests, then a notice); neighbourhoods and paths keep
+  the graph API's limits; names are capped at 36; the pixel ratio at 2; remembered
+  positions at 6,000.
+- **GPU resources are released.** On leaving the page every geometry, material and mesh is
+  disposed and the WebGL context is released; a lost context falls back to the list.
+- **A question handed to the Analyst is only text.** *Ask the Analyst about it* puts a
+  drafted question in the Analyst's box through the router's state; it is read as a string,
+  and nothing is sent until the reader sends it.
+
 ### Secrets and supply chain
 
 - **One optional secret**: `RUMIN_ANTHROPIC_API_KEY`, for the Analyst's language model
@@ -303,7 +320,10 @@ finding was verified against the code and fixed, with a test:
   `docstring-parser` and `sniffio` into the lock file; it is imported only by the Anthropic
   provider. When Phase 7 was built (2026-09-24), `pip-audit` (run through `uvx`, not a
   project dependency) found no known vulnerabilities in the locked Python dependencies, and
-  `npm audit` reported none (the frontend's dependencies did not change).
+  `npm audit` reported none (the frontend's dependencies did not change). **Phase 8 added
+  `three`** (0.186) to the frontend, with `@types/three` for development only; the renderer
+  that imports it is a separate chunk loaded only by the 3D page. `npm audit` reported no
+  vulnerability after the addition.
 - CI runs with read-only repository permissions.
 
 ## Not yet in place
