@@ -88,7 +88,7 @@ def test_a_seed_reproduces_every_draw_and_another_does_not() -> None:
     assert draws(distribution, 50, seed=7) != draws(distribution, 50, seed=8)
 
 
-@pytest.mark.parametrize("seed", [-1, 2**63])
+@pytest.mark.parametrize("seed", [-1, 2**53])
 def test_a_seed_outside_the_range_is_refused(seed: int) -> None:
     with pytest.raises(ValueError, match="whole number from 0"):
         Stream(seed)

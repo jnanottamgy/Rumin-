@@ -140,6 +140,7 @@ def test_a_seed_is_chosen_and_recorded_when_none_is_given(lab: TestClient) -> No
     analysis = post(lab, path, {**MONTE_CARLO, "seed": None}, 201)
 
     assert isinstance(analysis["config"]["seed"], int)
+    assert 0 <= analysis["config"]["seed"] < 2**53
     assert analysis["request"]["seed"] == analysis["config"]["seed"]
     assert post(lab, f"{path}/{analysis['id']}/verify", {}, 200)["reproduced"] is True
 
@@ -177,6 +178,7 @@ def test_a_joint_analysis_through_the_api(lab: TestClient) -> None:
         ({**MONTE_CARLO, "surprise": 1}, None, None),
         ({**MONTE_CARLO, "draws": 50}, None, None),
         ({**MONTE_CARLO, "seed": -1}, None, None),
+        ({**MONTE_CARLO, "seed": 2**53}, None, None),  # beyond what a browser reads exactly
         (
             {
                 **MONTE_CARLO,

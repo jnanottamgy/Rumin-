@@ -26,7 +26,9 @@ from app.simulation.decimal_math import ONE, ZERO, arithmetic
 
 SAMPLER_VERSION = "1.0.0"
 GENERATOR = "Python random.Random(seed).random() — Mersenne Twister MT19937, 53-bit"
-MAX_SEED = 2**63 - 1
+# Seeds stay within 2⁵³ − 1 so every client reads them exactly (JavaScript numbers are
+# IEEE doubles): a seed shown in the browser is the seed that reproduces the draws.
+MAX_SEED = 2**53 - 1
 MAX_DISCRETE_VALUES = 12
 TWO = Decimal(2)
 THREE = Decimal(3)
@@ -202,4 +204,4 @@ class Stream:
 
 def new_seed() -> int:
     """A seed for a request that gives none (recorded with the analysis)."""
-    return secrets.randbits(63)
+    return secrets.randbits(53)
