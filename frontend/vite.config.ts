@@ -9,6 +9,19 @@ const { version } = JSON.parse(
   readFileSync(new URL("./package.json", import.meta.url), "utf-8"),
 ) as { version: string };
 
+// The production web server's Content-Security-Policy, read from its nginx snippet so the
+// preview server (and the launch suite that runs against it) enforces exactly the same one.
+function productionCsp(): string {
+  const snippet = readFileSync(
+    new URL("./nginx/snippets/security-headers.conf", import.meta.url),
+    "utf-8",
+  );
+  const policy = snippet.match(/add_header Content-Security-Policy "([^"]+)"/)?.[1];
+  if (!policy)
+    throw new Error("No Content-Security-Policy in nginx/snippets/security-headers.conf");
+  return policy;
+}
+
 export default defineConfig(({ mode }) => {
   // One .env file at the repository root serves the backend and the frontend.
   // Only VITE_* variables reach browser code; RUMIN_API_PROXY_TARGET stays in Node.
@@ -35,8 +48,14 @@ export default defineConfig(({ mode }) => {
         "/openapi.json": { target: apiTarget },
       },
     },
+    preview: {
+      headers: { "Content-Security-Policy": productionCsp() },
+    },
     build: {
       target: "es2022",
+      // Fonts are always files, never inlined as data: URIs (Vite inlines assets under 4 kB):
+      // the production Content-Security-Policy allows fonts from RUMIN's own origin only.
+      assetsInlineLimit: (file: string) => (/\.(woff2?|ttf|otf)$/i.test(file) ? false : undefined),
       // Maps are written for decoding a reported stack trace, but the bundles do not point
       // to them and the production web server refuses to serve them (Phase 10): the
       // readable source is not published.
