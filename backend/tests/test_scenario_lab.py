@@ -853,6 +853,28 @@ def test_sensitivity_skips_points_outside_a_range_and_enforces_limits(built_grap
         )
 
 
+def test_sensitivity_to_a_shared_figure_reaches_the_margins(built_graph: Session) -> None:
+    # Revenue is a model input and also the base of the operating margin and of interest
+    # coverage: varying it must move both. Before Phase 9 the aggregation kept the
+    # execution's revenue while the models used the varied value, so neither moved.
+    plan = plan_of(built_graph, reference())
+    members = members_of(plan)
+    revenue = Item("shared:annual_revenue", mode="relative", step=D(10))
+
+    margin = analyse(plan.spec, members, [revenue], metric="operating_margin")
+    coverage = analyse(plan.spec, members, [revenue], metric="interest_coverage")
+    profit = analyse(plan.spec, members, [revenue], metric="operating_profit")
+
+    # Revenue of 270,000,000: operating profit 270 − 250 − 6.325 = 13.675 million on revenue
+    # of 270 + 6.925 = 276.925 million; interest of 12 + 0.375 = 12.375 million.
+    low = margin["items"][0]["points"][0]
+    assert low["value"] == "270000000"
+    assert near(low["metric"], D("13.675") / D("276.925"), "1e-10")
+    assert near(coverage["items"][0]["points"][0]["metric"], D("13.675") / D("12.375"), "1e-10")
+    # The change in operating profit itself does not depend on revenue.
+    assert [point["delta"] for point in profit["items"][0]["points"]] == ["0", "0"]
+
+
 def test_comparison_differences_only_like_with_like(
     built_graph: Session, session_factory: sessionmaker[Session]
 ) -> None:

@@ -17,38 +17,45 @@ quantities, ``MAX_POINTS`` points each, ``MAX_EVALUATIONS`` evaluations and a de
 
 from __future__ import annotations
 
-import time
-from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, replace
-from decimal import ROUND_HALF_EVEN, Decimal
+from collections.abc import Sequence
+from dataclasses import dataclass
+from decimal import Decimal
 from typing import Any, Literal
 
-from app.scenario_lab.aggregate import (
-    LINE_EQUATIONS,
-    METRIC_LABELS,
-    Outcome,
-    Part,
-    aggregate,
-    outcome_of_result,
-    totals,
+from app.scenario_lab.aggregate import LINE_EQUATIONS, METRIC_LABELS
+from app.scenario_lab.evaluation import (
+    DeadlineExceeded,
+    Evaluator,
+    Skipped,
+    Target,
+    conform,
+    targets,
 )
 from app.scenario_lab.executor import Member
-from app.scenario_lab.inputs import SHARED_PATHS
 from app.scenario_lab.profiles import LINE_LABELS
 from app.scenario_lab.spec import ScenarioSpec
-from app.simulation.decimal_math import (
-    HUNDRED,
-    ONE,
-    ZERO,
-    NumericalError,
-    arithmetic,
-    text,
-    to_output,
-)
-from app.simulation.definitions import InputCategory, InputDefinition, InputKind
-from app.simulation.engine import channel_issues, evaluate_result, links_for
-from app.simulation.validation import check_range, decimal_places
+from app.simulation.decimal_math import HUNDRED, ONE, ZERO, arithmetic, text, to_output
+from app.simulation.definitions import InputKind
 
+__all__ = [
+    "DEADLINE_SECONDS",
+    "MAX_EVALUATIONS",
+    "MAX_ITEMS",
+    "MAX_POINTS",
+    "METHOD_VERSION",
+    "METRICS",
+    "Item",
+    "LabSensitivityError",
+    "Target",
+    "analyse",
+    "default_items",
+    "points",
+    "targets",
+]
+
+# 1.1.0 (Phase 9): the varied values also reach the aggregation, so margins and interest
+# coverage move with revenue, operating costs and interest expense.
+METHOD_VERSION = "1.1.0"
 MAX_ITEMS = 8
 MAX_POINTS = 7
 MAX_EVALUATIONS = 60
@@ -66,77 +73,11 @@ class LabSensitivityError(ValueError):
 
 
 @dataclass(frozen=True)
-class Target:
-    """What one item varies: a change, a shared figure or one model's input."""
-
-    id: str  # "change:var_brent_crude", "shared:annual_revenue", "model:<model>:<input>"
-    label: str
-    kind: str  # change | shared | company | market | assumption
-    uses: tuple[tuple[Member, str], ...]  # (model, its input id)
-
-    @property
-    def definition(self) -> InputDefinition:
-        member, input_id = self.uses[0]
-        return member.model.definition.input(input_id)
-
-
-@dataclass(frozen=True)
 class Item:
     target: str
     mode: Mode = "default"
     step: Decimal | None = None
     values: tuple[Decimal, ...] = ()
-
-
-def targets(spec: ScenarioSpec, members: Sequence[Member]) -> dict[str, Target]:
-    """Everything an analysis of this execution can vary."""
-    found: dict[str, Target] = {}
-    for shock in spec.shocks:
-        uses = tuple(
-            (member, binding.input_id)
-            for member in members
-            if (binding := member.profile.binding(shock.variable_id)) is not None
-            and binding.change_type is shock.change_type
-        )
-        if uses:
-            found[f"change:{shock.variable_id}"] = Target(
-                f"change:{shock.variable_id}",
-                uses[0][0].model.definition.input(uses[0][1]).label,
-                "change",
-                uses,
-            )
-    for name in SHARED_PATHS:
-        uses = tuple(
-            (member, name)
-            for member in members
-            if any(item.id == name for item in member.model.definition.inputs)
-        )
-        if uses and uses[0][0].model.definition.input(name).kind in (
-            InputKind.DECIMAL,
-            InputKind.QUANTITY,
-        ):
-            found[f"shared:{name}"] = Target(
-                f"shared:{name}", uses[0][0].model.definition.input(name).label, "shared", uses
-            )
-    for member in members:
-        for item in member.model.definition.inputs:
-            if item.id in SHARED_PATHS or item.category in (
-                InputCategory.SCENARIO_INPUT,
-                InputCategory.SETTING,
-            ):
-                continue
-            if item.kind not in (InputKind.DECIMAL, InputKind.QUANTITY, InputKind.INTEGER):
-                continue
-            kind = {
-                InputCategory.ASSUMPTION: "assumption",
-                InputCategory.COMPANY_INPUT: "company",
-                InputCategory.MARKET_BASELINE: "market",
-            }[item.category]
-            key = f"model:{member.model_id}:{item.id}"
-            found[key] = Target(
-                key, f"{item.label} ({member.profile.title})", kind, ((member, item.id),)
-            )
-    return found
 
 
 def default_items(spec: ScenarioSpec, members: Sequence[Member]) -> list[Item]:
@@ -152,15 +93,9 @@ def default_items(spec: ScenarioSpec, members: Sequence[Member]) -> list[Item]:
     return [Item(target=key) for key in chosen[:MAX_ITEMS]]
 
 
-def _base_value(member: Member, input_id: str) -> Decimal:
-    values = member.values
-    definition = member.model.definition.input(input_id)
-    if definition.kind is InputKind.INTEGER:
-        return Decimal(values.integer(input_id))
-    return values.number(input_id)
-
-
-def _points(target: Target, item: Item, base: Decimal) -> list[tuple[str, Decimal]]:
+def points(target: Target, item: Item, base: Decimal) -> list[tuple[str, Decimal]]:
+    """The values an item asks for: its default variation, a step either side or listed
+    values (not yet conformed to the input's decimals)."""
     definition = target.definition
     mode, step = item.mode, item.step
     if mode == "default":
@@ -194,17 +129,6 @@ def _points(target: Target, item: Item, base: Decimal) -> list[tuple[str, Decima
         return [("low", base * (ONE - step / HUNDRED)), ("high", base * (ONE + step / HUNDRED))]
 
 
-def _conform(definition: InputDefinition, value: Decimal) -> Decimal:
-    places = 0 if definition.kind is InputKind.INTEGER else definition.max_decimals
-    if decimal_places(value) <= places:
-        return value
-    return value.quantize(Decimal(1).scaleb(-places), rounding=ROUND_HALF_EVEN)
-
-
-def _metric(result: Any, metric: str) -> Decimal | None:
-    return totals(result).get(metric)
-
-
 def analyse(
     spec: ScenarioSpec,
     members: Sequence[Member],
@@ -225,25 +149,8 @@ def analyse(
             "Each quantity can be varied only once per analysis.", field="inputs"
         )
     available = targets(spec, members)
-    started = time.monotonic()
-    horizon = spec.horizon_months
-
-    def evaluate(member: Member, values: Any) -> Outcome:
-        links = links_for(member.model, values, member.preparation.graph)
-        return outcome_of_result(
-            member.model_id, evaluate_result(member.model, values, links, horizon)
-        )
-
-    base_outcomes = {member.model_id: evaluate(member, member.values) for member in members}
-
-    def combined(outcomes: Mapping[str, Outcome]) -> Any:
-        return aggregate(
-            [Part(member.profile, member.values, outcomes[member.model_id]) for member in members],
-            horizon=horizon,
-        )
-
-    base_result = combined(base_outcomes)
-    base_metric = _metric(base_result, metric)
+    evaluator = Evaluator(spec, members, deadline_seconds=deadline_seconds)
+    base_metric = evaluator.base_totals.get(metric)
     if base_metric is None:
         raise LabSensitivityError(
             f"This execution has no {metric.replace('_', ' ')}: no included model produces it.",
@@ -257,23 +164,21 @@ def analyse(
             raise LabSensitivityError(
                 f"'{item.target}' is not a quantity of this execution.", field="inputs"
             )
-        member, input_id = target.uses[0]
-        base = _base_value(member, input_id)
-        planned.append((target, item, base, _points(target, item, base)))
-    total_points = sum(len(points) for *_, points in planned)
+        base = target.base
+        planned.append((target, item, base, points(target, item, base)))
+    total_points = sum(len(values) for *_, values in planned)
     if total_points > MAX_EVALUATIONS:
         raise LabSensitivityError(
             f"The analysis would need {total_points} evaluations; the limit is {MAX_EVALUATIONS}.",
             field="inputs",
         )
 
-    evaluations = 0
     results: list[dict[str, Any]] = []
-    for target, item, base, points in planned:
+    for target, item, base, wanted in planned:
         definition = target.definition
         evaluated: list[dict[str, Any]] = []
-        for role, raw_point in points:
-            point = _conform(definition, raw_point)
+        for role, raw_point in wanted:
+            point = conform(definition, raw_point)
             entry: dict[str, Any] = {
                 "role": role,
                 "value": text(point),
@@ -281,51 +186,17 @@ def analyse(
                 "delta": None,
                 "skipped": None,
             }
-            problem = None
-            if definition.kind is InputKind.INTEGER and point != point.to_integral_value():
-                problem = "must be a whole number"
-            for member, input_id in target.uses:
-                problem = problem or check_range(member.model.definition.input(input_id), point)
-            if problem:
-                entry["skipped"] = f"{target.label} {problem}."
-                evaluated.append(entry)
-                continue
-            outcomes = dict(base_outcomes)
             try:
-                for member, input_id in target.uses:
-                    values = member.values
-                    if member.model.definition.input(input_id).kind is InputKind.INTEGER:
-                        varied = replace(values, integers={**values.integers, input_id: int(point)})
-                    else:
-                        varied = replace(values, numbers={**values.numbers, input_id: point})
-                    blocking = [
-                        issue for issue in member.model.check(varied) if issue.severity == "error"
-                    ]
-                    blocking += [
-                        issue
-                        for issue in channel_issues(member.model, varied, member.preparation.graph)
-                        if issue.severity == "error"
-                    ]
-                    if blocking:
-                        raise LabSensitivityError(blocking[0].message)
-                    if time.monotonic() - started > deadline_seconds:
-                        raise TimeoutError
-                    outcomes[member.model_id] = evaluate(member, varied)
-                value = _metric(combined(outcomes), metric)
-            except LabSensitivityError as skipped:
+                value = evaluator.evaluate([(target, point)]).get(metric)
+            except Skipped as skipped:
                 entry["skipped"] = skipped.message
                 evaluated.append(entry)
                 continue
-            except NumericalError as error:
-                entry["skipped"] = error.message
-                evaluated.append(entry)
-                continue
-            except TimeoutError:
+            except DeadlineExceeded as stopped:
                 raise LabSensitivityError(
-                    f"The analysis stopped after {evaluations} evaluations: it exceeded "
-                    f"{deadline_seconds:g} seconds."
+                    f"The analysis stopped after {stopped.evaluations} evaluations: it exceeded "
+                    f"{stopped.seconds:g} seconds."
                 ) from None
-            evaluations += 1
             if value is not None:
                 with arithmetic():
                     entry["metric"] = text(value)
@@ -343,11 +214,8 @@ def analyse(
                 "target": target.id,
                 "label": target.label,
                 "kind": target.kind,
-                "models": [member.model_id for member, _ in target.uses],
-                "unit": definition.unit
-                or (
-                    member.values.unit(input_id) if definition.kind is InputKind.QUANTITY else None
-                ),
+                "models": target.models,
+                "unit": target.unit,
                 "base_value": text(base),
                 "mode": item.mode
                 if item.mode != "default"
@@ -382,6 +250,6 @@ def analyse(
         "base": text(base_metric),
         "items": results,
         "ranking": ranking,
-        "evaluations": evaluations + 1,
-        "duration_ms": round((time.monotonic() - started) * 1000),
+        "evaluations": evaluator.evaluations + 1,
+        "duration_ms": evaluator.elapsed_ms,
     }
