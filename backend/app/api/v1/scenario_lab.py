@@ -206,7 +206,9 @@ def get_sensitivity(
     "execution's values; the analyses' limits.",
     responses={**NOT_FOUND, **CHANGED_MODEL},
 )
-def get_execution_analysis_targets(session: SessionDep, execution_id: uuid.UUID) -> AnalysisTargetsRead:
+def get_execution_analysis_targets(
+    session: SessionDep, execution_id: uuid.UUID
+) -> AnalysisTargetsRead:
     return scenario_analyses.analysis_targets(session, execution_id)
 
 
