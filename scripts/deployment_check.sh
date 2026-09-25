@@ -71,27 +71,31 @@ echo "==> Checking the running stack from outside"
 echo "==> Backup, a change, and a restore"
 CURL=(curl -sk --max-time 20 --noproxy '*')
 sign_in() {
-  local body
+  local body cookie
   body="$(python3 -c 'import json,sys; print(json.dumps({"email": "admin@rumin.test", "password": open(sys.argv[1]).read().strip()}))' "${WORK}/admin.pw")"
   # The verification spent this address's burst of sign-ins: wait for the next slot.
   for _ in $(seq 1 12); do
-    COOKIE="$(printf '%s' "${body}" | "${CURL[@]}" -D - -o /dev/null -H "Origin: ${ORIGIN}" \
+    cookie="$(printf '%s' "${body}" | "${CURL[@]}" -D - -o /dev/null -H "Origin: ${ORIGIN}" \
       -H 'Content-Type: application/json' --data-binary @- "${ORIGIN}/api/v1/auth/login" |
       grep -i '^set-cookie:' |
       sed -E 's/^[Ss]et-[Cc]ookie: ([^;]*).*/\1/' | tr -d '\r' || true)"
-    [[ -n "${COOKIE}" ]] && return 0
+    # Kept in a file only its owner can read, never on a command line.
+    if [[ -n "${cookie}" ]]; then
+      (umask 077 && printf 'Cookie: %s\n' "${cookie}" > "${WORK}/session.header")
+      return 0
+    fi
     sleep 7
   done
   echo "error: could not sign in" >&2
   return 1
 }
 scenario() {
-  "${CURL[@]}" -H "Cookie: ${COOKIE}" -H "Origin: ${ORIGIN}" -H 'Content-Type: application/json' \
+  "${CURL[@]}" -H @"${WORK}/session.header" -H "Origin: ${ORIGIN}" -H 'Content-Type: application/json' \
     -d "{\"name\":\"$1\",\"description\":\"Deployment check (HYPOTHETICAL)\",\"note\":\"\",\"shocks\":[{\"variable_id\":\"var_brent_crude\",\"change_type\":\"percent_change\",\"value\":\"5\",\"note\":\"\"}]}" \
     "${ORIGIN}/api/v1/scenarios" > /dev/null
 }
 names() {
-  "${CURL[@]}" -H "Cookie: ${COOKIE}" "${ORIGIN}/api/v1/scenarios" |
+  "${CURL[@]}" -H @"${WORK}/session.header" "${ORIGIN}/api/v1/scenarios" |
     python3 -c 'import json,sys; print(",".join(sorted(i["name"] for i in json.load(sys.stdin)["items"])))'
 }
 sign_in

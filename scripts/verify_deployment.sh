@@ -28,8 +28,18 @@ COMPOSE=(docker compose -f "${ROOT}/compose.production.yml" --env-file "${ENV_FI
 HTTP_BASE="$(grep -E '^RUMIN_HTTP_PORT=' "${ENV_FILE}" | cut -d= -f2)"
 HOST="$(echo "${BASE}" | sed -E 's#^https://([^:/]+).*#\1#')"
 ORIGIN="${BASE%/}"
-WORK="$(mktemp -d)"
-trap 'rm -rf "${WORK}"' EXIT
+WORK="$(mktemp -d)" # mode 0700
+# The administrator's session cookie lives only in this file, never on a command line (where
+# `ps` shows it), and the session is signed out when the script ends.
+SESSION="${WORK}/session.header"
+cleanup() {
+  if [[ -s "${SESSION}" ]]; then
+    "${CURL[@]}" -o /dev/null -X POST -H @"${SESSION}" -H "Origin: ${ORIGIN}" \
+      "${ORIGIN}/api/v1/auth/logout" || true
+  fi
+  rm -rf "${WORK}"
+}
+trap cleanup EXIT
 pass=0
 fail=0
 check() {
@@ -83,25 +93,27 @@ BODY="$(python3 -c 'import json,sys; print(json.dumps({"email": sys.argv[1], "pa
 # The password goes to curl on its standard input, never as an argument (visible to `ps`).
 H="$(printf '%s' "${BODY}" | "${CURL[@]}" -D - -o /dev/null -H "Origin: ${ORIGIN}" -H 'Content-Type: application/json' --data-binary @- "${ORIGIN}/api/v1/auth/login")"
 COOKIE="$(echo "$H" | grep -i '^set-cookie:' | sed -E 's/^[Ss]et-[Cc]ookie: ([^;]*).*/\1/' | tr -d '\r')"
+(umask 077 && printf 'Cookie: %s\n' "${COOKIE}" > "${SESSION}" && printf '%s' "${COOKIE}" > "${WORK}/session.cookie")
+unset COOKIE
 SETCOOKIE="$(echo "$H" | grep -i '^set-cookie:')"
 check "signing in sets a __Host- cookie: Secure, HttpOnly, SameSite=Lax, Path=/" \
   "echo \"\$SETCOOKIE\" | grep -qi '__Host-rumin_session=' && echo \"\$SETCOOKIE\" | grep -qi 'secure' && echo \"\$SETCOOKIE\" | grep -qi 'httponly' && echo \"\$SETCOOKIE\" | grep -qi 'samesite=lax' && echo \"\$SETCOOKIE\" | grep -qi 'path=/'"
 check "the sign-in answer is not cached" "echo \"\$H\" | grep -qi 'cache-control: no-store'"
-check "signed in, the API answers" "[ \"\$(code -H \"Cookie: \${COOKIE}\" '${ORIGIN}/api/v1/network')\" = 200 ]"
+check "signed in, the API answers" "[ \"\$(code -H @'${SESSION}' '${ORIGIN}/api/v1/network')\" = 200 ]"
 check "a change sent from another site is refused" \
-  "[ \"\$(code -H \"Cookie: \${COOKIE}\" -H 'Origin: https://evil.example' -H 'Content-Type: application/json' -d '{}' '${ORIGIN}/api/v1/analyst/sessions')\" = 403 ]"
+  "[ \"\$(code -H @'${SESSION}' -H 'Origin: https://evil.example' -H 'Content-Type: application/json' -d '{}' '${ORIGIN}/api/v1/analyst/sessions')\" = 403 ]"
 check "a change sent from the site itself is accepted" \
-  "[ \"\$(code -H \"Cookie: \${COOKIE}\" -H 'Origin: ${ORIGIN}' -H 'Content-Type: application/json' -d '{\"title\":\"Deployment check\"}' '${ORIGIN}/api/v1/analyst/sessions')\" = 201 ]"
+  "[ \"\$(code -H @'${SESSION}' -H 'Origin: ${ORIGIN}' -H 'Content-Type: application/json' -d '{\"title\":\"Deployment check\"}' '${ORIGIN}/api/v1/analyst/sessions')\" = 201 ]"
 head -c 200000 /dev/zero | tr '\0' 'a' > "${WORK}/large.json"
 check "a body over 128 KiB is refused" \
-  "[ \"\$(code -H \"Cookie: \${COOKIE}\" -H 'Origin: ${ORIGIN}' -H 'Content-Type: application/json' --data-binary @'${WORK}/large.json' '${ORIGIN}/api/v1/scenarios')\" = 413 ]"
+  "[ \"\$(code -H @'${SESSION}' -H 'Origin: ${ORIGIN}' -H 'Content-Type: application/json' --data-binary @'${WORK}/large.json' '${ORIGIN}/api/v1/scenarios')\" = 413 ]"
 
 WEB_ADDRESSES="$(docker inspect "$(container web)" --format '{{range .NetworkSettings.Networks}}{{.IPAddress}} {{end}}')"
-CLIENT="$("${CURL[@]}" -H "Cookie: ${COOKIE}" "${ORIGIN}/api/v1/audit-events?limit=5" | python3 -c 'import json,sys; print(json.load(sys.stdin)["items"][0]["client"] or "")')"
+CLIENT="$("${CURL[@]}" -H @"${SESSION}" "${ORIGIN}/api/v1/audit-events?limit=5" | python3 -c 'import json,sys; print(json.load(sys.stdin)["items"][0]["client"] or "")')"
 check "the API records the client's address, not the web server's (${CLIENT})" \
   "[ -n \"\${CLIENT}\" ] && ! echo \"\${WEB_ADDRESSES}\" | grep -qw \"\${CLIENT}\""
 check "metrics are readable inside the stack by an administrator" \
-  "\"\${COMPOSE[@]}\" exec -T api python -c \"import urllib.request as u; r=u.Request('http://127.0.0.1:8000/metrics', headers={'Cookie': '\${COOKIE}'}); assert 'rumin_security_events_total' in u.urlopen(r).read().decode()\""
+  "\"\${COMPOSE[@]}\" exec -T api python -c \"import sys, urllib.request as u; r=u.Request('http://127.0.0.1:8000/metrics', headers={'Cookie': sys.stdin.read().strip()}); assert 'rumin_security_events_total' in u.urlopen(r).read().decode()\" < '${WORK}/session.cookie'"
 
 # Last among the API checks: it spends this address's sign-in allowance.
 CODES=""
