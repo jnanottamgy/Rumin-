@@ -2,7 +2,7 @@
  * Getting started (Phase 10): the guide's starter tasks end in real pages, and the Overview's
  * first-use card can be hidden for good.
  */
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { sessionFixture } from "../fixtures/accounts";
@@ -21,7 +21,8 @@ describe("Getting started", () => {
     expect(
       await screen.findByRole("heading", { level: 1, name: "Getting started" }),
     ).toBeInTheDocument();
-    expect(document.title).toBe("Getting started — RUMIN");
+    // The title is set by an effect after the page renders.
+    await waitFor(() => expect(document.title).toBe("Getting started — RUMIN"));
     const tasks = within(screen.getByRole("region", { name: "Starter tasks" }));
     const scenario = tasks.getByRole("listitem", { name: "Run a what-if scenario" });
     expect(within(scenario).getByRole("link", { name: /Start from the template/ })).toHaveAttribute(

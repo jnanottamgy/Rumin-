@@ -65,7 +65,8 @@ describe("People", () => {
     mockApi(peopleRoutes());
     await openPeople();
 
-    expect(document.title).toBe("People — RUMIN");
+    // The title is set by an effect after the page renders.
+    await waitFor(() => expect(document.title).toBe("People — RUMIN"));
     const me = accounts().getByRole("listitem", { name: "Test Administrator" });
     expect(within(me).getByText("You")).toBeInTheDocument();
     expect(within(me).queryByRole("button", { name: /Manage/ })).toBeNull();

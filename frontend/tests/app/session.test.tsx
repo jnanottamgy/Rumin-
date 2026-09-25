@@ -50,7 +50,8 @@ describe("signing in", () => {
     expect(router.state.location.search).toBe(
       `?next=${encodeURIComponent("/scenarios?template=crude_oil_airline")}`,
     );
-    expect(document.title).toBe("Sign in — RUMIN");
+    // The title is set by an effect after the page renders.
+    await waitFor(() => expect(document.title).toBe("Sign in — RUMIN"));
     // Nothing from the workspace was asked for while signed out.
     expect(api.requests.map((request) => request.path)).toEqual([SESSION]);
 
