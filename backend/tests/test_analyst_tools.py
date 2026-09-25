@@ -7,7 +7,7 @@ from __future__ import annotations
 import json
 import time
 from collections.abc import Iterator
-from datetime import datetime
+from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Any
 
@@ -422,12 +422,17 @@ def test_the_words_searched_for_never_reach_the_evidence(
 ) -> None:
     with session_factory() as session:
         vocabulary = load(session)
-    run = ToolRunner(TOOLS, session_factory, vocabulary, EvidenceLedger())
+    # A clock whose reading holds the very figures planted in the question, so the check
+    # below cannot pass or fail by the time of day: the read time is the clock's, and it is
+    # the only place those digits may appear.
+    read_at = datetime(2031, 1, 1, 2, 45, 45, 452031, tzinfo=UTC)
+    run = ToolRunner(TOOLS, session_factory, vocabulary, EvidenceLedger(), clock=lambda: read_at)
     planted = "Aerisca 2031 fell “45 %” on 2031-01-01 v9.9.9"
     call = run.call("search_records", {"query": planted})
     assert call.ok and call.output is not None
     (item,) = run.ledger.items
-    stored = json.dumps(item.model_dump(mode="json"))
+    assert item.retrieved_at == read_at
+    stored = json.dumps(item.model_dump(mode="json", exclude={"retrieved_at"}))
     assert "2031" not in stored and "45" not in stored and "9.9.9" not in stored
     assert "2031" not in call.output.summary
     assert "2031" not in json.dumps(
