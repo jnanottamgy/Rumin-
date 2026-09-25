@@ -30,6 +30,12 @@ export const routes: RouteObject[] = [
         lazy: async () => ({ Component: (await import("@/pages/UniversePage")).UniversePage }),
       },
       {
+        path: "universe/3d",
+        lazy: async () => ({
+          Component: (await import("@/pages/UniverseSpacePage")).UniverseSpacePage,
+        }),
+      },
+      {
         path: "graph",
         lazy: async () => ({
           Component: (await import("@/pages/GraphExplorerPage")).GraphExplorerPage,

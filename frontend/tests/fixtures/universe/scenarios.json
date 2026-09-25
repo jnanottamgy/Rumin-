@@ -1,0 +1,71 @@
+{
+  "items": [
+    {
+      "id": "9ba3a3ac-bdcc-4c31-896a-47a6fd668e1c",
+      "name": "Oil, rupee and rates on Aerisca",
+      "description": "",
+      "template_id": null,
+      "current_version": 1,
+      "shocks": [
+        {
+          "variable_id": "var_brent_crude",
+          "change_type": "percent_change",
+          "value": "20",
+          "note": "",
+          "epistemic_category": "scenario_input"
+        },
+        {
+          "variable_id": "var_usd_inr",
+          "change_type": "percent_change",
+          "value": "5",
+          "note": "",
+          "epistemic_category": "scenario_input"
+        },
+        {
+          "variable_id": "var_rbi_repo_rate",
+          "change_type": "absolute_change",
+          "value": "0.5",
+          "note": "",
+          "epistemic_category": "scenario_input"
+        }
+      ],
+      "entity": "company:co_aerisca_airways",
+      "latest_execution": {
+        "id": "ad9f1fdf-5460-46c6-9b5f-b3cbdcb201e8",
+        "scenario_id": "9ba3a3ac-bdcc-4c31-896a-47a6fd668e1c",
+        "version": 1,
+        "status": "completed",
+        "requested_at": "2026-09-24T19:47:46.640825Z",
+        "started_at": "2026-09-24T19:47:46.647000Z",
+        "finished_at": "2026-09-24T19:47:46.776633Z",
+        "duration_ms": 130,
+        "inputs_hash": "f6de3e60b25529da5405788ece8ab094fcbb2ff65a19f20c96c66310e77cd15b",
+        "result_hash": "45fe9f3bf9a5d69b0f49f5e01ae5f6ebf291fc8e3f94635f5d6072c8e8dce622",
+        "headline": [
+          {
+            "id": "profit_before_tax",
+            "label": "Profit before tax",
+            "change": "-6700000",
+            "percent_change": "-17.6315789474",
+            "currency": "INR"
+          },
+          {
+            "id": "operating_profit",
+            "label": "Operating profit",
+            "change": "-6325000",
+            "percent_change": "-12.65",
+            "currency": "INR"
+          }
+        ],
+        "models": ["airline_fuel_cost", "fx_exposure", "floating_rate_interest"],
+        "error": null
+      },
+      "executions": 1,
+      "created_at": "2026-09-24T19:47:46.570966Z",
+      "updated_at": "2026-09-24T19:47:46.570972Z"
+    }
+  ],
+  "total": 1,
+  "limit": 100,
+  "offset": 0
+}

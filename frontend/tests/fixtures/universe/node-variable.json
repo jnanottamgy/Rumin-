@@ -1,0 +1,59 @@
+{
+  "id": "variable:var_brent_crude",
+  "type": "economic_variable",
+  "name": "Brent crude oil price",
+  "subtitle": "Economic variable · Global · USD per barrel, daily",
+  "nature": "real",
+  "quality_status": "validated",
+  "degree": 5,
+  "primary_identifier": null,
+  "data_status": "not_applicable",
+  "description": "International benchmark price for light, sweet crude oil from the North Sea, widely used to price internationally traded crude.",
+  "attributes": {
+    "unit": "USD per barrel",
+    "frequency": "daily",
+    "category": "commodity",
+    "value_kind": "price",
+    "reference": "U.S. Energy Information Administration, Europe Brent spot price FOB (FRED series DCOILBRENTEU).",
+    "reference_url": "https://fred.stlouisfed.org/series/DCOILBRENTEU"
+  },
+  "identifiers": [],
+  "sources": [
+    {
+      "table": "economic_variables",
+      "record_id": "var_brent_crude",
+      "dataset_id": "rumin-sample",
+      "dataset_version": "1.0.0",
+      "fields": ["name", "unit"]
+    }
+  ],
+  "in_degree": 0,
+  "out_degree": 5,
+  "component": 1,
+  "relationships": [
+    {
+      "type": "affects_costs",
+      "label": "affects costs of",
+      "direction": "outgoing",
+      "count": 2
+    },
+    {
+      "type": "influences",
+      "label": "influences",
+      "direction": "outgoing",
+      "count": 2
+    },
+    {
+      "type": "affects_revenue",
+      "label": "affects revenue of",
+      "direction": "outgoing",
+      "count": 1
+    }
+  ],
+  "resolution": [],
+  "issues": [],
+  "exposures": null,
+  "data": null,
+  "first_build_id": 1,
+  "changed_build_id": 1
+}

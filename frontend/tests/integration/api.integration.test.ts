@@ -24,6 +24,7 @@ import { ApiError } from "@/lib/apiClient";
 import { api, intelligenceApi, labApi, simulationApi } from "@/services/api";
 import type { EconomicVariable, ScenarioExecution, ScenarioInput } from "@/types/api";
 import { contractViolations } from "./contract";
+import { referenceDraft } from "./reference";
 
 const baseUrl = process.env.RUMIN_API_URL?.replace(/\/+$/, "");
 if (!baseUrl) {
@@ -283,44 +284,7 @@ describe("the Scenario Lab against the live API", () => {
 
   it("executes a scenario in the background, reports its stages and reproduces it", async () => {
     // The backend tests' reference case, with HYPOTHETICAL round figures.
-    const template = await labApi.template("oil_rupee_rates", options);
-    let draft = { ...draftFromInput(template.scenario), name: unique("Integration execution") };
-    draft = {
-      ...draft,
-      entity: "company:co_aerisca_airways",
-      reportingCurrency: "INR",
-      annualRevenue: "300000000",
-      annualOperatingCosts: "250000000",
-      fxRate: { value: "80", unit: "", source: "user", seriesId: "" },
-    };
-    const inputs: [string, string, string, string][] = [
-      ["airline_fuel_cost", "jet_fuel_price", "750", "usd_per_kilolitre"],
-      ["airline_fuel_cost", "annual_fuel_consumption", "1000", "kilolitre"],
-      ["fx_exposure", "annual_usd_revenue", "500000", ""],
-      ["fx_exposure", "annual_usd_costs", "200000", ""],
-      ["floating_rate_interest", "annual_interest_expense", "12000000", ""],
-      ["floating_rate_interest", "repo_linked_debt", "100000000", ""],
-      ["floating_rate_interest", "us_rate_linked_debt", "0", ""],
-    ];
-    for (const [model, input, value, unit] of inputs) {
-      draft = draftReducer(draft, { type: "modelInput", model, input, patch: { value, unit } });
-    }
-    draft = draftReducer(draft, {
-      type: "modelMode",
-      model: "floating_rate_interest",
-      mode: "include",
-    });
-    const assumptions: [string, string, string][] = [
-      ["airline_fuel_cost", "hedge_ratio", "40"],
-      ["airline_fuel_cost", "hedge_months", "6"],
-      ["airline_fuel_cost", "fare_pass_through", "50"],
-      ["airline_fuel_cost", "fare_pass_through_lag", "2"],
-      ["airline_fuel_cost", "crude_pass_through_lag", "1"],
-      ["floating_rate_interest", "repo_repricing_lag", "3"],
-    ];
-    for (const [model, input, value] of assumptions) {
-      draft = draftReducer(draft, { type: "modelAssumption", model, input, value });
-    }
+    const draft = await referenceDraft(unique("Integration execution"), options);
 
     const plan = await labApi.plan(toInput(draft), options);
     expect(contractViolations("PlanRead", plan)).toEqual([]);

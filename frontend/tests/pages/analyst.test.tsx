@@ -7,6 +7,7 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { handedQuestion } from "@/pages/AnalystPage";
 import {
   analystFixtures,
   FAILED_SESSION_ID,
@@ -197,9 +198,19 @@ describe("AI Analyst — a stored conversation", () => {
     expect(within(margin).getAllByText("Relationship").length).toBeGreaterThan(0);
     expect(within(margin).getByText("Simulated")).toBeInTheDocument();
     // The records behind the answer: paths, counterparties, the stored execution, findings.
-    expect(
-      within(first).getByRole("region", { name: "How economic variables reach Aerisca Airways" }),
-    ).toBeInTheDocument();
+    const paths = within(first).getByRole("region", {
+      name: "How economic variables reach Aerisca Airways",
+    });
+    // Each path can be followed in the 3D universe, between its two ends.
+    const inSpace = within(paths).getAllByRole("link", {
+      name: "Shortest paths between them in 3D",
+    });
+    expect(inSpace.length).toBeGreaterThan(0);
+    for (const link of inSpace) {
+      expect(link.getAttribute("href")).toMatch(
+        /^\/universe\/3d\?from=[a-z_]+%3A\w+&to=[a-z_]+%3A\w+$/,
+      );
+    }
     expect(within(first).getByRole("table", { name: "Counterparties stated in the graph" }));
     const stored = within(first).getByRole("region", { name: "Oil, rupee and rates on Aerisca" });
     expect(within(stored).getByText("Stored execution")).toBeInTheDocument();
@@ -535,5 +546,17 @@ describe("AI Analyst — managing conversations", () => {
       name: "Analyst preview",
       shocks: [{ variable_id: "var_brent_crude", change_type: "percent_change", value: "20" }],
     });
+  });
+});
+
+describe("AI Analyst — a question handed over by another page", () => {
+  it("takes a question from the router's state, as text only, and never sends it", () => {
+    expect(handedQuestion({ draftQuestion: "  What does RUMIN know about Aerisca?  " })).toBe(
+      "What does RUMIN know about Aerisca?",
+    );
+    expect(handedQuestion({ draftQuestion: 42 })).toBe("");
+    expect(handedQuestion({ draft: { name: "a scenario" } })).toBe("");
+    expect(handedQuestion(null)).toBe("");
+    expect(handedQuestion(undefined)).toBe("");
   });
 });

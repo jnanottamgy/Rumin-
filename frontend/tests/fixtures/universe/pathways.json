@@ -1,0 +1,1568 @@
+{
+  "nodes": [
+    {
+      "id": "change:var_brent_crude",
+      "kind": "change",
+      "label": "Brent crude oil price",
+      "group": null,
+      "knowledge": "scenario_input",
+      "value": "20",
+      "unit": "%",
+      "first_month": 1,
+      "monthly": null,
+      "detail": "Months 1–12 of 12",
+      "line": null,
+      "item": null
+    },
+    {
+      "id": "change:var_usd_inr",
+      "kind": "change",
+      "label": "USD/INR exchange rate",
+      "group": null,
+      "knowledge": "scenario_input",
+      "value": "5",
+      "unit": "%",
+      "first_month": 1,
+      "monthly": null,
+      "detail": "Months 1–12 of 12",
+      "line": null,
+      "item": null
+    },
+    {
+      "id": "change:var_rbi_repo_rate",
+      "kind": "change",
+      "label": "RBI policy repo rate",
+      "group": null,
+      "knowledge": "scenario_input",
+      "value": "0.5",
+      "unit": "percentage points",
+      "first_month": 1,
+      "monthly": null,
+      "detail": "Months 1–12 of 12",
+      "line": null,
+      "item": null
+    },
+    {
+      "id": "airline_fuel_cost:variable:var_brent_crude",
+      "kind": "variable",
+      "label": "Brent crude oil price",
+      "group": "airline_fuel_cost",
+      "knowledge": "simulated",
+      "value": "0.2",
+      "unit": "ratio",
+      "first_month": 1,
+      "monthly": [
+        "0.2",
+        "0.2",
+        "0.2",
+        "0.2",
+        "0.2",
+        "0.2",
+        "0.2",
+        "0.2",
+        "0.2",
+        "0.2",
+        "0.2",
+        "0.2"
+      ],
+      "detail": "Change while the scenario lasts, once every lag has elapsed",
+      "line": null,
+      "item": null
+    },
+    {
+      "id": "airline_fuel_cost:variable:var_jet_fuel",
+      "kind": "variable",
+      "label": "Jet fuel price (U.S. Gulf Coast)",
+      "group": "airline_fuel_cost",
+      "knowledge": "simulated",
+      "value": "0.2",
+      "unit": "ratio",
+      "first_month": 2,
+      "monthly": ["0", "0.2", "0.2", "0.2", "0.2", "0.2", "0.2", "0.2", "0.2", "0.2", "0.2", "0.2"],
+      "detail": "Change while the scenario lasts, once every lag has elapsed",
+      "line": null,
+      "item": null
+    },
+    {
+      "id": "airline_fuel_cost:variable:var_usd_inr",
+      "kind": "variable",
+      "label": "USD/INR exchange rate",
+      "group": "airline_fuel_cost",
+      "knowledge": "simulated",
+      "value": "0.05",
+      "unit": "ratio",
+      "first_month": 1,
+      "monthly": [
+        "0.05",
+        "0.05",
+        "0.05",
+        "0.05",
+        "0.05",
+        "0.05",
+        "0.05",
+        "0.05",
+        "0.05",
+        "0.05",
+        "0.05",
+        "0.05"
+      ],
+      "detail": "Change while the scenario lasts, once every lag has elapsed",
+      "line": null,
+      "item": null
+    },
+    {
+      "id": "airline_fuel_cost:output:fuel_cost_change",
+      "kind": "driver",
+      "label": "Jet fuel",
+      "group": "airline_fuel_cost",
+      "knowledge": "simulated",
+      "value": "12450000",
+      "unit": "currency",
+      "first_month": 1,
+      "monthly": [
+        "250000",
+        "880000",
+        "880000",
+        "880000",
+        "880000",
+        "880000",
+        "1300000",
+        "1300000",
+        "1300000",
+        "1300000",
+        "1300000",
+        "1300000"
+      ],
+      "detail": "Jet fuel — Operating costs",
+      "line": "operating_costs",
+      "item": "jet_fuel"
+    },
+    {
+      "id": "airline_fuel_cost:output:fare_recovery",
+      "kind": "driver",
+      "label": "Fare recovery",
+      "group": "airline_fuel_cost",
+      "knowledge": "simulated",
+      "value": "4925000",
+      "unit": "currency",
+      "first_month": 3,
+      "monthly": [
+        "0",
+        "0",
+        "125000",
+        "440000",
+        "440000",
+        "440000",
+        "440000",
+        "440000",
+        "650000",
+        "650000",
+        "650000",
+        "650000"
+      ],
+      "detail": "Fare recovery of fuel costs — Revenue",
+      "line": "revenue",
+      "item": "fuel_cost_recovery"
+    },
+    {
+      "id": "industry:ind_air_transport",
+      "kind": "context",
+      "label": "Air transport",
+      "group": null,
+      "knowledge": "graph_relationship",
+      "value": null,
+      "unit": null,
+      "first_month": null,
+      "monthly": null,
+      "detail": "Industry",
+      "line": null,
+      "item": null
+    },
+    {
+      "id": "company:co_aerisca_airways",
+      "kind": "context",
+      "label": "Aerisca Airways",
+      "group": null,
+      "knowledge": "graph_relationship",
+      "value": null,
+      "unit": null,
+      "first_month": null,
+      "monthly": null,
+      "detail": "Company",
+      "line": null,
+      "item": null
+    },
+    {
+      "id": "fx_exposure:variable:var_usd_inr",
+      "kind": "variable",
+      "label": "USD/INR exchange rate",
+      "group": "fx_exposure",
+      "knowledge": "simulated",
+      "value": "0.05",
+      "unit": "ratio",
+      "first_month": 1,
+      "monthly": [
+        "0.05",
+        "0.05",
+        "0.05",
+        "0.05",
+        "0.05",
+        "0.05",
+        "0.05",
+        "0.05",
+        "0.05",
+        "0.05",
+        "0.05",
+        "0.05"
+      ],
+      "detail": "Change while the scenario lasts, once every lag has elapsed",
+      "line": null,
+      "item": null
+    },
+    {
+      "id": "fx_exposure:output:revenue_change",
+      "kind": "driver",
+      "label": "US-dollar revenue",
+      "group": "fx_exposure",
+      "knowledge": "simulated",
+      "value": "2000000",
+      "unit": "currency",
+      "first_month": 1,
+      "monthly": [
+        "166666.6666666667",
+        "166666.6666666667",
+        "166666.6666666667",
+        "166666.6666666667",
+        "166666.6666666667",
+        "166666.6666666667",
+        "166666.6666666667",
+        "166666.6666666667",
+        "166666.6666666667",
+        "166666.6666666667",
+        "166666.6666666667",
+        "166666.6666666667"
+      ],
+      "detail": "Revenue invoiced in US dollars — Revenue",
+      "line": "revenue",
+      "item": "usd_revenue"
+    },
+    {
+      "id": "fx_exposure:output:cost_change",
+      "kind": "driver",
+      "label": "US-dollar costs",
+      "group": "fx_exposure",
+      "knowledge": "simulated",
+      "value": "800000",
+      "unit": "currency",
+      "first_month": 1,
+      "monthly": [
+        "66666.6666666667",
+        "66666.6666666667",
+        "66666.6666666667",
+        "66666.6666666667",
+        "66666.6666666667",
+        "66666.6666666667",
+        "66666.6666666667",
+        "66666.6666666667",
+        "66666.6666666667",
+        "66666.6666666667",
+        "66666.6666666667",
+        "66666.6666666667"
+      ],
+      "detail": "Costs paid in US dollars (other than those another model covers) — Operating costs",
+      "line": "operating_costs",
+      "item": "usd_costs"
+    },
+    {
+      "id": "floating_rate_interest:variable:var_rbi_repo_rate",
+      "kind": "variable",
+      "label": "RBI policy repo rate",
+      "group": "floating_rate_interest",
+      "knowledge": "simulated",
+      "value": "0.5",
+      "unit": "percentage_points",
+      "first_month": 1,
+      "monthly": [
+        "0.5",
+        "0.5",
+        "0.5",
+        "0.5",
+        "0.5",
+        "0.5",
+        "0.5",
+        "0.5",
+        "0.5",
+        "0.5",
+        "0.5",
+        "0.5"
+      ],
+      "detail": "Change while the scenario lasts, once every lag has elapsed",
+      "line": null,
+      "item": null
+    },
+    {
+      "id": "floating_rate_interest:output:repo_interest_change",
+      "kind": "driver",
+      "label": "Repo-linked debt",
+      "group": "floating_rate_interest",
+      "knowledge": "simulated",
+      "value": "375000",
+      "unit": "currency",
+      "first_month": 4,
+      "monthly": [
+        "0",
+        "0",
+        "0",
+        "41666.6666666667",
+        "41666.6666666667",
+        "41666.6666666667",
+        "41666.6666666667",
+        "41666.6666666667",
+        "41666.6666666667",
+        "41666.6666666667",
+        "41666.6666666667",
+        "41666.6666666667"
+      ],
+      "detail": "Interest on debt linked to the repo rate — Interest expense",
+      "line": "interest_expense",
+      "item": "repo_linked_interest"
+    },
+    {
+      "id": "line:revenue",
+      "kind": "line",
+      "label": "Revenue",
+      "group": null,
+      "knowledge": "simulated",
+      "value": "6925000",
+      "unit": "currency",
+      "first_month": 1,
+      "monthly": [
+        "166666.6666666667",
+        "166666.6666666667",
+        "291666.6666666667",
+        "606666.6666666667",
+        "606666.6666666667",
+        "606666.6666666667",
+        "606666.6666666667",
+        "606666.6666666667",
+        "816666.6666666667",
+        "816666.6666666667",
+        "816666.6666666667",
+        "816666.6666666667"
+      ],
+      "detail": "Change over the horizon",
+      "line": null,
+      "item": null
+    },
+    {
+      "id": "line:operating_costs",
+      "kind": "line",
+      "label": "Operating costs",
+      "group": null,
+      "knowledge": "simulated",
+      "value": "13250000",
+      "unit": "currency",
+      "first_month": 1,
+      "monthly": [
+        "316666.6666666667",
+        "946666.6666666667",
+        "946666.6666666667",
+        "946666.6666666667",
+        "946666.6666666667",
+        "946666.6666666667",
+        "1366666.6666666667",
+        "1366666.6666666667",
+        "1366666.6666666667",
+        "1366666.6666666667",
+        "1366666.6666666667",
+        "1366666.6666666667"
+      ],
+      "detail": "Change over the horizon",
+      "line": null,
+      "item": null
+    },
+    {
+      "id": "line:operating_profit",
+      "kind": "line",
+      "label": "Operating profit",
+      "group": null,
+      "knowledge": "simulated",
+      "value": "-6325000",
+      "unit": "currency",
+      "first_month": 1,
+      "monthly": [
+        "-150000",
+        "-780000",
+        "-655000",
+        "-340000",
+        "-340000",
+        "-340000",
+        "-760000",
+        "-760000",
+        "-550000",
+        "-550000",
+        "-550000",
+        "-550000"
+      ],
+      "detail": "Change over the horizon",
+      "line": null,
+      "item": null
+    },
+    {
+      "id": "line:interest_expense",
+      "kind": "line",
+      "label": "Interest expense",
+      "group": null,
+      "knowledge": "simulated",
+      "value": "375000",
+      "unit": "currency",
+      "first_month": 4,
+      "monthly": [
+        "0",
+        "0",
+        "0",
+        "41666.6666666667",
+        "41666.6666666667",
+        "41666.6666666667",
+        "41666.6666666667",
+        "41666.6666666667",
+        "41666.6666666667",
+        "41666.6666666667",
+        "41666.6666666667",
+        "41666.6666666667"
+      ],
+      "detail": "Change over the horizon",
+      "line": null,
+      "item": null
+    },
+    {
+      "id": "line:profit_before_tax",
+      "kind": "line",
+      "label": "Profit before tax",
+      "group": null,
+      "knowledge": "simulated",
+      "value": "-6700000",
+      "unit": "currency",
+      "first_month": 1,
+      "monthly": [
+        "-150000",
+        "-780000",
+        "-655000",
+        "-381666.6666666667",
+        "-381666.6666666667",
+        "-381666.6666666667",
+        "-801666.6666666667",
+        "-801666.6666666667",
+        "-591666.6666666667",
+        "-591666.6666666667",
+        "-591666.6666666667",
+        "-591666.6666666667"
+      ],
+      "detail": "Change over the horizon",
+      "line": null,
+      "item": null
+    },
+    {
+      "id": "metric:operating_margin",
+      "kind": "metric",
+      "label": "Operating margin",
+      "group": null,
+      "knowledge": "simulated",
+      "value": "-0.0243680595",
+      "unit": "ratio_points",
+      "first_month": null,
+      "monthly": null,
+      "detail": "Change from the baseline",
+      "line": null,
+      "item": null
+    },
+    {
+      "id": "metric:interest_coverage",
+      "kind": "metric",
+      "label": "Interest coverage",
+      "group": null,
+      "knowledge": "simulated",
+      "value": "-0.6373737374",
+      "unit": "times",
+      "first_month": null,
+      "monthly": null,
+      "detail": "Change from the baseline",
+      "line": null,
+      "item": null
+    }
+  ],
+  "links": [
+    {
+      "id": "change:var_brent_crude→airline_fuel_cost:variable:var_brent_crude",
+      "source": "change:var_brent_crude",
+      "target": "airline_fuel_cost:variable:var_brent_crude",
+      "kind": "applies",
+      "simulation": "applied",
+      "label": "changes",
+      "group": "airline_fuel_cost",
+      "equations": [],
+      "rule": null,
+      "edge": null,
+      "coefficient": null,
+      "lag_months": null,
+      "window": {
+        "first_month": 1,
+        "last_month": null
+      },
+      "assumptions": [],
+      "statements": [],
+      "sign": null,
+      "active": true
+    },
+    {
+      "id": "airline_fuel_cost:variable:var_brent_crude→airline_fuel_cost:variable:var_jet_fuel",
+      "source": "airline_fuel_cost:variable:var_brent_crude",
+      "target": "airline_fuel_cost:variable:var_jet_fuel",
+      "kind": "transmission",
+      "simulation": "propagated",
+      "label": "influences (β, lag)",
+      "group": "airline_fuel_cost",
+      "equations": [
+        {
+          "id": "E6",
+          "name": "Jet fuel log-change",
+          "formula": "ℓ(m) = β · ln(1 + c) · 𝟙[S + L ≤ m ≤ E + L] + ln(1 + s) · 𝟙[S ≤ m ≤ E]"
+        }
+      ],
+      "rule": "T1",
+      "edge": {
+        "edge_key": "e-ea305310288a3f88",
+        "edge_type": "influences",
+        "relationship": "influences",
+        "evidence_status": "model_assumption",
+        "is_illustrative": true
+      },
+      "coefficient": "1",
+      "lag_months": 1,
+      "window": {
+        "first_month": 2,
+        "last_month": null
+      },
+      "assumptions": [
+        {
+          "id": "crude_pass_through",
+          "label": "Crude-to-jet-fuel elasticity (β)",
+          "value": "1",
+          "unit": "elasticity (dimensionless)",
+          "source": "default",
+          "default": "1"
+        },
+        {
+          "id": "crude_pass_through_lag",
+          "label": "Crude-to-jet-fuel lag",
+          "value": "1",
+          "unit": "months",
+          "source": "user",
+          "default": "0"
+        }
+      ],
+      "statements": [
+        {
+          "id": "A4",
+          "text": "Scenario changes are step changes: they take effect in the start month and last for the stated duration (to the end of the horizon unless one is set), after which the changed variables return to their baselines. Every change in a run shares this timing."
+        },
+        {
+          "id": "A5",
+          "text": "Jet fuel responds to crude oil with a constant elasticity β after a lag: ln(jet fuel) changes by β × ln(1 + crude change). With β = 1 the refining margin stays a constant proportion of the price."
+        }
+      ],
+      "sign": null,
+      "active": true
+    },
+    {
+      "id": "change:var_usd_inr→airline_fuel_cost:variable:var_usd_inr",
+      "source": "change:var_usd_inr",
+      "target": "airline_fuel_cost:variable:var_usd_inr",
+      "kind": "applies",
+      "simulation": "applied",
+      "label": "changes",
+      "group": "airline_fuel_cost",
+      "equations": [
+        {
+          "id": "E8",
+          "name": "Exchange rate relative to baseline",
+          "formula": "q(m) = exp(ln(1 + x) · 𝟙[S ≤ m ≤ E])"
+        }
+      ],
+      "rule": null,
+      "edge": null,
+      "coefficient": null,
+      "lag_months": null,
+      "window": {
+        "first_month": 1,
+        "last_month": null
+      },
+      "assumptions": [],
+      "statements": [
+        {
+          "id": "A4",
+          "text": "Scenario changes are step changes: they take effect in the start month and last for the stated duration (to the end of the horizon unless one is set), after which the changed variables return to their baselines. Every change in a run shares this timing."
+        },
+        {
+          "id": "A8",
+          "text": "The exchange rate affects the fuel bill only: other dollar costs and any dollar revenue are outside the model."
+        }
+      ],
+      "sign": null,
+      "active": true
+    },
+    {
+      "id": "airline_fuel_cost:variable:var_jet_fuel→airline_fuel_cost:output:fuel_cost_change",
+      "source": "airline_fuel_cost:variable:var_jet_fuel",
+      "target": "airline_fuel_cost:output:fuel_cost_change",
+      "kind": "equation",
+      "simulation": "computed",
+      "label": "prices the unhedged fuel",
+      "group": "airline_fuel_cost",
+      "equations": [
+        {
+          "id": "E7",
+          "name": "Jet fuel price relative to baseline",
+          "formula": "r(m) = exp(ℓ(m))"
+        },
+        {
+          "id": "E10",
+          "name": "Scenario monthly fuel cost",
+          "formula": "b₁(m) = b₀ × q(m) × [h(m) + (1 − h(m)) × r(m)]"
+        },
+        {
+          "id": "E11",
+          "name": "Change in fuel cost",
+          "formula": "Δb(m) = b₁(m) − b₀"
+        }
+      ],
+      "rule": null,
+      "edge": null,
+      "coefficient": null,
+      "lag_months": null,
+      "window": null,
+      "assumptions": [
+        {
+          "id": "hedge_ratio",
+          "label": "Hedge ratio",
+          "value": "40",
+          "unit": "%",
+          "source": "user",
+          "default": "0"
+        }
+      ],
+      "statements": [
+        {
+          "id": "A1",
+          "text": "Everything the model does not include stays at its baseline: fuel consumption, other costs, traffic, capacity, fares (apart from the stated pass-through) and financing."
+        },
+        {
+          "id": "A3",
+          "text": "The fuel bill is consumption × the benchmark jet fuel price × the exchange rate. Taxes, fees and supplier margins that do not follow the benchmark are outside the model."
+        },
+        {
+          "id": "A6",
+          "text": "Hedged fuel pays the baseline US-dollar price until the hedges expire; the exchange rate is not hedged; hedges are not rolled over."
+        },
+        {
+          "id": "A8",
+          "text": "The exchange rate affects the fuel bill only: other dollar costs and any dollar revenue are outside the model."
+        }
+      ],
+      "sign": null,
+      "active": true
+    },
+    {
+      "id": "airline_fuel_cost:variable:var_usd_inr→airline_fuel_cost:output:fuel_cost_change",
+      "source": "airline_fuel_cost:variable:var_usd_inr",
+      "target": "airline_fuel_cost:output:fuel_cost_change",
+      "kind": "equation",
+      "simulation": "computed",
+      "label": "converts the dollar bill",
+      "group": "airline_fuel_cost",
+      "equations": [
+        {
+          "id": "E3",
+          "name": "Baseline benchmark fuel cost in the reporting currency",
+          "formula": "B = B_USD × X₀"
+        },
+        {
+          "id": "E8",
+          "name": "Exchange rate relative to baseline",
+          "formula": "q(m) = exp(ln(1 + x) · 𝟙[S ≤ m ≤ E])"
+        },
+        {
+          "id": "E10",
+          "name": "Scenario monthly fuel cost",
+          "formula": "b₁(m) = b₀ × q(m) × [h(m) + (1 − h(m)) × r(m)]"
+        }
+      ],
+      "rule": null,
+      "edge": null,
+      "coefficient": null,
+      "lag_months": null,
+      "window": null,
+      "assumptions": [
+        {
+          "id": "hedge_ratio",
+          "label": "Hedge ratio",
+          "value": "40",
+          "unit": "%",
+          "source": "user",
+          "default": "0"
+        }
+      ],
+      "statements": [
+        {
+          "id": "A1",
+          "text": "Everything the model does not include stays at its baseline: fuel consumption, other costs, traffic, capacity, fares (apart from the stated pass-through) and financing."
+        },
+        {
+          "id": "A3",
+          "text": "The fuel bill is consumption × the benchmark jet fuel price × the exchange rate. Taxes, fees and supplier margins that do not follow the benchmark are outside the model."
+        },
+        {
+          "id": "A4",
+          "text": "Scenario changes are step changes: they take effect in the start month and last for the stated duration (to the end of the horizon unless one is set), after which the changed variables return to their baselines. Every change in a run shares this timing."
+        },
+        {
+          "id": "A6",
+          "text": "Hedged fuel pays the baseline US-dollar price until the hedges expire; the exchange rate is not hedged; hedges are not rolled over."
+        },
+        {
+          "id": "A8",
+          "text": "The exchange rate affects the fuel bill only: other dollar costs and any dollar revenue are outside the model."
+        }
+      ],
+      "sign": null,
+      "active": true
+    },
+    {
+      "id": "airline_fuel_cost:output:fuel_cost_change→airline_fuel_cost:output:fare_recovery",
+      "source": "airline_fuel_cost:output:fuel_cost_change",
+      "target": "airline_fuel_cost:output:fare_recovery",
+      "kind": "equation",
+      "simulation": "computed",
+      "label": "is partly passed on",
+      "group": "airline_fuel_cost",
+      "equations": [
+        {
+          "id": "E12",
+          "name": "Fare recovery",
+          "formula": "Δr(m) = φ × Δb(m − L_f) if m > L_f, otherwise 0"
+        }
+      ],
+      "rule": null,
+      "edge": null,
+      "coefficient": null,
+      "lag_months": null,
+      "window": null,
+      "assumptions": [],
+      "statements": [
+        {
+          "id": "A7",
+          "text": "Fares recover a fixed share of the change in fuel cost after a lag, for rises and falls alike, and passenger demand does not respond."
+        }
+      ],
+      "sign": null,
+      "active": true
+    },
+    {
+      "id": "airline_fuel_cost:output:fuel_cost_change→line:operating_costs",
+      "source": "airline_fuel_cost:output:fuel_cost_change",
+      "target": "line:operating_costs",
+      "kind": "aggregation",
+      "simulation": "aggregated",
+      "label": "adds to",
+      "group": "airline_fuel_cost",
+      "equations": [
+        {
+          "id": "AG2",
+          "name": "Change in operating costs",
+          "formula": "ΔO = Σ models' cost items"
+        }
+      ],
+      "rule": null,
+      "edge": null,
+      "coefficient": null,
+      "lag_months": null,
+      "window": null,
+      "assumptions": [],
+      "statements": [],
+      "sign": 1,
+      "active": true
+    },
+    {
+      "id": "airline_fuel_cost:output:fare_recovery→line:revenue",
+      "source": "airline_fuel_cost:output:fare_recovery",
+      "target": "line:revenue",
+      "kind": "aggregation",
+      "simulation": "aggregated",
+      "label": "adds to",
+      "group": "airline_fuel_cost",
+      "equations": [
+        {
+          "id": "AG1",
+          "name": "Change in revenue",
+          "formula": "ΔR = Σ models' revenue items"
+        }
+      ],
+      "rule": null,
+      "edge": null,
+      "coefficient": null,
+      "lag_months": null,
+      "window": null,
+      "assumptions": [],
+      "statements": [],
+      "sign": 1,
+      "active": true
+    },
+    {
+      "id": "airline_fuel_cost:variable:var_jet_fuel→industry:ind_air_transport",
+      "source": "airline_fuel_cost:variable:var_jet_fuel",
+      "target": "industry:ind_air_transport",
+      "kind": "cited",
+      "simulation": "context_only",
+      "label": "affects costs of",
+      "group": "airline_fuel_cost",
+      "equations": [],
+      "rule": null,
+      "edge": {
+        "edge_key": "e-df536e008d0660a5",
+        "edge_type": "affects_costs",
+        "relationship": "affects costs of",
+        "evidence_status": "model_assumption",
+        "is_illustrative": true
+      },
+      "coefficient": null,
+      "lag_months": null,
+      "window": null,
+      "assumptions": [],
+      "statements": [],
+      "sign": null,
+      "active": true
+    },
+    {
+      "id": "company:co_aerisca_airways→industry:ind_air_transport",
+      "source": "company:co_aerisca_airways",
+      "target": "industry:ind_air_transport",
+      "kind": "cited",
+      "simulation": "context_only",
+      "label": "operates in",
+      "group": "airline_fuel_cost",
+      "equations": [],
+      "rule": null,
+      "edge": {
+        "edge_key": "e-3c1cd4f52348ae25",
+        "edge_type": "in_industry",
+        "relationship": "operates in",
+        "evidence_status": "analyst_created",
+        "is_illustrative": true
+      },
+      "coefficient": null,
+      "lag_months": null,
+      "window": null,
+      "assumptions": [],
+      "statements": [],
+      "sign": null,
+      "active": true
+    },
+    {
+      "id": "change:var_usd_inr→fx_exposure:variable:var_usd_inr",
+      "source": "change:var_usd_inr",
+      "target": "fx_exposure:variable:var_usd_inr",
+      "kind": "applies",
+      "simulation": "applied",
+      "label": "changes",
+      "group": "fx_exposure",
+      "equations": [
+        {
+          "id": "E5",
+          "name": "Exchange rate relative to baseline",
+          "formula": "q(m) = exp(ln(1 + x) · 𝟙[S ≤ m ≤ E])"
+        }
+      ],
+      "rule": null,
+      "edge": null,
+      "coefficient": null,
+      "lag_months": null,
+      "window": {
+        "first_month": 1,
+        "last_month": null
+      },
+      "assumptions": [],
+      "statements": [
+        {
+          "id": "A4",
+          "text": "Scenario changes are step changes: they take effect in the start month and last for the stated duration (to the end of the horizon unless one is set), after which the changed variables return to their baselines. Every change in a run shares this timing."
+        }
+      ],
+      "sign": null,
+      "active": true
+    },
+    {
+      "id": "fx_exposure:variable:var_usd_inr→fx_exposure:output:revenue_change",
+      "source": "fx_exposure:variable:var_usd_inr",
+      "target": "fx_exposure:output:revenue_change",
+      "kind": "equation",
+      "simulation": "computed",
+      "label": "converts dollar revenue",
+      "group": "fx_exposure",
+      "equations": [
+        {
+          "id": "E1",
+          "name": "Baseline US-dollar revenue in the reporting currency",
+          "formula": "R$ = U_R × X₀"
+        },
+        {
+          "id": "E7",
+          "name": "Change in revenue",
+          "formula": "Δr(m) = r₀ × (1 − h_R(m)) × (q(m) − 1)"
+        }
+      ],
+      "rule": null,
+      "edge": null,
+      "coefficient": null,
+      "lag_months": null,
+      "window": null,
+      "assumptions": [
+        {
+          "id": "revenue_hedge_ratio",
+          "label": "Revenue hedge ratio",
+          "value": "0",
+          "unit": "%",
+          "source": "default",
+          "default": "0"
+        }
+      ],
+      "statements": [
+        {
+          "id": "A1",
+          "text": "Everything the model does not include stays at its baseline: the US-dollar amounts, volumes, prices in every currency, other costs and financing."
+        },
+        {
+          "id": "A2",
+          "text": "US-dollar revenue and costs accrue evenly through the year: each month carries one twelfth."
+        },
+        {
+          "id": "A3",
+          "text": "Dollar amounts are converted at the month's exchange rate. Dollar prices, volumes and demand do not respond to the exchange rate."
+        },
+        {
+          "id": "A5",
+          "text": "Hedges fix the baseline exchange rate for the hedged share during the first months of cover, then expire; they are not rolled over. Revenue and cost hedges are separate."
+        }
+      ],
+      "sign": null,
+      "active": true
+    },
+    {
+      "id": "fx_exposure:variable:var_usd_inr→fx_exposure:output:cost_change",
+      "source": "fx_exposure:variable:var_usd_inr",
+      "target": "fx_exposure:output:cost_change",
+      "kind": "equation",
+      "simulation": "computed",
+      "label": "converts dollar costs",
+      "group": "fx_exposure",
+      "equations": [
+        {
+          "id": "E2",
+          "name": "Baseline US-dollar costs in the reporting currency",
+          "formula": "C$ = U_C × X₀"
+        },
+        {
+          "id": "E8",
+          "name": "Change in costs",
+          "formula": "Δc(m) = c₀ × (1 − h_C(m)) × (q(m) − 1)"
+        }
+      ],
+      "rule": null,
+      "edge": null,
+      "coefficient": null,
+      "lag_months": null,
+      "window": null,
+      "assumptions": [
+        {
+          "id": "cost_hedge_ratio",
+          "label": "Cost hedge ratio",
+          "value": "0",
+          "unit": "%",
+          "source": "default",
+          "default": "0"
+        }
+      ],
+      "statements": [
+        {
+          "id": "A1",
+          "text": "Everything the model does not include stays at its baseline: the US-dollar amounts, volumes, prices in every currency, other costs and financing."
+        },
+        {
+          "id": "A2",
+          "text": "US-dollar revenue and costs accrue evenly through the year: each month carries one twelfth."
+        },
+        {
+          "id": "A3",
+          "text": "Dollar amounts are converted at the month's exchange rate. Dollar prices, volumes and demand do not respond to the exchange rate."
+        },
+        {
+          "id": "A5",
+          "text": "Hedges fix the baseline exchange rate for the hedged share during the first months of cover, then expire; they are not rolled over. Revenue and cost hedges are separate."
+        },
+        {
+          "id": "A6",
+          "text": "Only amounts invoiced or paid in US dollars are exposed. Costs another model in the same scenario already converts must be left out of the US-dollar costs."
+        }
+      ],
+      "sign": null,
+      "active": true
+    },
+    {
+      "id": "fx_exposure:output:revenue_change→line:revenue",
+      "source": "fx_exposure:output:revenue_change",
+      "target": "line:revenue",
+      "kind": "aggregation",
+      "simulation": "aggregated",
+      "label": "adds to",
+      "group": "fx_exposure",
+      "equations": [
+        {
+          "id": "AG1",
+          "name": "Change in revenue",
+          "formula": "ΔR = Σ models' revenue items"
+        }
+      ],
+      "rule": null,
+      "edge": null,
+      "coefficient": null,
+      "lag_months": null,
+      "window": null,
+      "assumptions": [],
+      "statements": [],
+      "sign": 1,
+      "active": true
+    },
+    {
+      "id": "fx_exposure:output:cost_change→line:operating_costs",
+      "source": "fx_exposure:output:cost_change",
+      "target": "line:operating_costs",
+      "kind": "aggregation",
+      "simulation": "aggregated",
+      "label": "adds to",
+      "group": "fx_exposure",
+      "equations": [
+        {
+          "id": "AG2",
+          "name": "Change in operating costs",
+          "formula": "ΔO = Σ models' cost items"
+        }
+      ],
+      "rule": null,
+      "edge": null,
+      "coefficient": null,
+      "lag_months": null,
+      "window": null,
+      "assumptions": [],
+      "statements": [],
+      "sign": 1,
+      "active": true
+    },
+    {
+      "id": "fx_exposure:variable:var_usd_inr→company:co_aerisca_airways",
+      "source": "fx_exposure:variable:var_usd_inr",
+      "target": "company:co_aerisca_airways",
+      "kind": "cited",
+      "simulation": "context_only",
+      "label": "affects costs of",
+      "group": "fx_exposure",
+      "equations": [],
+      "rule": null,
+      "edge": {
+        "edge_key": "e-2afc04ee80f0699e",
+        "edge_type": "affects_costs",
+        "relationship": "affects costs of",
+        "evidence_status": "model_assumption",
+        "is_illustrative": true
+      },
+      "coefficient": null,
+      "lag_months": null,
+      "window": null,
+      "assumptions": [],
+      "statements": [],
+      "sign": null,
+      "active": true
+    },
+    {
+      "id": "change:var_rbi_repo_rate→floating_rate_interest:variable:var_rbi_repo_rate",
+      "source": "change:var_rbi_repo_rate",
+      "target": "floating_rate_interest:variable:var_rbi_repo_rate",
+      "kind": "applies",
+      "simulation": "applied",
+      "label": "changes",
+      "group": "floating_rate_interest",
+      "equations": [
+        {
+          "id": "E1",
+          "name": "Benchmark change in effect",
+          "formula": "Δk(m) = Δk · 𝟙[S ≤ m ≤ E]"
+        }
+      ],
+      "rule": null,
+      "edge": null,
+      "coefficient": null,
+      "lag_months": null,
+      "window": {
+        "first_month": 1,
+        "last_month": null
+      },
+      "assumptions": [],
+      "statements": [
+        {
+          "id": "A4",
+          "text": "Scenario changes are step changes: they take effect in the start month and last for the stated duration (to the end of the horizon unless one is set), after which the changed variables return to their baselines. Every change in a run shares this timing."
+        }
+      ],
+      "sign": null,
+      "active": true
+    },
+    {
+      "id": "floating_rate_interest:variable:var_rbi_repo_rate→floating_rate_interest:output:repo_interest_change",
+      "source": "floating_rate_interest:variable:var_rbi_repo_rate",
+      "target": "floating_rate_interest:output:repo_interest_change",
+      "kind": "equation",
+      "simulation": "computed",
+      "label": "reprices repo-linked loans",
+      "group": "floating_rate_interest",
+      "equations": [
+        {
+          "id": "E2",
+          "name": "Change in interest on repo-linked debt",
+          "formula": "ΔI_r(m) = D_r × p_r × Δk_r(m − L_r) / 10 000 / 12"
+        }
+      ],
+      "rule": null,
+      "edge": null,
+      "coefficient": null,
+      "lag_months": null,
+      "window": null,
+      "assumptions": [
+        {
+          "id": "repo_pass_through",
+          "label": "Repo pass-through",
+          "value": "100",
+          "unit": "%",
+          "source": "default",
+          "default": "100"
+        }
+      ],
+      "statements": [
+        {
+          "id": "A1",
+          "text": "Everything the model does not include stays at its baseline: the amount of debt (no repayments or new borrowing), fixed-rate debt, operating profit and other income."
+        },
+        {
+          "id": "A2",
+          "text": "Floating-rate loans reprice by the stated share of the benchmark change after the stated delay, then keep that rate while the change lasts. Interest accrues evenly: each month carries one twelfth of the annual rate."
+        },
+        {
+          "id": "A3",
+          "text": "The benchmark change is taken as given. RUMIN does not predict policy rates."
+        }
+      ],
+      "sign": null,
+      "active": true
+    },
+    {
+      "id": "floating_rate_interest:output:repo_interest_change→line:interest_expense",
+      "source": "floating_rate_interest:output:repo_interest_change",
+      "target": "line:interest_expense",
+      "kind": "aggregation",
+      "simulation": "aggregated",
+      "label": "adds to",
+      "group": "floating_rate_interest",
+      "equations": [
+        {
+          "id": "AG4",
+          "name": "Change in interest expense",
+          "formula": "ΔI = Σ models' interest items"
+        }
+      ],
+      "rule": null,
+      "edge": null,
+      "coefficient": null,
+      "lag_months": null,
+      "window": null,
+      "assumptions": [],
+      "statements": [],
+      "sign": 1,
+      "active": true
+    },
+    {
+      "id": "line:revenue→line:operating_profit",
+      "source": "line:revenue",
+      "target": "line:operating_profit",
+      "kind": "aggregation",
+      "simulation": "aggregated",
+      "label": "adds to",
+      "group": null,
+      "equations": [
+        {
+          "id": "AG3",
+          "name": "Change in operating profit",
+          "formula": "ΔΠ = ΔR − ΔO"
+        }
+      ],
+      "rule": null,
+      "edge": null,
+      "coefficient": null,
+      "lag_months": null,
+      "window": null,
+      "assumptions": [],
+      "statements": [],
+      "sign": 1,
+      "active": true
+    },
+    {
+      "id": "line:operating_costs→line:operating_profit",
+      "source": "line:operating_costs",
+      "target": "line:operating_profit",
+      "kind": "aggregation",
+      "simulation": "aggregated",
+      "label": "is deducted from",
+      "group": null,
+      "equations": [
+        {
+          "id": "AG3",
+          "name": "Change in operating profit",
+          "formula": "ΔΠ = ΔR − ΔO"
+        }
+      ],
+      "rule": null,
+      "edge": null,
+      "coefficient": null,
+      "lag_months": null,
+      "window": null,
+      "assumptions": [],
+      "statements": [],
+      "sign": -1,
+      "active": true
+    },
+    {
+      "id": "line:operating_profit→line:profit_before_tax",
+      "source": "line:operating_profit",
+      "target": "line:profit_before_tax",
+      "kind": "aggregation",
+      "simulation": "aggregated",
+      "label": "adds to",
+      "group": null,
+      "equations": [
+        {
+          "id": "AG5",
+          "name": "Change in profit before tax",
+          "formula": "ΔP = ΔΠ − ΔI"
+        }
+      ],
+      "rule": null,
+      "edge": null,
+      "coefficient": null,
+      "lag_months": null,
+      "window": null,
+      "assumptions": [],
+      "statements": [],
+      "sign": 1,
+      "active": true
+    },
+    {
+      "id": "line:interest_expense→line:profit_before_tax",
+      "source": "line:interest_expense",
+      "target": "line:profit_before_tax",
+      "kind": "aggregation",
+      "simulation": "aggregated",
+      "label": "is deducted from",
+      "group": null,
+      "equations": [
+        {
+          "id": "AG5",
+          "name": "Change in profit before tax",
+          "formula": "ΔP = ΔΠ − ΔI"
+        }
+      ],
+      "rule": null,
+      "edge": null,
+      "coefficient": null,
+      "lag_months": null,
+      "window": null,
+      "assumptions": [],
+      "statements": [],
+      "sign": -1,
+      "active": true
+    },
+    {
+      "id": "line:revenue→metric:operating_margin",
+      "source": "line:revenue",
+      "target": "metric:operating_margin",
+      "kind": "aggregation",
+      "simulation": "aggregated",
+      "label": "enters",
+      "group": null,
+      "equations": [
+        {
+          "id": "AG6",
+          "name": "Operating margin",
+          "formula": "μ₀ = (R − O) / R; μ₁ = (R·H/12 + ΔR − O·H/12 − ΔO) / (R·H/12 + ΔR)"
+        }
+      ],
+      "rule": null,
+      "edge": null,
+      "coefficient": null,
+      "lag_months": null,
+      "window": null,
+      "assumptions": [],
+      "statements": [],
+      "sign": null,
+      "active": true
+    },
+    {
+      "id": "line:operating_costs→metric:operating_margin",
+      "source": "line:operating_costs",
+      "target": "metric:operating_margin",
+      "kind": "aggregation",
+      "simulation": "aggregated",
+      "label": "enters",
+      "group": null,
+      "equations": [
+        {
+          "id": "AG6",
+          "name": "Operating margin",
+          "formula": "μ₀ = (R − O) / R; μ₁ = (R·H/12 + ΔR − O·H/12 − ΔO) / (R·H/12 + ΔR)"
+        }
+      ],
+      "rule": null,
+      "edge": null,
+      "coefficient": null,
+      "lag_months": null,
+      "window": null,
+      "assumptions": [],
+      "statements": [],
+      "sign": null,
+      "active": true
+    },
+    {
+      "id": "line:operating_profit→metric:interest_coverage",
+      "source": "line:operating_profit",
+      "target": "metric:interest_coverage",
+      "kind": "aggregation",
+      "simulation": "aggregated",
+      "label": "enters",
+      "group": null,
+      "equations": [
+        {
+          "id": "AG7",
+          "name": "Interest coverage",
+          "formula": "κ₀ = (R − O) / I; κ₁ = ((R − O)·H/12 + ΔΠ) / (I·H/12 + ΔI)"
+        }
+      ],
+      "rule": null,
+      "edge": null,
+      "coefficient": null,
+      "lag_months": null,
+      "window": null,
+      "assumptions": [],
+      "statements": [],
+      "sign": null,
+      "active": true
+    },
+    {
+      "id": "line:interest_expense→metric:interest_coverage",
+      "source": "line:interest_expense",
+      "target": "metric:interest_coverage",
+      "kind": "aggregation",
+      "simulation": "aggregated",
+      "label": "enters",
+      "group": null,
+      "equations": [
+        {
+          "id": "AG7",
+          "name": "Interest coverage",
+          "formula": "κ₀ = (R − O) / I; κ₁ = ((R − O)·H/12 + ΔΠ) / (I·H/12 + ΔI)"
+        }
+      ],
+      "rule": null,
+      "edge": null,
+      "coefficient": null,
+      "lag_months": null,
+      "window": null,
+      "assumptions": [],
+      "statements": [],
+      "sign": null,
+      "active": true
+    }
+  ],
+  "groups": [
+    {
+      "id": "airline_fuel_cost",
+      "title": "Airline fuel cost",
+      "version": "1.1.0",
+      "nodes": [
+        "airline_fuel_cost:variable:var_brent_crude",
+        "airline_fuel_cost:variable:var_jet_fuel",
+        "airline_fuel_cost:variable:var_usd_inr",
+        "airline_fuel_cost:output:fuel_cost_change",
+        "airline_fuel_cost:output:fare_recovery"
+      ]
+    },
+    {
+      "id": "fx_exposure",
+      "title": "Foreign-currency revenue and costs",
+      "version": "1.0.0",
+      "nodes": [
+        "fx_exposure:variable:var_usd_inr",
+        "fx_exposure:output:revenue_change",
+        "fx_exposure:output:cost_change"
+      ]
+    },
+    {
+      "id": "floating_rate_interest",
+      "title": "Floating-rate interest",
+      "version": "1.0.0",
+      "nodes": [
+        "floating_rate_interest:variable:var_rbi_repo_rate",
+        "floating_rate_interest:output:repo_interest_change"
+      ]
+    }
+  ],
+  "unmodelled": [
+    {
+      "edge_key": "e-5b3dfdaaf8d458c9",
+      "edge_type": "affects_costs",
+      "source": "variable:var_brent_crude",
+      "target": "industry:ind_land_transport",
+      "evidence_status": "model_assumption",
+      "is_illustrative": true,
+      "relationship": "affects costs of",
+      "source_name": "Brent crude oil price",
+      "target_name": "Land transport",
+      "reason": "No included model simulates this relationship. The graph states it; it is not evidence of causation and nothing is computed along it."
+    },
+    {
+      "edge_key": "e-235c56ef17fc35ed",
+      "edge_type": "affects_costs",
+      "source": "variable:var_brent_crude",
+      "target": "industry:ind_petroleum_refining",
+      "evidence_status": "model_assumption",
+      "is_illustrative": true,
+      "relationship": "affects costs of",
+      "source_name": "Brent crude oil price",
+      "target_name": "Refined petroleum products",
+      "reason": "No included model simulates this relationship. The graph states it; it is not evidence of causation and nothing is computed along it."
+    },
+    {
+      "edge_key": "e-1cd600a6c634bc37",
+      "edge_type": "affects_revenue",
+      "source": "variable:var_brent_crude",
+      "target": "industry:ind_oil_gas_extraction",
+      "evidence_status": "model_assumption",
+      "is_illustrative": true,
+      "relationship": "affects revenue of",
+      "source_name": "Brent crude oil price",
+      "target_name": "Crude petroleum & natural gas extraction",
+      "reason": "No included model simulates this relationship. The graph states it; it is not evidence of causation and nothing is computed along it."
+    },
+    {
+      "edge_key": "e-c50b129f9181c94f",
+      "edge_type": "influences",
+      "source": "variable:var_brent_crude",
+      "target": "variable:var_india_cpi_inflation",
+      "evidence_status": "model_assumption",
+      "is_illustrative": true,
+      "relationship": "influences",
+      "source_name": "Brent crude oil price",
+      "target_name": "India CPI inflation",
+      "reason": "No included model simulates this relationship. The graph states it; it is not evidence of causation and nothing is computed along it."
+    },
+    {
+      "edge_key": "e-c1196940c5ae72f5",
+      "edge_type": "affects_financing",
+      "source": "variable:var_rbi_repo_rate",
+      "target": "company:co_gridwell_power",
+      "evidence_status": "model_assumption",
+      "is_illustrative": true,
+      "relationship": "affects financing costs of",
+      "source_name": "RBI policy repo rate",
+      "target_name": "Gridwell Power",
+      "reason": "No included model simulates this relationship. The graph states it; it is not evidence of causation and nothing is computed along it."
+    },
+    {
+      "edge_key": "e-277924cd30f42d80",
+      "edge_type": "affects_financing",
+      "source": "variable:var_rbi_repo_rate",
+      "target": "company:co_trakvel_logistics",
+      "evidence_status": "model_assumption",
+      "is_illustrative": true,
+      "relationship": "affects financing costs of",
+      "source_name": "RBI policy repo rate",
+      "target_name": "Trakvel Logistics",
+      "reason": "No included model simulates this relationship. The graph states it; it is not evidence of causation and nothing is computed along it."
+    },
+    {
+      "edge_key": "e-a4d9310e19366033",
+      "edge_type": "affects_revenue",
+      "source": "variable:var_rbi_repo_rate",
+      "target": "company:co_anvaya_bank",
+      "evidence_status": "model_assumption",
+      "is_illustrative": true,
+      "relationship": "affects revenue of",
+      "source_name": "RBI policy repo rate",
+      "target_name": "Anvaya Bank",
+      "reason": "No included model simulates this relationship. The graph states it; it is not evidence of causation and nothing is computed along it."
+    },
+    {
+      "edge_key": "e-dff724fccf21ee64",
+      "edge_type": "affects_costs",
+      "source": "variable:var_usd_inr",
+      "target": "company:co_deltrin_refining",
+      "evidence_status": "model_assumption",
+      "is_illustrative": true,
+      "relationship": "affects costs of",
+      "source_name": "USD/INR exchange rate",
+      "target_name": "Deltrin Refining",
+      "reason": "No included model simulates this relationship. The graph states it; it is not evidence of causation and nothing is computed along it."
+    },
+    {
+      "edge_key": "e-c93a6964520b431b",
+      "edge_type": "affects_costs",
+      "source": "variable:var_usd_inr",
+      "target": "company:co_skyvara_air",
+      "evidence_status": "model_assumption",
+      "is_illustrative": true,
+      "relationship": "affects costs of",
+      "source_name": "USD/INR exchange rate",
+      "target_name": "Skyvara Air",
+      "reason": "No included model simulates this relationship. The graph states it; it is not evidence of causation and nothing is computed along it."
+    },
+    {
+      "edge_key": "e-30bd282fe1fdf72a",
+      "edge_type": "affects_revenue",
+      "source": "variable:var_usd_inr",
+      "target": "company:co_kovalent_digital",
+      "evidence_status": "model_assumption",
+      "is_illustrative": true,
+      "relationship": "affects revenue of",
+      "source_name": "USD/INR exchange rate",
+      "target_name": "Kovalent Digital",
+      "reason": "No included model simulates this relationship. The graph states it; it is not evidence of causation and nothing is computed along it."
+    },
+    {
+      "edge_key": "e-e2f1d52da5ce0ff9",
+      "edge_type": "influences",
+      "source": "variable:var_usd_inr",
+      "target": "variable:var_india_cpi_inflation",
+      "evidence_status": "model_assumption",
+      "is_illustrative": true,
+      "relationship": "influences",
+      "source_name": "USD/INR exchange rate",
+      "target_name": "India CPI inflation",
+      "reason": "No included model simulates this relationship. The graph states it; it is not evidence of causation and nothing is computed along it."
+    }
+  ],
+  "note": "Links marked context_only are relationships the knowledge graph states; they decided which models apply and carry no values. Everything else was computed."
+}

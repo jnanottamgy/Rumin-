@@ -1,0 +1,297 @@
+{
+  "center": {
+    "id": "variable:var_brent_crude",
+    "type": "economic_variable",
+    "name": "Brent crude oil price",
+    "subtitle": "Economic variable · Global · USD per barrel, daily",
+    "nature": "real",
+    "quality_status": "validated",
+    "degree": 5,
+    "primary_identifier": null,
+    "data_status": "not_applicable"
+  },
+  "depth": 1,
+  "nodes": [
+    {
+      "id": "variable:var_brent_crude",
+      "type": "economic_variable",
+      "name": "Brent crude oil price",
+      "subtitle": "Economic variable · Global · USD per barrel, daily",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 5,
+      "primary_identifier": null,
+      "data_status": "not_applicable",
+      "depth": 0
+    },
+    {
+      "id": "industry:ind_land_transport",
+      "type": "industry",
+      "name": "Land transport",
+      "subtitle": "ISIC Rev. 4 division 49 · Transportation and storage",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 4,
+      "primary_identifier": {
+        "scheme": "isic_rev4_division",
+        "label": "ISIC Rev. 4 division",
+        "value": "49",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "depth": 1
+    },
+    {
+      "id": "industry:ind_oil_gas_extraction",
+      "type": "industry",
+      "name": "Crude petroleum & natural gas extraction",
+      "subtitle": "ISIC Rev. 4 division 06 · Mining and quarrying",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 5,
+      "primary_identifier": {
+        "scheme": "isic_rev4_division",
+        "label": "ISIC Rev. 4 division",
+        "value": "06",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "depth": 1
+    },
+    {
+      "id": "industry:ind_petroleum_refining",
+      "type": "industry",
+      "name": "Refined petroleum products",
+      "subtitle": "ISIC Rev. 4 division 19 · Manufacturing",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 9,
+      "primary_identifier": {
+        "scheme": "isic_rev4_division",
+        "label": "ISIC Rev. 4 division",
+        "value": "19",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "depth": 1
+    },
+    {
+      "id": "variable:var_india_cpi_inflation",
+      "type": "economic_variable",
+      "name": "India CPI inflation",
+      "subtitle": "Economic variable · India · percent, year-on-year, monthly",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 5,
+      "primary_identifier": null,
+      "data_status": "not_applicable",
+      "depth": 1
+    },
+    {
+      "id": "variable:var_jet_fuel",
+      "type": "economic_variable",
+      "name": "Jet fuel price (U.S. Gulf Coast)",
+      "subtitle": "Economic variable · United States · USD per gallon, daily",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 4,
+      "primary_identifier": null,
+      "data_status": "not_applicable",
+      "depth": 1
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-1cd600a6c634bc37",
+      "type": "affects_revenue",
+      "category": "economic",
+      "source": "variable:var_brent_crude",
+      "target": "industry:ind_oil_gas_extraction",
+      "directed": true,
+      "label": "affects revenue of",
+      "description": "The Brent crude oil price affects the revenue of crude petroleum & natural gas extraction.",
+      "evidence_status": "model_assumption",
+      "is_illustrative": true,
+      "quality_status": "validated",
+      "valid_from": null,
+      "valid_to": null,
+      "historical": false,
+      "qualifiers": {
+        "polarity": "positive",
+        "strength": "strong",
+        "evidence_level": "illustrative",
+        "rationale": "Upstream producers' realised crude prices are typically linked to international benchmarks such as Brent.",
+        "stated_difference": null
+      }
+    },
+    {
+      "id": "e-2202a51d4a09a79b",
+      "type": "affects_revenue",
+      "category": "economic",
+      "source": "variable:var_jet_fuel",
+      "target": "industry:ind_petroleum_refining",
+      "directed": true,
+      "label": "affects revenue of",
+      "description": "The jet fuel price affects the revenue of refined petroleum products.",
+      "evidence_status": "model_assumption",
+      "is_illustrative": true,
+      "quality_status": "validated",
+      "valid_from": null,
+      "valid_to": null,
+      "historical": false,
+      "qualifiers": {
+        "polarity": "positive",
+        "strength": "moderate",
+        "evidence_level": "illustrative",
+        "rationale": "Jet fuel is one of the products refiners sell. Higher product prices raise refiners' revenue, although their margins also depend on crude costs.",
+        "stated_difference": null
+      }
+    },
+    {
+      "id": "e-235c56ef17fc35ed",
+      "type": "affects_costs",
+      "category": "economic",
+      "source": "variable:var_brent_crude",
+      "target": "industry:ind_petroleum_refining",
+      "directed": true,
+      "label": "affects costs of",
+      "description": "The Brent crude oil price affects the costs of refined petroleum products.",
+      "evidence_status": "model_assumption",
+      "is_illustrative": true,
+      "quality_status": "validated",
+      "valid_from": null,
+      "valid_to": null,
+      "historical": false,
+      "qualifiers": {
+        "polarity": "positive",
+        "strength": "strong",
+        "evidence_level": "illustrative",
+        "rationale": "Crude oil is the principal feedstock for refiners, so crude prices drive their input costs.",
+        "stated_difference": null
+      }
+    },
+    {
+      "id": "e-5b3dfdaaf8d458c9",
+      "type": "affects_costs",
+      "category": "economic",
+      "source": "variable:var_brent_crude",
+      "target": "industry:ind_land_transport",
+      "directed": true,
+      "label": "affects costs of",
+      "description": "The Brent crude oil price affects the costs of land transport.",
+      "evidence_status": "model_assumption",
+      "is_illustrative": true,
+      "quality_status": "validated",
+      "valid_from": null,
+      "valid_to": null,
+      "historical": false,
+      "qualifiers": {
+        "polarity": "positive",
+        "strength": "moderate",
+        "evidence_level": "illustrative",
+        "rationale": "Diesel, refined from crude oil, is a major operating cost for road-freight operators. Fuel-surcharge clauses can pass part of a change on to customers.",
+        "stated_difference": null
+      }
+    },
+    {
+      "id": "e-67bac42ab6dc915f",
+      "type": "supplies_to",
+      "category": "economic",
+      "source": "industry:ind_petroleum_refining",
+      "target": "industry:ind_land_transport",
+      "directed": true,
+      "label": "supplies",
+      "description": "Refined petroleum products supplies diesel to land transport.",
+      "evidence_status": "model_assumption",
+      "is_illustrative": true,
+      "quality_status": "validated",
+      "valid_from": null,
+      "valid_to": null,
+      "historical": false,
+      "qualifiers": {
+        "polarity": "not_applicable",
+        "strength": "strong",
+        "evidence_level": "illustrative",
+        "rationale": "Road-freight fleets run largely on diesel produced by refiners.",
+        "stated_difference": null
+      }
+    },
+    {
+      "id": "e-7c8b57387880853b",
+      "type": "supplies_to",
+      "category": "economic",
+      "source": "industry:ind_oil_gas_extraction",
+      "target": "industry:ind_petroleum_refining",
+      "directed": true,
+      "label": "supplies",
+      "description": "Crude petroleum & natural gas extraction supplies crude oil to refined petroleum products.",
+      "evidence_status": "model_assumption",
+      "is_illustrative": true,
+      "quality_status": "validated",
+      "valid_from": null,
+      "valid_to": null,
+      "historical": false,
+      "qualifiers": {
+        "polarity": "not_applicable",
+        "strength": "strong",
+        "evidence_level": "illustrative",
+        "rationale": "Crude oil is the refining industry's primary input.",
+        "stated_difference": null
+      }
+    },
+    {
+      "id": "e-c50b129f9181c94f",
+      "type": "influences",
+      "category": "economic",
+      "source": "variable:var_brent_crude",
+      "target": "variable:var_india_cpi_inflation",
+      "directed": true,
+      "label": "influences",
+      "description": "The Brent crude oil price influences India CPI inflation.",
+      "evidence_status": "model_assumption",
+      "is_illustrative": true,
+      "quality_status": "validated",
+      "valid_from": null,
+      "valid_to": null,
+      "historical": false,
+      "qualifiers": {
+        "polarity": "positive",
+        "strength": "moderate",
+        "evidence_level": "illustrative",
+        "rationale": "India imports most of the crude oil it consumes. Higher crude prices can raise domestic fuel and transport costs and feed into consumer prices, although taxes, administered pricing and CPI basket weights moderate the pass-through.",
+        "stated_difference": null
+      }
+    },
+    {
+      "id": "e-ea305310288a3f88",
+      "type": "influences",
+      "category": "economic",
+      "source": "variable:var_brent_crude",
+      "target": "variable:var_jet_fuel",
+      "directed": true,
+      "label": "influences",
+      "description": "The Brent crude oil price influences the jet fuel price.",
+      "evidence_status": "model_assumption",
+      "is_illustrative": true,
+      "quality_status": "validated",
+      "valid_from": null,
+      "valid_to": null,
+      "historical": false,
+      "qualifiers": {
+        "polarity": "positive",
+        "strength": "strong",
+        "evidence_level": "illustrative",
+        "rationale": "Jet fuel is refined from crude oil, so benchmark jet fuel prices generally move with crude prices. Refining margins (the crack spread) cause the two to diverge at times.",
+        "stated_difference": null
+      }
+    }
+  ],
+  "truncated": false,
+  "unexplored_count": 0,
+  "unexplored_by_type": {},
+  "limits": {
+    "max_depth": 3,
+    "max_nodes": 40
+  },
+  "queries": 2
+}

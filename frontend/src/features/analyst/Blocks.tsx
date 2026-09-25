@@ -10,6 +10,7 @@ import { Button } from "@/components/Button";
 import { Icon } from "@/components/Icon";
 import { type ChartPoint, dateTime, nextPeriodFollows } from "@/features/data/chartMath";
 import { TimeSeriesChart } from "@/features/data/TimeSeriesChart";
+import { typeFromKey } from "@/features/graph/encoding";
 import { percent, signed, stored } from "@/features/intelligence/format";
 import { cx } from "@/lib/cx";
 import { formatPeriod } from "@/lib/format";
@@ -224,6 +225,14 @@ const DIRECTNESS: Record<string, string> = {
   upstream: "Upstream, through another variable",
 };
 
+/** The 3D universe's paths view between a path's two ends, when both are graph nodes. */
+function universePaths(path: AnalystPathsBlock["paths"][number]): string | null {
+  const from = path.steps[0]?.key;
+  const to = path.steps[path.steps.length - 1]?.key;
+  if (!from || !to || from === to || !typeFromKey(from) || !typeFromKey(to)) return null;
+  return `/universe/3d?${new URLSearchParams({ from, to }).toString()}`;
+}
+
 function PathsView({ block, context }: { block: AnalystPathsBlock; context: BlockContext }) {
   return (
     <section className={styles.paths} aria-label={block.title}>
@@ -274,6 +283,9 @@ function PathsView({ block, context }: { block: AnalystPathsBlock; context: Bloc
                 highlight={context.highlight}
                 prefix={context.prefix}
               />
+              {universePaths(path) && (
+                <Link to={universePaths(path) as string}>Shortest paths between them in 3D</Link>
+              )}
             </p>
           </li>
         ))}

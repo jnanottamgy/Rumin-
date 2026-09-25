@@ -1,0 +1,71 @@
+{
+  "id": "e-ea305310288a3f88",
+  "type": "influences",
+  "category": "economic",
+  "source": "variable:var_brent_crude",
+  "target": "variable:var_jet_fuel",
+  "directed": true,
+  "label": "influences",
+  "description": "The Brent crude oil price influences the jet fuel price.",
+  "evidence_status": "model_assumption",
+  "is_illustrative": true,
+  "quality_status": "validated",
+  "valid_from": null,
+  "valid_to": null,
+  "historical": false,
+  "qualifiers": {
+    "polarity": "positive",
+    "strength": "strong",
+    "evidence_level": "illustrative",
+    "rationale": "Jet fuel is refined from crude oil, so benchmark jet fuel prices generally move with crude prices. Refining margins (the crack spread) cause the two to diverge at times.",
+    "stated_difference": null
+  },
+  "source_node": {
+    "id": "variable:var_brent_crude",
+    "type": "economic_variable",
+    "name": "Brent crude oil price",
+    "subtitle": "Economic variable · Global · USD per barrel, daily",
+    "nature": "real",
+    "quality_status": "validated",
+    "degree": 5,
+    "primary_identifier": null,
+    "data_status": "not_applicable"
+  },
+  "target_node": {
+    "id": "variable:var_jet_fuel",
+    "type": "economic_variable",
+    "name": "Jet fuel price (U.S. Gulf Coast)",
+    "subtitle": "Economic variable · United States · USD per gallon, daily",
+    "nature": "real",
+    "quality_status": "validated",
+    "degree": 4,
+    "primary_identifier": null,
+    "data_status": "not_applicable"
+  },
+  "explanation": "Brent crude oil price — influences → Jet fuel price (U.S. Gulf Coast). Rule R01 curated_relationship built it from relationships/rel_brent_influences_jet_fuel (dataset rumin-sample, 1.0.0): Curated relationship rel_brent_influences_jet_fuel: var_brent_crude influences var_jet_fuel, evidence level 'illustrative'. Rationale: Jet fuel is refined from crude oil, so benchmark jet fuel prices generally move with crude prices. Refining margins (the crack spread) cause the two to diverge at times. Evidence status: Model assumption. An assumed economic relationship with a written rationale. It is not an empirical finding and has not been validated. Illustrative: it involves the fictional sample network or sample data, so it says nothing about the real world.",
+  "evidence": [
+    {
+      "rule": "R01 curated_relationship",
+      "rule_description": "Each curated relationship becomes an edge of the same type, keeping its description, rationale, assumed polarity and illustrative strength.",
+      "source_kind": "reference_dataset",
+      "source_table": "relationships",
+      "source_record_id": "rel_brent_influences_jet_fuel",
+      "dataset_id": "rumin-sample",
+      "dataset_version": "1.0.0",
+      "statement": "Curated relationship rel_brent_influences_jet_fuel: var_brent_crude influences var_jet_fuel, evidence level 'illustrative'. Rationale: Jet fuel is refined from crude oil, so benchmark jet fuel prices generally move with crude prices. Refining margins (the crack spread) cause the two to diverge at times.",
+      "transformation": "Copied as an edge of the same type; the description, rationale, assumed polarity and illustrative strength are kept unchanged.",
+      "derivation": "direct",
+      "derived_from": [],
+      "citation": null,
+      "citation_url": null,
+      "retrieved_at": null,
+      "recorded_at": "2026-09-24T19:47:42.724326Z"
+    }
+  ],
+  "evidence_status_label": "Model assumption",
+  "evidence_status_definition": "An assumed economic relationship with a written rationale. It is not an empirical finding and has not been validated.",
+  "type_description": "Changes in the source variable are assumed to transmit to the target variable.",
+  "caveat": "Assumed transmission between two variables, not a statistical or causal estimate. A connection is not evidence of causation.",
+  "first_build_id": 1,
+  "changed_build_id": 1
+}

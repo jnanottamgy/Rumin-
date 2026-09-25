@@ -7,8 +7,8 @@
  * provider answers (RUMIN's grounded composer, or a configured language model) is stated
  * in the header, from the API.
  */
-import { type FormEvent, useCallback, useEffect, useId, useRef, useState } from "react";
-import { useSearchParams } from "react-router";
+import { type FormEvent, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { useLocation, useSearchParams } from "react-router";
 import { Button } from "@/components/Button";
 import { Icon } from "@/components/Icon";
 import { PageHeader } from "@/components/PageHeader";
@@ -90,18 +90,29 @@ function Rail({
   );
 }
 
+/**
+ * A question handed over in the router's state (by the 3D universe, say): it is put in the
+ * question box for the reader to edit or send, and never sent by itself.
+ */
+export function handedQuestion(state: unknown): string {
+  const question = (state as { draftQuestion?: unknown } | null)?.draftQuestion;
+  return typeof question === "string" ? question.trim() : "";
+}
+
 function Composer({
   limit,
   busy,
   onAsk,
   inputRef,
+  initial = "",
 }: {
   limit: number;
   busy: boolean;
   onAsk: (question: string) => Promise<boolean>;
   inputRef: React.RefObject<HTMLTextAreaElement | null>;
+  initial?: string;
 }) {
-  const [text, setText] = useState("");
+  const [text, setText] = useState(initial);
   const id = useId();
   const over = text.length > limit;
   const submit = async (event?: FormEvent) => {
@@ -297,10 +308,16 @@ export function AnalystPage() {
   const sessions = useApiResource("analyst:sessions", () => analystApi.sessions());
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
   const endRef = useRef<HTMLDivElement | null>(null);
+  const location = useLocation();
+  const handed = useMemo(() => handedQuestion(location.state), [location.state]);
 
   useEffect(() => {
     document.title = "AI Analyst — RUMIN";
   }, []);
+
+  useEffect(() => {
+    if (handed) inputRef.current?.focus();
+  }, [handed]);
 
   const open = useCallback(
     (id: string | null) => {
@@ -432,7 +449,14 @@ export function AnalystPage() {
             </EmptyState>
           )}
           <div ref={endRef} />
-          <Composer limit={limit} busy={busy} onAsk={ask} inputRef={inputRef} />
+          <Composer
+            key={handed}
+            limit={limit}
+            busy={busy}
+            onAsk={ask}
+            inputRef={inputRef}
+            initial={handed}
+          />
         </section>
       </div>
     </div>

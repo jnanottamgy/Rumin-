@@ -35,7 +35,7 @@ export const APP_MODULES: readonly AppModule[] = [
     title: "Financial Universe",
     summary: "Explore companies, industries, countries and economic variables as a network.",
     status: "available",
-    statusNote: "2D network available · 3D universe planned for Phase 8",
+    statusNote: "2D network and 3D universe · read-only, with scenario overlays",
     phase: 1,
   },
   {
@@ -126,7 +126,7 @@ export interface RoadmapPhase {
   title: string;
 }
 
-export const CURRENT_PHASE = 7;
+export const CURRENT_PHASE = 8;
 
 export const ROADMAP: readonly RoadmapPhase[] = [
   { phase: 1, title: "Foundation & system architecture" },

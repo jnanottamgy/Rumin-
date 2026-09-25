@@ -1,0 +1,812 @@
+{
+  "items": [
+    {
+      "id": "currency:aed",
+      "type": "currency",
+      "name": "AED",
+      "subtitle": "Currency · ISO 4217",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 1,
+      "primary_identifier": {
+        "scheme": "iso4217",
+        "label": "ISO 4217",
+        "value": "AED",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "company:co_aerisca_airways",
+      "type": "company",
+      "name": "Aerisca Airways",
+      "subtitle": "Fictional company · Air transport · India",
+      "nature": "fictional",
+      "quality_status": "validated",
+      "degree": 6,
+      "primary_identifier": null,
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "industry:ind_air_transport",
+      "type": "industry",
+      "name": "Air transport",
+      "subtitle": "ISIC Rev. 4 division 51 · Transportation and storage",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 5,
+      "primary_identifier": {
+        "scheme": "isic_rev4_division",
+        "label": "ISIC Rev. 4 division",
+        "value": "51",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "company:co_anvaya_bank",
+      "type": "company",
+      "name": "Anvaya Bank",
+      "subtitle": "Fictional company · Banking · India",
+      "nature": "fictional",
+      "quality_status": "validated",
+      "degree": 8,
+      "primary_identifier": null,
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "industry:ind_banking",
+      "type": "industry",
+      "name": "Banking",
+      "subtitle": "ISIC Rev. 4 division 64 · Financial and insurance activities",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 3,
+      "primary_identifier": {
+        "scheme": "isic_rev4_division",
+        "label": "ISIC Rev. 4 division",
+        "value": "64",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "variable:var_brent_crude",
+      "type": "economic_variable",
+      "name": "Brent crude oil price",
+      "subtitle": "Economic variable · Global · USD per barrel, daily",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 5,
+      "primary_identifier": null,
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "company:co_brookvane_bank",
+      "type": "company",
+      "name": "Brookvane Bank",
+      "subtitle": "Fictional company · Banking · United States",
+      "nature": "fictional",
+      "quality_status": "validated",
+      "degree": 6,
+      "primary_identifier": null,
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "industry:ind_chemicals",
+      "type": "industry",
+      "name": "Chemicals & chemical products",
+      "subtitle": "ISIC Rev. 4 division 20 · Manufacturing",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 3,
+      "primary_identifier": {
+        "scheme": "isic_rev4_division",
+        "label": "ISIC Rev. 4 division",
+        "value": "20",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "industry:ind_oil_gas_extraction",
+      "type": "industry",
+      "name": "Crude petroleum & natural gas extraction",
+      "subtitle": "ISIC Rev. 4 division 06 · Mining and quarrying",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 5,
+      "primary_identifier": {
+        "scheme": "isic_rev4_division",
+        "label": "ISIC Rev. 4 division",
+        "value": "06",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "series:wb-ind-bn-cab-xoka-gd-zs",
+      "type": "data_series",
+      "name": "Current account balance (% of GDP) — India",
+      "subtitle": "World Development Indicators · India · annual",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 1,
+      "primary_identifier": {
+        "scheme": "provider_series",
+        "label": "Provider series key",
+        "value": "worldbank-wdi:BN.CAB.XOKA.GD.ZS|IND",
+        "source": null
+      },
+      "data_status": "definition_only",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "company:co_deltrin_refining",
+      "type": "company",
+      "name": "Deltrin Refining",
+      "subtitle": "Fictional company · Refined petroleum products · India",
+      "nature": "fictional",
+      "quality_status": "validated",
+      "degree": 8,
+      "primary_identifier": null,
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "industry:ind_power",
+      "type": "industry",
+      "name": "Electricity & gas supply",
+      "subtitle": "ISIC Rev. 4 division 35 · Electricity, gas, steam and air conditioning supply",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 2,
+      "primary_identifier": {
+        "scheme": "isic_rev4_division",
+        "label": "ISIC Rev. 4 division",
+        "value": "35",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "sector:isic4-d",
+      "type": "sector",
+      "name": "Electricity, gas, steam and air conditioning supply",
+      "subtitle": "ISIC Rev. 4 section D",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 1,
+      "primary_identifier": {
+        "scheme": "isic_rev4_section",
+        "label": "ISIC Rev. 4 section",
+        "value": "D",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "series:wb-ind-ne-exp-gnfs-zs",
+      "type": "data_series",
+      "name": "Exports of goods and services (% of GDP) — India",
+      "subtitle": "World Development Indicators · India · annual",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 1,
+      "primary_identifier": {
+        "scheme": "provider_series",
+        "label": "Provider series key",
+        "value": "worldbank-wdi:NE.EXP.GNFS.ZS|IND",
+        "source": null
+      },
+      "data_status": "definition_only",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "sector:isic4-k",
+      "type": "sector",
+      "name": "Financial and insurance activities",
+      "subtitle": "ISIC Rev. 4 section K",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 1,
+      "primary_identifier": {
+        "scheme": "isic_rev4_section",
+        "label": "ISIC Rev. 4 section",
+        "value": "K",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "series:wb-ind-ny-gdp-mktp-cd",
+      "type": "data_series",
+      "name": "GDP (current US$) — India",
+      "subtitle": "World Development Indicators · India · annual",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 2,
+      "primary_identifier": {
+        "scheme": "provider_series",
+        "label": "Provider series key",
+        "value": "worldbank-wdi:NY.GDP.MKTP.CD|IND",
+        "source": null
+      },
+      "data_status": "definition_only",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "series:wb-ind-ny-gdp-mktp-kd-zg",
+      "type": "data_series",
+      "name": "GDP growth (annual %) — India",
+      "subtitle": "World Development Indicators · India · annual",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 1,
+      "primary_identifier": {
+        "scheme": "provider_series",
+        "label": "Provider series key",
+        "value": "worldbank-wdi:NY.GDP.MKTP.KD.ZG|IND",
+        "source": null
+      },
+      "data_status": "definition_only",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "series:wb-are-ny-gdp-mktp-kd-zg",
+      "type": "data_series",
+      "name": "GDP growth (annual %) — United Arab Emirates",
+      "subtitle": "World Development Indicators · United Arab Emirates · annual",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 1,
+      "primary_identifier": {
+        "scheme": "provider_series",
+        "label": "Provider series key",
+        "value": "worldbank-wdi:NY.GDP.MKTP.KD.ZG|ARE",
+        "source": null
+      },
+      "data_status": "definition_only",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "series:wb-usa-ny-gdp-mktp-kd-zg",
+      "type": "data_series",
+      "name": "GDP growth (annual %) — United States",
+      "subtitle": "World Development Indicators · United States · annual",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 1,
+      "primary_identifier": {
+        "scheme": "provider_series",
+        "label": "Provider series key",
+        "value": "worldbank-wdi:NY.GDP.MKTP.KD.ZG|USA",
+        "source": null
+      },
+      "data_status": "definition_only",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "company:co_gridwell_power",
+      "type": "company",
+      "name": "Gridwell Power",
+      "subtitle": "Fictional company · Electricity & gas supply · India",
+      "nature": "fictional",
+      "quality_status": "validated",
+      "degree": 4,
+      "primary_identifier": null,
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "country:cty_in",
+      "type": "country",
+      "name": "India",
+      "subtitle": "Country · IN · INR",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 19,
+      "primary_identifier": {
+        "scheme": "iso3166_alpha2",
+        "label": "ISO 3166-1 alpha-2",
+        "value": "IN",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "variable:var_india_cpi_inflation",
+      "type": "economic_variable",
+      "name": "India CPI inflation",
+      "subtitle": "Economic variable · India · percent, year-on-year, monthly",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 5,
+      "primary_identifier": null,
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "series:wb-ind-fp-cpi-totl-zg",
+      "type": "data_series",
+      "name": "Inflation, consumer prices (annual %) — India",
+      "subtitle": "World Development Indicators · India · annual",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 2,
+      "primary_identifier": {
+        "scheme": "provider_series",
+        "label": "Provider series key",
+        "value": "worldbank-wdi:FP.CPI.TOTL.ZG|IND",
+        "source": null
+      },
+      "data_status": "definition_only",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "series:wb-usa-fp-cpi-totl-zg",
+      "type": "data_series",
+      "name": "Inflation, consumer prices (annual %) — United States",
+      "subtitle": "World Development Indicators · United States · annual",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 1,
+      "primary_identifier": {
+        "scheme": "provider_series",
+        "label": "Provider series key",
+        "value": "worldbank-wdi:FP.CPI.TOTL.ZG|USA",
+        "source": null
+      },
+      "data_status": "definition_only",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "sector:isic4-j",
+      "type": "sector",
+      "name": "Information and communication",
+      "subtitle": "ISIC Rev. 4 section J",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 1,
+      "primary_identifier": {
+        "scheme": "isic_rev4_section",
+        "label": "ISIC Rev. 4 section",
+        "value": "J",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "currency:inr",
+      "type": "currency",
+      "name": "INR",
+      "subtitle": "Currency · ISO 4217",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 2,
+      "primary_identifier": {
+        "scheme": "iso4217",
+        "label": "ISO 4217",
+        "value": "INR",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "industry:ind_it_services",
+      "type": "industry",
+      "name": "IT services",
+      "subtitle": "ISIC Rev. 4 division 62 · Information and communication",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 2,
+      "primary_identifier": {
+        "scheme": "isic_rev4_division",
+        "label": "ISIC Rev. 4 division",
+        "value": "62",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "variable:var_jet_fuel",
+      "type": "economic_variable",
+      "name": "Jet fuel price (U.S. Gulf Coast)",
+      "subtitle": "Economic variable · United States · USD per gallon, daily",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 4,
+      "primary_identifier": null,
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "company:co_kovalent_digital",
+      "type": "company",
+      "name": "Kovalent Digital",
+      "subtitle": "Fictional company · IT services · India",
+      "nature": "fictional",
+      "quality_status": "validated",
+      "degree": 5,
+      "primary_identifier": null,
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "industry:ind_land_transport",
+      "type": "industry",
+      "name": "Land transport",
+      "subtitle": "ISIC Rev. 4 division 49 · Transportation and storage",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 4,
+      "primary_identifier": {
+        "scheme": "isic_rev4_division",
+        "label": "ISIC Rev. 4 division",
+        "value": "49",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "series:wb-ind-fr-inr-lend",
+      "type": "data_series",
+      "name": "Lending interest rate (%) — India",
+      "subtitle": "World Development Indicators · India · annual",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 1,
+      "primary_identifier": {
+        "scheme": "provider_series",
+        "label": "Provider series key",
+        "value": "worldbank-wdi:FR.INR.LEND|IND",
+        "source": null
+      },
+      "data_status": "definition_only",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "company:co_lumeric_chemicals",
+      "type": "company",
+      "name": "Lumeric Chemicals",
+      "subtitle": "Fictional company · Chemicals & chemical products · United States",
+      "nature": "fictional",
+      "quality_status": "validated",
+      "degree": 7,
+      "primary_identifier": null,
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "sector:isic4-c",
+      "type": "sector",
+      "name": "Manufacturing",
+      "subtitle": "ISIC Rev. 4 section C",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 2,
+      "primary_identifier": {
+        "scheme": "isic_rev4_section",
+        "label": "ISIC Rev. 4 section",
+        "value": "C",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "sector:isic4-b",
+      "type": "sector",
+      "name": "Mining and quarrying",
+      "subtitle": "ISIC Rev. 4 section B",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 1,
+      "primary_identifier": {
+        "scheme": "isic_rev4_section",
+        "label": "ISIC Rev. 4 section",
+        "value": "B",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "variable:var_henry_hub_gas",
+      "type": "economic_variable",
+      "name": "Natural gas price (Henry Hub)",
+      "subtitle": "Economic variable · United States · USD per million Btu, daily",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 3,
+      "primary_identifier": null,
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "series:wb-ind-pa-nus-fcrf",
+      "type": "data_series",
+      "name": "Official exchange rate (INR per US$, period average) — India",
+      "subtitle": "World Development Indicators · India · annual",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 3,
+      "primary_identifier": {
+        "scheme": "provider_series",
+        "label": "Provider series key",
+        "value": "worldbank-wdi:PA.NUS.FCRF|IND",
+        "source": null
+      },
+      "data_status": "definition_only",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "company:co_orvane_petroleum",
+      "type": "company",
+      "name": "Orvane Petroleum",
+      "subtitle": "Fictional company · Crude petroleum & natural gas extraction · United Arab Emirates",
+      "nature": "fictional",
+      "quality_status": "validated",
+      "degree": 3,
+      "primary_identifier": null,
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "variable:var_rbi_repo_rate",
+      "type": "economic_variable",
+      "name": "RBI policy repo rate",
+      "subtitle": "Economic variable · India · percent per annum, irregular",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 5,
+      "primary_identifier": null,
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "series:wb-ind-fr-inr-rinr",
+      "type": "data_series",
+      "name": "Real interest rate (%) — India",
+      "subtitle": "World Development Indicators · India · annual",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 1,
+      "primary_identifier": {
+        "scheme": "provider_series",
+        "label": "Provider series key",
+        "value": "worldbank-wdi:FR.INR.RINR|IND",
+        "source": null
+      },
+      "data_status": "definition_only",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "industry:ind_petroleum_refining",
+      "type": "industry",
+      "name": "Refined petroleum products",
+      "subtitle": "ISIC Rev. 4 division 19 · Manufacturing",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 9,
+      "primary_identifier": {
+        "scheme": "isic_rev4_division",
+        "label": "ISIC Rev. 4 division",
+        "value": "19",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "company:co_skyvara_air",
+      "type": "company",
+      "name": "Skyvara Air",
+      "subtitle": "Fictional company · Air transport · India",
+      "nature": "fictional",
+      "quality_status": "validated",
+      "degree": 5,
+      "primary_identifier": null,
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "company:co_solvane_refining",
+      "type": "company",
+      "name": "Solvane Refining",
+      "subtitle": "Fictional company · Refined petroleum products · United States",
+      "nature": "fictional",
+      "quality_status": "validated",
+      "degree": 4,
+      "primary_identifier": null,
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "company:co_tessaline_energy",
+      "type": "company",
+      "name": "Tessaline Energy",
+      "subtitle": "Fictional company · Crude petroleum & natural gas extraction · United States",
+      "nature": "fictional",
+      "quality_status": "validated",
+      "degree": 6,
+      "primary_identifier": null,
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "company:co_trakvel_logistics",
+      "type": "company",
+      "name": "Trakvel Logistics",
+      "subtitle": "Fictional company · Land transport · India",
+      "nature": "fictional",
+      "quality_status": "validated",
+      "degree": 5,
+      "primary_identifier": null,
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "sector:isic4-h",
+      "type": "sector",
+      "name": "Transportation and storage",
+      "subtitle": "ISIC Rev. 4 section H",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 2,
+      "primary_identifier": {
+        "scheme": "isic_rev4_section",
+        "label": "ISIC Rev. 4 section",
+        "value": "H",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "variable:var_us_fed_funds",
+      "type": "economic_variable",
+      "name": "U.S. effective federal funds rate",
+      "subtitle": "Economic variable · United States · percent per annum, monthly",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 4,
+      "primary_identifier": null,
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "country:cty_ae",
+      "type": "country",
+      "name": "United Arab Emirates",
+      "subtitle": "Country · AE · AED",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 3,
+      "primary_identifier": {
+        "scheme": "iso3166_alpha2",
+        "label": "ISO 3166-1 alpha-2",
+        "value": "AE",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "country:cty_us",
+      "type": "country",
+      "name": "United States",
+      "subtitle": "Country · US · USD",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 10,
+      "primary_identifier": {
+        "scheme": "iso3166_alpha2",
+        "label": "ISO 3166-1 alpha-2",
+        "value": "US",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "currency:usd",
+      "type": "currency",
+      "name": "USD",
+      "subtitle": "Currency · ISO 4217",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 2,
+      "primary_identifier": {
+        "scheme": "iso4217",
+        "label": "ISO 4217",
+        "value": "USD",
+        "source": null
+      },
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    },
+    {
+      "id": "variable:var_usd_inr",
+      "type": "economic_variable",
+      "name": "USD/INR exchange rate",
+      "subtitle": "Economic variable · India · INR per USD, daily",
+      "nature": "real",
+      "quality_status": "validated",
+      "degree": 8,
+      "primary_identifier": null,
+      "data_status": "not_applicable",
+      "match": "filter",
+      "ambiguous": false
+    }
+  ],
+  "total": 50,
+  "limit": 500,
+  "offset": 0
+}

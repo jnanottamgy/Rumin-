@@ -8,6 +8,14 @@
   gap: var(--space-1);
 }
 
+.headerLink {
+  color: var(--color-accent-ink);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
 .workspace {
   --stage-height: clamp(28rem, calc(100dvh - 16.5rem), 56rem);
   display: grid;

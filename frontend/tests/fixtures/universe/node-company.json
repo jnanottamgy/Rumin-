@@ -1,0 +1,166 @@
+{
+  "id": "company:co_aerisca_airways",
+  "type": "company",
+  "name": "Aerisca Airways",
+  "subtitle": "Fictional company · Air transport · India",
+  "nature": "fictional",
+  "quality_status": "validated",
+  "degree": 6,
+  "primary_identifier": null,
+  "data_status": "not_applicable",
+  "description": "Fictional Indian full-service airline.",
+  "attributes": {
+    "reference": null
+  },
+  "identifiers": [],
+  "sources": [
+    {
+      "table": "companies",
+      "record_id": "co_aerisca_airways",
+      "dataset_id": "rumin-sample",
+      "dataset_version": "1.0.0",
+      "fields": ["name", "is_fictional"]
+    }
+  ],
+  "in_degree": 3,
+  "out_degree": 2,
+  "component": 1,
+  "relationships": [
+    {
+      "type": "affects_costs",
+      "label": "affects costs of",
+      "direction": "incoming",
+      "count": 1
+    },
+    {
+      "type": "competes_with",
+      "label": "competes with",
+      "direction": "undirected",
+      "count": 1
+    },
+    {
+      "type": "domiciled_in",
+      "label": "is domiciled in",
+      "direction": "outgoing",
+      "count": 1
+    },
+    {
+      "type": "in_industry",
+      "label": "operates in",
+      "direction": "outgoing",
+      "count": 1
+    },
+    {
+      "type": "lends_to",
+      "label": "lends to",
+      "direction": "incoming",
+      "count": 1
+    },
+    {
+      "type": "supplies_to",
+      "label": "supplies",
+      "direction": "incoming",
+      "count": 1
+    }
+  ],
+  "resolution": [],
+  "issues": [],
+  "exposures": [
+    {
+      "kind": "direct",
+      "variable": {
+        "id": "variable:var_usd_inr",
+        "type": "economic_variable",
+        "name": "USD/INR exchange rate",
+        "subtitle": "Economic variable · India · INR per USD, daily",
+        "nature": "real",
+        "quality_status": "validated",
+        "degree": 8,
+        "primary_identifier": null,
+        "data_status": "not_applicable"
+      },
+      "edge": {
+        "id": "e-2afc04ee80f0699e",
+        "type": "affects_costs",
+        "category": "economic",
+        "source": "variable:var_usd_inr",
+        "target": "company:co_aerisca_airways",
+        "directed": true,
+        "label": "affects costs of",
+        "description": "The USD/INR exchange rate affects the costs of Aerisca Airways.",
+        "evidence_status": "model_assumption",
+        "is_illustrative": true,
+        "quality_status": "validated",
+        "valid_from": null,
+        "valid_to": null,
+        "historical": false,
+        "qualifiers": {
+          "polarity": "positive",
+          "strength": "moderate",
+          "evidence_level": "illustrative",
+          "rationale": "Aircraft leases and maintenance are commonly priced in U.S. dollars, so a weaker rupee raises an Indian airline's costs in rupees.",
+          "stated_difference": null
+        }
+      },
+      "via": null,
+      "explanation": "Stated for Aerisca Airways itself: a model assumption (illustrative)."
+    },
+    {
+      "kind": "via_industry",
+      "variable": {
+        "id": "variable:var_jet_fuel",
+        "type": "economic_variable",
+        "name": "Jet fuel price (U.S. Gulf Coast)",
+        "subtitle": "Economic variable · United States · USD per gallon, daily",
+        "nature": "real",
+        "quality_status": "validated",
+        "degree": 4,
+        "primary_identifier": null,
+        "data_status": "not_applicable"
+      },
+      "edge": {
+        "id": "e-df536e008d0660a5",
+        "type": "affects_costs",
+        "category": "economic",
+        "source": "variable:var_jet_fuel",
+        "target": "industry:ind_air_transport",
+        "directed": true,
+        "label": "affects costs of",
+        "description": "The jet fuel price affects the costs of air transport.",
+        "evidence_status": "model_assumption",
+        "is_illustrative": true,
+        "quality_status": "validated",
+        "valid_from": null,
+        "valid_to": null,
+        "historical": false,
+        "qualifiers": {
+          "polarity": "positive",
+          "strength": "strong",
+          "evidence_level": "illustrative",
+          "rationale": "Fuel is typically one of the largest operating costs for airlines.",
+          "stated_difference": null
+        }
+      },
+      "via": {
+        "id": "industry:ind_air_transport",
+        "type": "industry",
+        "name": "Air transport",
+        "subtitle": "ISIC Rev. 4 division 51 · Transportation and storage",
+        "nature": "real",
+        "quality_status": "validated",
+        "degree": 5,
+        "primary_identifier": {
+          "scheme": "isic_rev4_division",
+          "label": "ISIC Rev. 4 division",
+          "value": "51",
+          "source": null
+        },
+        "data_status": "not_applicable"
+      },
+      "explanation": "Stated for the industry Air transport as a whole, not for Aerisca Airways: a model assumption (illustrative). Companies in one industry can be affected very differently."
+    }
+  ],
+  "data": null,
+  "first_build_id": 1,
+  "changed_build_id": 1
+}

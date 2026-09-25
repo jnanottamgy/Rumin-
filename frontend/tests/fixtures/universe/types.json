@@ -1,0 +1,769 @@
+{
+  "node_types": [
+    {
+      "type": "country",
+      "label": "Country",
+      "plural": "Countries",
+      "description": "A country from the reference data, identified by its ISO 3166-1 code.",
+      "primary_identifier": "ISO 3166-1 alpha-2"
+    },
+    {
+      "type": "currency",
+      "label": "Currency",
+      "plural": "Currencies",
+      "description": "A currency, identified by its ISO 4217 code wherever a record names one.",
+      "primary_identifier": "ISO 4217"
+    },
+    {
+      "type": "sector",
+      "label": "Sector",
+      "plural": "Sectors",
+      "description": "A section of the ISIC Rev. 4 classification (the level above its divisions).",
+      "primary_identifier": "ISIC Rev. 4 section"
+    },
+    {
+      "type": "industry",
+      "label": "Industry",
+      "plural": "Industries",
+      "description": "An ISIC Rev. 4 division from the reference data.",
+      "primary_identifier": "ISIC Rev. 4 division"
+    },
+    {
+      "type": "company",
+      "label": "Company",
+      "plural": "Companies",
+      "description": "A company. Every company in the sample network is fictional.",
+      "primary_identifier": null
+    },
+    {
+      "type": "economic_variable",
+      "label": "Economic variable",
+      "plural": "Economic variables",
+      "description": "The definition of a measurable economic quantity, such as a price or a rate.",
+      "primary_identifier": null
+    },
+    {
+      "type": "data_series",
+      "label": "Data series",
+      "plural": "Data series",
+      "description": "A provider's time series (e.g. a World Bank indicator for one country).",
+      "primary_identifier": "Provider series key"
+    },
+    {
+      "type": "instrument",
+      "label": "Instrument",
+      "plural": "Instruments",
+      "description": "A listed security from a price file a user imported.",
+      "primary_identifier": "ISIN"
+    },
+    {
+      "type": "market",
+      "label": "Market",
+      "plural": "Markets",
+      "description": "A trading venue, identified by its ISO 10383 market identifier code (MIC).",
+      "primary_identifier": "ISO 10383 MIC"
+    }
+  ],
+  "edge_types": [
+    {
+      "type": "supplies_to",
+      "category": "economic",
+      "label": "supplies",
+      "description": "The source provides goods or services that the target uses as inputs.",
+      "caveat": "A recorded supply relationship. It does not say how large or how important it is.",
+      "directed": true,
+      "endpoints": [
+        {
+          "source": "company",
+          "target": "company"
+        },
+        {
+          "source": "industry",
+          "target": "industry"
+        }
+      ],
+      "evidence_statuses": ["evidence_backed", "model_assumption"]
+    },
+    {
+      "type": "lends_to",
+      "category": "economic",
+      "label": "lends to",
+      "description": "The source (a lender) provides credit facilities to the target.",
+      "caveat": "A recorded lending relationship. It says nothing about amounts, terms or risk.",
+      "directed": true,
+      "endpoints": [
+        {
+          "source": "company",
+          "target": "company"
+        }
+      ],
+      "evidence_statuses": ["evidence_backed", "model_assumption"]
+    },
+    {
+      "type": "competes_with",
+      "category": "economic",
+      "label": "competes with",
+      "description": "Both entities sell similar products or services in the same market.",
+      "caveat": "The two sell similar products in the same market; it does not rank them.",
+      "directed": false,
+      "endpoints": [
+        {
+          "source": "company",
+          "target": "company"
+        }
+      ],
+      "evidence_statuses": ["evidence_backed", "model_assumption"]
+    },
+    {
+      "type": "affects_costs",
+      "category": "economic",
+      "label": "affects costs of",
+      "description": "Changes in the source variable are assumed to change the target's operating or input costs.",
+      "caveat": "An assumed effect, not a measured one: it says nothing about size or timing, and entities of the same kind can be affected very differently. A connection is not evidence of causation.",
+      "directed": true,
+      "endpoints": [
+        {
+          "source": "economic_variable",
+          "target": "company"
+        },
+        {
+          "source": "economic_variable",
+          "target": "industry"
+        }
+      ],
+      "evidence_statuses": ["evidence_backed", "model_assumption"]
+    },
+    {
+      "type": "affects_revenue",
+      "category": "economic",
+      "label": "affects revenue of",
+      "description": "Changes in the source variable are assumed to change the target's revenue, through prices, volumes or currency translation.",
+      "caveat": "An assumed effect, not a measured one: it says nothing about size or timing, and entities of the same kind can be affected very differently. A connection is not evidence of causation.",
+      "directed": true,
+      "endpoints": [
+        {
+          "source": "economic_variable",
+          "target": "company"
+        },
+        {
+          "source": "economic_variable",
+          "target": "industry"
+        }
+      ],
+      "evidence_statuses": ["evidence_backed", "model_assumption"]
+    },
+    {
+      "type": "affects_financing",
+      "category": "economic",
+      "label": "affects financing costs of",
+      "description": "Changes in the source variable are assumed to change the target's cost of borrowing or refinancing.",
+      "caveat": "An assumed effect, not a measured one: it says nothing about size or timing, and entities of the same kind can be affected very differently. A connection is not evidence of causation.",
+      "directed": true,
+      "endpoints": [
+        {
+          "source": "economic_variable",
+          "target": "company"
+        },
+        {
+          "source": "economic_variable",
+          "target": "industry"
+        }
+      ],
+      "evidence_statuses": ["evidence_backed", "model_assumption"]
+    },
+    {
+      "type": "influences",
+      "category": "economic",
+      "label": "influences",
+      "description": "Changes in the source variable are assumed to transmit to the target variable.",
+      "caveat": "Assumed transmission between two variables, not a statistical or causal estimate. A connection is not evidence of causation.",
+      "directed": true,
+      "endpoints": [
+        {
+          "source": "economic_variable",
+          "target": "economic_variable"
+        }
+      ],
+      "evidence_statuses": ["model_assumption"]
+    },
+    {
+      "type": "in_industry",
+      "category": "structural",
+      "label": "operates in",
+      "description": "The company's primary industry (derived from the company record).",
+      "caveat": "A primary-industry classification. A company can also operate in other industries.",
+      "directed": true,
+      "endpoints": [
+        {
+          "source": "company",
+          "target": "industry"
+        }
+      ],
+      "evidence_statuses": ["analyst_created", "evidence_backed"]
+    },
+    {
+      "type": "domiciled_in",
+      "category": "structural",
+      "label": "is domiciled in",
+      "description": "The company's country of domicile (derived from the company record).",
+      "caveat": "Country of domicile only — not where the company sells, produces or is exposed.",
+      "directed": true,
+      "endpoints": [
+        {
+          "source": "company",
+          "target": "country"
+        }
+      ],
+      "evidence_statuses": ["analyst_created", "evidence_backed"]
+    },
+    {
+      "type": "measured_for",
+      "category": "structural",
+      "label": "is measured for",
+      "description": "The economy the variable describes (derived from the variable record).",
+      "caveat": "The economy the variable describes. It does not mean the variable matters only there.",
+      "directed": true,
+      "endpoints": [
+        {
+          "source": "economic_variable",
+          "target": "country"
+        }
+      ],
+      "evidence_statuses": ["analyst_created"]
+    },
+    {
+      "type": "in_sector",
+      "category": "structural",
+      "label": "belongs to",
+      "description": "The industry's ISIC Rev. 4 division belongs to this ISIC section.",
+      "caveat": "A classification hierarchy: every division sits in exactly one section. It says nothing about economic links between industries of the same section.",
+      "directed": true,
+      "endpoints": [
+        {
+          "source": "industry",
+          "target": "sector"
+        }
+      ],
+      "evidence_statuses": ["evidence_backed"]
+    },
+    {
+      "type": "has_currency",
+      "category": "structural",
+      "label": "has currency",
+      "description": "The country's currency, by its ISO 4217 code.",
+      "caveat": "It says nothing about exchange-rate exposure, or about other places that use the currency.",
+      "directed": true,
+      "endpoints": [
+        {
+          "source": "country",
+          "target": "currency"
+        }
+      ],
+      "evidence_statuses": ["evidence_backed"]
+    },
+    {
+      "type": "covers",
+      "category": "structural",
+      "label": "covers",
+      "description": "The series describes this country's economy, as the provider defines it.",
+      "caveat": "The provider's geography, not a statement about influence between the series and the country.",
+      "directed": true,
+      "endpoints": [
+        {
+          "source": "data_series",
+          "target": "country"
+        }
+      ],
+      "evidence_statuses": ["evidence_backed"]
+    },
+    {
+      "type": "related_measure_of",
+      "category": "structural",
+      "label": "is a related measure of",
+      "description": "A curator recorded the series as a related measure of the variable, stating how the two differ.",
+      "caveat": "A related measure, not the same measure: frequency, definition or source differ (see the stated difference).",
+      "directed": true,
+      "endpoints": [
+        {
+          "source": "data_series",
+          "target": "economic_variable"
+        }
+      ],
+      "evidence_statuses": ["analyst_created"]
+    },
+    {
+      "type": "expressed_in",
+      "category": "structural",
+      "label": "is expressed in",
+      "description": "The currency the series' unit is stated in.",
+      "caveat": "Values are shown as published and never converted.",
+      "directed": true,
+      "endpoints": [
+        {
+          "source": "data_series",
+          "target": "currency"
+        }
+      ],
+      "evidence_statuses": ["evidence_backed"]
+    },
+    {
+      "type": "listed_on",
+      "category": "structural",
+      "label": "is listed on",
+      "description": "The market the instrument's prices come from, as declared in its price-file manifest.",
+      "caveat": "Declared by the importer; RUMIN did not verify the listing.",
+      "directed": true,
+      "endpoints": [
+        {
+          "source": "instrument",
+          "target": "market"
+        }
+      ],
+      "evidence_statuses": ["unverified"]
+    },
+    {
+      "type": "quoted_in",
+      "category": "structural",
+      "label": "is quoted in",
+      "description": "The currency of the instrument's prices, as declared in its price-file manifest.",
+      "caveat": "Declared by the importer; prices are never converted.",
+      "directed": true,
+      "endpoints": [
+        {
+          "source": "instrument",
+          "target": "currency"
+        }
+      ],
+      "evidence_statuses": ["unverified"]
+    },
+    {
+      "type": "associated_with",
+      "category": "structural",
+      "label": "is associated with",
+      "description": "The price-file manifest links the instrument to this country.",
+      "caveat": "The manifest does not say how (country of listing, of the issuer, or other).",
+      "directed": true,
+      "endpoints": [
+        {
+          "source": "instrument",
+          "target": "country"
+        }
+      ],
+      "evidence_statuses": ["unverified"]
+    }
+  ],
+  "evidence_statuses": [
+    {
+      "status": "evidence_backed",
+      "label": "Evidence-backed",
+      "definition": "Stated by a cited external source or standard (a classification, an ISO code, a provider's metadata). RUMIN transcribed it; it did not measure or validate it."
+    },
+    {
+      "status": "analyst_created",
+      "label": "Analyst-created",
+      "definition": "Written by a RUMIN curator, with its reasoning recorded — for example a fictional company's industry, or a series recorded as a related measure of a variable."
+    },
+    {
+      "status": "model_assumption",
+      "label": "Model assumption",
+      "definition": "An assumed economic relationship with a written rationale. It is not an empirical finding and has not been validated."
+    },
+    {
+      "status": "unverified",
+      "label": "Unverified",
+      "definition": "Declared in data supplied to RUMIN (for example a price-file manifest). Recorded as declared; RUMIN could not check it."
+    }
+  ],
+  "identifier_schemes": [
+    {
+      "scheme": "iso3166_alpha2",
+      "label": "ISO 3166-1 alpha-2"
+    },
+    {
+      "scheme": "iso3166_alpha3",
+      "label": "ISO 3166-1 alpha-3"
+    },
+    {
+      "scheme": "iso4217",
+      "label": "ISO 4217"
+    },
+    {
+      "scheme": "isic_rev4_section",
+      "label": "ISIC Rev. 4 section"
+    },
+    {
+      "scheme": "isic_rev4_division",
+      "label": "ISIC Rev. 4 division"
+    },
+    {
+      "scheme": "provider_series",
+      "label": "Provider series key"
+    },
+    {
+      "scheme": "isin",
+      "label": "ISIN"
+    },
+    {
+      "scheme": "mic",
+      "label": "ISO 10383 MIC"
+    },
+    {
+      "scheme": "listing",
+      "label": "Listing (MIC:symbol)"
+    }
+  ],
+  "construction_rules": [
+    {
+      "code": "N01",
+      "name": "country",
+      "reads": "countries",
+      "produces": "country node",
+      "evidence_status": null,
+      "description": "One node per country record."
+    },
+    {
+      "code": "N02",
+      "name": "currency",
+      "reads": "countries.currency_code, economic_series.currency, instruments.currency",
+      "produces": "currency node",
+      "evidence_status": null,
+      "description": "One node per ISO 4217 code named by any record; records naming the same code are linked to the same node."
+    },
+    {
+      "code": "N03",
+      "name": "sector",
+      "reads": "industries.classification_code + the ISIC Rev. 4 structure",
+      "produces": "sector node",
+      "evidence_status": null,
+      "description": "One node per ISIC Rev. 4 section that contains an industry's division."
+    },
+    {
+      "code": "N04",
+      "name": "industry",
+      "reads": "industries",
+      "produces": "industry node",
+      "evidence_status": null,
+      "description": "One node per industry record."
+    },
+    {
+      "code": "N05",
+      "name": "company",
+      "reads": "companies",
+      "produces": "company node",
+      "evidence_status": null,
+      "description": "One node per company record."
+    },
+    {
+      "code": "N06",
+      "name": "economic_variable",
+      "reads": "economic_variables",
+      "produces": "economic variable node",
+      "evidence_status": null,
+      "description": "One node per variable definition."
+    },
+    {
+      "code": "N07",
+      "name": "data_series",
+      "reads": "economic_series",
+      "produces": "data series node",
+      "evidence_status": null,
+      "description": "One node per catalogued series, whether or not values have been retrieved."
+    },
+    {
+      "code": "N08",
+      "name": "instrument",
+      "reads": "instruments",
+      "produces": "instrument node",
+      "evidence_status": null,
+      "description": "One node per imported instrument."
+    },
+    {
+      "code": "N09",
+      "name": "market",
+      "reads": "instruments.exchange_mic",
+      "produces": "market node",
+      "evidence_status": null,
+      "description": "One node per ISO 10383 MIC declared in a price-file manifest."
+    },
+    {
+      "code": "R01",
+      "name": "curated_relationship",
+      "reads": "relationships",
+      "produces": "an edge of the relationship's own type",
+      "evidence_status": "model_assumption",
+      "description": "Each curated relationship becomes an edge of the same type, keeping its description, rationale, assumed polarity and illustrative strength."
+    },
+    {
+      "code": "R02",
+      "name": "company_industry",
+      "reads": "companies.industry_id",
+      "produces": "in_industry",
+      "evidence_status": "analyst_created",
+      "description": "A company's primary industry, as written in its record."
+    },
+    {
+      "code": "R03",
+      "name": "company_country",
+      "reads": "companies.country_id",
+      "produces": "domiciled_in",
+      "evidence_status": "analyst_created",
+      "description": "A company's country of domicile, as written in its record."
+    },
+    {
+      "code": "R04",
+      "name": "variable_country",
+      "reads": "economic_variables.country_id",
+      "produces": "measured_for",
+      "evidence_status": "analyst_created",
+      "description": "The economy a variable describes, as written in its definition."
+    },
+    {
+      "code": "R05",
+      "name": "industry_sector",
+      "reads": "industries.classification_code",
+      "produces": "in_sector",
+      "evidence_status": "evidence_backed",
+      "description": "An ISIC Rev. 4 division belongs to the section whose division range contains it."
+    },
+    {
+      "code": "R06",
+      "name": "country_currency",
+      "reads": "countries.currency_code",
+      "produces": "has_currency",
+      "evidence_status": "evidence_backed",
+      "description": "A country's ISO 4217 currency, as cited in its record."
+    },
+    {
+      "code": "R07",
+      "name": "series_country",
+      "reads": "economic_series.country_id, economic_series.country_iso3",
+      "produces": "covers",
+      "evidence_status": "evidence_backed",
+      "description": "The country a series describes: its catalogue link, or else its ISO alpha-3 code when that code already identifies exactly one country node."
+    },
+    {
+      "code": "R08",
+      "name": "series_variable",
+      "reads": "economic_series.variable_id, economic_series.variable_relation",
+      "produces": "related_measure_of",
+      "evidence_status": "analyst_created",
+      "description": "A curator's link from a series to a variable, kept with the stated difference."
+    },
+    {
+      "code": "R09",
+      "name": "series_currency",
+      "reads": "economic_series.currency",
+      "produces": "expressed_in",
+      "evidence_status": "evidence_backed",
+      "description": "The currency of a series' unit."
+    },
+    {
+      "code": "R10",
+      "name": "instrument_market",
+      "reads": "instruments.exchange_mic",
+      "produces": "listed_on",
+      "evidence_status": "unverified",
+      "description": "The market declared for an instrument in its price-file manifest."
+    },
+    {
+      "code": "R11",
+      "name": "instrument_currency",
+      "reads": "instruments.currency",
+      "produces": "quoted_in",
+      "evidence_status": "unverified",
+      "description": "The currency declared for an instrument's prices in its manifest."
+    },
+    {
+      "code": "R12",
+      "name": "instrument_country",
+      "reads": "instruments.country_id",
+      "produces": "associated_with",
+      "evidence_status": "unverified",
+      "description": "The country a manifest links an instrument to (the manifest does not say how)."
+    }
+  ],
+  "validation_rules": [
+    {
+      "code": "missing_node_key",
+      "subject": "node",
+      "severity": "error",
+      "outcome": "rejected",
+      "description": "The source record has no ID, so no stable node key can be made."
+    },
+    {
+      "code": "missing_name",
+      "subject": "node",
+      "severity": "error",
+      "outcome": "rejected",
+      "description": "The record has no name to display."
+    },
+    {
+      "code": "missing_provenance",
+      "subject": "node",
+      "severity": "error",
+      "outcome": "rejected",
+      "description": "The node would have no source record to explain it."
+    },
+    {
+      "code": "invalid_code",
+      "subject": "node",
+      "severity": "error",
+      "outcome": "rejected",
+      "description": "A code that would identify a currency, sector or market is not valid in its scheme, so no node is made for it (and no edge leads to it)."
+    },
+    {
+      "code": "unknown_classification",
+      "subject": "node",
+      "severity": "warning",
+      "outcome": "flagged",
+      "description": "The industry's code is not a division of ISIC Rev. 4, so it is given no sector."
+    },
+    {
+      "code": "isolated_node",
+      "subject": "node",
+      "severity": "info",
+      "outcome": "noted",
+      "description": "The node has no edge to any other node."
+    },
+    {
+      "code": "invalid_identifier",
+      "subject": "identifier",
+      "severity": "warning",
+      "outcome": "flagged",
+      "description": "An identifier is not in its scheme's format; it is not attached to the node."
+    },
+    {
+      "code": "identifier_conflict",
+      "subject": "identifier",
+      "severity": "warning",
+      "outcome": "flagged",
+      "description": "The same identifier is claimed for different nodes; it is attached to none of them and the nodes are flagged for review."
+    },
+    {
+      "code": "unsupported_merge",
+      "subject": "resolution",
+      "severity": "warning",
+      "outcome": "flagged",
+      "description": "Two records of a kind RUMIN never merges automatically share an identifier. Both are kept and flagged for review."
+    },
+    {
+      "code": "possible_duplicate",
+      "subject": "resolution",
+      "severity": "warning",
+      "outcome": "flagged",
+      "description": "Two records' names are identical once normalised. Both are kept and flagged for review: a name alone never merges entities."
+    },
+    {
+      "code": "similar_name",
+      "subject": "resolution",
+      "severity": "info",
+      "outcome": "noted",
+      "description": "Every word of one name appears in another (often a parent and a subsidiary, which are different entities). Noted for review; nothing is merged."
+    },
+    {
+      "code": "possible_issuer",
+      "subject": "resolution",
+      "severity": "info",
+      "outcome": "noted",
+      "description": "An instrument's name is similar to a company's. They are not linked: a similar name is not evidence that the company issued the instrument."
+    },
+    {
+      "code": "match_ruled_out",
+      "subject": "resolution",
+      "severity": "info",
+      "outcome": "noted",
+      "description": "Similar names, but one record is fictional or sample data and the other is not, so they cannot be the same entity."
+    },
+    {
+      "code": "unknown_edge_type",
+      "subject": "edge",
+      "severity": "error",
+      "outcome": "rejected",
+      "description": "The relationship type has no definition in the graph's type registry."
+    },
+    {
+      "code": "missing_source_node",
+      "subject": "edge",
+      "severity": "error",
+      "outcome": "rejected",
+      "description": "The edge's source does not exist in the graph."
+    },
+    {
+      "code": "missing_target_node",
+      "subject": "edge",
+      "severity": "error",
+      "outcome": "rejected",
+      "description": "The edge's target does not exist in the graph."
+    },
+    {
+      "code": "reversed_direction",
+      "subject": "edge",
+      "severity": "error",
+      "outcome": "rejected",
+      "description": "The edge points the wrong way: its type is defined from the target's kind to the source's kind."
+    },
+    {
+      "code": "endpoint_types_not_allowed",
+      "subject": "edge",
+      "severity": "error",
+      "outcome": "rejected",
+      "description": "The edge's type is not defined between these kinds of node."
+    },
+    {
+      "code": "self_loop",
+      "subject": "edge",
+      "severity": "error",
+      "outcome": "rejected",
+      "description": "The edge connects a node to itself."
+    },
+    {
+      "code": "missing_evidence",
+      "subject": "edge",
+      "severity": "error",
+      "outcome": "rejected",
+      "description": "The edge has no evidence record, so nothing could explain why it exists."
+    },
+    {
+      "code": "evidence_status_not_allowed",
+      "subject": "edge",
+      "severity": "error",
+      "outcome": "rejected",
+      "description": "The edge's evidence status is not allowed for its type (e.g. an assumed variable-to-variable effect claimed as evidence-backed)."
+    },
+    {
+      "code": "invalid_validity_period",
+      "subject": "edge",
+      "severity": "error",
+      "outcome": "rejected",
+      "description": "The validity period ends before it starts."
+    },
+    {
+      "code": "future_validity",
+      "subject": "edge",
+      "severity": "warning",
+      "outcome": "flagged",
+      "description": "The validity period starts in the future."
+    },
+    {
+      "code": "reality_mismatch",
+      "subject": "edge",
+      "severity": "error",
+      "outcome": "rejected",
+      "description": "The edge would mix fiction and fact: an evidence-backed edge touching a fictional or sample node, or a business relationship between a fictional and a real company."
+    },
+    {
+      "code": "duplicate_edge",
+      "subject": "edge",
+      "severity": "info",
+      "outcome": "noted",
+      "description": "More than one record states the same relationship; it is stored once, with every record as evidence."
+    },
+    {
+      "code": "unresolved_reference",
+      "subject": "edge",
+      "severity": "info",
+      "outcome": "noted",
+      "description": "A record refers to an entity that is not in the graph, so no edge was made."
+    }
+  ]
+}

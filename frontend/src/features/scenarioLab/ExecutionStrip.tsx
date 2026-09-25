@@ -6,6 +6,7 @@
  * stage often finishes before the page asks again: the strip then shows the stages that
  * were recorded, with their real durations, drawn to scale.
  */
+import { Link } from "react-router";
 import { Button } from "@/components/Button";
 import { Icon } from "@/components/Icon";
 import { cx } from "@/lib/cx";
@@ -79,6 +80,15 @@ export function ExecutionStrip({
                   ? "Cancelled. Nothing was stored."
                   : `${STATUS_LABEL[execution.status]} — as reported by the server`}
         </p>
+        {execution?.status === "completed" && (
+          <Link
+            className={styles.runLink}
+            to={`/universe/3d?execution=${encodeURIComponent(execution.id)}`}
+          >
+            <Icon name="layers" size={12} />
+            See it in the 3D universe
+          </Link>
+        )}
       </div>
 
       <ol className={styles.stages}>

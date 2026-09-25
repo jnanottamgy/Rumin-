@@ -24,6 +24,7 @@ import type {
   GraphComponents,
   GraphDirection,
   GraphEdgeDetail,
+  GraphEdgePage,
   GraphEdgeType,
   GraphNeighborhood,
   GraphNodeDetail,
@@ -458,6 +459,20 @@ export const graphApi = {
 
   edge: (id: string, options?: Options) =>
     apiRequest<GraphEdgeDetail>(`/api/v1/graph/edges/${segment(id)}`, options),
+
+  /** One page of every node of the latest build, by name (the 3D universe reads them all). */
+  nodePage: (offset: number, options?: Options) =>
+    apiRequest<GraphNodeSearchPage>(
+      `/api/v1/graph/nodes${toQuery({ limit: MAX_PAGE, offset, sort: "name" })}`,
+      options,
+    ),
+
+  /** One page of every current edge. */
+  edgePage: (offset: number, options?: Options) =>
+    apiRequest<GraphEdgePage>(
+      `/api/v1/graph/edges${toQuery({ limit: MAX_PAGE, offset })}`,
+      options,
+    ),
 
   paths: (
     source: string,

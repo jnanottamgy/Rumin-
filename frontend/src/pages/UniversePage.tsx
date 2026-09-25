@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import { Badge } from "@/components/Badge";
 import { EpistemicBadge } from "@/components/EpistemicBadge";
 import { PageHeader } from "@/components/PageHeader";
@@ -144,6 +144,9 @@ export function UniversePage() {
               </Badge>
             )}
             <EpistemicBadge category="assumption" suffix="every relationship" />
+            <Link className={styles.headerLink} to="/universe/3d">
+              The knowledge graph in 3D
+            </Link>
           </>
         }
       />

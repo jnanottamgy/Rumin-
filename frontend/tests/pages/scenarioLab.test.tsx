@@ -153,6 +153,11 @@ describe("Scenario Lab — a saved scenario", () => {
     expect(
       screen.getByText(/^Completed in .* · version 1 · stored and reproducible$/),
     ).toBeInTheDocument();
+    // A completed execution can be laid over the knowledge graph in the 3D universe.
+    expect(screen.getByRole("link", { name: "See it in the 3D universe" })).toHaveAttribute(
+      "href",
+      expect.stringMatching(/^\/universe\/3d\?execution=[\w-]+$/),
+    );
     // Reading a saved scenario writes nothing: the only POST is the (unstored) preview.
     await waitFor(() => expect(api.writes().length).toBeGreaterThan(0));
     expect(new Set(api.writes().map((request) => request.path))).toEqual(

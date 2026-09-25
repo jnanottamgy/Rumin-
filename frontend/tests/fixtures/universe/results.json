@@ -1,0 +1,1611 @@
+{
+  "execution_id": "ad9f1fdf-5460-46c6-9b5f-b3cbdcb201e8",
+  "lab_version": "1.0.0",
+  "engine_version": "1.0.0",
+  "currency": "INR",
+  "horizon_months": 12,
+  "timing": {
+    "start_month": 1,
+    "end_month": 12,
+    "duration_months": 0
+  },
+  "entity": {
+    "key": "company:co_aerisca_airways",
+    "name": "Aerisca Airways",
+    "nature": "fictional",
+    "industries": [
+      {
+        "key": "industry:ind_air_transport",
+        "name": "Air transport"
+      }
+    ]
+  },
+  "lines": [
+    {
+      "id": "revenue",
+      "label": "Revenue",
+      "equation": "AG1",
+      "unit": "currency",
+      "currency": "INR",
+      "baseline": "300000000",
+      "change": "6925000",
+      "scenario": "306925000",
+      "percent_change": "2.3083333333",
+      "direction": "up",
+      "effect": "raises_profit",
+      "items": [
+        {
+          "model_id": "airline_fuel_cost",
+          "item": "fuel_cost_recovery",
+          "label": "Fare recovery",
+          "output": "fare_recovery",
+          "monthly_output": "fare_recovery",
+          "value": "4925000",
+          "by_change": {
+            "var_brent_crude": "3587500",
+            "var_usd_inr": "1337500"
+          }
+        },
+        {
+          "model_id": "fx_exposure",
+          "item": "usd_revenue",
+          "label": "US-dollar revenue",
+          "output": "revenue_change",
+          "monthly_output": "revenue_change",
+          "value": "2000000",
+          "by_change": {
+            "var_usd_inr": "2000000"
+          }
+        }
+      ],
+      "by_change": {
+        "var_brent_crude": "3587500",
+        "var_usd_inr": "3337500"
+      },
+      "monthly": [
+        "166666.6666666667",
+        "166666.6666666667",
+        "291666.6666666667",
+        "606666.6666666667",
+        "606666.6666666667",
+        "606666.6666666667",
+        "606666.6666666667",
+        "606666.6666666667",
+        "816666.6666666667",
+        "816666.6666666667",
+        "816666.6666666667",
+        "816666.6666666667"
+      ],
+      "cumulative": [
+        "166666.6666666667",
+        "333333.3333333334",
+        "625000.0000000001",
+        "1231666.6666666668",
+        "1838333.3333333335",
+        "2445000.0000000002",
+        "3051666.6666666669",
+        "3658333.3333333336",
+        "4475000.0000000003",
+        "5291666.666666667",
+        "6108333.3333333337",
+        "6925000.0000000004"
+      ],
+      "baseline_monthly": "25000000",
+      "note": null,
+      "knowledge": "simulated"
+    },
+    {
+      "id": "operating_costs",
+      "label": "Operating costs",
+      "equation": "AG2",
+      "unit": "currency",
+      "currency": "INR",
+      "baseline": "250000000",
+      "change": "13250000",
+      "scenario": "263250000",
+      "percent_change": "5.3",
+      "direction": "up",
+      "effect": "reduces_profit",
+      "items": [
+        {
+          "model_id": "airline_fuel_cost",
+          "item": "jet_fuel",
+          "label": "Jet fuel",
+          "output": "fuel_cost_change",
+          "monthly_output": "fuel_cost_change",
+          "value": "12450000",
+          "by_change": {
+            "var_brent_crude": "9225000",
+            "var_usd_inr": "3225000"
+          }
+        },
+        {
+          "model_id": "fx_exposure",
+          "item": "usd_costs",
+          "label": "US-dollar costs",
+          "output": "cost_change",
+          "monthly_output": "cost_change",
+          "value": "800000",
+          "by_change": {
+            "var_usd_inr": "800000"
+          }
+        }
+      ],
+      "by_change": {
+        "var_brent_crude": "9225000",
+        "var_usd_inr": "4025000"
+      },
+      "monthly": [
+        "316666.6666666667",
+        "946666.6666666667",
+        "946666.6666666667",
+        "946666.6666666667",
+        "946666.6666666667",
+        "946666.6666666667",
+        "1366666.6666666667",
+        "1366666.6666666667",
+        "1366666.6666666667",
+        "1366666.6666666667",
+        "1366666.6666666667",
+        "1366666.6666666667"
+      ],
+      "cumulative": [
+        "316666.6666666667",
+        "1263333.3333333334",
+        "2210000.0000000001",
+        "3156666.6666666668",
+        "4103333.3333333335",
+        "5050000.0000000002",
+        "6416666.6666666669",
+        "7783333.3333333336",
+        "9150000.0000000003",
+        "10516666.666666667",
+        "11883333.3333333337",
+        "13250000.0000000004"
+      ],
+      "baseline_monthly": "20833333.3333333333",
+      "note": null,
+      "knowledge": "simulated"
+    },
+    {
+      "id": "operating_profit",
+      "label": "Operating profit",
+      "equation": "AG3",
+      "unit": "currency",
+      "currency": "INR",
+      "baseline": "50000000",
+      "change": "-6325000",
+      "scenario": "43675000",
+      "percent_change": "-12.65",
+      "direction": "down",
+      "effect": "reduces_profit",
+      "items": [],
+      "by_change": {
+        "var_brent_crude": "-5637500",
+        "var_usd_inr": "-687500"
+      },
+      "monthly": [
+        "-150000",
+        "-780000",
+        "-655000",
+        "-340000",
+        "-340000",
+        "-340000",
+        "-760000",
+        "-760000",
+        "-550000",
+        "-550000",
+        "-550000",
+        "-550000"
+      ],
+      "cumulative": [
+        "-150000",
+        "-930000",
+        "-1585000",
+        "-1925000",
+        "-2265000",
+        "-2605000",
+        "-3365000",
+        "-4125000",
+        "-4675000",
+        "-5225000",
+        "-5775000",
+        "-6325000"
+      ],
+      "baseline_monthly": "4166666.6666666667",
+      "note": null,
+      "knowledge": "simulated"
+    },
+    {
+      "id": "interest_expense",
+      "label": "Interest expense",
+      "equation": "AG4",
+      "unit": "currency",
+      "currency": "INR",
+      "baseline": "12000000",
+      "change": "375000",
+      "scenario": "12375000",
+      "percent_change": "3.125",
+      "direction": "up",
+      "effect": "reduces_profit",
+      "items": [
+        {
+          "model_id": "floating_rate_interest",
+          "item": "repo_linked_interest",
+          "label": "Repo-linked debt",
+          "output": "repo_interest_change",
+          "monthly_output": "repo_interest_change",
+          "value": "375000",
+          "by_change": {
+            "var_rbi_repo_rate": "375000"
+          }
+        },
+        {
+          "model_id": "floating_rate_interest",
+          "item": "us_rate_linked_interest",
+          "label": "US-rate-linked debt",
+          "output": "us_interest_change",
+          "monthly_output": "us_interest_change",
+          "value": "0",
+          "by_change": {
+            "var_rbi_repo_rate": "0"
+          }
+        }
+      ],
+      "by_change": {
+        "var_rbi_repo_rate": "375000"
+      },
+      "monthly": [
+        "0",
+        "0",
+        "0",
+        "41666.6666666667",
+        "41666.6666666667",
+        "41666.6666666667",
+        "41666.6666666667",
+        "41666.6666666667",
+        "41666.6666666667",
+        "41666.6666666667",
+        "41666.6666666667",
+        "41666.6666666667"
+      ],
+      "cumulative": [
+        "0",
+        "0",
+        "0",
+        "41666.6666666667",
+        "83333.3333333334",
+        "125000.0000000001",
+        "166666.6666666668",
+        "208333.3333333335",
+        "250000.0000000002",
+        "291666.6666666669",
+        "333333.3333333336",
+        "375000.0000000003"
+      ],
+      "baseline_monthly": "1000000",
+      "note": null,
+      "knowledge": "simulated"
+    },
+    {
+      "id": "profit_before_tax",
+      "label": "Profit before tax",
+      "equation": "AG5",
+      "unit": "currency",
+      "currency": "INR",
+      "baseline": "38000000",
+      "change": "-6700000",
+      "scenario": "31300000",
+      "percent_change": "-17.6315789474",
+      "direction": "down",
+      "effect": "reduces_profit",
+      "items": [],
+      "by_change": {
+        "var_brent_crude": "-5637500",
+        "var_rbi_repo_rate": "-375000",
+        "var_usd_inr": "-687500"
+      },
+      "monthly": [
+        "-150000",
+        "-780000",
+        "-655000",
+        "-381666.6666666667",
+        "-381666.6666666667",
+        "-381666.6666666667",
+        "-801666.6666666667",
+        "-801666.6666666667",
+        "-591666.6666666667",
+        "-591666.6666666667",
+        "-591666.6666666667",
+        "-591666.6666666667"
+      ],
+      "cumulative": [
+        "-150000",
+        "-930000",
+        "-1585000",
+        "-1966666.6666666667",
+        "-2348333.3333333334",
+        "-2730000.0000000001",
+        "-3531666.6666666668",
+        "-4333333.3333333335",
+        "-4925000.0000000002",
+        "-5516666.6666666669",
+        "-6108333.3333333336",
+        "-6700000.0000000003"
+      ],
+      "baseline_monthly": "3166666.6666666667",
+      "note": null,
+      "knowledge": "simulated"
+    }
+  ],
+  "metrics": [
+    {
+      "id": "operating_margin",
+      "label": "Operating margin",
+      "equation": "AG6",
+      "unit": "ratio",
+      "baseline": "0.1666666667",
+      "scenario": "0.1422986072",
+      "change": "-0.0243680595",
+      "change_unit": "ratio_points",
+      "direction": "down",
+      "knowledge": "simulated"
+    },
+    {
+      "id": "interest_coverage",
+      "label": "Interest coverage",
+      "equation": "AG7",
+      "unit": "times",
+      "baseline": "4.1666666667",
+      "scenario": "3.5292929293",
+      "change": "-0.6373737374",
+      "change_unit": "times",
+      "direction": "down",
+      "knowledge": "simulated"
+    }
+  ],
+  "not_modelled": [
+    {
+      "id": "cash_flow",
+      "label": "Cash flow",
+      "reason": "No model covers working capital, tax or investment, so a cash-flow figure would be invented."
+    }
+  ],
+  "models": [
+    {
+      "model_id": "airline_fuel_cost",
+      "version": "1.1.0",
+      "name": "Airline fuel-cost shock",
+      "title": "Airline fuel cost",
+      "definition_hash": "1e6ddaac9f18fed44bab55dd1bb12f192ff50326438aa331c7cb295ada15ed6f",
+      "profile_hash": "6c1ad56c7c95601cbb2941b595a08e3bd3b2454e1271fae39bda2d6b98aa592d",
+      "run_id": "2d79e629-1c41-431d-9e51-845f819549fb",
+      "inputs_hash": "c1bd2d91950f9be4350542e7edc335244a46bf0423423be66d5d49236e3e6e4c",
+      "result_hash": "82d7107dcfb3949bd3c537b376b5c39a821b2a16fdb3ae0b848f3aceea6f614b",
+      "key_outputs": [
+        {
+          "id": "fuel_cost_change",
+          "label": "Change in fuel cost (horizon)",
+          "value": "12450000",
+          "unit": "INR",
+          "kind": "simulated"
+        },
+        {
+          "id": "hedging_effect",
+          "label": "Hedging effect (horizon)",
+          "value": "-2100000",
+          "unit": "INR",
+          "kind": "simulated"
+        },
+        {
+          "id": "fare_recovery",
+          "label": "Fare recovery (horizon)",
+          "value": "4925000",
+          "unit": "INR",
+          "kind": "simulated"
+        },
+        {
+          "id": "jet_fuel_price_change",
+          "label": "Jet fuel price change (run rate)",
+          "value": "0.2",
+          "unit": "ratio",
+          "kind": "simulated"
+        },
+        {
+          "id": "steady_state_operating_profit_change",
+          "label": "Run-rate annual operating-profit change",
+          "value": "-7800000",
+          "unit": "INR per year",
+          "kind": "simulated"
+        }
+      ],
+      "bridge": {
+        "steps": [
+          {
+            "output": "gross_fuel_cost_change",
+            "label": "Fuel-cost change without hedges",
+            "sign": -1,
+            "value": "-14550000"
+          },
+          {
+            "output": "hedging_effect",
+            "label": "Hedging",
+            "sign": -1,
+            "value": "2100000"
+          },
+          {
+            "output": "fare_recovery",
+            "label": "Fare recovery",
+            "sign": 1,
+            "value": "4925000"
+          }
+        ],
+        "total": {
+          "output": "operating_profit_change",
+          "value": "-7525000"
+        }
+      },
+      "warnings": [
+        {
+          "code": "fictional_entity",
+          "message": "Aerisca Airways is a fictional company in RUMIN's sample network: the results describe the figures you entered, not a real airline.",
+          "field": "entity"
+        },
+        {
+          "code": "assumption_based_channel",
+          "message": "Rule T1 follows a relationship the knowledge graph records as a model assumption, not an empirical finding: results that depend on it are assumption-driven.",
+          "field": "crude_oil_change"
+        }
+      ]
+    },
+    {
+      "model_id": "fx_exposure",
+      "version": "1.0.0",
+      "name": "Foreign-currency revenue and costs",
+      "title": "Foreign-currency revenue and costs",
+      "definition_hash": "1d0da6e5da1964c8910696394f6c905b4c2d5016c4bb9ed70dd94253890492a3",
+      "profile_hash": "417399ee48cd2e2bd466d11baa7320b0aa198cdb523d233363efe13e1b7f52a6",
+      "run_id": "07da6ecd-0201-4225-b4a1-213e937d6532",
+      "inputs_hash": "0e70d2e64c2a834ecbe4ead28e982f0965ca43abb3e93fc267bfce932a91f471",
+      "result_hash": "5a976601299ee1c411e3b815b61e81b3c1be8089c95311e3e536074af633e044",
+      "key_outputs": [
+        {
+          "id": "revenue_change",
+          "label": "Change in revenue (horizon)",
+          "value": "2000000",
+          "unit": "INR",
+          "kind": "simulated"
+        },
+        {
+          "id": "cost_change",
+          "label": "Change in US-dollar costs (horizon)",
+          "value": "800000",
+          "unit": "INR",
+          "kind": "simulated"
+        },
+        {
+          "id": "net_usd_exposure",
+          "label": "Net US-dollar exposure",
+          "value": "300000",
+          "unit": "USD per year",
+          "kind": "derived"
+        },
+        {
+          "id": "run_rate_operating_profit_change",
+          "label": "Run-rate annual operating-profit change",
+          "value": "1200000",
+          "unit": "INR per year",
+          "kind": "simulated"
+        }
+      ],
+      "bridge": {
+        "steps": [
+          {
+            "output": "gross_revenue_change",
+            "label": "Revenue change without hedges",
+            "sign": 1,
+            "value": "2000000"
+          },
+          {
+            "output": "revenue_hedging_effect",
+            "label": "Revenue hedges",
+            "sign": 1,
+            "value": "0"
+          },
+          {
+            "output": "gross_cost_change",
+            "label": "Cost change without hedges",
+            "sign": -1,
+            "value": "-800000"
+          },
+          {
+            "output": "cost_hedging_effect",
+            "label": "Cost hedges",
+            "sign": -1,
+            "value": "0"
+          }
+        ],
+        "total": {
+          "output": "operating_profit_change",
+          "value": "1200000"
+        }
+      },
+      "warnings": [
+        {
+          "code": "fictional_entity",
+          "message": "Aerisca Airways is a fictional company in RUMIN's sample network: the results describe the figures you entered, not a real airline.",
+          "field": "entity"
+        }
+      ]
+    },
+    {
+      "model_id": "floating_rate_interest",
+      "version": "1.0.0",
+      "name": "Floating-rate interest costs",
+      "title": "Floating-rate interest",
+      "definition_hash": "e11b2df833e9dbe2cb7146b0c3d0719304260e8a5c74852127996c64979fbe2d",
+      "profile_hash": "77df5f90574749af2647b18978999741bc2c49786e3ef344d9d5a608893a1dd1",
+      "run_id": "28c391f1-5458-4821-842d-e83f4100aab3",
+      "inputs_hash": "ac54adfda1dcddb4026e09ef8274193d795da05c4548ac6e70698da7c4737a84",
+      "result_hash": "08fbbf330a3d1ddf2a89ac84d5ef6354bb68551a62cf4323f87e50ccea864288",
+      "key_outputs": [
+        {
+          "id": "interest_expense_change",
+          "label": "Change in interest expense (horizon)",
+          "value": "375000",
+          "unit": "INR",
+          "kind": "simulated"
+        },
+        {
+          "id": "interest_coverage_change",
+          "label": "Change in interest coverage",
+          "value": "-0.1262626263",
+          "unit": "times",
+          "kind": "simulated"
+        },
+        {
+          "id": "run_rate_interest_change",
+          "label": "Run-rate annual interest change",
+          "value": "500000",
+          "unit": "INR per year",
+          "kind": "simulated"
+        }
+      ],
+      "bridge": {
+        "steps": [
+          {
+            "output": "repo_interest_change",
+            "label": "Interest on repo-linked debt",
+            "sign": -1,
+            "value": "-375000"
+          },
+          {
+            "output": "us_interest_change",
+            "label": "Interest on US-rate-linked debt",
+            "sign": -1,
+            "value": "0"
+          }
+        ],
+        "total": {
+          "output": "profit_before_tax_change",
+          "value": "-375000"
+        }
+      },
+      "warnings": [
+        {
+          "code": "fictional_entity",
+          "message": "Aerisca Airways is a fictional company in RUMIN's sample network: the results describe the figures you entered, not a real airline.",
+          "field": "entity"
+        }
+      ]
+    }
+  ],
+  "timeline": {
+    "months": 12,
+    "start_month": 1,
+    "end_month": 12,
+    "lines": [
+      {
+        "line": "revenue",
+        "values": [
+          "166666.6666666667",
+          "166666.6666666667",
+          "291666.6666666667",
+          "606666.6666666667",
+          "606666.6666666667",
+          "606666.6666666667",
+          "606666.6666666667",
+          "606666.6666666667",
+          "816666.6666666667",
+          "816666.6666666667",
+          "816666.6666666667",
+          "816666.6666666667"
+        ]
+      },
+      {
+        "line": "operating_costs",
+        "values": [
+          "316666.6666666667",
+          "946666.6666666667",
+          "946666.6666666667",
+          "946666.6666666667",
+          "946666.6666666667",
+          "946666.6666666667",
+          "1366666.6666666667",
+          "1366666.6666666667",
+          "1366666.6666666667",
+          "1366666.6666666667",
+          "1366666.6666666667",
+          "1366666.6666666667"
+        ]
+      },
+      {
+        "line": "operating_profit",
+        "values": [
+          "-150000",
+          "-780000",
+          "-655000",
+          "-340000",
+          "-340000",
+          "-340000",
+          "-760000",
+          "-760000",
+          "-550000",
+          "-550000",
+          "-550000",
+          "-550000"
+        ]
+      },
+      {
+        "line": "interest_expense",
+        "values": [
+          "0",
+          "0",
+          "0",
+          "41666.6666666667",
+          "41666.6666666667",
+          "41666.6666666667",
+          "41666.6666666667",
+          "41666.6666666667",
+          "41666.6666666667",
+          "41666.6666666667",
+          "41666.6666666667",
+          "41666.6666666667"
+        ]
+      },
+      {
+        "line": "profit_before_tax",
+        "values": [
+          "-150000",
+          "-780000",
+          "-655000",
+          "-381666.6666666667",
+          "-381666.6666666667",
+          "-381666.6666666667",
+          "-801666.6666666667",
+          "-801666.6666666667",
+          "-591666.6666666667",
+          "-591666.6666666667",
+          "-591666.6666666667",
+          "-591666.6666666667"
+        ]
+      }
+    ],
+    "events": [
+      {
+        "month": 1,
+        "label": "The changes take effect",
+        "model_id": "scenario"
+      },
+      {
+        "month": 2,
+        "label": "The crude oil change reaches jet fuel (1-month lag)",
+        "model_id": "airline_fuel_cost"
+      },
+      {
+        "month": 3,
+        "label": "Fares start to recover fuel costs",
+        "model_id": "airline_fuel_cost"
+      },
+      {
+        "month": 4,
+        "label": "Repo-linked loans reprice",
+        "model_id": "floating_rate_interest"
+      },
+      {
+        "month": 7,
+        "label": "Fuel hedges expire",
+        "model_id": "airline_fuel_cost"
+      }
+    ],
+    "knowledge": "simulated",
+    "note": "Months of the simulation, counted from its start: simulated values, not dates and not forecasts."
+  },
+  "stress_cases": [
+    {
+      "name": "Half",
+      "scale": "0.5",
+      "changes": {
+        "var_brent_crude": "10",
+        "var_usd_inr": "2.5",
+        "var_rbi_repo_rate": "0.25"
+      },
+      "lines": [
+        {
+          "id": "revenue",
+          "label": "Revenue",
+          "equation": "AG1",
+          "unit": "currency",
+          "currency": "INR",
+          "baseline": "300000000",
+          "change": "3418750",
+          "scenario": "303418750",
+          "percent_change": "1.1395833333",
+          "direction": "up",
+          "effect": "raises_profit",
+          "items": [
+            {
+              "model_id": "airline_fuel_cost",
+              "item": "fuel_cost_recovery",
+              "label": "Fare recovery",
+              "output": "fare_recovery",
+              "monthly_output": "fare_recovery",
+              "value": "2418750",
+              "by_change": {}
+            },
+            {
+              "model_id": "fx_exposure",
+              "item": "usd_revenue",
+              "label": "US-dollar revenue",
+              "output": "revenue_change",
+              "monthly_output": "revenue_change",
+              "value": "1000000",
+              "by_change": {}
+            }
+          ],
+          "by_change": {},
+          "monthly": [
+            "83333.3333333333",
+            "83333.3333333333",
+            "145833.3333333333",
+            "299583.3333333333",
+            "299583.3333333333",
+            "299583.3333333333",
+            "299583.3333333333",
+            "299583.3333333333",
+            "402083.3333333333",
+            "402083.3333333333",
+            "402083.3333333333",
+            "402083.3333333333"
+          ],
+          "cumulative": [
+            "83333.3333333333",
+            "166666.6666666666",
+            "312499.9999999999",
+            "612083.3333333332",
+            "911666.6666666665",
+            "1211249.9999999998",
+            "1510833.3333333331",
+            "1810416.6666666664",
+            "2212499.9999999997",
+            "2614583.333333333",
+            "3016666.6666666663",
+            "3418749.9999999996"
+          ],
+          "baseline_monthly": "25000000",
+          "note": null,
+          "knowledge": "simulated"
+        },
+        {
+          "id": "operating_costs",
+          "label": "Operating costs",
+          "equation": "AG2",
+          "unit": "currency",
+          "currency": "INR",
+          "baseline": "250000000",
+          "change": "6512500",
+          "scenario": "256512500",
+          "percent_change": "2.605",
+          "direction": "up",
+          "effect": "reduces_profit",
+          "items": [
+            {
+              "model_id": "airline_fuel_cost",
+              "item": "jet_fuel",
+              "label": "Jet fuel",
+              "output": "fuel_cost_change",
+              "monthly_output": "fuel_cost_change",
+              "value": "6112500",
+              "by_change": {}
+            },
+            {
+              "model_id": "fx_exposure",
+              "item": "usd_costs",
+              "label": "US-dollar costs",
+              "output": "cost_change",
+              "monthly_output": "cost_change",
+              "value": "400000",
+              "by_change": {}
+            }
+          ],
+          "by_change": {},
+          "monthly": [
+            "158333.3333333333",
+            "465833.3333333333",
+            "465833.3333333333",
+            "465833.3333333333",
+            "465833.3333333333",
+            "465833.3333333333",
+            "670833.3333333333",
+            "670833.3333333333",
+            "670833.3333333333",
+            "670833.3333333333",
+            "670833.3333333333",
+            "670833.3333333333"
+          ],
+          "cumulative": [
+            "158333.3333333333",
+            "624166.6666666666",
+            "1089999.9999999999",
+            "1555833.3333333332",
+            "2021666.6666666665",
+            "2487499.9999999998",
+            "3158333.3333333331",
+            "3829166.6666666664",
+            "4499999.9999999997",
+            "5170833.333333333",
+            "5841666.6666666663",
+            "6512499.9999999996"
+          ],
+          "baseline_monthly": "20833333.3333333333",
+          "note": null,
+          "knowledge": "simulated"
+        },
+        {
+          "id": "operating_profit",
+          "label": "Operating profit",
+          "equation": "AG3",
+          "unit": "currency",
+          "currency": "INR",
+          "baseline": "50000000",
+          "change": "-3093750",
+          "scenario": "46906250",
+          "percent_change": "-6.1875",
+          "direction": "down",
+          "effect": "reduces_profit",
+          "items": [],
+          "by_change": {},
+          "monthly": [
+            "-75000",
+            "-382500",
+            "-320000",
+            "-166250",
+            "-166250",
+            "-166250",
+            "-371250",
+            "-371250",
+            "-268750",
+            "-268750",
+            "-268750",
+            "-268750"
+          ],
+          "cumulative": [
+            "-75000",
+            "-457500",
+            "-777500",
+            "-943750",
+            "-1110000",
+            "-1276250",
+            "-1647500",
+            "-2018750",
+            "-2287500",
+            "-2556250",
+            "-2825000",
+            "-3093750"
+          ],
+          "baseline_monthly": "4166666.6666666667",
+          "note": null,
+          "knowledge": "simulated"
+        },
+        {
+          "id": "interest_expense",
+          "label": "Interest expense",
+          "equation": "AG4",
+          "unit": "currency",
+          "currency": "INR",
+          "baseline": "12000000",
+          "change": "187500",
+          "scenario": "12187500",
+          "percent_change": "1.5625",
+          "direction": "up",
+          "effect": "reduces_profit",
+          "items": [
+            {
+              "model_id": "floating_rate_interest",
+              "item": "repo_linked_interest",
+              "label": "Repo-linked debt",
+              "output": "repo_interest_change",
+              "monthly_output": "repo_interest_change",
+              "value": "187500",
+              "by_change": {}
+            },
+            {
+              "model_id": "floating_rate_interest",
+              "item": "us_rate_linked_interest",
+              "label": "US-rate-linked debt",
+              "output": "us_interest_change",
+              "monthly_output": "us_interest_change",
+              "value": "0",
+              "by_change": {}
+            }
+          ],
+          "by_change": {},
+          "monthly": [
+            "0",
+            "0",
+            "0",
+            "20833.3333333333",
+            "20833.3333333333",
+            "20833.3333333333",
+            "20833.3333333333",
+            "20833.3333333333",
+            "20833.3333333333",
+            "20833.3333333333",
+            "20833.3333333333",
+            "20833.3333333333"
+          ],
+          "cumulative": [
+            "0",
+            "0",
+            "0",
+            "20833.3333333333",
+            "41666.6666666666",
+            "62499.9999999999",
+            "83333.3333333332",
+            "104166.6666666665",
+            "124999.9999999998",
+            "145833.3333333331",
+            "166666.6666666664",
+            "187499.9999999997"
+          ],
+          "baseline_monthly": "1000000",
+          "note": null,
+          "knowledge": "simulated"
+        },
+        {
+          "id": "profit_before_tax",
+          "label": "Profit before tax",
+          "equation": "AG5",
+          "unit": "currency",
+          "currency": "INR",
+          "baseline": "38000000",
+          "change": "-3281250",
+          "scenario": "34718750",
+          "percent_change": "-8.6348684211",
+          "direction": "down",
+          "effect": "reduces_profit",
+          "items": [],
+          "by_change": {},
+          "monthly": [
+            "-75000",
+            "-382500",
+            "-320000",
+            "-187083.3333333333",
+            "-187083.3333333333",
+            "-187083.3333333333",
+            "-392083.3333333333",
+            "-392083.3333333333",
+            "-289583.3333333333",
+            "-289583.3333333333",
+            "-289583.3333333333",
+            "-289583.3333333333"
+          ],
+          "cumulative": [
+            "-75000",
+            "-457500",
+            "-777500",
+            "-964583.3333333333",
+            "-1151666.6666666666",
+            "-1338749.9999999999",
+            "-1730833.3333333332",
+            "-2122916.6666666665",
+            "-2412499.9999999998",
+            "-2702083.3333333331",
+            "-2991666.6666666664",
+            "-3281249.9999999997"
+          ],
+          "baseline_monthly": "3166666.6666666667",
+          "note": null,
+          "knowledge": "simulated"
+        }
+      ],
+      "metrics": [
+        {
+          "id": "operating_margin",
+          "label": "Operating margin",
+          "equation": "AG6",
+          "unit": "ratio",
+          "baseline": "0.1666666667",
+          "scenario": "0.1545924568",
+          "change": "-0.0120742099",
+          "change_unit": "ratio_points",
+          "direction": "down",
+          "knowledge": "simulated"
+        },
+        {
+          "id": "interest_coverage",
+          "label": "Interest coverage",
+          "equation": "AG7",
+          "unit": "times",
+          "baseline": "4.1666666667",
+          "scenario": "3.8487179487",
+          "change": "-0.3179487179",
+          "change_unit": "times",
+          "direction": "down",
+          "knowledge": "simulated"
+        }
+      ],
+      "knowledge": "simulated"
+    },
+    {
+      "name": "Double",
+      "scale": "2",
+      "changes": {
+        "var_brent_crude": "40",
+        "var_usd_inr": "10",
+        "var_rbi_repo_rate": "1"
+      },
+      "lines": [
+        {
+          "id": "revenue",
+          "label": "Revenue",
+          "equation": "AG1",
+          "unit": "currency",
+          "currency": "INR",
+          "baseline": "300000000",
+          "change": "14200000",
+          "scenario": "314200000",
+          "percent_change": "4.7333333333",
+          "direction": "up",
+          "effect": "raises_profit",
+          "items": [
+            {
+              "model_id": "airline_fuel_cost",
+              "item": "fuel_cost_recovery",
+              "label": "Fare recovery",
+              "output": "fare_recovery",
+              "monthly_output": "fare_recovery",
+              "value": "10200000",
+              "by_change": {}
+            },
+            {
+              "model_id": "fx_exposure",
+              "item": "usd_revenue",
+              "label": "US-dollar revenue",
+              "output": "revenue_change",
+              "monthly_output": "revenue_change",
+              "value": "4000000",
+              "by_change": {}
+            }
+          ],
+          "by_change": {},
+          "monthly": [
+            "333333.3333333333",
+            "333333.3333333333",
+            "583333.3333333333",
+            "1243333.3333333333",
+            "1243333.3333333333",
+            "1243333.3333333333",
+            "1243333.3333333333",
+            "1243333.3333333333",
+            "1683333.3333333333",
+            "1683333.3333333333",
+            "1683333.3333333333",
+            "1683333.3333333333"
+          ],
+          "cumulative": [
+            "333333.3333333333",
+            "666666.6666666666",
+            "1249999.9999999999",
+            "2493333.3333333332",
+            "3736666.6666666665",
+            "4979999.9999999998",
+            "6223333.3333333331",
+            "7466666.6666666664",
+            "9149999.9999999997",
+            "10833333.333333333",
+            "12516666.6666666663",
+            "14199999.9999999996"
+          ],
+          "baseline_monthly": "25000000",
+          "note": null,
+          "knowledge": "simulated"
+        },
+        {
+          "id": "operating_costs",
+          "label": "Operating costs",
+          "equation": "AG2",
+          "unit": "currency",
+          "currency": "INR",
+          "baseline": "250000000",
+          "change": "27400000",
+          "scenario": "277400000",
+          "percent_change": "10.96",
+          "direction": "up",
+          "effect": "reduces_profit",
+          "items": [
+            {
+              "model_id": "airline_fuel_cost",
+              "item": "jet_fuel",
+              "label": "Jet fuel",
+              "output": "fuel_cost_change",
+              "monthly_output": "fuel_cost_change",
+              "value": "25800000",
+              "by_change": {}
+            },
+            {
+              "model_id": "fx_exposure",
+              "item": "usd_costs",
+              "label": "US-dollar costs",
+              "output": "cost_change",
+              "monthly_output": "cost_change",
+              "value": "1600000",
+              "by_change": {}
+            }
+          ],
+          "by_change": {},
+          "monthly": [
+            "633333.3333333333",
+            "1953333.3333333333",
+            "1953333.3333333333",
+            "1953333.3333333333",
+            "1953333.3333333333",
+            "1953333.3333333333",
+            "2833333.3333333333",
+            "2833333.3333333333",
+            "2833333.3333333333",
+            "2833333.3333333333",
+            "2833333.3333333333",
+            "2833333.3333333333"
+          ],
+          "cumulative": [
+            "633333.3333333333",
+            "2586666.6666666666",
+            "4539999.9999999999",
+            "6493333.3333333332",
+            "8446666.6666666665",
+            "10399999.9999999998",
+            "13233333.3333333331",
+            "16066666.6666666664",
+            "18899999.9999999997",
+            "21733333.333333333",
+            "24566666.6666666663",
+            "27399999.9999999996"
+          ],
+          "baseline_monthly": "20833333.3333333333",
+          "note": null,
+          "knowledge": "simulated"
+        },
+        {
+          "id": "operating_profit",
+          "label": "Operating profit",
+          "equation": "AG3",
+          "unit": "currency",
+          "currency": "INR",
+          "baseline": "50000000",
+          "change": "-13200000",
+          "scenario": "36800000",
+          "percent_change": "-26.4",
+          "direction": "down",
+          "effect": "reduces_profit",
+          "items": [],
+          "by_change": {},
+          "monthly": [
+            "-300000",
+            "-1620000",
+            "-1370000",
+            "-710000",
+            "-710000",
+            "-710000",
+            "-1590000",
+            "-1590000",
+            "-1150000",
+            "-1150000",
+            "-1150000",
+            "-1150000"
+          ],
+          "cumulative": [
+            "-300000",
+            "-1920000",
+            "-3290000",
+            "-4000000",
+            "-4710000",
+            "-5420000",
+            "-7010000",
+            "-8600000",
+            "-9750000",
+            "-10900000",
+            "-12050000",
+            "-13200000"
+          ],
+          "baseline_monthly": "4166666.6666666667",
+          "note": null,
+          "knowledge": "simulated"
+        },
+        {
+          "id": "interest_expense",
+          "label": "Interest expense",
+          "equation": "AG4",
+          "unit": "currency",
+          "currency": "INR",
+          "baseline": "12000000",
+          "change": "750000",
+          "scenario": "12750000",
+          "percent_change": "6.25",
+          "direction": "up",
+          "effect": "reduces_profit",
+          "items": [
+            {
+              "model_id": "floating_rate_interest",
+              "item": "repo_linked_interest",
+              "label": "Repo-linked debt",
+              "output": "repo_interest_change",
+              "monthly_output": "repo_interest_change",
+              "value": "750000",
+              "by_change": {}
+            },
+            {
+              "model_id": "floating_rate_interest",
+              "item": "us_rate_linked_interest",
+              "label": "US-rate-linked debt",
+              "output": "us_interest_change",
+              "monthly_output": "us_interest_change",
+              "value": "0",
+              "by_change": {}
+            }
+          ],
+          "by_change": {},
+          "monthly": [
+            "0",
+            "0",
+            "0",
+            "83333.3333333333",
+            "83333.3333333333",
+            "83333.3333333333",
+            "83333.3333333333",
+            "83333.3333333333",
+            "83333.3333333333",
+            "83333.3333333333",
+            "83333.3333333333",
+            "83333.3333333333"
+          ],
+          "cumulative": [
+            "0",
+            "0",
+            "0",
+            "83333.3333333333",
+            "166666.6666666666",
+            "249999.9999999999",
+            "333333.3333333332",
+            "416666.6666666665",
+            "499999.9999999998",
+            "583333.3333333331",
+            "666666.6666666664",
+            "749999.9999999997"
+          ],
+          "baseline_monthly": "1000000",
+          "note": null,
+          "knowledge": "simulated"
+        },
+        {
+          "id": "profit_before_tax",
+          "label": "Profit before tax",
+          "equation": "AG5",
+          "unit": "currency",
+          "currency": "INR",
+          "baseline": "38000000",
+          "change": "-13950000",
+          "scenario": "24050000",
+          "percent_change": "-36.7105263158",
+          "direction": "down",
+          "effect": "reduces_profit",
+          "items": [],
+          "by_change": {},
+          "monthly": [
+            "-300000",
+            "-1620000",
+            "-1370000",
+            "-793333.3333333333",
+            "-793333.3333333333",
+            "-793333.3333333333",
+            "-1673333.3333333333",
+            "-1673333.3333333333",
+            "-1233333.3333333333",
+            "-1233333.3333333333",
+            "-1233333.3333333333",
+            "-1233333.3333333333"
+          ],
+          "cumulative": [
+            "-300000",
+            "-1920000",
+            "-3290000",
+            "-4083333.3333333333",
+            "-4876666.6666666666",
+            "-5669999.9999999999",
+            "-7343333.3333333332",
+            "-9016666.6666666665",
+            "-10249999.9999999998",
+            "-11483333.3333333331",
+            "-12716666.6666666664",
+            "-13949999.9999999997"
+          ],
+          "baseline_monthly": "3166666.6666666667",
+          "note": null,
+          "knowledge": "simulated"
+        }
+      ],
+      "metrics": [
+        {
+          "id": "operating_margin",
+          "label": "Operating margin",
+          "equation": "AG6",
+          "unit": "ratio",
+          "baseline": "0.1666666667",
+          "scenario": "0.1171228517",
+          "change": "-0.049543815",
+          "change_unit": "ratio_points",
+          "direction": "down",
+          "knowledge": "simulated"
+        },
+        {
+          "id": "interest_coverage",
+          "label": "Interest coverage",
+          "equation": "AG7",
+          "unit": "times",
+          "baseline": "4.1666666667",
+          "scenario": "2.8862745098",
+          "change": "-1.2803921569",
+          "change_unit": "times",
+          "direction": "down",
+          "knowledge": "simulated"
+        }
+      ],
+      "knowledge": "simulated"
+    }
+  ],
+  "steps": [
+    {
+      "sequence": 1,
+      "equation": "AG1",
+      "label": "Change in revenue",
+      "output": {
+        "symbol": "Δrevenue",
+        "value": "6925000",
+        "unit": "currency"
+      },
+      "inputs": [
+        {
+          "symbol": "airline_fuel_cost.fare_recovery",
+          "value": "4925000",
+          "unit": "currency"
+        },
+        {
+          "symbol": "fx_exposure.revenue_change",
+          "value": "2000000",
+          "unit": "currency"
+        }
+      ]
+    },
+    {
+      "sequence": 2,
+      "equation": "AG2",
+      "label": "Change in operating costs",
+      "output": {
+        "symbol": "Δoperating_costs",
+        "value": "13250000",
+        "unit": "currency"
+      },
+      "inputs": [
+        {
+          "symbol": "airline_fuel_cost.fuel_cost_change",
+          "value": "12450000",
+          "unit": "currency"
+        },
+        {
+          "symbol": "fx_exposure.cost_change",
+          "value": "800000",
+          "unit": "currency"
+        }
+      ]
+    },
+    {
+      "sequence": 3,
+      "equation": "AG3",
+      "label": "Change in operating profit",
+      "output": {
+        "symbol": "ΔΠ",
+        "value": "-6325000",
+        "unit": "currency"
+      },
+      "inputs": [
+        {
+          "symbol": "ΔR",
+          "value": "6925000",
+          "unit": "currency"
+        },
+        {
+          "symbol": "ΔO",
+          "value": "13250000",
+          "unit": "currency"
+        }
+      ]
+    },
+    {
+      "sequence": 4,
+      "equation": "AG4",
+      "label": "Change in interest expense",
+      "output": {
+        "symbol": "ΔI",
+        "value": "375000",
+        "unit": "currency"
+      },
+      "inputs": [
+        {
+          "symbol": "floating_rate_interest.repo_interest_change",
+          "value": "375000",
+          "unit": "currency"
+        },
+        {
+          "symbol": "floating_rate_interest.us_interest_change",
+          "value": "0",
+          "unit": "currency"
+        }
+      ]
+    },
+    {
+      "sequence": 5,
+      "equation": "AG5",
+      "label": "Change in profit before tax",
+      "output": {
+        "symbol": "ΔP",
+        "value": "-6700000",
+        "unit": "currency"
+      },
+      "inputs": [
+        {
+          "symbol": "ΔΠ",
+          "value": "-6325000",
+          "unit": "currency"
+        },
+        {
+          "symbol": "ΔI",
+          "value": "375000",
+          "unit": "currency"
+        }
+      ]
+    },
+    {
+      "sequence": 6,
+      "equation": "AG6",
+      "label": "Operating margin under the scenario",
+      "output": {
+        "symbol": "μ₁",
+        "value": "0.1422986072",
+        "unit": "ratio"
+      },
+      "inputs": [
+        {
+          "symbol": "R·H/12",
+          "value": "300000000",
+          "unit": "currency"
+        },
+        {
+          "symbol": "ΔR",
+          "value": "6925000",
+          "unit": "currency"
+        },
+        {
+          "symbol": "O·H/12",
+          "value": "250000000",
+          "unit": "currency"
+        },
+        {
+          "symbol": "ΔO",
+          "value": "13250000",
+          "unit": "currency"
+        }
+      ]
+    },
+    {
+      "sequence": 7,
+      "equation": "AG7",
+      "label": "Interest coverage under the scenario",
+      "output": {
+        "symbol": "κ₁",
+        "value": "3.5292929293",
+        "unit": "times"
+      },
+      "inputs": [
+        {
+          "symbol": "(R − O)·H/12",
+          "value": "50000000",
+          "unit": "currency"
+        },
+        {
+          "symbol": "ΔΠ",
+          "value": "-6325000",
+          "unit": "currency"
+        },
+        {
+          "symbol": "I·H/12",
+          "value": "12000000",
+          "unit": "currency"
+        },
+        {
+          "symbol": "ΔI",
+          "value": "375000",
+          "unit": "currency"
+        }
+      ]
+    }
+  ],
+  "equations": [
+    {
+      "id": "AG0",
+      "name": "Baselines over the horizon",
+      "formula": "R·H/12; O·H/12; (R − O)·H/12; I·H/12; (R − O − I)·H/12",
+      "explanation": "Your annual figures over the horizon, held constant. They are inputs, not forecasts."
+    },
+    {
+      "id": "AG1",
+      "name": "Change in revenue",
+      "formula": "ΔR = Σ models' revenue items",
+      "explanation": "The revenue items of every included model, added: each item is claimed by one model only."
+    },
+    {
+      "id": "AG2",
+      "name": "Change in operating costs",
+      "formula": "ΔO = Σ models' cost items",
+      "explanation": "The operating-cost items of every included model, added: each item is claimed by one model only."
+    },
+    {
+      "id": "AG3",
+      "name": "Change in operating profit",
+      "formula": "ΔΠ = ΔR − ΔO",
+      "explanation": "Checked against the sum of each model's own operating-profit change."
+    },
+    {
+      "id": "AG4",
+      "name": "Change in interest expense",
+      "formula": "ΔI = Σ models' interest items",
+      "explanation": "The interest items of the included interest model."
+    },
+    {
+      "id": "AG5",
+      "name": "Change in profit before tax",
+      "formula": "ΔP = ΔΠ − ΔI",
+      "explanation": "Operating profit is held at its baseline when no included model changes it."
+    },
+    {
+      "id": "AG6",
+      "name": "Operating margin",
+      "formula": "μ₀ = (R − O) / R; μ₁ = (R·H/12 + ΔR − O·H/12 − ΔO) / (R·H/12 + ΔR)",
+      "explanation": "Operating profit as a share of revenue over the horizon, before and under the scenario."
+    },
+    {
+      "id": "AG7",
+      "name": "Interest coverage",
+      "formula": "κ₀ = (R − O) / I; κ₁ = ((R − O)·H/12 + ΔΠ) / (I·H/12 + ΔI)",
+      "explanation": "How many times operating profit covers interest expense over the horizon, before and under the scenario."
+    }
+  ],
+  "configuration": {
+    "lab_version": "1.0.0",
+    "engine_version": "1.0.0",
+    "time_step": "month",
+    "horizon_months": 12,
+    "rounding": "34 significant digits; results rounded half to even to 10 decimal places",
+    "attribution": "Shapley values within each model; lines add the models' items"
+  },
+  "note": "Simulated values: deterministic calculations from the changes, figures and assumptions shown, holding everything else constant. They are not forecasts, not guaranteed and not investment advice."
+}
