@@ -47,3 +47,6 @@ backend/.audit-requirements.txt
 
 # Database backups (scripts/backup.sh): personal data, never committed
 backups/
+
+# Launch suite output (Playwright): results, traces, prepared state
+frontend/e2e-results/

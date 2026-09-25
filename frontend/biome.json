@@ -7,7 +7,7 @@
     "root": ".."
   },
   "files": {
-    "includes": ["**", "!dist", "!coverage", "!src/types/api.generated.ts"]
+    "includes": ["**", "!dist", "!coverage", "!e2e-results", "!src/types/api.generated.ts"]
   },
   "formatter": {
     "enabled": true,

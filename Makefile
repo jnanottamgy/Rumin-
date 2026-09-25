@@ -8,10 +8,10 @@ UV_RUN   := cd $(BACKEND) && uv run --frozen
 .DEFAULT_GOAL := help
 .PHONY: help install migrate seed catalog ingest ingest-jobs graph graph-status backend \
         frontend test test-backend test-frontend smoke lint typecheck check openapi \
-        api-types verify-models db-up db-down audit deployment-check
+        api-types verify-models db-up db-down audit deployment-check e2e
 
 help: ## List the available targets
-	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
+	@grep -E '^[a-z0-9-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
 
 install: ## Install backend (uv) and frontend (npm) dependencies
 	cd $(BACKEND) && uv sync --frozen --extra dev
@@ -55,6 +55,9 @@ test-frontend: ## Frontend tests (Vitest)
 smoke: ## End-to-end: fresh database, live API, frontend integration suite
 	scripts/smoke_test.sh
 
+e2e: ## Launch suite: the built app in Chromium on a desktop and a phone (axe, workflows)
+	scripts/e2e.sh
+
 deployment-check: ## Build the images and check a throwaway production stack end to end (Docker)
 	scripts/deployment_check.sh
 
@@ -78,7 +81,7 @@ typecheck: ## Static type checks
 	$(UV_RUN) mypy app tests
 	cd $(FRONTEND) && npm run typecheck
 
-check: lint typecheck test ## Everything CI runs except the smoke test
+check: lint typecheck test ## Lint, types and unit tests (CI also runs smoke, e2e, audit, deployment-check)
 	$(UV_RUN) python -m app.openapi_export --check
 
 verify-models: ## Run every registered model's verification checks
