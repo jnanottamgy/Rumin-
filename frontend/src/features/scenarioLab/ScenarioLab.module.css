@@ -186,6 +186,12 @@
   background: var(--color-accent-wash);
 }
 
+/* Muted ink falls below 4.5:1 on the dark theme's wash; notes there use secondary ink. */
+.table tr[aria-current="true"] .rowNote,
+.table tr[data-emphasis="true"] .rowNote {
+  color: var(--color-ink-secondary);
+}
+
 .windowMonth {
   box-shadow: inset 2px 0 0 var(--color-accent);
 }
@@ -719,8 +725,9 @@
   border-radius: var(--radius-sm);
 }
 
+/* Not applicable: a recessed row, with its text at full contrast (the badge says why). */
 .modelRow[data-status="not_applicable"] {
-  opacity: 0.72;
+  background: var(--color-surface-sunken);
 }
 
 .modelRowHeader {

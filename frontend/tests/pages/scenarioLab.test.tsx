@@ -309,8 +309,10 @@ describe("Scenario Lab — a saved scenario", () => {
     expect(await screen.findByText("No analysis yet for this execution.")).toBeInTheDocument();
     const form = screen.getByRole("form", { name: "One quantity at a time" });
     // The scenario's changes are chosen, each with the model's default variation.
-    expect(within(form).getByRole("checkbox", { name: /Crude oil price change/ })).toBeChecked();
-    expect(within(form).getByText(/±10 %: 10 % and 30 %/)).toBeInTheDocument();
+    // Named by the quantity alone; its executed value and variation describe it.
+    const crude = within(form).getByRole("checkbox", { name: "Crude oil price change" });
+    expect(crude).toBeChecked();
+    expect(crude).toHaveAccessibleDescription("As executed 20 % · ±10 %: 10 % and 30 %");
     await user.click(within(form).getByRole("checkbox", { name: /Hedge ratio \(Airline/ }));
     await user.type(
       within(form).getByRole("textbox", { name: "Values for Hedge ratio (Airline fuel cost)" }),

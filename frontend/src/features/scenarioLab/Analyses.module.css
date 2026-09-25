@@ -179,6 +179,18 @@
   width: 9rem;
 }
 
+/* The quantity picker: up to 24rem, and never wider than the form (long labels would
+   otherwise size the whole column on a phone). */
+.addQuantity {
+  flex: 0 1 24rem;
+  min-width: 0;
+}
+
+.addQuantity select {
+  width: 100%;
+  max-width: none;
+}
+
 /* --- Results ----------------------------------------------------------------------------- */
 
 .figures {
@@ -367,6 +379,23 @@
 .historyItem[aria-current="true"] {
   border-color: var(--color-accent);
   background: var(--color-accent-wash);
+}
+
+.historyNote {
+  display: block;
+  margin-top: 2px;
+  color: var(--color-ink-muted);
+  font-size: var(--text-2xs);
+  line-height: var(--leading-snug);
+}
+
+.historyItem[aria-current="true"] .historyNote {
+  color: var(--color-ink-secondary);
+}
+
+/* The configuration table: hashes and the generator's name wrap rather than widen the page. */
+.configTable td {
+  overflow-wrap: anywhere;
 }
 
 /* --- Verification ------------------------------------------------------------------------ */

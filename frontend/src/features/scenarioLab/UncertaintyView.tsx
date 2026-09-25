@@ -254,7 +254,7 @@ function MonteCarloForm({
       </div>
 
       <div className={styles.section}>
-        <h4 className={lab.sectionTitle}>Quantities and their distributions</h4>
+        <h3 className={lab.sectionTitle}>Quantities and their distributions</h3>
         {draft.quantities.length === 0 ? (
           <p className={lab.caption}>
             No quantity yet. Every distribution is an assumption you state: RUMIN holds no data to
@@ -297,7 +297,7 @@ function MonteCarloForm({
           </>
         )}
         <div className={styles.formActions}>
-          <label className={lab.inlineSelect}>
+          <label className={`${lab.inlineSelect} ${styles.addQuantity}`}>
             <span className="visually-hidden">Quantity to add</span>
             <select
               className={styles.select}
@@ -394,7 +394,7 @@ function Reproduce({ executionId, analysis }: { executionId: string; analysis: S
     <details className={styles.details}>
       <summary>Configuration and reproducibility</summary>
       <div className={styles.section}>
-        <table className={lab.table}>
+        <table className={`${lab.table} ${styles.configTable}`}>
           <tbody>
             <tr>
               <th scope="row">Seed</th>
@@ -516,11 +516,11 @@ export function MonteCarloResult({
 
   return (
     <article className={styles.section} aria-label="Monte Carlo result">
-      <h4 className={lab.sectionTitle}>
+      <h3 className={lab.sectionTitle}>
         {results.metric_label}
         {results.metric_kind === "line_change" ? ", change over the horizon" : ""} ·{" "}
         {results.accepted.toLocaleString("en")} of {results.draws.toLocaleString("en")} draws
-      </h4>
+      </h3>
       <div className={styles.figures}>
         <Figure
           label="Mean"
@@ -790,7 +790,7 @@ export function UncertaintyView({
       )}
       {history.length > 0 && (
         <section className={styles.section} aria-label="Stored Monte Carlo analyses">
-          <h4 className={lab.sectionTitle}>Stored analyses of this execution</h4>
+          <h3 className={lab.sectionTitle}>Stored analyses of this execution</h3>
           <div className={styles.history}>
             {history.map((item) => (
               <button
@@ -802,7 +802,7 @@ export function UncertaintyView({
               >
                 <span>
                   {item.metric_label} · {item.quantities.join(", ")}
-                  <span className={lab.rowNote}>
+                  <span className={styles.historyNote}>
                     {item.draws} draws · seed {item.seed} · {formatDateTime(item.created_at)}
                   </span>
                 </span>

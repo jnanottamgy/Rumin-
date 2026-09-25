@@ -215,6 +215,7 @@ function OneAtATime({ executionId, targets }: { executionId: string; targets: An
                 <input
                   type="checkbox"
                   id={`one-${target.id}`}
+                  aria-describedby={`one-${target.id}-note`}
                   checked={on}
                   disabled={!on && chosen.size >= limit}
                   onChange={(event) => {
@@ -224,13 +225,13 @@ function OneAtATime({ executionId, targets }: { executionId: string; targets: An
                     setChosen(next);
                   }}
                 />
-                <label htmlFor={`one-${target.id}`}>
-                  {target.label}
-                  <span className={lab.rowNote}>
+                <div>
+                  <label htmlFor={`one-${target.id}`}>{target.label}</label>
+                  <span id={`one-${target.id}-note`} className={lab.rowNote}>
                     As executed {formatQuantity(target.base_value, target)} ·{" "}
                     {variationText(target)}
                   </span>
-                </label>
+                </div>
                 {on ? (
                   <input
                     type="text"

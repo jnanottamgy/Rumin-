@@ -477,7 +477,10 @@ function Workspace({
       )}
 
       <div className={styles.grid}>
-        <aside className={styles.controls} aria-label="Scenario controls">
+        <aside className={styles.controls} aria-labelledby="lab-controls-heading">
+          <h2 id="lab-controls-heading" className="visually-hidden">
+            Scenario controls
+          </h2>
           <Builder
             draft={draft}
             dispatch={dispatch}
@@ -487,7 +490,10 @@ function Workspace({
           />
         </aside>
 
-        <section className={styles.centre} aria-label="Impact">
+        <section className={styles.centre} aria-labelledby="lab-impact-heading">
+          <h2 id="lab-impact-heading" className="visually-hidden">
+            Impact
+          </h2>
           <div
             data-updating={preview.updating && source === "preview" ? "true" : undefined}
             className={styles.centreBody}
@@ -496,7 +502,10 @@ function Workspace({
           </div>
         </section>
 
-        <aside className={styles.side} aria-label="Results">
+        <aside className={styles.side} aria-labelledby="lab-results-heading">
+          <h2 id="lab-results-heading" className="visually-hidden">
+            Results
+          </h2>
           {results ? (
             <div data-updating={preview.updating && source === "preview" ? "true" : undefined}>
               <ResultsPanel results={results} changeNames={changeNames} source={source} />
