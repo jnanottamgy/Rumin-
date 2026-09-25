@@ -47,6 +47,11 @@ class AnalystSession(TimestampMixin, Base):
     turn_count: Mapped[int] = mapped_column(Integer, default=0)
     # What the conversation is about (keys only, see app.analyst.context).
     focus: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    # Whose conversation it is (Phase 10): only its owner reads, asks in or deletes it.
+    # Null for conversations held before accounts existed, which only administrators see.
+    owner_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), index=True
+    )
 
     turns: Mapped[list[AnalystTurn]] = relationship(
         back_populates="session",

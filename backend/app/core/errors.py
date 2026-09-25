@@ -154,6 +154,7 @@ async def _app_error_handler(_: Request, exc: Exception) -> JSONResponse:
     return JSONResponse(
         error_payload(error.status_code, error.message, code=error.code, details=error.details),
         status_code=error.status_code,
+        headers=getattr(error, "headers", None),
     )
 
 

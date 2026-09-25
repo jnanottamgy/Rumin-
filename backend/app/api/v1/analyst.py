@@ -5,7 +5,8 @@ A conversation (session) holds turns. Asking stores the question and answers it 
 bounded worker pool: ``POST …/turns`` answers ``202`` with the queued turn, which is read
 again at ``Location`` until it is final (``poll_after_ms``). Each answer lists the tool
 calls that produced it, the evidence it cites and the result of the grounding check.
-Conversations can be renamed and deleted; nothing else is written.
+Conversations can be renamed and deleted; nothing else is written. Since Phase 10 a
+conversation is private to the person who started it: another person's is "not found".
 """
 
 from __future__ import annotations
@@ -15,7 +16,7 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Path, Request, Response, status
 
-from app.api.deps import NOT_FOUND, PaginationDep, SessionDep
+from app.api.deps import NOT_FOUND, PaginationDep, SessionDep, UserDep
 from app.schemas.analyst import (
     AskRequest,
     CapabilitiesRead,
@@ -67,8 +68,8 @@ def get_capabilities(session: SessionDep, runtime: RuntimeDep) -> CapabilitiesRe
     summary="Conversations",
     description="Stored conversations, most recently active first.",
 )
-def list_sessions(session: SessionDep, page: PaginationDep) -> SessionPage:
-    return analyst.list_sessions(session, limit=page.limit, offset=page.offset)
+def list_sessions(session: SessionDep, user: UserDep, page: PaginationDep) -> SessionPage:
+    return analyst.list_sessions(session, limit=page.limit, offset=page.offset, owner=user)
 
 
 @router.post(
@@ -77,8 +78,10 @@ def list_sessions(session: SessionDep, page: PaginationDep) -> SessionPage:
     status_code=status.HTTP_201_CREATED,
     summary="Start a conversation",
 )
-def create_session(session: SessionDep, payload: SessionCreate, response: Response) -> SessionRead:
-    created = analyst.create_session(session, payload)
+def create_session(
+    session: SessionDep, user: UserDep, payload: SessionCreate, response: Response
+) -> SessionRead:
+    created = analyst.create_session(session, payload, owner=user)
     response.headers["Location"] = f"/api/v1/analyst/sessions/{created.id}"
     return created
 
@@ -89,8 +92,8 @@ def create_session(session: SessionDep, payload: SessionCreate, response: Respon
     summary="A conversation with every turn",
     responses=NOT_FOUND,
 )
-def get_session(session: SessionDep, session_id: SessionId) -> SessionRead:
-    return analyst.get_session(session, session_id)
+def get_session(session: SessionDep, user: UserDep, session_id: SessionId) -> SessionRead:
+    return analyst.get_session(session, session_id, owner=user)
 
 
 @router.put(
@@ -100,9 +103,9 @@ def get_session(session: SessionDep, session_id: SessionId) -> SessionRead:
     responses=NOT_FOUND,
 )
 def rename_session(
-    session: SessionDep, session_id: SessionId, payload: SessionUpdate
+    session: SessionDep, user: UserDep, session_id: SessionId, payload: SessionUpdate
 ) -> SessionRead:
-    return analyst.rename_session(session, session_id, payload)
+    return analyst.rename_session(session, session_id, payload, owner=user)
 
 
 @router.delete(
@@ -113,8 +116,10 @@ def rename_session(
     "Refused (409) while a question in it is being answered.",
     responses={**NOT_FOUND, **CONFLICT},
 )
-def delete_session(session: SessionDep, session_id: SessionId, runtime: RuntimeDep) -> Response:
-    analyst.delete_session(session, session_id, runtime.settings)
+def delete_session(
+    session: SessionDep, user: UserDep, session_id: SessionId, runtime: RuntimeDep
+) -> Response:
+    analyst.delete_session(session, session_id, runtime.settings, owner=user)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -130,12 +135,13 @@ def delete_session(session: SessionDep, session_id: SessionId, runtime: RuntimeD
 )
 def ask(
     session: SessionDep,
+    user: UserDep,
     runtime: RuntimeDep,
     session_id: SessionId,
     payload: AskRequest,
     response: Response,
 ) -> TurnRead:
-    turn = analyst.ask(session, runtime, session_id, payload)
+    turn = analyst.ask(session, runtime, session_id, payload, owner=user)
     response.headers["Location"] = f"/api/v1/analyst/sessions/{session_id}/turns/{turn.id}"
     return turn
 
@@ -148,5 +154,7 @@ def ask(
     "appear as they are made.",
     responses=NOT_FOUND,
 )
-def get_turn(session: SessionDep, session_id: SessionId, turn_id: TurnId) -> TurnRead:
-    return analyst.get_turn(session, session_id, turn_id)
+def get_turn(
+    session: SessionDep, user: UserDep, session_id: SessionId, turn_id: TurnId
+) -> TurnRead:
+    return analyst.get_turn(session, session_id, turn_id, owner=user)

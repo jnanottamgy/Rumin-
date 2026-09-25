@@ -144,3 +144,47 @@ class BodySizeLimitMiddleware:
             status_code=413,
         )
         await response(scope, receive, send)
+
+
+_UNSAFE_METHODS = frozenset({"POST", "PUT", "PATCH", "DELETE"})
+
+
+class CrossSiteRequestMiddleware:
+    """Refuses state-changing API requests that a browser sends from another site (CSRF).
+
+    Sessions live in a cookie, so a page on another site could make a signed-in browser
+    send a request. For ``POST``, ``PUT``, ``PATCH`` and ``DELETE`` under ``/api/`` this
+    refuses (403) a request whose Fetch-Metadata says ``cross-site`` or whose ``Origin`` is
+    neither this server's own origin nor one of the configured CORS origins. Requests with
+    neither header come from programs rather than browsers, which hold no ambient cookies,
+    and pass. The session cookie is also ``SameSite=Lax``; this is the second defence.
+    """
+
+    def __init__(self, app: ASGIApp, allowed_origins: list[str]) -> None:
+        self.app = app
+        self.allowed = {origin.rstrip("/") for origin in allowed_origins}
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if (
+            scope["type"] != "http"
+            or scope["method"] not in _UNSAFE_METHODS
+            or not scope["path"].startswith("/api/")
+        ):
+            await self.app(scope, receive, send)
+            return
+        headers = Headers(scope=scope)
+        origin = headers.get("origin")
+        own = f"{scope.get('scheme', 'http')}://{headers.get('host', '')}"
+        cross_site = headers.get("sec-fetch-site") == "cross-site"
+        foreign = origin is not None and origin.rstrip("/") not in self.allowed | {own}
+        if cross_site or foreign:
+            logger.warning(
+                "Refused a cross-site %s %s (origin %s)", scope["method"], scope["path"], origin
+            )
+            response = JSONResponse(
+                error_payload(403, "Requests that change data must come from RUMIN's own pages."),
+                status_code=403,
+            )
+            await response(scope, receive, send)
+            return
+        await self.app(scope, receive, send)

@@ -19,6 +19,7 @@ from pydantic import Field, StrictInt, StringConstraints
 
 from app.domain.enums import ChangeType, EpistemicCategory, ScenarioExecutionStatus, ScenarioStatus
 from app.domain.scenario_rules import MAX_SHOCKS_PER_SCENARIO
+from app.schemas.auth import PersonRef
 from app.schemas.common import ApiModel, DecimalString, EntityId, InputModel, Page, SafeText
 from app.schemas.simulation import (
     BridgeRead,
@@ -326,6 +327,11 @@ class ScenarioRead(ApiModel):
     executions: int
     created_at: datetime
     updated_at: datetime
+    owner: PersonRef | None = Field(
+        default=None,
+        description="Who owns it: only the owner or an administrator changes it. Null for "
+        "scenarios made before accounts existed (administrators change those).",
+    )
 
 
 class ScenarioSummaryRead(ApiModel):
@@ -340,6 +346,11 @@ class ScenarioSummaryRead(ApiModel):
     executions: int
     created_at: datetime
     updated_at: datetime
+    owner: PersonRef | None = Field(
+        default=None,
+        description="Who owns it: only the owner or an administrator changes it. Null for "
+        "scenarios made before accounts existed (administrators change those).",
+    )
 
 
 class ScenarioPage(Page[ScenarioSummaryRead]):

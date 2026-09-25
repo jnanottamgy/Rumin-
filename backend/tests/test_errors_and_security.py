@@ -7,7 +7,7 @@ from pydantic import ValidationError
 
 from app.core.config import Settings
 from app.main import create_app
-from tests.conftest import ALLOWED_ORIGIN, make_settings
+from tests.conftest import ALLOWED_ORIGIN, COOKIE, make_settings
 
 
 def test_unknown_route_uses_the_error_envelope(client: TestClient) -> None:
@@ -53,6 +53,8 @@ def test_database_outage_returns_service_unavailable() -> None:
     settings = make_settings("sqlite:////nonexistent-directory/rumin.db")
 
     with TestClient(create_app(settings)) as client:
+        # A session cookie makes the request reach the database (to find the session).
+        client.cookies.set(COOKIE, "any-token")
         response = client.get("/api/v1/entities")
 
     assert response.status_code == 503

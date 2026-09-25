@@ -21,10 +21,16 @@ from sqlalchemy.exc import SQLAlchemyError
 from app import API_VERSION, __version__
 from app.api import health
 from app.api.v1 import router as api_v1_router
+from app.auth.throttle import ClientThrottle
 from app.core.config import Settings, get_settings
 from app.core.errors import register_exception_handlers
 from app.core.logging import configure_logging
-from app.core.middleware import REQUEST_ID_HEADER, BodySizeLimitMiddleware, RequestContextMiddleware
+from app.core.middleware import (
+    REQUEST_ID_HEADER,
+    BodySizeLimitMiddleware,
+    CrossSiteRequestMiddleware,
+    RequestContextMiddleware,
+)
 from app.db.session import create_db_engine, create_session_factory
 from app.scenario_lab.runner import ExecutionRunner
 from app.services import scenarios
@@ -210,6 +216,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             ),
             Middleware(GZipMiddleware, minimum_size=1024),
             Middleware(RequestContextMiddleware),
+            Middleware(CrossSiteRequestMiddleware, allowed_origins=settings.cors_origins),
             Middleware(BodySizeLimitMiddleware, max_bytes=settings.max_request_body_bytes),
         ],
     )
@@ -218,6 +225,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.session_factory = session_factory
     app.state.scenario_runner = runner
     app.state.analyst = analyst
+    app.state.login_throttle = ClientThrottle(
+        max_failures=settings.login_client_max_failures,
+        window_seconds=settings.login_client_window_seconds,
+    )
 
     register_exception_handlers(app)
     app.include_router(health.router)

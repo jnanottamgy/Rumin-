@@ -88,6 +88,7 @@ def store_run(
     label: str | None,
     started_at: datetime,
     finished_at: datetime,
+    owner_id: uuid.UUID | None = None,
 ) -> SimulationRun:
     """Insert a completed run and its steps. Never updates an existing run."""
     preparation = execution.preparation
@@ -126,6 +127,7 @@ def store_run(
         started_at=started_at,
         finished_at=finished_at,
         duration_ms=max(0, round((finished_at - started_at).total_seconds() * 1000)),
+        owner_id=owner_id,
     )
     session.add(run)
     session.flush()
@@ -155,6 +157,8 @@ def store_analysis(
     run: SimulationRun,
     requests: list[SensitivityItem],
     analysis: dict[str, Any],
+    *,
+    created_by: uuid.UUID | None = None,
 ) -> SimulationSensitivityAnalysis:
     results = plain({key: value for key, value in analysis.items() if key != "duration_ms"})
     row = SimulationSensitivityAnalysis(
@@ -166,6 +170,7 @@ def store_analysis(
         evaluations=analysis["evaluations"],
         duration_ms=analysis["duration_ms"],
         result_hash=sha256(results),
+        created_by=created_by,
     )
     session.add(row)
     session.flush()

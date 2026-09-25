@@ -114,11 +114,19 @@ def execution_read(session: Session, row: ScenarioExecution) -> ExecutionRead:
     )
 
 
+def execution_owner(session: Session, execution_id: uuid.UUID) -> uuid.UUID | None:
+    """The owner of the scenario an execution belongs to (404 when there is no execution)."""
+    row = _execution_or_404(session, execution_id)
+    return scenario_or_404(session, row.scenario_id).owner_id
+
+
 def create_execution(
     session: Session,
     runner: ExecutionRunner,
     scenario_id: uuid.UUID,
     payload: ExecutionRequest,
+    *,
+    requested_by: uuid.UUID | None = None,
 ) -> ExecutionRead:
     scenario = scenario_or_404(session, scenario_id)
     version = version_of(scenario, payload.version)
@@ -150,6 +158,7 @@ def create_execution(
             status=S.QUEUED,
             stages=[],
             lab_version=LAB_VERSION,
+            requested_by=requested_by,
         )
         session.add(row)
         session.commit()
@@ -378,7 +387,11 @@ def _analysis_read(row: ScenarioSensitivityAnalysis) -> LabSensitivityRead:
 
 
 def run_sensitivity(
-    session: Session, execution_id: uuid.UUID, payload: LabSensitivityRequest
+    session: Session,
+    execution_id: uuid.UUID,
+    payload: LabSensitivityRequest,
+    *,
+    created_by: uuid.UUID | None = None,
 ) -> LabSensitivityRead:
     row = completed_execution(session, execution_id)
     scenario = scenario_or_404(session, row.scenario_id)
@@ -433,6 +446,7 @@ def run_sensitivity(
         duration_ms=analysis["duration_ms"],
         result_hash=sha256(results),
         method_version=SENSITIVITY_METHOD_VERSION,
+        created_by=created_by,
     )
     session.add(record)
     session.commit()

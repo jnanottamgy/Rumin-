@@ -12,7 +12,8 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Body, Path, Query, Response, status
 
-from app.api.deps import NOT_FOUND, SessionDep
+from app.api.deps import FORBIDDEN, NOT_FOUND, SessionDep, UserDep
+from app.auth.policy import require_change
 from app.scenario_lab.explain import TARGETS
 from app.schemas.analysis import (
     AnalysisTargetsRead,
@@ -132,9 +133,10 @@ def get_explanation(
     summary="Cancel a scenario execution",
     description="Asks a queued or running execution to stop at its next checkpoint; it then "
     "ends as cancelled and stores nothing. 409 if it is already final.",
-    responses={**NOT_FOUND, **NOT_READY},
+    responses={**NOT_FOUND, **FORBIDDEN, **NOT_READY},
 )
-def cancel_execution(session: SessionDep, execution_id: uuid.UUID) -> ExecutionRead:
+def cancel_execution(session: SessionDep, user: UserDep, execution_id: uuid.UUID) -> ExecutionRead:
+    require_change(user, scenario_lab.execution_owner(session, execution_id), "scenario")
     return scenario_lab.cancel_execution(session, execution_id)
 
 
@@ -159,15 +161,17 @@ def verify_execution(session: SessionDep, execution_id: uuid.UUID) -> ExecutionV
     "or assumption — re-evaluates every model that uses it and recombines the chosen line or "
     "metric. Points outside a range are skipped and reported, never clipped. Bounded: 8 "
     "quantities, 7 points each, 60 evaluations. Not a stochastic simulation.",
-    responses={**NOT_FOUND, **NOT_READY},
+    responses={**NOT_FOUND, **FORBIDDEN, **NOT_READY},
 )
 def create_sensitivity(
     session: SessionDep,
+    user: UserDep,
     execution_id: uuid.UUID,
     payload: LabSensitivityRequest,
     response: Response,
 ) -> LabSensitivityRead:
-    analysis = scenario_lab.run_sensitivity(session, execution_id, payload)
+    require_change(user, scenario_lab.execution_owner(session, execution_id), "scenario")
+    analysis = scenario_lab.run_sensitivity(session, execution_id, payload, created_by=user.id)
     response.headers["Location"] = (
         f"/api/v1/scenario-executions/{execution_id}/sensitivity/{analysis.id}"
     )
@@ -223,15 +227,17 @@ def get_execution_analysis_targets(
     "rejected and counted, never clipped. `joint_sensitivity`: a grid over two quantities "
     "with the interaction of each cell. Stored append-only with the configuration it ran "
     "with; the results are conditional on the stated assumptions — not forecasts.",
-    responses={**NOT_FOUND, **CHANGED_MODEL, **ANALYSIS_BUSY},
+    responses={**NOT_FOUND, **FORBIDDEN, **CHANGED_MODEL, **ANALYSIS_BUSY},
 )
 def create_execution_analysis(
     session: SessionDep,
+    user: UserDep,
     execution_id: uuid.UUID,
     payload: Annotated[MonteCarloRequest | JointSensitivityRequest, Body(discriminator="kind")],
     response: Response,
 ) -> ScenarioAnalysisRead:
-    analysis = scenario_analyses.create_analysis(session, execution_id, payload)
+    require_change(user, scenario_lab.execution_owner(session, execution_id), "scenario")
+    analysis = scenario_analyses.create_analysis(session, execution_id, payload, created_by=user.id)
     response.headers["Location"] = (
         f"/api/v1/scenario-executions/{execution_id}/analyses/{analysis.id}"
     )

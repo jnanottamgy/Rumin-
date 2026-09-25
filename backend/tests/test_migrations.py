@@ -197,3 +197,52 @@ def test_sensitivity_analyses_stored_before_0008_are_method_1_0_0(fresh_sqlite_u
     assert column["default"] is None
     assert "scenario_analyses" in inspect(engine).get_table_names()
     engine.dispose()
+
+
+def test_records_made_before_accounts_keep_no_owner(fresh_sqlite_url: str) -> None:
+    """Migration 0009 adds accounts; what existed before has no owner (administrators change
+    it), and the downgrade removes the accounts again."""
+    config = alembic_config(fresh_sqlite_url)
+    command.upgrade(config, "0008")
+    engine = create_db_engine(fresh_sqlite_url)
+    scenario_id = uuid.uuid4().hex
+    conversation_id = uuid.uuid4().hex
+    now = utcnow().isoformat()
+    with engine.begin() as connection:
+        connection.execute(
+            sa.text(
+                "INSERT INTO scenarios (id, name, description, status, current_version, "
+                "created_at, updated_at) "
+                "VALUES (:id, 'Before accounts', '', 'draft', 1, :now, :now)"
+            ),
+            {"id": scenario_id, "now": now},
+        )
+        connection.execute(
+            sa.text(
+                "INSERT INTO analyst_sessions (id, title, turn_count, focus, created_at, "
+                "updated_at) VALUES (:id, 'Before accounts', 0, '{}', :now, :now)"
+            ),
+            {"id": conversation_id, "now": now},
+        )
+
+    command.upgrade(config, "0009")
+
+    with engine.connect() as connection:
+        owners = connection.execute(
+            sa.text(
+                "SELECT (SELECT owner_id FROM scenarios), (SELECT owner_id FROM analyst_sessions)"
+            )
+        ).one()
+    assert tuple(owners) == (None, None)
+    assert {"users", "user_sessions", "audit_events"} <= set(inspect(engine).get_table_names())
+
+    command.downgrade(config, "0008")
+
+    tables = set(inspect(engine).get_table_names())
+    assert not {"users", "user_sessions", "audit_events"} & tables
+    assert "owner_id" not in [column["name"] for column in inspect(engine).get_columns("scenarios")]
+    with engine.connect() as connection:
+        assert (
+            connection.execute(sa.text("SELECT name FROM scenarios")).scalar() == "Before accounts"
+        )
+    engine.dispose()

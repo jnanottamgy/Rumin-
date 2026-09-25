@@ -35,13 +35,13 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Any
 
-from sqlalchemy import CursorResult, update
+from sqlalchemy import CursorResult, select, update
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.orm.attributes import set_committed_value
 
 from app.db.base import utcnow
 from app.domain.enums import ScenarioExecutionStatus
-from app.models import ScenarioExecution, ScenarioExecutionRun, ScenarioVersion
+from app.models import Scenario, ScenarioExecution, ScenarioExecutionRun, ScenarioVersion
 from app.scenario_lab import LAB_VERSION
 from app.scenario_lab.aggregate import (
     EQUATIONS,
@@ -591,6 +591,10 @@ def run_execution(
             check()
             run_ids: dict[str, uuid.UUID] = {}
             label = f"{spec.name} · v{row.version} · execution {str(row.id)[:8]}"
+            # The runs belong to whoever owns the scenario (Phase 10).
+            owner_id = session.scalar(
+                select(Scenario.owner_id).where(Scenario.id == row.scenario_id)
+            )
             for position, member in enumerate(members):
                 began, ended = simulated_at[member.model_id]
                 run = store_run(
@@ -599,6 +603,7 @@ def run_execution(
                     label=label[:120],
                     started_at=began,
                     finished_at=ended,
+                    owner_id=owner_id,
                 )
                 run_ids[member.model_id] = run.id
                 session.add(

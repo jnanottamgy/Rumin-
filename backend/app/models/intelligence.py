@@ -13,7 +13,7 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import JSON, CheckConstraint, Index, Integer, String, Uuid
+from sqlalchemy import JSON, CheckConstraint, ForeignKey, Index, Integer, String, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base, utcnow
@@ -40,6 +40,10 @@ class IntelligenceAnalysis(Base):
     insight_count: Mapped[int] = mapped_column(Integer)
     duration_ms: Mapped[int] = mapped_column(Integer)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+    # Who stored it (Phase 10; null before accounts existed).
+    created_by: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL")
+    )
 
     __table_args__ = (
         CheckConstraint("scope IN ('entity', 'workspace')", name="scope_known"),

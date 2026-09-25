@@ -51,6 +51,11 @@ class Scenario(TimestampMixin, Base):
     # The newest version's number (versions are numbered 1, 2, 3 … per scenario).
     current_version: Mapped[int] = mapped_column(Integer, default=1)
     template_id: Mapped[str | None] = mapped_column(String(64))
+    # Who owns it (Phase 10): only the owner or an administrator changes it. Null for
+    # scenarios created before accounts existed, which only administrators change.
+    owner_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), index=True
+    )
 
     versions: Mapped[list[ScenarioVersion]] = relationship(
         back_populates="scenario",
@@ -82,6 +87,10 @@ class ScenarioVersion(Base):
     derived_from: Mapped[dict[str, Any] | None] = mapped_column(JSON)
     note: Mapped[str] = mapped_column(Text, default="")
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+    # Who saved it (Phase 10; null before accounts existed).
+    created_by: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL")
+    )
 
     scenario: Mapped[Scenario] = relationship(back_populates="versions")
     shocks: Mapped[list[ScenarioShock]] = relationship(
@@ -154,6 +163,10 @@ class ScenarioExecution(Base):
     started_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
     finished_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
     duration_ms: Mapped[int | None] = mapped_column(Integer)
+    # Who asked for it (Phase 10; null before accounts existed).
+    requested_by: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL")
+    )
 
     runs: Mapped[list[ScenarioExecutionRun]] = relationship(
         order_by="ScenarioExecutionRun.position", lazy="selectin"
@@ -200,6 +213,10 @@ class ScenarioSensitivityAnalysis(Base):
     # 1.0.0 (before migration 0008): the aggregation kept the execution's shared figures while
     # the models used the varied values. 1.1.0: the varied values reach the aggregation too.
     method_version: Mapped[str] = mapped_column(String(16), default="1.1.0")
+    # Who asked for it (Phase 10; null before accounts existed).
+    created_by: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL")
+    )
 
 
 class ScenarioAnalysis(Base):
@@ -226,3 +243,7 @@ class ScenarioAnalysis(Base):
     inputs_hash: Mapped[str] = mapped_column(String(64))
     result_hash: Mapped[str] = mapped_column(String(64))
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+    # Who asked for it (Phase 10; null before accounts existed).
+    created_by: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL")
+    )

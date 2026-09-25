@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Annotated, Any, Literal
 from urllib.parse import urlsplit
 
-from pydantic import Field, SecretStr, field_validator
+from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 BACKEND_DIR = Path(__file__).resolve().parents[2]
@@ -106,7 +106,28 @@ class Settings(BaseSettings):
     analyst_max_concurrent: int = Field(default=2, ge=1, le=8)
     analyst_max_queued: int = Field(default=8, ge=0, le=64)
 
-    @field_validator("cors_origins", mode="before")
+    # --- Accounts and sessions (Phase 10) --------------------------------------------------
+    session_cookie_name: str = Field(default="rumin_session", pattern=r"^[A-Za-z0-9_\-]{1,64}$")
+    # Secure cookies travel only over https. Unset: on in production, off otherwise (local
+    # http development). Production refuses an explicit false.
+    session_cookie_secure: bool | None = None
+    # A session ends after this long without a request, and in any case after the maximum.
+    session_idle_minutes: int = Field(default=120, ge=5, le=24 * 60)
+    session_max_hours: int = Field(default=12, ge=1, le=24 * 14)
+    # Consecutive failed sign-ins before an account is locked; the lock starts at one
+    # minute and doubles with each further failure, up to the maximum.
+    login_max_failures: int = Field(default=5, ge=3, le=20)
+    login_lock_max_minutes: int = Field(default=15, ge=1, le=24 * 60)
+    # Failed sign-ins from one client address within the window before it must wait.
+    login_client_max_failures: int = Field(default=20, ge=5, le=1000)
+    login_client_window_seconds: int = Field(default=600, ge=60, le=24 * 3600)
+    # Who may read GET /metrics without signing in: nobody unless listed (an internal
+    # scraper's address, e.g. 127.0.0.1). Administrators can always read it.
+    metrics_allowed_clients: Annotated[list[str], NoDecode] = Field(default_factory=list)
+    # "text" (human-readable) or "json" (one object per line, for log collectors).
+    log_format: Literal["text", "json"] = "text"
+
+    @field_validator("cors_origins", "metrics_allowed_clients", mode="before")
     @classmethod
     def _split_comma_separated(cls, value: Any) -> Any:
         if isinstance(value, str):
@@ -168,10 +189,51 @@ class Settings(BaseSettings):
     def _upper_log_level(cls, value: Any) -> Any:
         return value.upper() if isinstance(value, str) else value
 
+    @model_validator(mode="after")
+    def _production_is_not_development(self) -> Settings:
+        """Refuse to run in production on development defaults (Phase 10)."""
+        if self.environment != "production":
+            return self
+        if "docs_enabled" not in self.model_fields_set:
+            self.docs_enabled = False
+        problems = production_problems(self)
+        if problems:
+            raise ValueError(
+                "Unsafe production configuration: "
+                + " ".join(problems)
+                + " See docs/operations.md."
+            )
+        return self
+
+    @property
+    def cookie_secure(self) -> bool:
+        if self.session_cookie_secure is not None:
+            return self.session_cookie_secure
+        return self.environment == "production"
+
     @property
     def database_backend(self) -> str:
         """Short name of the database engine, e.g. ``sqlite`` or ``postgresql``."""
         return self.database_url.split(":", 1)[0].split("+", 1)[0]
+
+
+def production_problems(settings: Settings) -> list[str]:
+    """What stops ``settings`` from being a safe production configuration."""
+    problems: list[str] = []
+    if settings.database_backend != "postgresql":
+        problems.append("RUMIN_DATABASE_URL must point at PostgreSQL (SQLite is for development).")
+    local = [origin for origin in settings.cors_origins if urlsplit(origin).hostname in LOCAL_HOSTS]
+    if local:
+        problems.append(
+            f"RUMIN_CORS_ORIGINS lists local development origins ({', '.join(local)}); list the "
+            "origins the web app is served from, or none when it shares the API's origin."
+        )
+    if settings.session_cookie_secure is False:
+        problems.append("RUMIN_SESSION_COOKIE_SECURE must not be false: sessions need https.")
+    insecure = [origin for origin in settings.cors_origins if origin.startswith("http://")]
+    if insecure:
+        problems.append(f"RUMIN_CORS_ORIGINS must use https:// ({', '.join(insecure)}).")
+    return problems
 
 
 @lru_cache

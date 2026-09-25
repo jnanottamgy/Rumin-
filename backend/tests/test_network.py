@@ -6,8 +6,9 @@ from typing import Any
 from alembic import command
 from fastapi.testclient import TestClient
 
+from app.db.session import create_db_engine, create_session_factory
 from app.main import create_app
-from tests.conftest import alembic_config, make_settings
+from tests.conftest import alembic_config, make_settings, sign_in_client
 
 
 def _network(client: TestClient) -> dict[str, Any]:
@@ -84,8 +85,11 @@ def test_undirected_edges_are_flagged(client: TestClient) -> None:
 def test_network_is_empty_but_valid_without_a_dataset(fresh_sqlite_url: str) -> None:
     command.upgrade(alembic_config(fresh_sqlite_url), "head")
 
+    engine = create_db_engine(fresh_sqlite_url)
     with TestClient(create_app(make_settings(fresh_sqlite_url))) as client:
+        sign_in_client(client, create_session_factory(engine))
         network = _network(client)
+    engine.dispose()
 
     assert network["dataset"] is None
     assert network["nodes"] == [] and network["edges"] == []

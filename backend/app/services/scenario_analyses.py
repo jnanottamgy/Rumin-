@@ -410,7 +410,11 @@ def _read(row: ScenarioAnalysis) -> ScenarioAnalysisRead:
 
 
 def create_analysis(
-    session: Session, execution_id: uuid.UUID, payload: AnalysisRequest
+    session: Session,
+    execution_id: uuid.UUID,
+    payload: AnalysisRequest,
+    *,
+    created_by: uuid.UUID | None = None,
 ) -> ScenarioAnalysisRead:
     row, spec, members, runs = _loaded(session, execution_id)
     request = _normalised(row, payload)
@@ -429,6 +433,7 @@ def create_analysis(
         duration_ms=results["duration_ms"],
         inputs_hash=sha256({"config": config, "request": request}),
         result_hash=sha256(stored),
+        created_by=created_by,
     )
     session.add(record)
     session.commit()

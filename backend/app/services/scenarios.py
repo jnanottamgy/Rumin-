@@ -10,7 +10,7 @@ executed cannot be deleted: its executions must stay reproducible.
 from __future__ import annotations
 
 import uuid
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from decimal import Decimal
 from typing import Any
 
@@ -22,7 +22,7 @@ from app.core.errors import ConflictError, DomainValidationError, NotFoundError
 from app.db.base import utcnow
 from app.domain.enums import ScenarioStatus
 from app.graph.store import GraphReader
-from app.models import Scenario, ScenarioExecution, ScenarioShock, ScenarioVersion
+from app.models import Scenario, ScenarioExecution, ScenarioShock, ScenarioVersion, User
 from app.scenario_lab.executor import (
     combine,
     evaluate_stress,
@@ -44,6 +44,7 @@ from app.scenario_lab.spec import (
     spec_json,
 )
 from app.scenario_lab.validation import load_variables, validate_spec
+from app.schemas.auth import PersonRef
 from app.schemas.common import ErrorDetail
 from app.schemas.scenario import (
     ExecutionSummaryRead,
@@ -288,6 +289,21 @@ def _spec_read(version: ScenarioVersion) -> ScenarioSpecRead:
     return ScenarioSpecRead.model_validate(spec_json(version_spec(version)))
 
 
+def owner_of(session: Session, scenario_id: uuid.UUID) -> uuid.UUID | None:
+    """The scenario's owner (404 when there is no such scenario)."""
+    return scenario_or_404(session, scenario_id).owner_id
+
+
+def _people(session: Session, ids: Iterable[uuid.UUID | None]) -> dict[uuid.UUID, PersonRef]:
+    wanted = {item for item in ids if item is not None}
+    if not wanted:
+        return {}
+    return {
+        user.id: PersonRef(id=user.id, name=user.name)
+        for user in session.scalars(select(User).where(User.id.in_(wanted)))
+    }
+
+
 def scenario_read(session: Session, scenario: Scenario) -> ScenarioRead:
     current = version_of(scenario)
     counts = _execution_counts(session, [scenario.id])
@@ -309,6 +325,9 @@ def scenario_read(session: Session, scenario: Scenario) -> ScenarioRead:
         executions=sum(counts.values()),
         created_at=scenario.created_at,
         updated_at=scenario.updated_at,
+        owner=_people(session, [scenario.owner_id]).get(scenario.owner_id)
+        if scenario.owner_id
+        else None,
     )
 
 
@@ -321,6 +340,7 @@ def list_scenarios(session: Session, *, limit: int, offset: int) -> ScenarioPage
         .offset(offset)
     ).all()
     counts = _execution_counts(session, [row.id for row in rows])
+    owners = _people(session, [row.owner_id for row in rows])
     items = []
     for row in rows:
         current = version_of(row)
@@ -338,6 +358,7 @@ def list_scenarios(session: Session, *, limit: int, offset: int) -> ScenarioPage
                 executions=sum(counts.get(version.id, 0) for version in row.versions),
                 created_at=row.created_at,
                 updated_at=row.updated_at,
+                owner=owners.get(row.owner_id) if row.owner_id else None,
             )
         )
     return ScenarioPage(items=items, total=total, limit=limit, offset=offset)
@@ -380,8 +401,10 @@ def _new_version(
     number: int,
     note: str,
     derived_from: dict[str, Any] | None,
+    created_by: uuid.UUID | None = None,
 ) -> ScenarioVersion:
     version = ScenarioVersion(
+        created_by=created_by,
         version=number,
         name=spec.name,
         description=spec.description,
@@ -419,7 +442,9 @@ def _commit(session: Session) -> None:
         ) from error
 
 
-def create_scenario(session: Session, payload: ScenarioInput) -> ScenarioRead:
+def create_scenario(
+    session: Session, payload: ScenarioInput, *, owner_id: uuid.UUID | None = None
+) -> ScenarioRead:
     spec = _validated(session, payload)
     scenario = Scenario(
         name=spec.name,
@@ -427,14 +452,23 @@ def create_scenario(session: Session, payload: ScenarioInput) -> ScenarioRead:
         status=ScenarioStatus.DRAFT,
         current_version=1,
         template_id=spec.template_id,
+        owner_id=owner_id,
     )
     session.add(scenario)
-    _new_version(scenario, spec, number=1, note=payload.note, derived_from=None)
+    _new_version(
+        scenario, spec, number=1, note=payload.note, derived_from=None, created_by=owner_id
+    )
     _commit(session)
     return scenario_read(session, scenario)
 
 
-def save_version(session: Session, scenario_id: uuid.UUID, payload: ScenarioUpdate) -> ScenarioRead:
+def save_version(
+    session: Session,
+    scenario_id: uuid.UUID,
+    payload: ScenarioUpdate,
+    *,
+    created_by: uuid.UUID | None = None,
+) -> ScenarioRead:
     scenario = scenario_or_404(session, scenario_id)
     if payload.base_version is not None and payload.base_version != scenario.current_version:
         raise ConflictError(
@@ -445,14 +479,25 @@ def save_version(session: Session, scenario_id: uuid.UUID, payload: ScenarioUpda
     if spec_hash(spec) == version_of(scenario).spec_hash:
         return scenario_read(session, scenario)  # nothing changed: no new version
     _new_version(
-        scenario, spec, number=scenario.current_version + 1, note=payload.note, derived_from=None
+        scenario,
+        spec,
+        number=scenario.current_version + 1,
+        note=payload.note,
+        derived_from=None,
+        created_by=created_by,
     )
     scenario.updated_at = utcnow()
     _commit(session)
     return scenario_read(session, scenario)
 
 
-def restore_version(session: Session, scenario_id: uuid.UUID, number: int) -> ScenarioRead:
+def restore_version(
+    session: Session,
+    scenario_id: uuid.UUID,
+    number: int,
+    *,
+    created_by: uuid.UUID | None = None,
+) -> ScenarioRead:
     """Save an earlier version's content as the newest version (nothing is deleted)."""
     scenario = scenario_or_404(session, scenario_id)
     source = version_of(scenario, number)
@@ -464,6 +509,7 @@ def restore_version(session: Session, scenario_id: uuid.UUID, number: int) -> Sc
         number=scenario.current_version + 1,
         note=f"Restored from version {number}.",
         derived_from={"kind": "restore", "scenario_id": str(scenario.id), "version": number},
+        created_by=created_by,
     )
     scenario.updated_at = utcnow()
     _commit(session)
@@ -471,7 +517,11 @@ def restore_version(session: Session, scenario_id: uuid.UUID, number: int) -> Sc
 
 
 def duplicate_scenario(
-    session: Session, scenario_id: uuid.UUID, payload: ScenarioDuplicateRequest
+    session: Session,
+    scenario_id: uuid.UUID,
+    payload: ScenarioDuplicateRequest,
+    *,
+    owner_id: uuid.UUID | None = None,
 ) -> ScenarioRead:
     original = scenario_or_404(session, scenario_id)
     source = version_of(original, payload.version)
@@ -484,6 +534,7 @@ def duplicate_scenario(
         status=ScenarioStatus.DRAFT,
         current_version=1,
         template_id=copy.template_id,
+        owner_id=owner_id,
     )
     session.add(scenario)
     _new_version(
@@ -496,6 +547,7 @@ def duplicate_scenario(
             "scenario_id": str(original.id),
             "version": source.version,
         },
+        created_by=owner_id,
     )
     _commit(session)
     return scenario_read(session, scenario)

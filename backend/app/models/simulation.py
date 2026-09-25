@@ -84,6 +84,9 @@ class SimulationRun(Base):
     finished_at: Mapped[datetime] = mapped_column(UTCDateTime())
     duration_ms: Mapped[int] = mapped_column(Integer)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+    # Who owns it (Phase 10): the person who ran it, or the owner of the scenario whose
+    # execution stored it; null for runs made before accounts existed.
+    owner_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
 
     __table_args__ = (
         Index("ix_simulation_runs_model_created", "model_id", "created_at"),
@@ -129,3 +132,7 @@ class SimulationSensitivityAnalysis(Base):
     duration_ms: Mapped[int] = mapped_column(Integer)
     result_hash: Mapped[str] = mapped_column(String(64))
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+    # Who asked for it (Phase 10; null before accounts existed).
+    created_by: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL")
+    )

@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import os
 from collections.abc import Iterator
+from datetime import timedelta
 from pathlib import Path
 
 import pytest
@@ -23,7 +24,10 @@ from fastapi.testclient import TestClient
 from sqlalchemy import Engine, delete, select, update
 from sqlalchemy.orm import Session, sessionmaker
 
+from app.auth import tokens
+from app.auth.passwords import hash_password
 from app.core.config import BACKEND_DIR, Settings
+from app.db.base import utcnow
 from app.db.seed import load_dataset
 from app.db.session import create_db_engine, create_session_factory
 from app.domain.enums import DatasetKind
@@ -57,10 +61,79 @@ from app.models import (
     SimulationRunStep,
     SimulationSensitivityAnalysis,
     SourceCapture,
+    User,
+    UserSession,
 )
 from app.services.graph import clear_freshness_cache
 
 ALLOWED_ORIGIN = "http://localhost:5173"
+
+# The suite's own accounts (Phase 10): every API test runs signed in as the administrator
+# unless it signs in as someone else. The password is for this disposable database only.
+TEST_ADMIN_EMAIL = "admin@rumin.test"
+TEST_PASSWORD = "a test-only passphrase"
+COOKIE = "rumin_session"
+
+
+def ensure_user(
+    session: Session,
+    email: str,
+    *,
+    role: str = "admin",
+    name: str | None = None,
+    password: str = TEST_PASSWORD,
+    must_change_password: bool = False,
+) -> User:
+    user = session.scalar(select(User).where(User.email == email))
+    if user is None:
+        user = User(
+            email=email,
+            name=name or email.split("@")[0].title(),
+            role=role,
+            password_hash=_hashed(password),
+            must_change_password=must_change_password,
+            is_active=True,
+            failed_logins=0,
+        )
+        session.add(user)
+        session.commit()
+    return user
+
+
+_HASHES: dict[str, str] = {}
+
+
+def _hashed(password: str) -> str:
+    # Argon2id takes tens of milliseconds by design; the suite hashes each password once.
+    if password not in _HASHES:
+        _HASHES[password] = hash_password(password)
+    return _HASHES[password]
+
+
+def session_token(session_factory: sessionmaker[Session], email: str, **user: object) -> str:
+    """A fresh session for ``email`` (created if needed), written straight to the database."""
+    with session_factory() as session:
+        account = ensure_user(session, email, **user)  # type: ignore[arg-type]
+        token = tokens.new_token()
+        session.add(
+            UserSession(
+                user_id=account.id,
+                token_hash=tokens.token_hash(token),
+                expires_at=utcnow() + timedelta(hours=12),
+            )
+        )
+        session.commit()
+    return token
+
+
+def sign_in_client(
+    client: TestClient,
+    session_factory: sessionmaker[Session],
+    email: str = TEST_ADMIN_EMAIL,
+    **user: object,
+) -> TestClient:
+    client.cookies.set(COOKIE, session_token(session_factory, email, **user))
+    return client
 
 
 def alembic_config(database_url: str) -> AlembicConfig:
@@ -126,9 +199,17 @@ def app(database_url: str, engine: Engine) -> FastAPI:
     return create_app(make_settings(database_url))
 
 
+@pytest.fixture(scope="session")
+def admin_token(session_factory: sessionmaker[Session]) -> str:
+    return session_token(session_factory, TEST_ADMIN_EMAIL, name="Test Administrator")
+
+
 @pytest.fixture
-def client(app: FastAPI, session_factory: sessionmaker[Session]) -> Iterator[TestClient]:
+def client(
+    app: FastAPI, session_factory: sessionmaker[Session], admin_token: str
+) -> Iterator[TestClient]:
     with TestClient(app) as test_client:
+        test_client.cookies.set(COOKIE, admin_token)
         yield test_client
     # Conversations and scenarios (with their executions and runs) are the only data tests
     # create; remove them so tests stay independent.

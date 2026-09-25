@@ -18,7 +18,7 @@ import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from sqlalchemy import CursorResult, delete, func, select, update
+from sqlalchemy import ColumnElement, CursorResult, delete, func, or_, select, true, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -64,6 +64,7 @@ from app.schemas.analyst import (
     UsageRead,
 )
 from app.schemas.common import ErrorDetail
+from app.services.auth import Principal
 from app.simulation.definitions import sha256
 
 logger = logging.getLogger(__name__)
@@ -397,9 +398,23 @@ def turn_read(row: AnalystTurn, calls: list[AnalystToolCall] | None = None) -> T
     )
 
 
-def _session_or_404(session: Session, session_id: uuid.UUID) -> AnalystSession:
+def _visible(row: AnalystSession, owner: Principal | None) -> bool:
+    """Conversations are private: only their owner sees one. Conversations held before
+    accounts existed have no owner, and only administrators see them. ``owner`` None is the
+    service's own internal use (no person asking)."""
+    if owner is None:
+        return True
+    if row.owner_id is None:
+        return owner.is_admin
+    return row.owner_id == owner.id
+
+
+def _session_or_404(
+    session: Session, session_id: uuid.UUID, owner: Principal | None = None
+) -> AnalystSession:
     found = session.get(AnalystSession, session_id)
-    if found is None:
+    # Another person's conversation is "not found", not "forbidden": its existence is private.
+    if found is None or not _visible(found, owner):
         raise NotFoundError(f"No conversation has the id {session_id}.")
     return found
 
@@ -421,10 +436,18 @@ def _summary(session: Session, row: AnalystSession) -> SessionSummaryRead:
     )
 
 
-def list_sessions(session: Session, *, limit: int, offset: int) -> SessionPage:
-    total = session.scalar(select(func.count()).select_from(AnalystSession)) or 0
+def list_sessions(
+    session: Session, *, limit: int, offset: int, owner: Principal | None = None
+) -> SessionPage:
+    mine: ColumnElement[bool] = true()
+    if owner is not None:
+        mine = AnalystSession.owner_id == owner.id
+        if owner.is_admin:
+            mine = or_(mine, AnalystSession.owner_id.is_(None))
+    total = session.scalar(select(func.count()).select_from(AnalystSession).where(mine)) or 0
     rows = session.scalars(
         select(AnalystSession)
+        .where(mine)
         .order_by(AnalystSession.updated_at.desc(), AnalystSession.id)
         .limit(limit)
         .offset(offset)
@@ -434,8 +457,10 @@ def list_sessions(session: Session, *, limit: int, offset: int) -> SessionPage:
     )
 
 
-def get_session(session: Session, session_id: uuid.UUID) -> SessionRead:
-    row = _session_or_404(session, session_id)
+def get_session(
+    session: Session, session_id: uuid.UUID, owner: Principal | None = None
+) -> SessionRead:
+    row = _session_or_404(session, session_id, owner)
     turns = session.scalars(
         select(AnalystTurn).where(AnalystTurn.session_id == row.id).order_by(AnalystTurn.position)
     ).all()
@@ -455,7 +480,10 @@ def get_session(session: Session, session_id: uuid.UUID) -> SessionRead:
     )
 
 
-def get_turn(session: Session, session_id: uuid.UUID, turn_id: uuid.UUID) -> TurnRead:
+def get_turn(
+    session: Session, session_id: uuid.UUID, turn_id: uuid.UUID, owner: Principal | None = None
+) -> TurnRead:
+    _session_or_404(session, session_id, owner)
     row = session.get(AnalystTurn, turn_id)
     if row is None or row.session_id != session_id:
         raise NotFoundError(f"No question has the id {turn_id} in this conversation.")
@@ -472,18 +500,30 @@ def get_turn(session: Session, session_id: uuid.UUID, turn_id: uuid.UUID) -> Tur
 # --- Writes -------------------------------------------------------------------------------------
 
 
-def create_session(session: Session, payload: SessionCreate) -> SessionRead:
-    row = AnalystSession(id=uuid.uuid4(), title=payload.title or DEFAULT_TITLE, focus={})
+def create_session(
+    session: Session, payload: SessionCreate, owner: Principal | None = None
+) -> SessionRead:
+    row = AnalystSession(
+        id=uuid.uuid4(),
+        title=payload.title or DEFAULT_TITLE,
+        focus={},
+        owner_id=owner.id if owner else None,
+    )
     session.add(row)
     session.commit()
-    return get_session(session, row.id)
+    return get_session(session, row.id, owner)
 
 
-def rename_session(session: Session, session_id: uuid.UUID, payload: SessionUpdate) -> SessionRead:
-    row = _session_or_404(session, session_id)
+def rename_session(
+    session: Session,
+    session_id: uuid.UUID,
+    payload: SessionUpdate,
+    owner: Principal | None = None,
+) -> SessionRead:
+    row = _session_or_404(session, session_id, owner)
     row.title = payload.title
     session.commit()
-    return get_session(session, row.id)
+    return get_session(session, row.id, owner)
 
 
 def stale_after(settings: Settings) -> timedelta:
@@ -517,9 +557,12 @@ def expire_stale(session: Session, session_id: uuid.UUID, settings: Settings) ->
 
 
 def delete_session(
-    session: Session, session_id: uuid.UUID, settings: Settings | None = None
+    session: Session,
+    session_id: uuid.UUID,
+    settings: Settings | None = None,
+    owner: Principal | None = None,
 ) -> None:
-    row = _session_or_404(session, session_id)
+    row = _session_or_404(session, session_id, owner)
     if settings is not None:
         expire_stale(session, row.id, settings)
     pending = session.scalar(
@@ -546,10 +589,14 @@ def _title(question: str) -> str:
 
 
 def ask(
-    session: Session, runtime: AnalystRuntime, session_id: uuid.UUID, payload: AskRequest
+    session: Session,
+    runtime: AnalystRuntime,
+    session_id: uuid.UUID,
+    payload: AskRequest,
+    owner: Principal | None = None,
 ) -> TurnRead:
     settings = runtime.settings
-    row = _session_or_404(session, session_id)
+    row = _session_or_404(session, session_id, owner)
     question = payload.question.strip()
     if len(question) > settings.analyst_max_question_chars:
         message = (

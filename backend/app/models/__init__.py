@@ -1,6 +1,7 @@
 """ORM models. Importing this package registers every table on ``Base.metadata``."""
 
 from app.models.analyst import AnalystSession, AnalystToolCall, AnalystTurn
+from app.models.auth import AuditEvent, User, UserSession
 from app.models.dataset import Dataset
 from app.models.entity import Company, Country, EconomicVariable, Entity, Industry
 from app.models.graph import (
@@ -38,6 +39,7 @@ __all__ = [
     "AnalystSession",
     "AnalystToolCall",
     "AnalystTurn",
+    "AuditEvent",
     "Company",
     "Country",
     "DataProvider",
@@ -73,4 +75,6 @@ __all__ = [
     "SimulationRunStep",
     "SimulationSensitivityAnalysis",
     "SourceCapture",
+    "User",
+    "UserSession",
 ]

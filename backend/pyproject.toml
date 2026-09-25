@@ -13,6 +13,7 @@ dependencies = [
   # The official SDK for the optional language-model provider of the AI Analyst (Phase 7).
   # Imported only when RUMIN_ANALYST_PROVIDER=anthropic.
   "anthropic~=1.8",
+  "argon2-cffi~=25.1",
 ]
 
 [project.optional-dependencies]

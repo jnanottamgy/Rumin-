@@ -695,7 +695,9 @@ def analysis_read(session: Session, row: IntelligenceAnalysis) -> AnalysisRead:
     )
 
 
-def create_analysis(session: Session, payload: AnalysisRequest) -> AnalysisRead:
+def create_analysis(
+    session: Session, payload: AnalysisRequest, *, created_by: uuid.UUID | None = None
+) -> AnalysisRead:
     used = resolve_thresholds(payload.thresholds, location="body")
     started = time.perf_counter()
     if payload.scope == "entity":
@@ -729,6 +731,7 @@ def create_analysis(session: Session, payload: AnalysisRequest) -> AnalysisRead:
         result_hash=sha256(result),
         insight_count=count,
         duration_ms=int((time.perf_counter() - started) * 1000),
+        created_by=created_by,
     )
     session.add(row)
     session.commit()

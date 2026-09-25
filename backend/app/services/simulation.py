@@ -314,7 +314,14 @@ def validate(session: Session, payload: SimulationRequest) -> ValidationReport:
     )
 
 
-def create_run(session: Session, payload: SimulationRunRequest) -> SimulationRunRead:
+def run_owner(session: Session, run_id: uuid.UUID) -> uuid.UUID | None:
+    """Who owns a run (404 when there is no such run)."""
+    return _run_or_404(session, run_id).owner_id
+
+
+def create_run(
+    session: Session, payload: SimulationRunRequest, *, owner_id: uuid.UUID | None = None
+) -> SimulationRunRead:
     model = _model_for(payload)
     preparation = _prepare(session, model, payload)
     if not preparation.ok:
@@ -334,7 +341,12 @@ def create_run(session: Session, payload: SimulationRunRequest) -> SimulationRun
     finished = utcnow()
     try:
         run = store_run(
-            session, execution, label=payload.label, started_at=started, finished_at=finished
+            session,
+            execution,
+            label=payload.label,
+            started_at=started,
+            finished_at=finished,
+            owner_id=owner_id,
         )
     except ModelVersionConflict as error:
         session.rollback()
@@ -641,7 +653,11 @@ def _analysis_read(
 
 
 def run_sensitivity(
-    session: Session, run_id: uuid.UUID, payload: SensitivityRequest
+    session: Session,
+    run_id: uuid.UUID,
+    payload: SensitivityRequest,
+    *,
+    created_by: uuid.UUID | None = None,
 ) -> SensitivityAnalysisRead:
     run = _run_or_404(session, run_id)
     version = _version_row(session, run)
@@ -680,7 +696,7 @@ def run_sensitivity(
                 )
             ],
         ) from error
-    row = store_analysis(session, run, requests, analysis)
+    row = store_analysis(session, run, requests, analysis, created_by=created_by)
     session.commit()
     return _analysis_read(row, version.definition)
 

@@ -13,7 +13,8 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Path, Query, Response, status
 
-from app.api.deps import NOT_FOUND, PaginationDep, SessionDep
+from app.api.deps import FORBIDDEN, NOT_FOUND, PaginationDep, SessionDep, UserDep, WriterDep
+from app.auth.policy import require_change
 from app.schemas.common import ErrorResponse
 from app.schemas.simulation import (
     ExplanationRead,
@@ -133,9 +134,9 @@ def validate_simulation(session: SessionDep, payload: SimulationRequest) -> Vali
     responses=CONFLICT,
 )
 def create_simulation_run(
-    session: SessionDep, payload: SimulationRunRequest, response: Response
+    session: SessionDep, user: WriterDep, payload: SimulationRunRequest, response: Response
 ) -> SimulationRunRead:
-    run = simulation.create_run(session, payload)
+    run = simulation.create_run(session, payload, owner_id=user.id)
     response.headers["Location"] = f"/api/v1/simulations/{run.id}"
     return run
 
@@ -217,12 +218,17 @@ def verify_simulation_run(session: SessionDep, run_id: uuid.UUID) -> Verificatio
     "each result against the run. Points outside an input's allowed range are skipped and "
     "reported, never clipped. With no inputs listed, the model's default set is used. "
     "Bounded: at most 8 inputs, 7 points each and 60 evaluations.",
-    responses={**NOT_FOUND, **CONFLICT},
+    responses={**NOT_FOUND, **FORBIDDEN, **CONFLICT},
 )
 def create_sensitivity_analysis(
-    session: SessionDep, run_id: uuid.UUID, payload: SensitivityRequest, response: Response
+    session: SessionDep,
+    user: UserDep,
+    run_id: uuid.UUID,
+    payload: SensitivityRequest,
+    response: Response,
 ) -> SensitivityAnalysisRead:
-    analysis = simulation.run_sensitivity(session, run_id, payload)
+    require_change(user, simulation.run_owner(session, run_id), "run")
+    analysis = simulation.run_sensitivity(session, run_id, payload, created_by=user.id)
     response.headers["Location"] = f"/api/v1/simulations/{run_id}/sensitivity/{analysis.id}"
     return analysis
 

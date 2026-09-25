@@ -22,7 +22,7 @@ from app.models import AnalystSession, AnalystToolCall, AnalystTurn
 from app.openapi_export import build_openapi
 from app.services.analyst import AnalystRuntime
 from tests.analyst_support import analyst_db  # noqa: F401 - a fixture
-from tests.conftest import make_settings, wipe_analyst
+from tests.conftest import make_settings, sign_in_client, wipe_analyst
 
 API = "/api/v1/analyst"
 
@@ -58,6 +58,7 @@ def custom_client(database_url: str, session_factory: sessionmaker[Session]) -> 
     def build(**overrides: Any) -> TestClient:
         client = TestClient(create_app(make_settings(database_url, **overrides)))
         client.__enter__()
+        sign_in_client(client, session_factory)
         clients.append(client)
         return client
 

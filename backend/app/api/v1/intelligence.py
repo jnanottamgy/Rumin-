@@ -19,7 +19,7 @@ from typing import Annotated, Any, Literal
 
 from fastapi import APIRouter, Depends, Path, Query, Response, status
 
-from app.api.deps import NOT_FOUND, PaginationDep, SessionDep
+from app.api.deps import NOT_FOUND, PaginationDep, SessionDep, WriterDep
 from app.api.v1.data import INSTRUMENT_ID, SERIES_ID
 from app.graph.drafts import NODE_KEY_PATTERN
 from app.intelligence.insights import KIND_ORDER, RULES
@@ -349,9 +349,9 @@ def get_instrument_intelligence(
     responses=NOT_FOUND,
 )
 def create_analysis(
-    session: SessionDep, payload: AnalysisRequest, response: Response
+    session: SessionDep, user: WriterDep, payload: AnalysisRequest, response: Response
 ) -> AnalysisRead:
-    analysis = intelligence.create_analysis(session, payload)
+    analysis = intelligence.create_analysis(session, payload, created_by=user.id)
     response.headers["Location"] = f"/api/v1/intelligence/analyses/{analysis.id}"
     return analysis
 

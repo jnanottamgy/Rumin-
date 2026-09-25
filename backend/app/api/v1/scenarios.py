@@ -5,6 +5,10 @@ never overwrites one), ``POST …/duplicate`` copies a version into a new scenar
 ``POST …/versions/{n}/restore`` saves an earlier version's content as the newest. A plan
 says which models apply and why; a preview computes results without storing anything. An
 execution is requested with ``POST …/executions`` and read from ``/scenario-executions``.
+
+Every signed-in person reads every scenario (the workspace is shared); creating and
+duplicating need a role that writes, and changing a scenario — a new version, a restore, an
+execution, deleting it — needs its owner or an administrator (Phase 10).
 """
 
 from __future__ import annotations
@@ -14,7 +18,16 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Path, Query, Response, status
 
-from app.api.deps import NOT_FOUND, PaginationDep, RunnerDep, SessionDep
+from app.api.deps import (
+    FORBIDDEN,
+    NOT_FOUND,
+    PaginationDep,
+    RunnerDep,
+    SessionDep,
+    UserDep,
+    WriterDep,
+)
+from app.auth.policy import require_change
 from app.schemas.common import ErrorResponse
 from app.schemas.scenario import (
     ExecutionPage,
@@ -63,9 +76,9 @@ def list_scenarios(session: SessionDep, page: PaginationDep) -> ScenarioPage:
     "malformed (every problem is reported with its field).",
 )
 def create_scenario(
-    session: SessionDep, payload: ScenarioInput, response: Response
+    session: SessionDep, user: WriterDep, payload: ScenarioInput, response: Response
 ) -> ScenarioRead:
-    scenario = scenarios.create_scenario(session, payload)
+    scenario = scenarios.create_scenario(session, payload, owner_id=user.id)
     response.headers["Location"] = f"/api/v1/scenarios/{scenario.id}"
     return scenario
 
@@ -109,12 +122,13 @@ def get_scenario(session: SessionDep, scenario_id: uuid.UUID) -> ScenarioRead:
     description="Saves the body as a new version; earlier versions are never changed. A body "
     "identical to the latest version adds no version. With `base_version`, a save based on "
     "an older version than the latest is refused (409) so no change is lost.",
-    responses={**NOT_FOUND, **CONFLICT},
+    responses={**NOT_FOUND, **FORBIDDEN, **CONFLICT},
 )
 def save_scenario(
-    session: SessionDep, scenario_id: uuid.UUID, payload: ScenarioUpdate
+    session: SessionDep, user: UserDep, scenario_id: uuid.UUID, payload: ScenarioUpdate
 ) -> ScenarioRead:
-    return scenarios.save_version(session, scenario_id, payload)
+    require_change(user, scenarios.owner_of(session, scenario_id), "scenario")
+    return scenarios.save_version(session, scenario_id, payload, created_by=user.id)
 
 
 @router.delete(
@@ -123,9 +137,10 @@ def save_scenario(
     summary="Delete a scenario",
     description="Only a scenario that has never been executed can be deleted (409 "
     "otherwise): executions stay reproducible.",
-    responses={**NOT_FOUND, **CONFLICT},
+    responses={**NOT_FOUND, **FORBIDDEN, **CONFLICT},
 )
-def delete_scenario(session: SessionDep, scenario_id: uuid.UUID) -> Response:
+def delete_scenario(session: SessionDep, user: UserDep, scenario_id: uuid.UUID) -> Response:
+    require_change(user, scenarios.owner_of(session, scenario_id), "scenario")
     scenarios.delete_scenario(session, scenario_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
@@ -141,11 +156,12 @@ def delete_scenario(session: SessionDep, scenario_id: uuid.UUID) -> Response:
 )
 def duplicate_scenario(
     session: SessionDep,
+    user: WriterDep,
     scenario_id: uuid.UUID,
     payload: ScenarioDuplicateRequest,
     response: Response,
 ) -> ScenarioRead:
-    scenario = scenarios.duplicate_scenario(session, scenario_id, payload)
+    scenario = scenarios.duplicate_scenario(session, scenario_id, payload, owner_id=user.id)
     response.headers["Location"] = f"/api/v1/scenarios/{scenario.id}"
     return scenario
 
@@ -176,12 +192,13 @@ def get_version(session: SessionDep, scenario_id: uuid.UUID, version: VersionNum
     summary="Restore an earlier version",
     description="Saves the chosen version's content as the newest version. Nothing is "
     "deleted or rewritten.",
-    responses={**NOT_FOUND, **CONFLICT},
+    responses={**NOT_FOUND, **FORBIDDEN, **CONFLICT},
 )
 def restore_version(
-    session: SessionDep, scenario_id: uuid.UUID, version: VersionNumber
+    session: SessionDep, user: UserDep, scenario_id: uuid.UUID, version: VersionNumber
 ) -> ScenarioRead:
-    return scenarios.restore_version(session, scenario_id, version)
+    require_change(user, scenarios.owner_of(session, scenario_id), "scenario")
+    return scenarios.restore_version(session, scenario_id, version, created_by=user.id)
 
 
 @router.get(
@@ -205,16 +222,20 @@ def plan_version(
     "422, and nothing is stored), then queues the execution on a bounded worker pool (429 "
     "when it is full). Follow it at `Location`: its status moves through validating, "
     "simulating, propagating and aggregating to completed, failed or cancelled.",
-    responses={**NOT_FOUND, **BUSY},
+    responses={**NOT_FOUND, **FORBIDDEN, **BUSY},
 )
 def create_execution(
     session: SessionDep,
+    user: UserDep,
     runner: RunnerDep,
     scenario_id: uuid.UUID,
     payload: ExecutionRequest,
     response: Response,
 ) -> ExecutionRead:
-    execution = scenario_lab.create_execution(session, runner, scenario_id, payload)
+    require_change(user, scenarios.owner_of(session, scenario_id), "scenario")
+    execution = scenario_lab.create_execution(
+        session, runner, scenario_id, payload, requested_by=user.id
+    )
     response.headers["Location"] = f"/api/v1/scenario-executions/{execution.id}"
     return execution
 
