@@ -5,6 +5,7 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
+import { PEOPLE, sessionFixture } from "../fixtures/accounts";
 import { labFixtures } from "../fixtures/lab";
 import { RUN_ID, simulationFixtures, simulationPath } from "../fixtures/simulation";
 import { errorReply, mockApi, type RecordedRequest, type Route } from "../utils/api";
@@ -326,5 +327,47 @@ describe("Simulation preview", () => {
     renderRoute(`/simulation/runs/${RUN_ID}`);
     expect(await screen.findByText("This run could not be opened")).toBeInTheDocument();
     expect(screen.getByText("No simulation run.")).toBeInTheDocument();
+  });
+});
+
+describe("Simulation — who may change what (Phase 10)", () => {
+  it("lets a viewer check inputs, but not store a run", async () => {
+    const api = mockApi(
+      simulationRoutes({ "/api/v1/auth/session": { body: sessionFixture("viewer") } }),
+    );
+    const user = userEvent.setup();
+    await openNew();
+
+    const run = screen.getByRole("button", { name: "Run simulation" });
+    expect(run).toBeDisabled();
+    expect(run).toHaveAccessibleDescription(/Your role \(viewer\) can read the workspace/);
+    await user.click(screen.getByRole("button", { name: "Fill a hypothetical example" }));
+    await user.click(screen.getByRole("button", { name: "Check inputs" }));
+    await waitFor(() =>
+      expect(api.writes().map((request) => request.path)).toEqual([simulationPath.validate]),
+    );
+  });
+
+  it("leaves another person's run to them or an administrator", async () => {
+    mockApi(
+      simulationRoutes({
+        "/api/v1/auth/session": { body: sessionFixture("analyst") },
+        [simulationPath.run(RUN_ID)]: {
+          body: {
+            ...simulationFixtures.run(),
+            owner: { id: PEOPLE.admin.id, name: PEOPLE.admin.name },
+          },
+        },
+      }),
+    );
+    const user = userEvent.setup();
+    await openRun();
+
+    await user.click(screen.getByRole("tab", { name: "Sensitivity" }));
+    const run = await screen.findByRole("button", { name: "Run the analysis" });
+    expect(run).toBeDisabled();
+    expect(run).toHaveAccessibleDescription(
+      /This run belongs to Test Administrator; only they or an administrator can change it/,
+    );
   });
 });

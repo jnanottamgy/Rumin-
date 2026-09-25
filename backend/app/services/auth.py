@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import logging
 import uuid
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
@@ -153,6 +153,17 @@ def _policy_error(problems: Sequence[str], field: str) -> DomainValidationError:
 
 def user_read(user: User) -> UserRead:
     return UserRead.model_validate(user)
+
+
+def people(session: Session, ids: Iterable[uuid.UUID | None]) -> dict[uuid.UUID, PersonRef]:
+    """The names behind account ids, for showing who owns or made something."""
+    wanted = {item for item in ids if item is not None}
+    if not wanted:
+        return {}
+    return {
+        user.id: PersonRef(id=user.id, name=user.name)
+        for user in session.scalars(select(User).where(User.id.in_(wanted)))
+    }
 
 
 def user_or_404(session: Session, user_id: uuid.UUID) -> User:

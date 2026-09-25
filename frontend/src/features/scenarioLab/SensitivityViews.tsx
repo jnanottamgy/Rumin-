@@ -8,6 +8,7 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/Button";
 import { Icon } from "@/components/Icon";
 import { EmptyState, ErrorState, LoadingState } from "@/components/States";
+import { ReadOnlyNote } from "@/features/account/ReadOnlyNote";
 import { Notice } from "@/features/data/DataNature";
 import { invalidateResource, setResourceData, useApiResource } from "@/hooks/useApiResource";
 import { formatExact, toNumber } from "@/lib/decimal";
@@ -152,7 +153,16 @@ function Tornado({ analysis }: { analysis: LabSensitivity }) {
   );
 }
 
-function OneAtATime({ executionId, targets }: { executionId: string; targets: AnalysisTargets }) {
+function OneAtATime({
+  executionId,
+  targets,
+  readOnly,
+}: {
+  executionId: string;
+  targets: AnalysisTargets;
+  /** Why this person cannot run analyses of this execution, or null. */
+  readOnly: string | null;
+}) {
   const key = `lab:sensitivity:${executionId}`;
   const analyses = useApiResource(key, () => labApi.sensitivity.list(executionId));
   const labels = useMemo(
@@ -174,6 +184,7 @@ function OneAtATime({ executionId, targets }: { executionId: string; targets: An
   const latest = analyses.status === "success" ? analyses.data.items[0] : undefined;
 
   const run = async () => {
+    if (readOnly) return;
     const drafts: AxisDraft[] = [...chosen].map(([target, values]) => ({ target, values }));
     const built = sensitivityRequest(metric, drafts, labels);
     setErrors(built.errors);
@@ -254,7 +265,8 @@ function OneAtATime({ executionId, targets }: { executionId: string; targets: An
         <div className={styles.formActions}>
           <Button
             type="submit"
-            disabled={running || chosen.size === 0}
+            disabled={running || chosen.size === 0 || readOnly !== null}
+            aria-describedby={readOnly ? "one-readonly" : undefined}
             icon={<Icon name="play" size={14} />}
           >
             {running ? "Running…" : "Run the analysis"}
@@ -264,6 +276,7 @@ function OneAtATime({ executionId, targets }: { executionId: string; targets: An
             break a model's rule, are skipped and reported — never clipped.
           </p>
         </div>
+        {readOnly && <ReadOnlyNote id="one-readonly" reason={readOnly} />}
       </form>
       {analyses.status === "error" && (
         <ErrorState error={analyses.error} onRetry={analyses.reload} />
@@ -407,7 +420,15 @@ export function JointGrid({ results }: { results: JointResults }) {
   );
 }
 
-function TwoTogether({ executionId, targets }: { executionId: string; targets: AnalysisTargets }) {
+function TwoTogether({
+  executionId,
+  targets,
+  readOnly,
+}: {
+  executionId: string;
+  targets: AnalysisTargets;
+  readOnly: string | null;
+}) {
   const listKey = `lab:analyses:${executionId}`;
   const analyses = useApiResource(listKey, () => labApi.analyses.list(executionId));
   const [metric, setMetric] = useState(() => defaultMetric(targets.metrics));
@@ -436,6 +457,7 @@ function TwoTogether({ executionId, targets }: { executionId: string; targets: A
   const byId = new Map(targets.targets.map((target) => [target.id, target]));
 
   const run = async () => {
+    if (readOnly) return;
     const built = jointRequest(metric, rows, columns);
     setErrors(built.errors);
     if (!built.request) return;
@@ -506,7 +528,12 @@ function TwoTogether({ executionId, targets }: { executionId: string; targets: A
         {axisField("Columns", columns, setColumns)}
         <Errors messages={errors} />
         <div className={styles.formActions}>
-          <Button type="submit" disabled={running} icon={<Icon name="play" size={14} />}>
+          <Button
+            type="submit"
+            disabled={running || readOnly !== null}
+            aria-describedby={readOnly ? "two-readonly" : undefined}
+            icon={<Icon name="play" size={14} />}
+          >
             {running ? "Running…" : "Run the grid"}
           </Button>
           <p className={lab.caption}>
@@ -515,6 +542,7 @@ function TwoTogether({ executionId, targets }: { executionId: string; targets: A
             everything else as executed.
           </p>
         </div>
+        {readOnly && <ReadOnlyNote id="two-readonly" reason={readOnly} />}
       </form>
       {history.length > 1 && (
         <label className={lab.inlineSelect}>
@@ -543,7 +571,14 @@ function TwoTogether({ executionId, targets }: { executionId: string; targets: A
 
 // --- The tab --------------------------------------------------------------------------------
 
-export function SensitivityView({ executionId }: { executionId: string | null }) {
+export function SensitivityView({
+  executionId,
+  readOnly = null,
+}: {
+  executionId: string | null;
+  /** Why this person cannot run analyses of this execution (role or ownership), or null. */
+  readOnly?: string | null;
+}) {
   const [mode, setMode] = useState<"one" | "two">("one");
   const targets = useApiResource(`lab:analysis-targets:${executionId ?? ""}`, () =>
     executionId ? labApi.analyses.targets(executionId) : Promise.reject(new Error("No execution.")),
@@ -573,9 +608,9 @@ export function SensitivityView({ executionId }: { executionId: string | null })
       {targets.status === "error" && <ErrorState error={targets.error} onRetry={targets.reload} />}
       {targets.status === "success" &&
         (mode === "one" ? (
-          <OneAtATime executionId={executionId} targets={targets.data} />
+          <OneAtATime executionId={executionId} targets={targets.data} readOnly={readOnly} />
         ) : (
-          <TwoTogether executionId={executionId} targets={targets.data} />
+          <TwoTogether executionId={executionId} targets={targets.data} readOnly={readOnly} />
         ))}
     </div>
   );

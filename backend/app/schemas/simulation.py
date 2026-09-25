@@ -13,6 +13,7 @@ from typing import Annotated, Any, Literal
 
 from pydantic import Field, StrictFloat, StrictInt, StringConstraints
 
+from app.schemas.auth import PersonRef
 from app.schemas.common import ApiModel, DecimalString, InputModel, Page, SafeText
 from app.simulation.definitions import MODEL_ID_PATTERN, VERSION_PATTERN
 
@@ -441,6 +442,12 @@ class SimulationRunRead(ApiModel):
     sensitivity_analyses: int
     note: str = Field(
         description="What the numbers are, and are not, in one sentence.",
+    )
+    owner: PersonRef | None = Field(
+        default=None,
+        description="Who ran it: only they or an administrator analyse it further. Null for "
+        "runs made before accounts existed, and for runs that belong to a scenario's owner "
+        "no longer on record.",
     )
 
 

@@ -24,12 +24,15 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       port: 5173,
-      // Same-origin API calls in development: no CORS, no hard-coded backend URL.
+      // Same-origin API calls in development: no CORS, no hard-coded backend URL. The
+      // browser's own Host is passed on (no `changeOrigin`), as a production proxy must:
+      // the API refuses a change whose Origin is not its own host (Phase 10, CSRF), and a
+      // rewritten Host would make every sign-in from the dev or preview server look foreign.
       proxy: {
-        "/api": { target: apiTarget, changeOrigin: true },
-        "/health": { target: apiTarget, changeOrigin: true },
-        "/docs": { target: apiTarget, changeOrigin: true },
-        "/openapi.json": { target: apiTarget, changeOrigin: true },
+        "/api": { target: apiTarget },
+        "/health": { target: apiTarget },
+        "/docs": { target: apiTarget },
+        "/openapi.json": { target: apiTarget },
       },
     },
     build: {

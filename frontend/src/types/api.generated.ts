@@ -44,6 +44,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sign in
+         * @description Checks the e-mail address and password and opens a session held in an `HttpOnly` cookie. One message for every wrong combination; repeated failures lock the account for a while and make the client wait (429 with `Retry-After`).
+         */
+        post: operations["login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sign out
+         * @description Ends this session and clears its cookie. Signing out without a session is not an error.
+         */
+        post: operations["logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The current session
+         * @description Who is signed in, what their role allows and when the session ends. 401 when not signed in. Answers even when the password must be changed first (`must_change_password`).
+         */
+        get: operations["get_session_info"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Change one's own password
+         * @description Needs the current password. The new one must meet the policy (at least 12 characters, not a common password, not one's e-mail or name). Every other session of the account ends; this one continues.
+         */
+        post: operations["change_password"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/entities": {
         parameters: {
             query?: never;
@@ -1855,6 +1935,104 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List people */
+        get: operations["list_users"];
+        put?: never;
+        /**
+         * Create an account
+         * @description With a temporary password the person must replace at their first sign-in.
+         */
+        post: operations["create_user"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/users/{user_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Change a person's name, role or whether the account is active
+         * @description Deactivating an account ends its sessions.
+         */
+        put: operations["update_user"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/users/{user_id}/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reset a person's password
+         * @description Sets a temporary password the person must replace at their next sign-in, ends their sessions and lifts any lock.
+         */
+        post: operations["reset_password"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/users/{user_id}/sessions/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sign a person out everywhere */
+        post: operations["revoke_sessions"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/audit-events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The security audit trail
+         * @description Sign-ins (successful, failed, throttled), sign-outs, password changes and resets, and changes to people and their sessions, newest first. Never a password or a token.
+         */
+        get: operations["list_audit_events"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2265,6 +2443,36 @@ export interface components {
              * @example Which companies are exposed to the rupee?
              */
             question: string;
+        };
+        /** AuditEventList */
+        AuditEventList: {
+            /** Items */
+            items: components["schemas"]["AuditEventRead"][];
+        };
+        /** AuditEventRead */
+        AuditEventRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+            /** Event */
+            event: string;
+            actor: components["schemas"]["PersonRef"] | null;
+            subject: components["schemas"]["PersonRef"] | null;
+            /** Client */
+            client: string | null;
+            /** Request Id */
+            request_id: string | null;
+            /** Detail */
+            detail: {
+                [key: string]: unknown;
+            };
         };
         /** BridgeItemRead */
         BridgeItemRead: {
@@ -3225,6 +3433,27 @@ export interface components {
             companies_with_executions: number;
             /** Truncated */
             truncated: boolean;
+        };
+        /** CurrentSessionRead */
+        CurrentSessionRead: {
+            user: components["schemas"]["UserRead"];
+            /**
+             * Permissions
+             * @description What the role allows: read the workspace, write (create and run), administer (people and sessions).
+             */
+            permissions: ("read" | "write" | "administer")[];
+            /**
+             * Expires At
+             * Format: date-time
+             * @description When the session ends, whatever happens.
+             */
+            expires_at: string;
+            /**
+             * Idle Expires At
+             * Format: date-time
+             * @description When it ends if no request arrives before.
+             */
+            idle_expires_at: string;
         };
         /**
          * DataStatus
@@ -6660,6 +6889,13 @@ export interface components {
             /** Default */
             default: string | null;
         };
+        /** LoginRequest */
+        LoginRequest: {
+            /** Email */
+            email: string;
+            /** Password */
+            password: string;
+        };
         /** MarketsInput */
         MarketsInput: {
             /** @description The exchange rate (reporting currency per US dollar) every model that needs it uses: a typed value, or `source: stored_observation` for the latest stored World Bank annual average. */
@@ -7821,6 +8057,21 @@ export interface components {
             /** Rationale */
             rationale: string | null;
         };
+        /** PasswordChangeRequest */
+        PasswordChangeRequest: {
+            /** Current Password */
+            current_password: string;
+            /** New Password */
+            new_password: string;
+        };
+        /** PasswordResetRequest */
+        PasswordResetRequest: {
+            /**
+             * Temporary Password
+             * @description A password the person must replace at their next sign-in.
+             */
+            temporary_password: string;
+        };
         /** PathItem */
         PathItem: {
             /** Steps */
@@ -8053,6 +8304,16 @@ export interface components {
             start: string | null;
             /** End */
             end: string | null;
+        };
+        /** PersonRef */
+        PersonRef: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
         };
         /** PlanIssueRead */
         PlanIssueRead: {
@@ -9093,6 +9354,8 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+            /** @description Who owns it: only the owner or an administrator changes it. Null for scenarios made before accounts existed (administrators change those). */
+            owner?: components["schemas"]["PersonRef"] | null;
         };
         /** ScenarioSpecRead */
         ScenarioSpecRead: {
@@ -9148,6 +9411,8 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+            /** @description Who owns it: only the owner or an administrator changes it. Null for scenarios made before accounts existed (administrators change those). */
+            owner?: components["schemas"]["PersonRef"] | null;
         };
         /** ScenarioUpdate */
         ScenarioUpdate: {
@@ -10201,6 +10466,8 @@ export interface components {
              * @description What the numbers are, and are not, in one sentence.
              */
             note: string;
+            /** @description Who ran it: only they or an administrator analyse it further. Null for runs made before accounts existed, and for runs that belong to a scenario's owner no longer on record. */
+            owner?: components["schemas"]["PersonRef"] | null;
         };
         /** SimulationRunRequest */
         SimulationRunRequest: {
@@ -11261,6 +11528,73 @@ export interface components {
             /** Cache Write Tokens */
             cache_write_tokens: number;
         };
+        /** UserCreateRequest */
+        UserCreateRequest: {
+            /** Email */
+            email: string;
+            /** Name */
+            name: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "viewer" | "analyst" | "admin";
+            /**
+             * Temporary Password
+             * @description A password the person must replace at their first sign-in.
+             */
+            temporary_password: string;
+        };
+        /** UserList */
+        UserList: {
+            /** Items */
+            items: components["schemas"]["UserRead"][];
+        };
+        /** UserRead */
+        UserRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Email */
+            email: string;
+            /** Name */
+            name: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "viewer" | "analyst" | "admin";
+            /** Is Active */
+            is_active: boolean;
+            /** Must Change Password */
+            must_change_password: boolean;
+            /** Last Login At */
+            last_login_at: string | null;
+            /**
+             * Password Changed At
+             * Format: date-time
+             */
+            password_changed_at: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** UserUpdateRequest */
+        UserUpdateRequest: {
+            /** Name */
+            name?: string | null;
+            /** Role */
+            role?: ("viewer" | "analyst" | "admin") | null;
+            /**
+             * Is Active
+             * @description False deactivates the account and ends its sessions.
+             */
+            is_active?: boolean | null;
+        };
         /** ValidationReport */
         ValidationReport: {
             /** Valid */
@@ -11548,6 +11882,200 @@ export interface operations {
             };
         };
     };
+    login: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CurrentSessionRead"];
+                };
+            };
+            /** @description The e-mail address or password is incorrect. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many failed attempts from this client or for this account; `Retry-After` says how many seconds to wait. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    logout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_session_info: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CurrentSessionRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    change_password: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PasswordChangeRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CurrentSessionRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     list_entities: {
         parameters: {
             query?: {
@@ -11571,6 +12099,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EntityPage"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description The request contains invalid values. */
@@ -11611,6 +12157,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CompanyRead"] | components["schemas"]["IndustryRead"] | components["schemas"]["CountryRead"] | components["schemas"]["EconomicVariableRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -11665,6 +12229,24 @@ export interface operations {
                     "application/json": components["schemas"]["IndustryPage"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description The request contains invalid values. */
             422: {
                 headers: {
@@ -11706,6 +12288,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EconomicVariablePage"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description The request contains invalid values. */
@@ -11755,6 +12355,24 @@ export interface operations {
                     "application/json": components["schemas"]["RelationshipPage"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description The request contains invalid values. */
             422: {
                 headers: {
@@ -11793,6 +12411,24 @@ export interface operations {
                     "application/json": components["schemas"]["RelationshipTypeRead"][];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description The request contains invalid values. */
             422: {
                 headers: {
@@ -11829,6 +12465,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["NetworkResponse"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description The request contains invalid values. */
@@ -11874,6 +12528,24 @@ export interface operations {
                     "application/json": components["schemas"]["ScenarioPage"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description The request contains invalid values. */
             422: {
                 headers: {
@@ -11914,6 +12586,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ScenarioRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description The request contains invalid values. */
@@ -11958,6 +12648,24 @@ export interface operations {
                     "application/json": components["schemas"]["PlanRead"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description The request contains invalid values. */
             422: {
                 headers: {
@@ -12000,6 +12708,24 @@ export interface operations {
                     "application/json": components["schemas"]["PreviewRead"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description The request contains invalid values. */
             422: {
                 headers: {
@@ -12038,6 +12764,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ScenarioRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -12091,6 +12835,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ScenarioRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Signed in, but the role or ownership does not allow this. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -12148,6 +12910,24 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Signed in, but the role or ownership does not allow this. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
             };
             /** @description Resource not found. */
             404: {
@@ -12211,6 +12991,24 @@ export interface operations {
                     "application/json": components["schemas"]["ScenarioRead"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Resource not found. */
             404: {
                 headers: {
@@ -12258,6 +13056,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["VersionSummaryRead"][];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -12310,6 +13126,24 @@ export interface operations {
                     "application/json": components["schemas"]["VersionRead"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Resource not found. */
             404: {
                 headers: {
@@ -12358,6 +13192,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ScenarioRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Signed in, but the role or ownership does not allow this. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -12421,6 +13273,24 @@ export interface operations {
                     "application/json": components["schemas"]["PlanRead"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Resource not found. */
             404: {
                 headers: {
@@ -12475,6 +13345,24 @@ export interface operations {
                     "application/json": components["schemas"]["ExecutionPage"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Resource not found. */
             404: {
                 headers: {
@@ -12526,6 +13414,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ExecutionRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Signed in, but the role or ownership does not allow this. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -12586,6 +13492,24 @@ export interface operations {
                     "application/json": components["schemas"]["ExecutionRead"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Resource not found. */
             404: {
                 headers: {
@@ -12633,6 +13557,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ResultsRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -12691,6 +13633,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LabPathwayRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -12754,6 +13714,24 @@ export interface operations {
                     "application/json": components["schemas"]["LabExplanationRead"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Resource not found. */
             404: {
                 headers: {
@@ -12810,6 +13788,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ExecutionRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Signed in, but the role or ownership does not allow this. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -12870,6 +13866,24 @@ export interface operations {
                     "application/json": components["schemas"]["ExecutionVerificationRead"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Resource not found. */
             404: {
                 headers: {
@@ -12928,6 +13942,24 @@ export interface operations {
                     "application/json": components["schemas"]["LabSensitivityList"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Resource not found. */
             404: {
                 headers: {
@@ -12979,6 +14011,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LabSensitivityRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Signed in, but the role or ownership does not allow this. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -13040,6 +14090,24 @@ export interface operations {
                     "application/json": components["schemas"]["LabSensitivityRead"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Resource not found. */
             404: {
                 headers: {
@@ -13087,6 +14155,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AnalysisTargetsRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -13147,6 +14233,24 @@ export interface operations {
                     "application/json": components["schemas"]["ScenarioAnalysisList"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Resource not found. */
             404: {
                 headers: {
@@ -13198,6 +14302,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ScenarioAnalysisRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Signed in, but the role or ownership does not allow this. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -13268,6 +14390,24 @@ export interface operations {
                     "application/json": components["schemas"]["ScenarioAnalysisRead"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Resource not found. */
             404: {
                 headers: {
@@ -13316,6 +14456,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AnalysisVerificationRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -13387,6 +14545,24 @@ export interface operations {
                     "application/json": components["schemas"]["ComparisonRead"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Resource not found. */
             404: {
                 headers: {
@@ -13443,6 +14619,24 @@ export interface operations {
                     "application/json": components["schemas"]["TemplateList"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description The request contains invalid values. */
             422: {
                 headers: {
@@ -13481,6 +14675,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TemplateRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -13530,6 +14742,24 @@ export interface operations {
                     "application/json": components["schemas"]["ProviderRead"][];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description The request contains invalid values. */
             422: {
                 headers: {
@@ -13568,6 +14798,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProviderRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -13624,6 +14872,24 @@ export interface operations {
                     "application/json": components["schemas"]["DatasetPage"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description The request contains invalid values. */
             422: {
                 headers: {
@@ -13662,6 +14928,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DatasetRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -13728,6 +15012,24 @@ export interface operations {
                     "application/json": components["schemas"]["SeriesPage"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description The request contains invalid values. */
             422: {
                 headers: {
@@ -13766,6 +15068,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SeriesDetail"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -13830,6 +15150,24 @@ export interface operations {
                     "application/json": components["schemas"]["ObservationPage"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Resource not found. */
             404: {
                 headers: {
@@ -13887,6 +15225,24 @@ export interface operations {
                     "application/json": components["schemas"]["InstrumentPage"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description The request contains invalid values. */
             422: {
                 headers: {
@@ -13925,6 +15281,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["InstrumentDetail"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -13989,6 +15363,24 @@ export interface operations {
                     "application/json": components["schemas"]["PriceBarPage"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Resource not found. */
             404: {
                 headers: {
@@ -14044,6 +15436,24 @@ export interface operations {
                     "application/json": components["schemas"]["JobPage"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description The request contains invalid values. */
             422: {
                 headers: {
@@ -14082,6 +15492,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["JobDetail"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -14131,6 +15559,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CaptureRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -14191,6 +15637,24 @@ export interface operations {
                     "application/json": components["schemas"]["IssuePage"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description The request contains invalid values. */
             422: {
                 headers: {
@@ -14227,6 +15691,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RuleRead"][];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description The request contains invalid values. */
@@ -14267,6 +15749,24 @@ export interface operations {
                     "application/json": components["schemas"]["GraphOverview"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description The request contains invalid values. */
             422: {
                 headers: {
@@ -14303,6 +15803,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GraphTypesResponse"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description The request contains invalid values. */
@@ -14358,6 +15876,24 @@ export interface operations {
                     "application/json": components["schemas"]["Page_NodeSearchResult_"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description The request contains invalid values. */
             422: {
                 headers: {
@@ -14396,6 +15932,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GraphNodeDetail"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -14460,6 +16014,24 @@ export interface operations {
                     "application/json": components["schemas"]["NeighborhoodResponse"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Resource not found. */
             404: {
                 headers: {
@@ -14519,6 +16091,24 @@ export interface operations {
                     "application/json": components["schemas"]["Page_GraphEdgeSummary_"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description The request contains invalid values. */
             422: {
                 headers: {
@@ -14557,6 +16147,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GraphEdgeDetail"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -14619,6 +16227,24 @@ export interface operations {
                     "application/json": components["schemas"]["PathsResponse"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Resource not found. */
             404: {
                 headers: {
@@ -14668,6 +16294,24 @@ export interface operations {
                     "application/json": components["schemas"]["ComponentsResponse"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description The request contains invalid values. */
             422: {
                 headers: {
@@ -14711,6 +16355,24 @@ export interface operations {
                     "application/json": components["schemas"]["Page_GraphBuildSummary_"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description The request contains invalid values. */
             422: {
                 headers: {
@@ -14749,6 +16411,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GraphBuildDetail"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -14808,6 +16488,24 @@ export interface operations {
                     "application/json": components["schemas"]["Page_GraphIssueRead_"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description The request contains invalid values. */
             422: {
                 headers: {
@@ -14844,6 +16542,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SimulationModelSummary"][];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description The request contains invalid values. */
@@ -14887,6 +16603,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SimulationModelDetail"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -14941,6 +16675,24 @@ export interface operations {
                     "application/json": components["schemas"]["ModelVerificationRead"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Resource not found. */
             404: {
                 headers: {
@@ -14992,6 +16744,24 @@ export interface operations {
                     "application/json": components["schemas"]["ValidationReport"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description The request contains invalid values. */
             422: {
                 headers: {
@@ -15037,6 +16807,24 @@ export interface operations {
                     "application/json": components["schemas"]["Page_SimulationRunSummary_"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description The request contains invalid values. */
             422: {
                 headers: {
@@ -15077,6 +16865,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SimulationRunRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description The model version's code no longer matches its stored definition. */
@@ -15128,6 +16934,24 @@ export interface operations {
                     "application/json": components["schemas"]["SimulationRunRead"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Resource not found. */
             404: {
                 headers: {
@@ -15175,6 +16999,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ExplanationRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -15226,6 +17068,24 @@ export interface operations {
                     "application/json": components["schemas"]["ProvenanceRead"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Resource not found. */
             404: {
                 headers: {
@@ -15275,6 +17135,24 @@ export interface operations {
                     "application/json": components["schemas"]["VerificationRead"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Resource not found. */
             404: {
                 headers: {
@@ -15322,6 +17200,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SensitivityAnalysisList"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -15375,6 +17271,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SensitivityAnalysisRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Signed in, but the role or ownership does not allow this. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -15434,6 +17348,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SensitivityAnalysisRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -15502,6 +17434,24 @@ export interface operations {
                     "application/json": components["schemas"]["OverviewRead"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description The request contains invalid values. */
             422: {
                 headers: {
@@ -15565,6 +17515,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["InsightListRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -15633,6 +17601,24 @@ export interface operations {
                     "application/json": components["schemas"]["ChangesRead"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description The request contains invalid values. */
             422: {
                 headers: {
@@ -15669,6 +17655,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MethodsRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description The request contains invalid values. */
@@ -15710,6 +17714,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EntityListRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description The request contains invalid values. */
@@ -15772,6 +17794,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EntityAnalysisRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -15843,6 +17883,24 @@ export interface operations {
                     "application/json": components["schemas"]["BriefRead"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Resource not found. */
             404: {
                 headers: {
@@ -15894,6 +17952,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ExposureMapRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -15965,6 +18041,24 @@ export interface operations {
                     "application/json": components["schemas"]["SignalListRead"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Resource not found. */
             404: {
                 headers: {
@@ -16015,6 +18109,24 @@ export interface operations {
                     "application/json": components["schemas"]["DriversRead"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Resource not found. */
             404: {
                 headers: {
@@ -16062,6 +18174,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["VariableExposureRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -16132,6 +18262,24 @@ export interface operations {
                     "application/json": components["schemas"]["SeriesIntelligenceRead"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Resource not found. */
             404: {
                 headers: {
@@ -16200,6 +18348,24 @@ export interface operations {
                     "application/json": components["schemas"]["InstrumentIntelligenceRead"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Resource not found. */
             404: {
                 headers: {
@@ -16256,6 +18422,24 @@ export interface operations {
                     "application/json": components["schemas"]["Page_AnalysisSummaryRead_"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description The request contains invalid values. */
             422: {
                 headers: {
@@ -16296,6 +18480,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AnalysisRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -16347,6 +18549,24 @@ export interface operations {
                     "application/json": components["schemas"]["AnalysisRead"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Resource not found. */
             404: {
                 headers: {
@@ -16394,6 +18614,24 @@ export interface operations {
                     "application/json": components["schemas"]["CapabilitiesRead"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description The request contains invalid values. */
             422: {
                 headers: {
@@ -16435,6 +18673,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SessionPage"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description The request contains invalid values. */
@@ -16479,6 +18735,24 @@ export interface operations {
                     "application/json": components["schemas"]["SessionRead"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description The request contains invalid values. */
             422: {
                 headers: {
@@ -16518,6 +18792,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SessionRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -16574,6 +18866,24 @@ export interface operations {
                     "application/json": components["schemas"]["SessionRead"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Resource not found. */
             404: {
                 headers: {
@@ -16621,6 +18931,24 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
             };
             /** @description Resource not found. */
             404: {
@@ -16683,6 +19011,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TurnRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Resource not found. */
@@ -16755,6 +19101,24 @@ export interface operations {
                     "application/json": components["schemas"]["TurnRead"];
                 };
             };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description Resource not found. */
             404: {
                 headers: {
@@ -16800,6 +19164,423 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SystemStatus"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_users: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserList"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_user: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UserCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The e-mail address already has an account, or the change would leave no active administrator. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    update_user: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UserUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The e-mail address already has an account, or the change would leave no active administrator. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    reset_password: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PasswordResetRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserRead"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    revoke_sessions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_audit_events: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditEventList"];
+                };
+            };
+            /** @description Not signed in, or the session has ended. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not allowed for this role or resource, a cross-site request, or a password that must be changed first (`password_change_required`). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description The request contains invalid values. */

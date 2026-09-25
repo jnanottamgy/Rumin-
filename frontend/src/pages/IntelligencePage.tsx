@@ -12,8 +12,9 @@
  *
  * Every finding opens into its evidence chain. Thresholds live in the URL.
  */
-import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router";
+import { useAccess } from "@/app/session";
 import { Badge } from "@/components/Badge";
 import { Button } from "@/components/Button";
 import { Icon } from "@/components/Icon";
@@ -91,11 +92,14 @@ function StoreButton({
 }) {
   const [state, setState] = useState<"idle" | "saving" | "error">("idle");
   const [error, setError] = useState<unknown>(null);
+  const { writeBlocker } = useAccess();
+  const noteId = useId();
   return (
     <span className={styles.storeAction}>
       <Button
         size="sm"
-        disabled={state === "saving"}
+        disabled={state === "saving" || writeBlocker !== null}
+        aria-describedby={writeBlocker ? noteId : undefined}
         onClick={async () => {
           setState("saving");
           try {
@@ -117,6 +121,11 @@ function StoreButton({
       >
         {state === "saving" ? "Storing…" : "Store this analysis"}
       </Button>
+      {writeBlocker && (
+        <span id={noteId} className={styles.storeNote}>
+          Storing an analysis needs the analyst role.
+        </span>
+      )}
       {state === "error" && (
         <span role="alert" className={styles.fieldError}>
           {describeError(error)}

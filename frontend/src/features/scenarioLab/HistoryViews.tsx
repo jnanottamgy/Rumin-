@@ -40,7 +40,8 @@ export function HistoryView({
   compareIds: string[];
   onToggleCompare: (id: string) => void;
   onOpenExecution: (id: string) => void;
-  onRestore: (version: number) => void;
+  /** Absent when this person may not change the scenario (Phase 10). */
+  onRestore?: (version: number) => void;
 }) {
   const [verified, setVerified] = useState<Record<string, ExecutionVerification | string>>({});
   const verify = async (id: string) => {
@@ -192,7 +193,7 @@ export function HistoryView({
                   {version.note && ` · ${version.note}`}
                 </span>
               </span>
-              {version.version !== scenario.current_version && (
+              {onRestore && version.version !== scenario.current_version && (
                 <Button size="sm" variant="ghost" onClick={() => onRestore(version.version)}>
                   Restore as v{scenario.current_version + 1}
                 </Button>

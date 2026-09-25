@@ -9,7 +9,7 @@ import { isFinal } from "@/features/scenarioLab/format";
 import { api, labApi } from "@/services/api";
 import type { ScenarioExecution } from "@/types/api";
 
-type Options = { baseUrl: string };
+type Options = { baseUrl: string; headers?: Record<string, string> };
 
 export async function referenceDraft(name: string, options: Options): Promise<LabDraft> {
   const template = await labApi.template("oil_rupee_rates", options);

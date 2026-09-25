@@ -11,11 +11,7 @@ import { ApiError } from "@/lib/apiClient";
 import { simulationApi } from "@/services/api";
 import type { SimulationModelDetail, SimulationRequest, SimulationRun } from "@/types/api";
 import { contractViolations } from "./contract";
-
-const baseUrl = process.env.RUMIN_API_URL?.replace(/\/+$/, "");
-if (!baseUrl)
-  throw new Error("Set RUMIN_API_URL to a running RUMIN API (see scripts/smoke_test.sh).");
-const options = { baseUrl };
+import { baseUrl, options, signedIn } from "./session";
 
 let model: SimulationModelDetail;
 let request: SimulationRequest;
@@ -111,7 +107,10 @@ describe("refusals", () => {
 
   it("never replaces or deletes a run", async () => {
     for (const method of ["PUT", "PATCH", "DELETE"]) {
-      const response = await fetch(`${baseUrl}/api/v1/simulations/${run.id}`, { method });
+      const response = await fetch(`${baseUrl}/api/v1/simulations/${run.id}`, {
+        method,
+        headers: signedIn,
+      });
       expect(response.status, method).toBe(405);
     }
   });

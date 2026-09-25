@@ -12,6 +12,7 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/Button";
 import { Icon } from "@/components/Icon";
 import { EmptyState, ErrorState, LoadingState } from "@/components/States";
+import { ReadOnlyNote } from "@/features/account/ReadOnlyNote";
 import { invalidateResource, setResourceData, useApiResource } from "@/hooks/useApiResource";
 import { ApiError, describeError } from "@/lib/apiClient";
 import { formatRounded, toNumber } from "@/lib/decimal";
@@ -151,11 +152,14 @@ function MonteCarloForm({
   running,
   errors,
   onRun,
+  readOnly,
 }: {
   targets: AnalysisTargets;
   running: boolean;
   errors: string[];
   onRun: (draft: MonteCarloDraft) => void;
+  /** Why this person cannot run analyses of this execution, or null. */
+  readOnly: string | null;
 }) {
   const byId = useMemo(
     () => new Map(targets.targets.map((target) => [target.id, target])),
@@ -344,7 +348,8 @@ function MonteCarloForm({
       <div className={styles.formActions}>
         <Button
           type="submit"
-          disabled={running || draft.quantities.length === 0}
+          disabled={running || draft.quantities.length === 0 || readOnly !== null}
+          aria-describedby={readOnly ? "mc-readonly" : undefined}
           icon={<Icon name="play" size={14} />}
         >
           {running ? "Drawing…" : "Run the analysis"}
@@ -354,6 +359,7 @@ function MonteCarloForm({
           are rejected and counted, never adjusted. Stored with its seed.
         </p>
       </div>
+      {readOnly && <ReadOnlyNote id="mc-readonly" reason={readOnly} />}
     </form>
   );
 }
@@ -720,9 +726,12 @@ export function MonteCarloResult({
 export function UncertaintyView({
   executionId,
   currency,
+  readOnly = null,
 }: {
   executionId: string | null;
   currency: string;
+  /** Why this person cannot run analyses of this execution (role or ownership), or null. */
+  readOnly?: string | null;
 }) {
   const id = executionId ?? "";
   const targets = useApiResource(`lab:analysis-targets:${id}`, () =>
@@ -755,7 +764,7 @@ export function UncertaintyView({
   }
 
   const run = async (draft: MonteCarloDraft) => {
-    if (targets.status !== "success") return;
+    if (targets.status !== "success" || readOnly) return;
     const labels = new Map(targets.data.targets.map((target) => [target.id, target.label]));
     const built = monteCarloRequest(draft, labels);
     setErrors(built.errors);
@@ -786,6 +795,7 @@ export function UncertaintyView({
           running={running}
           errors={errors}
           onRun={(draft) => void run(draft)}
+          readOnly={readOnly}
         />
       )}
       {history.length > 0 && (

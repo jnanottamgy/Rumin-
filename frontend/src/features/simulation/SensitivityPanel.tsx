@@ -4,8 +4,10 @@
  * with the run, so they can be reopened and re-checked.
  */
 import { useId, useState } from "react";
+import { useAccess } from "@/app/session";
 import { Button } from "@/components/Button";
 import { EmptyState, ErrorState, LoadingState } from "@/components/States";
+import { ReadOnlyNote } from "@/features/account/ReadOnlyNote";
 import { invalidateResource, useApiResource } from "@/hooks/useApiResource";
 import { describeError } from "@/lib/apiClient";
 import { formatDateTime } from "@/lib/format";
@@ -30,6 +32,7 @@ export function SensitivityPanel({
   const [running, setRunning] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
   const selectId = useId();
+  const blocker = useAccess().changeBlocker(run.owner, "run");
   const unitLabels = Object.fromEntries(run.inputs.map((input) => [input.id, input.unit_label]));
   const metricUnit = run.outputs.find((output) => output.id === metric)?.unit ?? "";
   const defaults = model.sensitivity_defaults
@@ -37,6 +40,7 @@ export function SensitivityPanel({
     .join(", ");
 
   async function analyse() {
+    if (blocker) return;
     setRunning(true);
     setFailure(null);
     try {
@@ -71,10 +75,21 @@ export function SensitivityPanel({
             </option>
           ))}
         </select>
-        <Button variant="primary" onClick={analyse} disabled={running}>
+        <Button
+          variant="primary"
+          onClick={analyse}
+          disabled={running || blocker !== null}
+          aria-describedby={blocker ? `${selectId}-readonly` : undefined}
+        >
           {running ? "Analysing…" : current ? "Run the analysis again" : "Run the analysis"}
         </Button>
       </div>
+      {blocker && (
+        <ReadOnlyNote
+          id={`${selectId}-readonly`}
+          reason={`${blocker} Stored analyses of it stay readable here.`}
+        />
+      )}
       <p className={styles.note}>Inputs varied: {defaults}.</p>
       {failure && (
         <p className={styles.errorText} role="alert">

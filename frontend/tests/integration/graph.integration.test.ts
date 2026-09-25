@@ -10,11 +10,7 @@ import { describe, expect, it } from "vitest";
 import { ApiError } from "@/lib/apiClient";
 import { graphApi } from "@/services/api";
 import { contractViolations } from "./contract";
-
-const baseUrl = process.env.RUMIN_API_URL?.replace(/\/+$/, "");
-if (!baseUrl)
-  throw new Error("Set RUMIN_API_URL to a running RUMIN API (see scripts/smoke_test.sh)");
-const options = { baseUrl };
+import { baseUrl, options, signedIn } from "./session";
 
 const DELTRIN = "company:co_deltrin_refining";
 const AERISCA = "company:co_aerisca_airways";
@@ -175,7 +171,7 @@ describe("safety", () => {
       "/api/v1/graph/nodes",
       `/api/v1/graph/nodes/${encodeURIComponent(DELTRIN)}`,
     ]) {
-      const response = await fetch(`${baseUrl}${path}`, { method: "POST" });
+      const response = await fetch(`${baseUrl}${path}`, { method: "POST", headers: signedIn });
       expect(response.status, path).toBe(405);
     }
   });
@@ -183,6 +179,7 @@ describe("safety", () => {
   it("rejects malformed node keys", async () => {
     const response = await fetch(
       `${baseUrl}/api/v1/graph/nodes/${encodeURIComponent("Company:X Y")}`,
+      { headers: signedIn },
     );
     expect(response.status).toBe(422);
   });

@@ -25,14 +25,7 @@ import { api, intelligenceApi, labApi, simulationApi } from "@/services/api";
 import type { EconomicVariable, ScenarioExecution, ScenarioInput } from "@/types/api";
 import { contractViolations } from "./contract";
 import { referenceDraft } from "./reference";
-
-const baseUrl = process.env.RUMIN_API_URL?.replace(/\/+$/, "");
-if (!baseUrl) {
-  throw new Error(
-    "Set RUMIN_API_URL to a running RUMIN API (see scripts/smoke_test.sh), e.g. http://127.0.0.1:8765",
-  );
-}
-const options = { baseUrl };
+import { baseUrl, options, signedIn } from "./session";
 
 let variables: Map<string, EconomicVariable>;
 const created: string[] = [];
@@ -238,7 +231,7 @@ describe("scenarios through the Lab's draft model", () => {
     );
     const response = await fetch(`${baseUrl}/api/v1/scenarios`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { ...signedIn, "Content-Type": "application/json" },
       body: JSON.stringify({ ...body, simulated_result: 12 }),
     });
     expect(response.status).toBe(422);
@@ -250,7 +243,7 @@ describe("scenarios through the Lab's draft model", () => {
   it("answers malformed JSON with the standard error envelope", async () => {
     const response = await fetch(`${baseUrl}/api/v1/scenarios`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { ...signedIn, "Content-Type": "application/json" },
       body: '{"name": ',
     });
     expect(response.status).toBe(422);

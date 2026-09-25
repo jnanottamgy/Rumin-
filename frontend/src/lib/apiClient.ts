@@ -52,6 +52,42 @@ export interface RequestOptions {
   /** Non-2xx statuses whose JSON body should be returned instead of thrown (e.g. 503 readiness). */
   acceptStatuses?: number[];
   baseUrl?: string;
+  /**
+   * Extra request headers. Browsers send the session cookie themselves; programs such as the
+   * integration suite pass it here (`Cookie`).
+   */
+  headers?: Record<string, string>;
+  /**
+   * Keep a 401 to this request's caller: signing in and asking who is signed in expect one,
+   * and it does not mean that a session just ended.
+   */
+  quietAuth?: boolean;
+}
+
+/**
+ * What any request can find out about the session: it has ended (401), or the password must
+ * be changed before anything else (403 `password_change_required`).
+ */
+export type AuthProblem = "session_ended" | "password_change_required";
+
+const authListeners = new Set<(problem: AuthProblem) => void>();
+
+/** Hear about session problems met by any request; returns the unsubscribe function. */
+export function onAuthProblem(listener: (problem: AuthProblem) => void): () => void {
+  authListeners.add(listener);
+  return () => {
+    authListeners.delete(listener);
+  };
+}
+
+function reportAuthProblem(status: number, code: string | null): void {
+  const problem: AuthProblem | null =
+    status === 401
+      ? "session_ended"
+      : status === 403 && code === "password_change_required"
+        ? "password_change_required"
+        : null;
+  if (problem) for (const listener of [...authListeners]) listener(problem);
 }
 
 function isErrorEnvelope(value: unknown): value is {
@@ -86,7 +122,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   const timeout = AbortSignal.timeout(timeoutMs);
   const signal = options.signal ? AbortSignal.any([options.signal, timeout]) : timeout;
 
-  const headers: Record<string, string> = { Accept: "application/json" };
+  const headers: Record<string, string> = { Accept: "application/json", ...options.headers };
   if (body !== undefined) headers["Content-Type"] = "application/json";
 
   let response: Response;
@@ -118,6 +154,9 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   }
 
   const requestId = response.headers.get("X-Request-ID");
+  if (!options.quietAuth) {
+    reportAuthProblem(response.status, isErrorEnvelope(payload) ? payload.error.code : null);
+  }
   if (isErrorEnvelope(payload)) {
     throw new ApiError("http", payload.error.message, {
       status: response.status,

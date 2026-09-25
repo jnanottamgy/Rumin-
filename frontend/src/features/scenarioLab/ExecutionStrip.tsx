@@ -35,7 +35,8 @@ export function ExecutionStrip({
   executeLabel: string;
   disabledReason: string | null;
   onExecute: () => void;
-  onCancel: () => void;
+  /** Absent when this person may not cancel (Phase 10: the scenario's owner or an admin). */
+  onCancel?: () => void;
 }) {
   const recorded = new Map((execution?.stages ?? []).map((stage) => [stage.stage, stage]));
   const running = execution !== null && !isFinal(execution.status);
@@ -49,14 +50,16 @@ export function ExecutionStrip({
     <section className={styles.executionStrip} aria-label="Execution">
       <div className={styles.executionActions}>
         {running ? (
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={onCancel}
-            icon={<Icon name="close" size={14} />}
-          >
-            Cancel
-          </Button>
+          onCancel && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={onCancel}
+              icon={<Icon name="close" size={14} />}
+            >
+              Cancel
+            </Button>
+          )
         ) : (
           <Button
             variant="primary"

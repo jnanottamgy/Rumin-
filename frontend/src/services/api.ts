@@ -6,6 +6,10 @@
 import { validateNetwork } from "@/features/network/model";
 import { apiRequest, type RequestOptions } from "@/lib/apiClient";
 import type {
+  Account,
+  AccountCreateRequest,
+  AccountList,
+  AccountUpdateRequest,
   AnalysisRequest,
   AnalysisTargets,
   AnalysisVerification,
@@ -13,6 +17,8 @@ import type {
   AnalystSession,
   AnalystSessionPage,
   AnalystTurn,
+  AuditEventList,
+  CurrentSession,
   DatasetPage,
   EconomicSeriesDetail,
   EconomicSeriesPage,
@@ -54,9 +60,11 @@ import type {
   LabSensitivity,
   LabSensitivityList,
   LabSensitivityRequest,
+  LoginRequest,
   ModelVerification,
   NetworkResponse,
   ObservationPage,
+  PasswordChangeRequest,
   PriceBarPage,
   Provider,
   QualityIssuePage,
@@ -99,7 +107,7 @@ import type {
   VariableExposure,
 } from "@/types/api";
 
-type Options = Pick<RequestOptions, "signal" | "baseUrl">;
+type Options = Pick<RequestOptions, "signal" | "baseUrl" | "headers">;
 type QueryValue = string | number | boolean | null | undefined;
 
 /** "?a=1&b=x" from the defined values only (encoded); "" when there are none. */
@@ -710,4 +718,63 @@ export const intelligenceApi = {
     get: (id: string, options?: Options) =>
       apiRequest<StoredAnalysis>(`/api/v1/intelligence/analyses/${segment(id)}`, options),
   },
+};
+
+/**
+ * Signing in and out, and one's own password (Phase 10). The session lives in an `HttpOnly`
+ * cookie the browser sends by itself; no response carries the token.
+ */
+export const authApi = {
+  /** Who is signed in; 401 (kept quiet) when nobody is. */
+  session: (options?: Options) =>
+    apiRequest<CurrentSession>("/api/v1/auth/session", { ...options, quietAuth: true }),
+
+  login: (request: LoginRequest, options?: Options) =>
+    apiRequest<CurrentSession>("/api/v1/auth/login", {
+      ...options,
+      method: "POST",
+      body: request,
+      quietAuth: true,
+    }),
+
+  logout: (options?: Options) =>
+    apiRequest<void>("/api/v1/auth/logout", { ...options, method: "POST", quietAuth: true }),
+
+  changePassword: (request: PasswordChangeRequest, options?: Options) =>
+    apiRequest<CurrentSession>("/api/v1/auth/password", {
+      ...options,
+      method: "POST",
+      body: request,
+    }),
+};
+
+/** People and the security audit trail: administrators only (Phase 10). */
+export const peopleApi = {
+  list: (options?: Options) => apiRequest<AccountList>("/api/v1/users", options),
+
+  create: (request: AccountCreateRequest, options?: Options) =>
+    apiRequest<Account>("/api/v1/users", { ...options, method: "POST", body: request }),
+
+  update: (id: string, request: AccountUpdateRequest, options?: Options) =>
+    apiRequest<Account>(`/api/v1/users/${segment(id)}`, {
+      ...options,
+      method: "PUT",
+      body: request,
+    }),
+
+  resetPassword: (id: string, temporaryPassword: string, options?: Options) =>
+    apiRequest<Account>(`/api/v1/users/${segment(id)}/password`, {
+      ...options,
+      method: "POST",
+      body: { temporary_password: temporaryPassword },
+    }),
+
+  revokeSessions: (id: string, options?: Options) =>
+    apiRequest<void>(`/api/v1/users/${segment(id)}/sessions/revoke`, {
+      ...options,
+      method: "POST",
+    }),
+
+  events: (limit = 100, options?: Options) =>
+    apiRequest<AuditEventList>(`/api/v1/audit-events${toQuery({ limit })}`, options),
 };

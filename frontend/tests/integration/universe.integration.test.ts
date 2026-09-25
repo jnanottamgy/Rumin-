@@ -17,11 +17,7 @@ import { readWholeGraph, withinBudget } from "@/features/universe/useUniverseDat
 import { graphApi, labApi } from "@/services/api";
 import { contractViolations } from "./contract";
 import { executeReference } from "./reference";
-
-const baseUrl = process.env.RUMIN_API_URL?.replace(/\/+$/, "");
-if (!baseUrl)
-  throw new Error("Set RUMIN_API_URL to a running RUMIN API (see scripts/smoke_test.sh)");
-const options = { baseUrl };
+import { options } from "./session";
 
 describe("the whole build", () => {
   it("is read page by page: every node and edge of the current build, exactly once", async () => {

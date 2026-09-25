@@ -10,14 +10,8 @@ import { ApiError } from "@/lib/apiClient";
 import { analystApi } from "@/services/api";
 import type { AnalystTurn } from "@/types/api";
 import { contractViolations } from "./contract";
+import { options } from "./session";
 
-const baseUrl = process.env.RUMIN_API_URL?.replace(/\/+$/, "");
-if (!baseUrl) {
-  throw new Error(
-    "Set RUMIN_API_URL to a running RUMIN API (see scripts/smoke_test.sh), e.g. http://127.0.0.1:8765",
-  );
-}
-const options = { baseUrl };
 const created: string[] = [];
 
 afterAll(async () => {

@@ -8,11 +8,7 @@
 import { describe, expect, it } from "vitest";
 import { api, dataApi } from "@/services/api";
 import { contractViolations } from "./contract";
-
-const baseUrl = process.env.RUMIN_API_URL?.replace(/\/+$/, "");
-if (!baseUrl)
-  throw new Error("Set RUMIN_API_URL to a running RUMIN API (see scripts/smoke_test.sh)");
-const options = { baseUrl };
+import { baseUrl, options, signedIn } from "./session";
 
 describe("providers and datasets", () => {
   it("lists the providers with their terms", async () => {
@@ -118,7 +114,10 @@ describe("honesty of the system report", () => {
   });
 
   it("offers no way to start ingestion over HTTP", async () => {
-    const response = await fetch(`${baseUrl}/api/v1/ingestion-jobs`, { method: "POST" });
+    const response = await fetch(`${baseUrl}/api/v1/ingestion-jobs`, {
+      method: "POST",
+      headers: signedIn,
+    });
     expect(response.status).toBe(405);
   });
 });

@@ -60,6 +60,7 @@ from app.schemas.simulation import (
     ValidationReport,
     VerificationRead,
 )
+from app.services import auth
 from app.services import graph as graph_service
 from app.simulation import verification as model_register
 from app.simulation.data_sources import latest_observation
@@ -455,6 +456,7 @@ def _run_read(session: Session, run: SimulationRun) -> SimulationRunRead:
         created_at=run.created_at,
         sensitivity_analyses=analyses or 0,
         note=RUN_NOTE,
+        owner=auth.people(session, [run.owner_id]).get(run.owner_id) if run.owner_id else None,
     )
 
 

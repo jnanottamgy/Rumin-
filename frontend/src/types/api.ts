@@ -303,3 +303,18 @@ export type AnalystScenarioBlock = Schemas["ScenarioBlock"];
 export type AnalystNoticeBlock = Schemas["NoticeBlock"];
 export type AnalystClarificationBlock = Schemas["ClarificationBlock"];
 export type AnalystGrounding = Schemas["GroundingRead"];
+
+// --- Accounts and sessions (Phase 10) ------------------------------------------------------------
+export type CurrentSession = Schemas["CurrentSessionRead"];
+export type Account = Schemas["UserRead"];
+export type AccountList = Schemas["UserList"];
+export type Role = Account["role"];
+export type Permission = CurrentSession["permissions"][number];
+export type PersonRef = Schemas["PersonRef"];
+export type AuditEvent = Schemas["AuditEventRead"];
+export type AuditEventList = Schemas["AuditEventList"];
+export type LoginRequest = Schemas["LoginRequest"];
+export type PasswordChangeRequest = Schemas["PasswordChangeRequest"];
+export type PasswordResetRequest = Schemas["PasswordResetRequest"];
+export type AccountCreateRequest = Schemas["UserCreateRequest"];
+export type AccountUpdateRequest = Schemas["UserUpdateRequest"];

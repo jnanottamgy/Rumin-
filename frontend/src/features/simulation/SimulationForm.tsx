@@ -5,6 +5,7 @@
  */
 import { type FormEvent, type ReactNode, useId } from "react";
 import { Button } from "@/components/Button";
+import { ReadOnlyNote } from "@/features/account/ReadOnlyNote";
 import { formatExact } from "@/lib/decimal";
 import type {
   GraphNodeSearchResult,
@@ -196,6 +197,7 @@ export function SimulationForm({
   onRun,
   onExample,
   onClear,
+  readOnly = null,
 }: {
   model: SimulationModelDetail;
   form: FormState;
@@ -209,6 +211,8 @@ export function SimulationForm({
   onRun: () => void;
   onExample: (() => void) | null;
   onClear: () => void;
+  /** Why this person cannot store runs (Phase 10: viewers), or null. Checking still works. */
+  readOnly?: string | null;
 }) {
   const byField = issuesByField(issues);
   const errors = issues;
@@ -223,7 +227,8 @@ export function SimulationForm({
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    onRun();
+    if (readOnly) onValidate();
+    else onRun();
   }
 
   return (
@@ -317,13 +322,24 @@ export function SimulationForm({
       </div>
 
       <div className={styles.formActions}>
-        <Button variant="primary" type="submit" disabled={busy !== null}>
+        <Button
+          variant="primary"
+          type="submit"
+          disabled={busy !== null || readOnly !== null}
+          aria-describedby={readOnly ? `${summaryId}-readonly` : undefined}
+        >
           {busy === "running" ? "Running…" : "Run simulation"}
         </Button>
         <Button onClick={onValidate} disabled={busy !== null}>
           {busy === "validating" ? "Checking…" : "Check inputs"}
         </Button>
       </div>
+      {readOnly && (
+        <ReadOnlyNote
+          id={`${summaryId}-readonly`}
+          reason={`${readOnly} You can still check the inputs; running stores a run, which your role cannot do.`}
+        />
+      )}
       <div className={styles.formSecondary}>
         {onExample && (
           <Button variant="ghost" size="sm" onClick={onExample} disabled={busy !== null}>

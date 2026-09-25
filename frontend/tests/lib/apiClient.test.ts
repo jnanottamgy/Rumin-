@@ -1,5 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
-import { ApiError, apiRequest, describeError } from "@/lib/apiClient";
+import {
+  ApiError,
+  type AuthProblem,
+  apiRequest,
+  describeError,
+  onAuthProblem,
+} from "@/lib/apiClient";
 import { errorReply, mockApi, REQUEST_ID, unreachable } from "../utils/api";
 
 describe("apiRequest", () => {
@@ -127,5 +133,39 @@ describe("describeError", () => {
     expect(describeError(new ApiError("http", "Scenario not found."))).toBe("Scenario not found.");
     expect(describeError(new Error("Boom"))).toBe("Boom");
     expect(describeError("weird")).toBe("Something went wrong.");
+  });
+});
+
+describe("sessions (Phase 10)", () => {
+  it("sends extra headers, such as the integration suite's session cookie", async () => {
+    const api = mockApi({ "/api/v1/things": { body: {} } });
+    await apiRequest("/api/v1/things", { headers: { Cookie: "rumin_session=test" } });
+    expect(api.fetchMock.mock.calls[0]?.[1]?.headers).toMatchObject({
+      Accept: "application/json",
+      Cookie: "rumin_session=test",
+    });
+  });
+
+  it("tells the session layer when a request finds the session ended or a password to change", async () => {
+    mockApi({
+      "/api/v1/ended": errorReply(401, "unauthorized", "Your session has ended. Sign in again."),
+      "/api/v1/password-first": errorReply(
+        403,
+        "password_change_required",
+        "Choose a new password before continuing.",
+      ),
+      "/api/v1/forbidden": errorReply(403, "forbidden", "Your role does not allow this."),
+    });
+    const heard: AuthProblem[] = [];
+    const stop = onAuthProblem((problem) => heard.push(problem));
+
+    await apiRequest("/api/v1/ended").catch(() => undefined);
+    await apiRequest("/api/v1/password-first").catch(() => undefined);
+    await apiRequest("/api/v1/forbidden").catch(() => undefined);
+    await apiRequest("/api/v1/ended", { quietAuth: true }).catch(() => undefined);
+    stop();
+    await apiRequest("/api/v1/ended").catch(() => undefined);
+
+    expect(heard).toEqual(["session_ended", "password_change_required"]);
   });
 });

@@ -6,6 +6,7 @@
 import { vi } from "vitest";
 import type { ErrorDetail } from "@/types/api";
 import { networkFixture, scenarioPageFixture, systemFixture, variablesFixture } from "../fixtures";
+import { sessionFixture } from "../fixtures/accounts";
 import { analystFixtures } from "../fixtures/analyst";
 import { intelligenceFixtures } from "../fixtures/intelligence";
 import { labFixtures } from "../fixtures/lab";
@@ -36,9 +37,14 @@ export function errorReply(
   return { status, body: { error: { code, message, details, request_id: REQUEST_ID } } };
 }
 
-/** The happy path: every read endpoint the pages use, answering with the fixtures. */
+/**
+ * The happy path: every read endpoint the pages use, answering with the fixtures, for a
+ * signed-in administrator (who may do everything, so role rules never get in the way of a
+ * test that is not about them).
+ */
 export function defaultRoutes(): Record<string, Route> {
   return {
+    "/api/v1/auth/session": { body: sessionFixture("admin") },
     "/health": { body: { status: "ok", service: "rumin-api", version: "0.1.0" } },
     "/health/ready": {
       body: {
@@ -112,6 +118,9 @@ export function mockApi(overrides: Record<string, Route> = {}) {
     writes: () => requests.filter((request) => request.method !== "GET"),
   };
 }
+
+/** Answers as the API does for a request without a session. */
+export const signedOut: MockReply = errorReply(401, "unauthorized", "Sign in to continue.");
 
 /** A fetch that fails like an unreachable server does. */
 export const unreachable: Route = () => {

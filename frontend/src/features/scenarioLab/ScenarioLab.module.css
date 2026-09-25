@@ -370,6 +370,11 @@
   border-bottom: 1px solid var(--color-line);
 }
 
+/* Why this person cannot save or execute here (Phase 10): its own line under the title. */
+.readOnly {
+  flex-basis: 100%;
+}
+
 .workspaceTitleBlock {
   display: grid;
   gap: var(--space-2);

@@ -8,6 +8,7 @@ import { Wordmark } from "@/components/Wordmark";
 import { useApiResource } from "@/hooks/useApiResource";
 import { cx } from "@/lib/cx";
 import { api } from "@/services/api";
+import { AccountMenu, AccountSection } from "./AccountMenu";
 import styles from "./AppShell.module.css";
 
 const THEME_ORDER: ThemePreference[] = ["system", "light", "dark"];
@@ -101,6 +102,7 @@ export function AppShell() {
           <div className={styles.meta}>
             <WorkspaceStatus />
             <ThemeToggle />
+            <AccountMenu />
           </div>
           <button
             type="button"
@@ -119,6 +121,7 @@ export function AppShell() {
             <WorkspaceStatus />
             <ThemeToggle />
           </div>
+          <AccountSection />
         </div>
       </header>
       <main id="main" className={styles.main}>

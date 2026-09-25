@@ -35553,6 +35553,17 @@
             "type": "string",
             "title": "Note",
             "description": "What the numbers are, and are not, in one sentence."
+          },
+          "owner": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PersonRef"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Who ran it: only they or an administrator analyse it further. Null for runs made before accounts existed, and for runs that belong to a scenario's owner no longer on record."
           }
         },
         "type": "object",

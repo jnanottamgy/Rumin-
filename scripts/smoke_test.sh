@@ -5,9 +5,11 @@
 #   2. applies the Alembic migrations, loads the illustrative sample dataset and the series
 #      catalogue, imports a tiny SYNTHETIC price file through the ingestion CLI, and builds
 #      the knowledge graph from all of it,
-#   3. starts the API on a spare port,
-#   4. runs the frontend's integration suite (its real service layer) against it,
-#   5. stops the API and deletes the database, whatever the outcome.
+#   3. creates an administrator account for the run, with a random password made here,
+#   4. starts the API on a spare port,
+#   5. runs the frontend's integration suite (its real service layer) against it, signed in
+#      as that account,
+#   6. stops the API and deletes the database, whatever the outcome.
 #
 # Usage: scripts/smoke_test.sh
 # Needs: the backend environment (`uv sync --extra dev` in backend/) and the frontend
@@ -106,6 +108,16 @@ grep -Eq "^Changes: nodes \+0 added, 0 changed, 0 retired, [0-9]+ unchanged · e
   echo "error: rebuilding an unchanged graph changed it" >&2
   exit 1
 }
+
+# Every API route but signing in needs a session (Phase 10). The account exists only in this
+# throwaway database; its password is random and never written to disk.
+echo "==> Creating the run's administrator account"
+export RUMIN_TEST_EMAIL="smoke-admin@rumin.test"
+RUMIN_TEST_PASSWORD="$("${PYTHON}" -c 'import secrets; print(secrets.token_urlsafe(24))')"
+export RUMIN_TEST_PASSWORD
+printf '%s\n' "${RUMIN_TEST_PASSWORD}" |
+  backend_python -m app.auth create-user --email "${RUMIN_TEST_EMAIL}" \
+    --name "Smoke-test administrator" --role admin --password-stdin
 
 echo "==> Starting the API on port ${PORT}"
 # Not through backend_python: `exec` in a directly backgrounded subshell makes $! the

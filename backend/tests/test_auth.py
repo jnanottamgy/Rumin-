@@ -406,13 +406,15 @@ def test_a_run_belongs_to_whoever_ran_it(
 ) -> None:
     from tests.simulation_support import BASE
 
-    as_person(client, session_factory, "analyst")
+    as_person(client, session_factory, "analyst", name="Runner One")
     run = client.post(f"{API}/simulations", json={"model_id": "airline_fuel_cost", "inputs": BASE})
     assert run.status_code == 201, run.text
     run_id = run.json()["id"]
+    assert run.json()["owner"]["name"] == "Runner One"
 
     as_person(client, session_factory, "analyst")
-    assert client.get(f"{API}/simulations/{run_id}").status_code == 200
+    read = client.get(f"{API}/simulations/{run_id}")
+    assert read.status_code == 200 and read.json()["owner"]["name"] == "Runner One"
     assert client.post(f"{API}/simulations/{run_id}/sensitivity", json={}).status_code == 403
     assert client.post(f"{API}/simulations/{run_id}/verify").status_code == 200
 

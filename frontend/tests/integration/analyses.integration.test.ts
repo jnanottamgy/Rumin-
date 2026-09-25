@@ -21,11 +21,7 @@ import { labApi, simulationApi } from "@/services/api";
 import type { AnalysisTarget, AnalysisTargets, ScenarioExecution } from "@/types/api";
 import { contractViolations } from "./contract";
 import { executeReference } from "./reference";
-
-const baseUrl = process.env.RUMIN_API_URL?.replace(/\/+$/, "");
-if (!baseUrl)
-  throw new Error("Set RUMIN_API_URL to a running RUMIN API (see scripts/smoke_test.sh)");
-const options = { baseUrl };
+import { options } from "./session";
 
 let execution: ScenarioExecution;
 let targets: AnalysisTargets;

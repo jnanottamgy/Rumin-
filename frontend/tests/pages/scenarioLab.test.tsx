@@ -6,6 +6,7 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
+import { PEOPLE, sessionFixture } from "../fixtures/accounts";
 import { EXECUTION_ID, labFixtures, SCENARIO_ID } from "../fixtures/lab";
 import { simulationFixtures } from "../fixtures/simulation";
 import { errorReply, mockApi, type RecordedRequest, type Route, unreachable } from "../utils/api";
@@ -675,5 +676,82 @@ describe("Scenario Lab — starting from a template", () => {
     );
     const errors = screen.getAllByText("Reporting currency is required.");
     expect(errors.every((item) => item.closest("li")?.dataset.severity === "error")).toBe(true);
+  });
+});
+
+describe("Scenario Lab — who may change what (Phase 10)", () => {
+  const as = (role: "viewer" | "analyst") => ({
+    "/api/v1/auth/session": { body: sessionFixture(role) },
+  });
+  const ownedBy = (person: { id: string; name: string } | null) => ({
+    [`/api/v1/scenarios/${SCENARIO_ID}`]: { body: { ...labFixtures.scenario(), owner: person } },
+  });
+
+  it("lets a viewer read and preview, but not save, execute or analyse", async () => {
+    const api = mockApi(labRoutes({ ...as("viewer"), ...ownedBy(null) }));
+    const user = userEvent.setup();
+    await openSaved();
+
+    const reason = /Your role \(viewer\) can read the workspace but not create or change anything/;
+    expect(screen.getByText(reason)).toBeInTheDocument();
+    const save = screen.getByRole("button", { name: "Save new version" });
+    expect(save).toBeDisabled();
+    expect(save).toHaveAccessibleDescription(reason);
+    expect(screen.queryByRole("button", { name: "Duplicate" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Execute" })).toBeDisabled();
+
+    await user.click(screen.getByRole("tab", { name: "Sensitivity" }));
+    const run = await screen.findByRole("button", { name: "Run the analysis" });
+    expect(run).toBeDisabled();
+    expect(run).toHaveAccessibleDescription(reason);
+    expect(api.writes().filter((request) => !request.path.endsWith("/preview"))).toEqual([]);
+  });
+
+  it("offers another analyst a copy of someone else's scenario", async () => {
+    const api = mockApi(
+      labRoutes({
+        ...as("analyst"),
+        ...ownedBy({ id: PEOPLE.admin.id, name: PEOPLE.admin.name }),
+        [`POST /api/v1/scenarios/${SCENARIO_ID}/duplicate`]: {
+          status: 201,
+          body: labFixtures.scenario(),
+        },
+      }),
+    );
+    const user = userEvent.setup();
+    await openSaved();
+
+    expect(screen.getByText("Owner: Test Administrator")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /This scenario belongs to Test Administrator; only they or an administrator can change it\. Duplicate it to save and run your own copy/,
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Save new version" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Execute" })).toBeDisabled();
+
+    await user.click(screen.getByRole("button", { name: "Duplicate" }));
+    await waitFor(() =>
+      expect(api.writes().map((request) => request.path)).toContain(
+        `/api/v1/scenarios/${SCENARIO_ID}/duplicate`,
+      ),
+    );
+  });
+
+  it("gives the owner every control", async () => {
+    mockApi(
+      labRoutes({
+        ...as("analyst"),
+        ...ownedBy({ id: PEOPLE.analyst.id, name: PEOPLE.analyst.name }),
+      }),
+    );
+    const user = userEvent.setup();
+    await openSaved();
+
+    expect(screen.getByText("Owner: Test Analyst")).toBeInTheDocument();
+    expect(screen.queryByText(/only they or an administrator can change it/)).toBeNull();
+    expect(screen.getByRole("button", { name: "Execute" })).toBeEnabled();
+    await user.click(screen.getByRole("tab", { name: "Sensitivity" }));
+    expect(await screen.findByRole("button", { name: "Run the analysis" })).toBeEnabled();
   });
 });

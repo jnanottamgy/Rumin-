@@ -7,6 +7,7 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
+import { sessionFixture } from "../fixtures/accounts";
 import { AERISCA, intelligenceFixtures, STORED_ID } from "../fixtures/intelligence";
 import { errorReply, mockApi, unreachable } from "../utils/api";
 import { renderRoute } from "../utils/render";
@@ -323,6 +324,22 @@ describe("Financial intelligence — stored analyses", () => {
     expect(screen.getByRole("combobox", { name: "Subject" })).toHaveDisplayValue(
       "A stored analysis",
     );
+  });
+});
+
+describe("Financial intelligence — who may store (Phase 10)", () => {
+  it("tells a viewer that storing needs the analyst role", async () => {
+    const api = mockApi({
+      ...dossierRoutes(),
+      "/api/v1/auth/session": { body: sessionFixture("viewer") },
+    });
+    renderRoute(DOSSIER);
+    await openDossier();
+
+    const store = screen.getByRole("button", { name: "Store this analysis" });
+    expect(store).toBeDisabled();
+    expect(store).toHaveAccessibleDescription("Storing an analysis needs the analyst role.");
+    expect(api.writes()).toEqual([]);
   });
 });
 

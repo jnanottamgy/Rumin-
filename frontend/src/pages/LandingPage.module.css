@@ -115,6 +115,17 @@
   background: var(--metal-hairline);
 }
 
+.figureNote {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  padding: var(--space-6);
+  color: var(--color-ink-secondary);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
 .caption {
   color: var(--color-ink-muted);
   font-size: var(--text-xs);

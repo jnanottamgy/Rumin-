@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Link } from "react-router";
 import { APP_MODULES, CURRENT_PHASE, ROADMAP, STATUS_LABEL } from "@/app/modules";
+import { useSession } from "@/app/session";
 import { useTheme } from "@/app/theme";
 import { ButtonLink } from "@/components/Button";
 import {
@@ -27,10 +28,63 @@ const IN_THIS_BUILD: Record<EpistemicCategory, string> = {
     "Stated in words, with one-at-a-time sensitivity ranges and an evidence grade on every finding. No probabilities are estimated.",
 };
 
-export function LandingPage() {
+/** The sample network, for people signed in: the API shares nothing with visitors. */
+function NetworkPreview() {
   const network = useNetworkGraph();
-  const { resolvedTheme, setTheme } = useTheme();
   const stats = network.graph?.model;
+  return (
+    <figure className={styles.figure}>
+      <div className={styles.figureCanvas}>
+        {network.graph && (
+          <NetworkConstellation model={network.graph.model} layout={network.graph.layout} />
+        )}
+      </div>
+      <figcaption className={styles.caption}>
+        {stats ? (
+          <>
+            The illustrative sample network: {stats.nodes.length} entities and {stats.edges.length}{" "}
+            links. Companies are fictional; industries, countries and variables are real concepts.{" "}
+            <Link to="/universe">Explore it</Link>
+          </>
+        ) : network.status === "error" ? (
+          <>The sample network appears here once the RUMIN API is running.</>
+        ) : (
+          <>Loading the sample network…</>
+        )}
+      </figcaption>
+    </figure>
+  );
+}
+
+/** The figure before the network can be shown: nobody signed in, or not known yet. */
+function FigureWithoutNetwork({ status }: { status: "checking" | "signed_out" | "unavailable" }) {
+  return (
+    <figure className={styles.figure}>
+      <div className={styles.figureCanvas}>
+        {status === "signed_out" && (
+          <p className={styles.figureNote}>
+            <span>
+              The sample network is drawn here once you sign in.{" "}
+              <Link to="/login?next=%2Funiverse">Sign in</Link>
+            </span>
+          </p>
+        )}
+      </div>
+      <figcaption className={styles.caption}>
+        {status === "signed_out"
+          ? "RUMIN shares nothing with visitors: the network, the data and every result need an account, which an administrator creates."
+          : status === "unavailable"
+            ? "The sample network appears here once the RUMIN API is running."
+            : "Checking your session…"}
+      </figcaption>
+    </figure>
+  );
+}
+
+export function LandingPage() {
+  const { state } = useSession();
+  const { resolvedTheme, setTheme } = useTheme();
+  const signedOut = state.status === "signed_out";
 
   useEffect(() => {
     document.title = "RUMIN — Financial intelligence & simulation";
@@ -49,9 +103,15 @@ export function LandingPage() {
           >
             <Icon name={resolvedTheme === "dark" ? "sun" : "moon"} />
           </button>
-          <ButtonLink to="/dashboard" size="sm">
-            Open workspace
-          </ButtonLink>
+          {signedOut ? (
+            <ButtonLink to="/login" size="sm">
+              Sign in
+            </ButtonLink>
+          ) : (
+            <ButtonLink to="/dashboard" size="sm">
+              Open workspace
+            </ButtonLink>
+          )}
         </div>
       </header>
 
@@ -69,8 +129,12 @@ export function LandingPage() {
               what was simulated.
             </p>
             <div className={styles.ctas}>
-              <ButtonLink to="/dashboard" variant="primary" iconAfter={<Icon name="arrowRight" />}>
-                Enter RUMIN
+              <ButtonLink
+                to={signedOut ? "/login" : "/dashboard"}
+                variant="primary"
+                iconAfter={<Icon name="arrowRight" />}
+              >
+                {signedOut ? "Sign in to RUMIN" : "Enter RUMIN"}
               </ButtonLink>
               <a className={styles.secondaryLink} href="#principles">
                 How RUMIN separates evidence from assumption
@@ -79,26 +143,11 @@ export function LandingPage() {
             </div>
           </div>
 
-          <figure className={styles.figure}>
-            <div className={styles.figureCanvas}>
-              {network.graph && (
-                <NetworkConstellation model={network.graph.model} layout={network.graph.layout} />
-              )}
-            </div>
-            <figcaption className={styles.caption}>
-              {stats ? (
-                <>
-                  The illustrative sample network: {stats.nodes.length} entities and{" "}
-                  {stats.edges.length} links. Companies are fictional; industries, countries and
-                  variables are real concepts. <Link to="/universe">Explore it</Link>
-                </>
-              ) : network.status === "error" ? (
-                <>The sample network appears here once the RUMIN API is running.</>
-              ) : (
-                <>Loading the sample network…</>
-              )}
-            </figcaption>
-          </figure>
+          {state.status === "signed_in" ? (
+            <NetworkPreview />
+          ) : (
+            <FigureWithoutNetwork status={state.status} />
+          )}
         </section>
 
         <section id="principles" className={styles.section} aria-labelledby="principles-title">

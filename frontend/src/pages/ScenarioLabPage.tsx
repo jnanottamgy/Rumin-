@@ -9,12 +9,14 @@
  */
 import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router";
+import { useAccess } from "@/app/session";
 import { Badge } from "@/components/Badge";
 import { Button } from "@/components/Button";
 import { EpistemicBadge } from "@/components/EpistemicBadge";
 import { Icon } from "@/components/Icon";
 import { PageHeader } from "@/components/PageHeader";
 import { EmptyState, ErrorState, LoadingState } from "@/components/States";
+import { ReadOnlyNote } from "@/features/account/ReadOnlyNote";
 import { MonthsView, StressView } from "@/features/scenarioLab/AnalysisViews";
 import {
   Builder,
@@ -90,6 +92,9 @@ function Workspace({
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
+  const access = useAccess();
+  /** Why this person cannot save, execute or analyse here (Phase 10), or null. */
+  const blocker = scenario ? access.changeBlocker(scenario.owner, "scenario") : access.writeBlocker;
   const initial = useMemo(
     () =>
       scenario
@@ -203,6 +208,7 @@ function Workspace({
           : null;
 
   const save = useCallback(async (): Promise<Scenario | null> => {
+    if (blocker) return null;
     setAttempted(true);
     setNotice(null);
     const missing = missingBasics(draft);
@@ -242,9 +248,10 @@ function Workspace({
     } finally {
       setBusy(null);
     }
-  }, [draft, scenario, navigate]);
+  }, [draft, scenario, navigate, blocker]);
 
   const execute = async () => {
+    if (blocker) return;
     const target = dirty || !scenario ? await save() : scenario;
     if (!target) return;
     setBusy("execute");
@@ -352,7 +359,9 @@ function Workspace({
     {
       id: "sensitivity",
       label: "Sensitivity",
-      content: () => <SensitivityView executionId={showExecution ? executionId : null} />,
+      content: () => (
+        <SensitivityView executionId={showExecution ? executionId : null} readOnly={blocker} />
+      ),
     },
     {
       id: "uncertainty",
@@ -361,6 +370,7 @@ function Workspace({
         <UncertaintyView
           executionId={showExecution ? executionId : null}
           currency={results?.currency ?? ""}
+          readOnly={blocker}
         />
       ),
     },
@@ -387,7 +397,7 @@ function Workspace({
                 compareIds={compareIds}
                 onToggleCompare={toggleCompare}
                 onOpenExecution={(id) => setSearchParams({ execution: id }, { replace: true })}
-                onRestore={(version) => void restore(version)}
+                onRestore={blocker ? undefined : (version) => void restore(version)}
               />
             ),
           },
@@ -426,6 +436,13 @@ function Workspace({
             {dirty && scenario && <Badge tone="warning">Unsaved changes</Badge>}
             {template && !scenario && <Badge tone="neutral">From template: {template.title}</Badge>}
             <EpistemicBadge category="scenario_input" suffix="what you change" />
+            {scenario && (
+              <Badge tone="outline">
+                {scenario.owner
+                  ? `Owner: ${scenario.owner.name}`
+                  : "No owner (made before accounts)"}
+              </Badge>
+            )}
             <span className={styles.sourceTag} data-source={source}>
               {source === "execution" && execution
                 ? `Showing stored execution · v${execution.version} · ${formatDateTime(execution.requested_at)}`
@@ -439,7 +456,8 @@ function Workspace({
           <Button
             variant="secondary"
             onClick={() => void save()}
-            disabled={busy !== null || (!dirty && scenario !== null)}
+            disabled={busy !== null || (!dirty && scenario !== null) || blocker !== null}
+            aria-describedby={blocker ? "lab-readonly" : undefined}
           >
             {busy === "save" ? "Saving…" : scenario ? "Save new version" : "Save scenario"}
           </Button>
@@ -457,12 +475,24 @@ function Workspace({
               {scenario ? "Discard changes" : "Start over"}
             </Button>
           )}
-          {scenario && (
+          {scenario && access.canWrite && (
             <Button variant="ghost" onClick={() => void duplicate()}>
               Duplicate
             </Button>
           )}
         </div>
+        {blocker && (
+          <div className={styles.readOnly}>
+            <ReadOnlyNote
+              id="lab-readonly"
+              reason={`${blocker} ${
+                scenario && access.canWrite
+                  ? "Duplicate it to save and run your own copy; until then the controls show a live preview, and nothing is stored."
+                  : "The controls still show a live preview; nothing is stored."
+              }`}
+            />
+          </div>
+        )}
       </header>
 
       {(notice || formErrors.length > 0) && (
@@ -526,9 +556,11 @@ function Workspace({
             }
             busy={busy !== null}
             executeLabel={dirty || !scenario ? "Save and execute" : "Execute"}
-            disabledReason={executeDisabled}
+            disabledReason={
+              blocker ? "Your account cannot execute this scenario." : executeDisabled
+            }
             onExecute={() => void execute()}
-            onCancel={() => void cancel()}
+            onCancel={blocker ? undefined : () => void cancel()}
           />
           {results && (
             <TimelineStrip

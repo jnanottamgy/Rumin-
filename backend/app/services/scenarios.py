@@ -10,7 +10,7 @@ executed cannot be deleted: its executions must stay reproducible.
 from __future__ import annotations
 
 import uuid
-from collections.abc import Iterable, Sequence
+from collections.abc import Sequence
 from decimal import Decimal
 from typing import Any
 
@@ -22,7 +22,7 @@ from app.core.errors import ConflictError, DomainValidationError, NotFoundError
 from app.db.base import utcnow
 from app.domain.enums import ScenarioStatus
 from app.graph.store import GraphReader
-from app.models import Scenario, ScenarioExecution, ScenarioShock, ScenarioVersion, User
+from app.models import Scenario, ScenarioExecution, ScenarioShock, ScenarioVersion
 from app.scenario_lab.executor import (
     combine,
     evaluate_stress,
@@ -44,7 +44,6 @@ from app.scenario_lab.spec import (
     spec_json,
 )
 from app.scenario_lab.validation import load_variables, validate_spec
-from app.schemas.auth import PersonRef
 from app.schemas.common import ErrorDetail
 from app.schemas.scenario import (
     ExecutionSummaryRead,
@@ -64,6 +63,7 @@ from app.schemas.scenario import (
     VersionSummaryRead,
 )
 from app.schemas.simulation import SimulationInputValue
+from app.services import auth
 from app.services import graph as graph_service
 from app.simulation.decimal_math import NumericalError
 from app.simulation.validation import parse_number
@@ -294,16 +294,6 @@ def owner_of(session: Session, scenario_id: uuid.UUID) -> uuid.UUID | None:
     return scenario_or_404(session, scenario_id).owner_id
 
 
-def _people(session: Session, ids: Iterable[uuid.UUID | None]) -> dict[uuid.UUID, PersonRef]:
-    wanted = {item for item in ids if item is not None}
-    if not wanted:
-        return {}
-    return {
-        user.id: PersonRef(id=user.id, name=user.name)
-        for user in session.scalars(select(User).where(User.id.in_(wanted)))
-    }
-
-
 def scenario_read(session: Session, scenario: Scenario) -> ScenarioRead:
     current = version_of(scenario)
     counts = _execution_counts(session, [scenario.id])
@@ -325,7 +315,7 @@ def scenario_read(session: Session, scenario: Scenario) -> ScenarioRead:
         executions=sum(counts.values()),
         created_at=scenario.created_at,
         updated_at=scenario.updated_at,
-        owner=_people(session, [scenario.owner_id]).get(scenario.owner_id)
+        owner=auth.people(session, [scenario.owner_id]).get(scenario.owner_id)
         if scenario.owner_id
         else None,
     )
@@ -340,7 +330,7 @@ def list_scenarios(session: Session, *, limit: int, offset: int) -> ScenarioPage
         .offset(offset)
     ).all()
     counts = _execution_counts(session, [row.id for row in rows])
-    owners = _people(session, [row.owner_id for row in rows])
+    owners = auth.people(session, [row.owner_id for row in rows])
     items = []
     for row in rows:
         current = version_of(row)

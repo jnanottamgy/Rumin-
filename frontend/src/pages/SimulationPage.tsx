@@ -9,6 +9,7 @@
  */
 import { useEffect, useId, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
+import { useAccess } from "@/app/session";
 import { PageHeader } from "@/components/PageHeader";
 import { Panel } from "@/components/Panel";
 import { ErrorState, LoadingState } from "@/components/States";
@@ -76,6 +77,7 @@ function Workspace({
   const [label, setLabel] = useState("");
   const [check, setCheck] = useState<Check>({ state: "none" });
   const [busy, setBusy] = useState<"validating" | "running" | null>(null);
+  const { writeBlocker } = useAccess();
   const modelSelectId = useId();
   const fresh = (location.state as { fresh?: boolean } | null)?.fresh === true;
 
@@ -176,6 +178,7 @@ function Workspace({
             onLabelChange={setLabel}
             onValidate={validate}
             onRun={runModel}
+            readOnly={writeBlocker}
             onExample={
               example
                 ? () => {
