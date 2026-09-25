@@ -2,7 +2,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import react from "@vitejs/plugin-react";
-import { defineConfig, loadEnv } from "vite";
+import { defineConfig, loadEnv, type ProxyOptions } from "vite";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 const { version } = JSON.parse(
@@ -20,6 +20,20 @@ function productionCsp(): string {
   if (!policy)
     throw new Error("No Content-Security-Policy in nginx/snippets/security-headers.conf");
   return policy;
+}
+
+// The API trusts X-Forwarded-For from this machine (uvicorn's default), where this proxy runs:
+// a header the browser sent must not reach it, or a client could choose the address its
+// sign-in attempts are counted against. (Production: nginx overwrites the header.)
+function proxied(target: string): ProxyOptions {
+  return {
+    target,
+    configure: (proxy) => {
+      proxy.on("proxyReq", (request) => {
+        request.removeHeader("x-forwarded-for");
+      });
+    },
+  };
 }
 
 export default defineConfig(({ mode }) => {
@@ -42,10 +56,10 @@ export default defineConfig(({ mode }) => {
       // the API refuses a change whose Origin is not its own host (Phase 10, CSRF), and a
       // rewritten Host would make every sign-in from the dev or preview server look foreign.
       proxy: {
-        "/api": { target: apiTarget },
-        "/health": { target: apiTarget },
-        "/docs": { target: apiTarget },
-        "/openapi.json": { target: apiTarget },
+        "/api": proxied(apiTarget),
+        "/health": proxied(apiTarget),
+        "/docs": proxied(apiTarget),
+        "/openapi.json": proxied(apiTarget),
       },
     },
     preview: {

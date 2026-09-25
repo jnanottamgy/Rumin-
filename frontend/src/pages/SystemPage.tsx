@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Link } from "react-router";
+import { ROLE_LABEL, useAccess } from "@/app/session";
 import { type MotionPreference, type ThemePreference, useTheme } from "@/app/theme";
 import { Badge } from "@/components/Badge";
 import { Button } from "@/components/Button";
@@ -95,7 +96,10 @@ function Settings() {
 export function SystemPage() {
   const system = useApiResource("system", () => api.system());
   const readiness = useApiResource("readiness", () => api.readiness());
+  const { session, role } = useAccess();
   const docsUrl = `${apiBaseUrl()}/docs`;
+  // The interactive documentation is off in production, and its web server does not serve it.
+  const production = system.status === "success" && system.data.environment === "production";
 
   useEffect(() => {
     document.title = "System — RUMIN";
@@ -284,12 +288,18 @@ export function SystemPage() {
             <dd className="mono">{apiBaseUrl() || "same origin (proxied)"}</dd>
             <dt>API reference</dt>
             <dd>
-              <a href={docsUrl} target="_blank" rel="noopener noreferrer">
-                OpenAPI documentation
-              </a>
+              {production ? (
+                <span className={styles.muted}>
+                  Not served in production; the contract is docs/api/openapi.json
+                </span>
+              ) : (
+                <a href={docsUrl} target="_blank" rel="noopener noreferrer">
+                  OpenAPI documentation
+                </a>
+              )}
             </dd>
-            <dt>Authentication</dt>
-            <dd className={styles.muted}>Not implemented — run locally only (Phase 10)</dd>
+            <dt>Signed in as</dt>
+            <dd>{session && role ? `${session.user.name} · ${ROLE_LABEL[role]}` : "—"}</dd>
           </dl>
         </Panel>
       </div>

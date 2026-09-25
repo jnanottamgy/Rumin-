@@ -100,6 +100,11 @@ describe("application shell and routing", () => {
     expect(
       screen.getByText(/runs are deterministic and no probabilities are estimated/),
     ).toBeInTheDocument();
+    // Accounts are reported as the API reports them, and who is signed in is named.
+    expect(screen.getByText("Accounts and access")).toBeInTheDocument();
+    expect(await screen.findByText("Test Administrator · Administrator")).toBeInTheDocument();
+    expect(screen.queryByText(/Not implemented — run locally only/)).toBeNull();
+    expect(screen.getByRole("link", { name: "OpenAPI documentation" })).toBeInTheDocument();
   });
 
   it("switches the colour theme and remembers the choice", async () => {

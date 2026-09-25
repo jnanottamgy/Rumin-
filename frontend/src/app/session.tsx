@@ -202,18 +202,27 @@ export function useAccess(): Access {
   }, [session]);
 }
 
+// Only for resolving `next` the way a browser would; never requested.
+const RESOLVE_AGAINST = "https://rumin.invalid";
+
 /**
- * Where to go after signing in: a path inside RUMIN, never another site (`//host`) or the
- * sign-in page itself. Anything else falls back to the overview.
+ * Where to go after signing in: a path inside RUMIN, never another site or the sign-in page
+ * itself. The value is resolved as a browser resolves a link — which drops tabs and line
+ * breaks and reads `\\` as `/`, so `/<tab>/evil.example` means `//evil.example` — and only a
+ * result on RUMIN's own origin is kept, rebuilt from its parts. Anything else falls back to
+ * the overview.
  */
 export function safeNext(value: string | null | undefined, fallback = "/dashboard"): string {
-  if (!value?.startsWith("/") || value.startsWith("//") || value.startsWith("/\\")) {
+  if (!value?.startsWith("/")) return fallback;
+  let url: URL;
+  try {
+    url = new URL(value, RESOLVE_AGAINST);
+  } catch {
     return fallback;
   }
-  if (value === "/login" || value.startsWith("/login?") || value.startsWith("/login/")) {
-    return fallback;
-  }
-  return value;
+  if (url.origin !== RESOLVE_AGAINST) return fallback;
+  if (url.pathname === "/login" || url.pathname.startsWith("/login/")) return fallback;
+  return `${url.pathname}${url.search}${url.hash}`;
 }
 
 /** Shown when the server cannot say who is signed in: never a sign-in form that cannot work. */

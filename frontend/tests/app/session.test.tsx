@@ -137,6 +137,12 @@ describe("signing in", () => {
     expect(safeNext("https://evil.example")).toBe("/dashboard");
     expect(safeNext("javascript:alert(1)")).toBe("/dashboard");
     expect(safeNext("/login?next=/x")).toBe("/dashboard");
+    // Tabs and line breaks are dropped by URL parsers, turning these into //evil.example.
+    expect(safeNext("/\t/evil.example/x")).toBe("/dashboard");
+    expect(safeNext("/\n/evil.example")).toBe("/dashboard");
+    expect(safeNext("/\r\n/evil.example")).toBe("/dashboard");
+    expect(safeNext("/%2F%2Fevil.example")).toBe("/%2F%2Fevil.example"); // a path, not a host
+    expect(safeNext("/scenarios#results")).toBe("/scenarios#results");
     expect(safeNext(null)).toBe("/dashboard");
   });
 
