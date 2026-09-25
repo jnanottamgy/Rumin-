@@ -156,3 +156,13 @@ jobs:
         working-directory: frontend
       - name: Fresh database → live API → frontend integration suite
         run: scripts/smoke_test.sh
+
+  deployment:
+    name: Deployment · images, production stack, backup and restore
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build, start, check, back up, restore, roll back, remove
+        run: scripts/deployment_check.sh

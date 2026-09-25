@@ -1,0 +1,100 @@
+# RUMIN in production (Phase 10): PostgreSQL, the API and the web server, on one host.
+#
+#   cp deploy/production.env.example .env.production     # then set every value
+#   docker compose -f compose.production.yml --env-file .env.production build
+#
+# First start, upgrades, backups and rollback: docs/deployment.md. Migrations are never run
+# on start-up; they are a deliberate step, taken after a backup.
+name: rumin
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: rumin
+      POSTGRES_DB: rumin
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in the env file}
+    volumes:
+      - rumin-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rumin -d rumin"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    security_opt: ["no-new-privileges:true"]
+    logging: *logging
+    # No published port: only the API reaches the database, on the internal network.
+    networks: [data]
+
+  api:
+    build:
+      context: ./backend
+    image: rumin-api:${RUMIN_VERSION:-latest}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      RUMIN_DATABASE_URL: postgresql+psycopg://rumin:${POSTGRES_PASSWORD}@db:5432/rumin
+      # The web app is served from the API's own origin, so no cross-origin access.
+      RUMIN_CORS_ORIGINS: ""
+      # __Host-: the browser keeps the cookie to this exact host, https and path "/".
+      RUMIN_SESSION_COOKIE_NAME: __Host-rumin_session
+      # Only the web server can reach this container, so its X-Forwarded-* are trusted.
+      FORWARDED_ALLOW_IPS: "*"
+      RUMIN_METRICS_ALLOWED_CLIENTS: ${RUMIN_METRICS_ALLOWED_CLIENTS:-}
+      RUMIN_ANALYST_PROVIDER: ${RUMIN_ANALYST_PROVIDER:-grounded}
+      RUMIN_ANALYST_MODEL: ${RUMIN_ANALYST_MODEL:-}
+      RUMIN_ANTHROPIC_API_KEY: ${RUMIN_ANTHROPIC_API_KEY:-}
+    read_only: true
+    tmpfs:
+      - /tmp:mode=1777
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    logging: *logging
+    networks: [data, edge]
+
+  web:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    image: rumin-web:${RUMIN_VERSION:-latest}
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      RUMIN_SERVER_NAME: ${RUMIN_SERVER_NAME:?set RUMIN_SERVER_NAME in the env file}
+      RUMIN_PUBLIC_ORIGIN: ${RUMIN_PUBLIC_ORIGIN:?set RUMIN_PUBLIC_ORIGIN in the env file}
+    ports:
+      - "${RUMIN_HTTP_PORT:-80}:8080"
+      - "${RUMIN_HTTPS_PORT:-443}:8443"
+    volumes:
+      # fullchain.pem and privkey.pem for RUMIN_SERVER_NAME (e.g. from Let's Encrypt).
+      - ${RUMIN_TLS_DIR:?set RUMIN_TLS_DIR in the env file}:/etc/nginx/tls:ro
+    read_only: true
+    # The only writable places: nginx's temporary files, and its configuration, rendered
+    # from the template at start-up by the image's unprivileged user (101).
+    tmpfs:
+      - /tmp:mode=1777
+      - /etc/nginx/conf.d:uid=101,gid=101,mode=0755
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    logging: *logging
+    networks: [edge]
+
+networks:
+  # The database network has no route out.
+  data:
+    internal: true
+  edge: {}
+
+volumes:
+  rumin-db:

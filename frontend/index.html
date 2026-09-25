@@ -10,27 +10,7 @@
     <meta name="color-scheme" content="light dark" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>RUMIN — Financial intelligence &amp; simulation</title>
-    <script>
-      // Apply the saved theme before first paint to avoid a flash of the wrong theme.
-      (() => {
-        let pref = "system";
-        let motion = "system";
-        try {
-          pref = localStorage.getItem("rumin.theme") || "system";
-          motion = localStorage.getItem("rumin.motion") || "system";
-        } catch {
-          // Storage can be unavailable (private mode, blocked site data): use defaults.
-        }
-        const dark =
-          pref === "dark" ||
-          (pref === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
-        const reduce =
-          motion === "reduce" ||
-          (motion === "system" && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
-        document.documentElement.dataset.theme = dark ? "dark" : "light";
-        document.documentElement.dataset.motion = reduce ? "reduce" : "full";
-      })();
-    </script>
+    <script src="/theme-init.js"></script>
   </head>
   <body>
     <noscript>RUMIN needs JavaScript to run.</noscript>

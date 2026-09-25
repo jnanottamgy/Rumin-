@@ -44,3 +44,6 @@ Thumbs.db
 
 # Temporary file written by `make audit`
 backend/.audit-requirements.txt
+
+# Database backups (scripts/backup.sh): personal data, never committed
+backups/

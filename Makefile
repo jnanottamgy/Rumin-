@@ -8,7 +8,7 @@ UV_RUN   := cd $(BACKEND) && uv run --frozen
 .DEFAULT_GOAL := help
 .PHONY: help install migrate seed catalog ingest ingest-jobs graph graph-status backend \
         frontend test test-backend test-frontend smoke lint typecheck check openapi \
-        api-types verify-models db-up db-down audit
+        api-types verify-models db-up db-down audit deployment-check
 
 help: ## List the available targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -54,6 +54,9 @@ test-frontend: ## Frontend tests (Vitest)
 
 smoke: ## End-to-end: fresh database, live API, frontend integration suite
 	scripts/smoke_test.sh
+
+deployment-check: ## Build the images and check a throwaway production stack end to end (Docker)
+	scripts/deployment_check.sh
 
 GITLEAKS_IMAGE := zricethezav/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
 

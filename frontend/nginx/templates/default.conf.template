@@ -1,0 +1,103 @@
+# RUMIN web server (Phase 10). Rendered at start-up by the nginx image (envsubst) from
+# RUMIN_SERVER_NAME, RUMIN_PUBLIC_ORIGIN and RUMIN_API_UPSTREAM. nginx's own variables
+# ($host, $remote_addr, ...) are left as they are.
+
+server_tokens off;
+
+# Requests per client address: the API overall, and signing in (the API also counts failed
+# sign-ins per address and per account). Refusals answer 429, like the API's own.
+limit_req_zone $binary_remote_addr zone=rumin_api:10m rate=20r/s;
+limit_req_zone $binary_remote_addr zone=rumin_login:10m rate=10r/m;
+limit_conn_zone $binary_remote_addr zone=rumin_conn:10m;
+limit_req_status 429;
+limit_conn_status 429;
+
+log_format rumin '$remote_addr [$time_iso8601] "$request" $status $body_bytes_sent '
+                 '$request_time "$http_user_agent" id=$request_id';
+
+upstream rumin_api {
+    server ${RUMIN_API_UPSTREAM};
+    keepalive 16;
+}
+
+# Plain HTTP: a health check for the container, and a redirect for everyone else.
+server {
+    listen 8080;
+    server_name ${RUMIN_SERVER_NAME};
+    access_log off;
+
+    location = /nginx-health {
+        default_type text/plain;
+        return 200 "ok\n";
+    }
+
+    location / {
+        return 301 ${RUMIN_PUBLIC_ORIGIN}$request_uri;
+    }
+}
+
+server {
+    listen 8443 ssl;
+    http2 on;
+    server_name ${RUMIN_SERVER_NAME};
+    access_log /dev/stdout rumin;
+
+    ssl_certificate /etc/nginx/tls/fullchain.pem;
+    ssl_certificate_key /etc/nginx/tls/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+    ssl_session_cache shared:rumin_tls:10m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
+
+    root /usr/share/nginx/html;
+    client_max_body_size 128k;
+    limit_conn rumin_conn 64;
+
+    gzip on;
+    gzip_comp_level 5;
+    gzip_min_length 1024;
+    gzip_types text/css application/javascript application/json image/svg+xml;
+
+    # --- The API ---------------------------------------------------------------------------
+    location = /api/v1/auth/login {
+        limit_req zone=rumin_login burst=5 nodelay;
+        include /etc/nginx/snippets/api-proxy.conf;
+    }
+
+    location /api/ {
+        limit_req zone=rumin_api burst=60 nodelay;
+        include /etc/nginx/snippets/api-proxy.conf;
+    }
+
+    location = /health {
+        include /etc/nginx/snippets/api-proxy.conf;
+    }
+
+    location = /health/ready {
+        include /etc/nginx/snippets/api-proxy.conf;
+    }
+
+    # Metrics are read by an internal scraper from the API directly, never from outside;
+    # the interactive API documentation is off in production.
+    location = /metrics { return 404; }
+    location ~ ^/(docs|redoc|openapi\.json) { return 404; }
+
+    # --- The web app -----------------------------------------------------------------------
+    location ~* \.map$ { return 404; }
+
+    # Built files carry a content hash in their names: cached for a year.
+    location /assets/ {
+        include /etc/nginx/snippets/security-headers.conf;
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+        try_files $uri =404;
+    }
+
+    # Every other path is a page of the single-page app; index.html is never cached, so a
+    # new release is picked up at once.
+    location / {
+        include /etc/nginx/snippets/security-headers.conf;
+        add_header Cache-Control "no-cache" always;
+        try_files $uri /index.html;
+    }
+}

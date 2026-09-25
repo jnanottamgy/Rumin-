@@ -1,0 +1,9 @@
+# Only what the image needs: the lock, the application, the migrations.
+*
+!pyproject.toml
+!uv.lock
+!alembic.ini
+!app/
+!migrations/
+**/__pycache__
+**/*.pyc
