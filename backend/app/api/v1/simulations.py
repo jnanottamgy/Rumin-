@@ -17,6 +17,7 @@ from app.api.deps import NOT_FOUND, PaginationDep, SessionDep
 from app.schemas.common import ErrorResponse
 from app.schemas.simulation import (
     ExplanationRead,
+    ModelVerificationRead,
     ProvenanceRead,
     SensitivityAnalysisList,
     SensitivityAnalysisRead,
@@ -84,6 +85,24 @@ def get_simulation_model(
     session: SessionDep, model_id: ModelId, version: VersionQuery = None
 ) -> SimulationModelDetail:
     return simulation.get_model(session, model_id, version)
+
+
+@models_router.get(
+    "/{model_id}/verification",
+    response_model=ModelVerificationRead,
+    summary="Run a model's verification checks",
+    description="Runs the model's checks through the engine now, on hypothetical figures: its "
+    "worked example (a hand calculation) reproduced exactly; stated properties (no change, no "
+    "effect; the bridge closes; months add up; contributions add up; linearity; direction; "
+    "units); its documented limits; reproducibility. Also lists what is not verified — "
+    "parameters are not estimated from data and results are not back-tested. Passing checks "
+    "do not make a model validated.",
+    responses=NOT_FOUND,
+)
+def get_simulation_model_verification(
+    model_id: ModelId, version: VersionQuery = None
+) -> ModelVerificationRead:
+    return simulation.model_verification(model_id, version)
 
 
 # --- Validation and runs ------------------------------------------------------------------------

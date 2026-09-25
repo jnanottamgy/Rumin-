@@ -5677,6 +5677,94 @@
         }
       }
     },
+    "/api/v1/simulation-models/{model_id}/verification": {
+      "get": {
+        "tags": [
+          "simulation"
+        ],
+        "summary": "Run a model's verification checks",
+        "description": "Runs the model's checks through the engine now, on hypothetical figures: its worked example (a hand calculation) reproduced exactly; stated properties (no change, no effect; the bridge closes; months add up; contributions add up; linearity; direction; units); its documented limits; reproducibility. Also lists what is not verified — parameters are not estimated from data and results are not back-tested. Passing checks do not make a model validated.",
+        "operationId": "get_simulation_model_verification",
+        "parameters": [
+          {
+            "name": "model_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^[a-z][a-z0-9_]{2,63}$",
+              "examples": [
+                "airline_fuel_cost"
+              ],
+              "title": "Model Id"
+            }
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 32,
+                  "pattern": "^\\d+\\.\\d+\\.\\d+$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Default: the latest.",
+              "title": "Version"
+            },
+            "description": "Default: the latest."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelVerificationRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/simulations/validate": {
       "post": {
         "tags": [
@@ -23682,6 +23770,92 @@
         ],
         "title": "ModelUsedRead"
       },
+      "ModelVerificationRead": {
+        "properties": {
+          "model_id": {
+            "type": "string",
+            "title": "Model Id"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "definition_hash": {
+            "type": "string",
+            "title": "Definition Hash"
+          },
+          "engine_version": {
+            "type": "string",
+            "title": "Engine Version"
+          },
+          "register_version": {
+            "type": "string",
+            "title": "Register Version"
+          },
+          "passed": {
+            "type": "integer",
+            "title": "Passed"
+          },
+          "failed": {
+            "type": "integer",
+            "title": "Failed"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "checks": {
+            "items": {
+              "$ref": "#/components/schemas/VerificationCheckRead"
+            },
+            "type": "array",
+            "title": "Checks"
+          },
+          "not_verified": {
+            "items": {
+              "$ref": "#/components/schemas/NotVerifiedRead"
+            },
+            "type": "array",
+            "title": "Not Verified",
+            "description": "What these checks do not establish for this model."
+          },
+          "reference_source": {
+            "type": "string",
+            "title": "Reference Source",
+            "description": "Where the worked example is documented."
+          },
+          "duration_ms": {
+            "type": "integer",
+            "title": "Duration Ms"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "model_id",
+          "version",
+          "status",
+          "definition_hash",
+          "engine_version",
+          "register_version",
+          "passed",
+          "failed",
+          "total",
+          "checks",
+          "not_verified",
+          "reference_source",
+          "duration_ms",
+          "note"
+        ],
+        "title": "ModelVerificationRead"
+      },
       "ModelVersionRead": {
         "properties": {
           "model_id": {
@@ -24876,6 +25050,24 @@
           "reason"
         ],
         "title": "NotModelledRead"
+      },
+      "NotVerifiedRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "text"
+        ],
+        "title": "NotVerifiedRead"
       },
       "NoticeBlock": {
         "properties": {
@@ -35499,6 +35691,68 @@
           "paths"
         ],
         "title": "VariableReachRead"
+      },
+      "VerificationCheckRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "reference",
+              "property",
+              "range",
+              "reproducibility"
+            ],
+            "title": "Kind"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "passed": {
+            "type": "boolean",
+            "title": "Passed"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "expected": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Expected",
+            "description": "What the check expected, where it compares."
+          },
+          "actual": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Actual",
+            "description": "What the engine returned."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "title",
+          "description",
+          "passed",
+          "detail",
+          "expected",
+          "actual"
+        ],
+        "title": "VerificationCheckRead"
       },
       "VerificationRead": {
         "properties": {

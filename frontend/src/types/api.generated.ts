@@ -1246,6 +1246,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/simulation-models/{model_id}/verification": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Run a model's verification checks
+         * @description Runs the model's checks through the engine now, on hypothetical figures: its worked example (a hand calculation) reproduced exactly; stated properties (no change, no effect; the bridge closes; months add up; contributions add up; linearity; direction; units); its documented limits; reproducibility. Also lists what is not verified — parameters are not estimated from data and results are not back-tested. Passing checks do not make a model validated.
+         */
+        get: operations["get_simulation_model_verification"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/simulations/validate": {
         parameters: {
             query?: never;
@@ -6936,6 +6956,43 @@ export interface components {
             /** Definition Hash */
             definition_hash: string;
         };
+        /** ModelVerificationRead */
+        ModelVerificationRead: {
+            /** Model Id */
+            model_id: string;
+            /** Version */
+            version: string;
+            /** Status */
+            status: string;
+            /** Definition Hash */
+            definition_hash: string;
+            /** Engine Version */
+            engine_version: string;
+            /** Register Version */
+            register_version: string;
+            /** Passed */
+            passed: number;
+            /** Failed */
+            failed: number;
+            /** Total */
+            total: number;
+            /** Checks */
+            checks: components["schemas"]["VerificationCheckRead"][];
+            /**
+             * Not Verified
+             * @description What these checks do not establish for this model.
+             */
+            not_verified: components["schemas"]["NotVerifiedRead"][];
+            /**
+             * Reference Source
+             * @description Where the worked example is documented.
+             */
+            reference_source: string;
+            /** Duration Ms */
+            duration_ms: number;
+            /** Note */
+            note: string;
+        };
         /** ModelVersionRead */
         ModelVersionRead: {
             /** Model Id */
@@ -7393,6 +7450,13 @@ export interface components {
             label: string;
             /** Reason */
             reason: string;
+        };
+        /** NotVerifiedRead */
+        NotVerifiedRead: {
+            /** Id */
+            id: string;
+            /** Text */
+            text: string;
         };
         /** NoticeBlock */
         NoticeBlock: {
@@ -11280,6 +11344,38 @@ export interface components {
             /** Paths */
             paths: components["schemas"]["ExposurePathRead"][];
         };
+        /** VerificationCheckRead */
+        VerificationCheckRead: {
+            /** Id */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "reference" | "property" | "range" | "reproducibility";
+            /** Title */
+            title: string;
+            /** Description */
+            description: string;
+            /** Passed */
+            passed: boolean;
+            /** Detail */
+            detail: string;
+            /**
+             * Expected
+             * @description What the check expected, where it compares.
+             */
+            expected: {
+                [key: string]: string;
+            };
+            /**
+             * Actual
+             * @description What the engine returned.
+             */
+            actual: {
+                [key: string]: string;
+            };
+        };
         /** VerificationRead */
         VerificationRead: {
             /**
@@ -14791,6 +14887,58 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SimulationModelDetail"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_simulation_model_verification: {
+        parameters: {
+            query?: {
+                /** @description Default: the latest. */
+                version?: string | null;
+            };
+            header?: never;
+            path: {
+                model_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelVerificationRead"];
                 };
             };
             /** @description Resource not found. */

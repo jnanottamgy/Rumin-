@@ -34,6 +34,7 @@ from app.schemas.simulation import (
     ExplanationRead,
     GraphSnapshotRead,
     InputDefinitionRead,
+    ModelVerificationRead,
     ModelVersionRead,
     MonthlySeriesRead,
     ObservationSourceRead,
@@ -60,6 +61,7 @@ from app.schemas.simulation import (
     VerificationRead,
 )
 from app.services import graph as graph_service
+from app.simulation import verification as model_register
 from app.simulation.data_sources import latest_observation
 from app.simulation.decimal_math import NumericalError
 from app.simulation.definitions import plain
@@ -718,3 +720,14 @@ __all__ = [
     "validate",
     "verify",
 ]
+
+
+# --- Verification register ----------------------------------------------------------------------
+
+
+def model_verification(model_id: str, version: str | None = None) -> ModelVerificationRead:
+    """Run the model's verification checks now (pure, a few tens of milliseconds)."""
+    model = _model_or_404(model_id, version)
+    return ModelVerificationRead.model_validate(
+        model_register.register_json(model_register.verify(model))
+    )

@@ -645,3 +645,41 @@ class SensitivityAnalysisRead(ApiModel):
 
 class SensitivityAnalysisList(ApiModel):
     items: list[SensitivityAnalysisRead]
+
+
+# --- Verification register ----------------------------------------------------------------------
+
+
+class VerificationCheckRead(ApiModel):
+    id: str
+    kind: Literal["reference", "property", "range", "reproducibility"]
+    title: str
+    description: str
+    passed: bool
+    detail: str
+    expected: dict[str, str] = Field(description="What the check expected, where it compares.")
+    actual: dict[str, str] = Field(description="What the engine returned.")
+
+
+class NotVerifiedRead(ApiModel):
+    id: str
+    text: str
+
+
+class ModelVerificationRead(ApiModel):
+    model_id: str
+    version: str
+    status: str
+    definition_hash: str
+    engine_version: str
+    register_version: str
+    passed: int
+    failed: int
+    total: int
+    checks: list[VerificationCheckRead]
+    not_verified: list[NotVerifiedRead] = Field(
+        description="What these checks do not establish for this model."
+    )
+    reference_source: str = Field(description="Where the worked example is documented.")
+    duration_ms: int
+    note: str

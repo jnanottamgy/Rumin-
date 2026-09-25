@@ -8,7 +8,7 @@ UV_RUN   := cd $(BACKEND) && uv run --frozen
 .DEFAULT_GOAL := help
 .PHONY: help install migrate seed catalog ingest ingest-jobs graph graph-status backend \
         frontend test test-backend test-frontend smoke lint typecheck check openapi \
-        api-types db-up db-down
+        api-types verify-models db-up db-down
 
 help: ## List the available targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -66,6 +66,9 @@ typecheck: ## Static type checks
 
 check: lint typecheck test ## Everything CI runs except the smoke test
 	$(UV_RUN) python -m app.openapi_export --check
+
+verify-models: ## Run every registered model's verification checks
+	$(UV_RUN) python -m app.simulation.verification
 
 openapi: ## Regenerate docs/api/openapi.json from the API
 	$(UV_RUN) python -m app.openapi_export
