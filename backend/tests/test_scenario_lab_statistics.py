@@ -128,9 +128,9 @@ def test_continuous_draws_follow_their_distribution(distribution: Distribution) 
 
     assert all(low <= value <= high for value in sample)
     sd = math.sqrt(float(variance(distribution)))
-    centre = sum(sample) / n
+    centre = sum(sample, D(0)) / n
     assert abs(float(centre) - float(mean(distribution))) < 4 * sd / math.sqrt(n)
-    observed = float(sum((value - centre) ** 2 for value in sample) / (n - 1))
+    observed = float(sum(((value - centre) ** 2 for value in sample), D(0)) / (n - 1))
     assert abs(observed / float(variance(distribution)) - 1) < 0.03
     assert ks_statistic(sample, distribution) < ks_critical(n)
 
