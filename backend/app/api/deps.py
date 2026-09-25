@@ -8,7 +8,7 @@ from typing import Annotated, Any
 from fastapi import Depends, Query, Request
 from sqlalchemy.orm import Session
 
-from app.auth.throttle import ClientThrottle
+from app.auth.throttle import LoginThrottle
 from app.core.config import Settings
 from app.db.session import get_session
 from app.scenario_lab.runner import ExecutionRunner
@@ -47,12 +47,12 @@ def client_address(request: Request) -> str:
 ClientDep = Annotated[str, Depends(client_address)]
 
 
-def get_login_throttle(request: Request) -> ClientThrottle:
-    throttle: ClientThrottle = request.app.state.login_throttle
+def get_login_throttle(request: Request) -> LoginThrottle:
+    throttle: LoginThrottle = request.app.state.login_throttle
     return throttle
 
 
-ThrottleDep = Annotated[ClientThrottle, Depends(get_login_throttle)]
+ThrottleDep = Annotated[LoginThrottle, Depends(get_login_throttle)]
 
 
 def current_principal(request: Request, session: SessionDep, settings: SettingsDep) -> Principal:

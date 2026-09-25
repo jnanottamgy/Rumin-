@@ -22,7 +22,7 @@ from app import API_VERSION, __version__
 from app.api import health
 from app.api import metrics as metrics_api
 from app.api.v1 import router as api_v1_router
-from app.auth.throttle import ClientThrottle
+from app.auth.throttle import ClientThrottle, LoginThrottle
 from app.core.config import Settings, get_settings
 from app.core.errors import register_exception_handlers
 from app.core.logging import configure_logging
@@ -261,9 +261,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.scenario_runner = runner
     app.state.analyst = analyst
     app.state.metrics = metrics
-    app.state.login_throttle = ClientThrottle(
-        max_failures=settings.login_client_max_failures,
-        window_seconds=settings.login_client_window_seconds,
+    app.state.login_throttle = LoginThrottle(
+        client=ClientThrottle(
+            max_failures=settings.login_client_max_failures,
+            window_seconds=settings.login_client_window_seconds,
+        ),
+        account=ClientThrottle(
+            max_failures=settings.login_max_failures,
+            window_seconds=settings.login_lock_max_minutes * 60,
+        ),
     )
 
     register_exception_handlers(app)

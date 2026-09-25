@@ -413,6 +413,13 @@ const REASON: Record<string, string> = {
   inactive: "deactivated account",
 };
 
+/** Which limit made someone wait (the server's `login_throttled` scopes). */
+const SCOPE: Record<string, string> = {
+  client: "from this address",
+  account_client: "for this account, from this address",
+  account: "for this account, from anywhere",
+};
+
 function describePair(key: string, value: unknown): string | null {
   if (!Array.isArray(value) || value.length !== 2) return null;
   const [before, after] = value;
@@ -429,8 +436,7 @@ export function describeDetail(event: AuditEvent): string {
     const pair = describePair(key, value);
     if (pair) parts.push(pair);
     else if (key === "reason") parts.push(REASON[String(value)] ?? String(value));
-    else if (key === "scope")
-      parts.push(value === "client" ? "from this address" : "for this account");
+    else if (key === "scope") parts.push(SCOPE[String(value)] ?? String(value));
     else if (key === "sessions") parts.push(`${String(value)} session(s) ended`);
     else if (key === "other_sessions_ended") parts.push(`${String(value)} other session(s) ended`);
     else if (key === "via") parts.push(`via the ${String(value)}`);

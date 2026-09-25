@@ -177,27 +177,110 @@ def test_a_wrong_password_and_an_unknown_email_get_the_same_answer(
     assert "set-cookie" not in wrong.headers
 
 
-def test_repeated_failures_lock_the_account_and_are_audited(
-    app: FastAPI, session_factory: sessionmaker[Session], accounts: None
+def test_an_address_that_keeps_failing_waits_for_that_account_only(
+    database_url: str, session_factory: sessionmaker[Session], accounts: None
 ) -> None:
+    app = create_app(make_settings(database_url))
     address = email("analyst")
     with session_factory() as session:
         from tests.conftest import ensure_user
 
         ensure_user(session, address, role="analyst")
-    client = TestClient(app)
+    guesser = TestClient(app, client=("198.51.100.7", 50000))
+    owner = TestClient(app, client=("203.0.113.20", 50000))
 
     for _ in range(5):
-        assert login(client, address, "a wrong password again").status_code == 401
-    locked = login(client, address)  # even the right password must wait
+        assert login(guesser, address, "a wrong password again").status_code == 401
+    waited = login(guesser, address)  # even the right password must wait, from there
+    assert waited.status_code == 429 and int(waited.headers["retry-after"]) >= 1
+    # The owner, elsewhere, is not locked out by someone else's guesses.
+    assert login(owner, address).status_code == 200
 
-    assert locked.status_code == 429
-    assert int(locked.headers["retry-after"]) >= 1
+    # An unknown address is treated exactly alike: the answer does not say who exists.
+    nobody = email("nobody")
+    for _ in range(5):
+        assert login(guesser, nobody, "a wrong password again").status_code == 401
+    assert login(guesser, nobody, "a wrong password again").status_code == 429
+
     with session_factory() as session:
-        events = [row.event for row in session.scalars(select(AuditEvent))]
-        recorded = json.dumps([row.detail for row in session.scalars(select(AuditEvent))])
-    assert events.count("login_failed") == 5 and "login_throttled" in events
+        rows = list(session.scalars(select(AuditEvent)))
+    events = [row.event for row in rows]
+    scopes = [row.detail.get("scope") for row in rows if row.event == "login_throttled"]
+    assert events.count("login_failed") == 10 and scopes == ["account_client", "account_client"]
+    recorded = json.dumps([row.detail for row in rows])
     assert TEST_PASSWORD not in recorded and "a wrong password" not in recorded
+
+
+def test_many_failures_from_anywhere_lock_the_account_until_the_lock_ends(
+    database_url: str, session_factory: sessionmaker[Session], accounts: None
+) -> None:
+    app = create_app(make_settings(database_url, login_account_max_failures=10))
+    address = email("analyst")
+    with session_factory() as session:
+        from tests.conftest import ensure_user
+
+        ensure_user(session, address, role="analyst")
+    for place, tries in enumerate((4, 4, 2)):  # 10 failures from three addresses
+        guesser = TestClient(app, client=(f"198.51.100.{place + 1}", 50000))
+        for _ in range(tries):
+            assert login(guesser, address, "a wrong password again").status_code == 401
+    elsewhere = TestClient(app, client=("203.0.113.20", 50000))
+    locked = login(elsewhere, address)
+    assert locked.status_code == 429
+    with session_factory() as session:
+        user = session.scalar(select(User).where(User.email == address))
+        assert user is not None and user.locked_until is not None
+        # The lock ends: one more wrong guess starts the count again, and locks nothing.
+        user.locked_until = utcnow() - timedelta(seconds=1)
+        session.commit()
+    assert login(elsewhere, address, "a wrong password again").status_code == 401
+    with session_factory() as session:
+        user = session.scalar(select(User).where(User.email == address))
+        assert user is not None and (user.failed_logins, user.locked_until) == (1, None)
+    assert login(elsewhere, address).status_code == 200
+
+
+def test_simultaneous_wrong_passwords_are_all_counted(
+    session_factory: sessionmaker[Session], accounts: None
+) -> None:
+    """Two requests that read the account before either writes both count: the count is
+    one statement, not a read and a write (the review's lost-update race)."""
+    from app.services.auth import _count_failure
+    from tests.conftest import ensure_user
+
+    address = email("analyst")
+    with session_factory() as session:
+        ensure_user(session, address, role="analyst")
+    settings = make_settings("sqlite://", login_account_max_failures=10)
+    with session_factory() as first, session_factory() as second:
+        one = first.scalar(select(User).where(User.email == address))
+        two = second.scalar(select(User).where(User.email == address))
+        assert one is not None and two is not None and one.failed_logins == two.failed_logins == 0
+        _count_failure(first, one, utcnow(), settings)
+        first.commit()
+        _count_failure(second, two, utcnow(), settings)
+        second.commit()
+    with session_factory() as session:
+        user = session.scalar(select(User).where(User.email == address))
+        assert user is not None and user.failed_logins == 2
+
+
+def test_signing_in_does_not_clear_the_address_failures(
+    database_url: str, session_factory: sessionmaker[Session], accounts: None
+) -> None:
+    app = create_app(make_settings(database_url, login_client_max_failures=5))
+    own = email("analyst")
+    with session_factory() as session:
+        from tests.conftest import ensure_user
+
+        ensure_user(session, own, role="analyst")
+    insider = TestClient(app, client=("198.51.100.9", 50000))
+    for _ in range(4):
+        assert login(insider, email("nobody"), "whatever it may be").status_code == 401
+    assert login(insider, own).status_code == 200  # their own account
+    assert login(insider, email("nobody"), "whatever it may be").status_code == 401
+    waited = login(insider, email("nobody"), "whatever it may be")
+    assert waited.status_code == 429
 
 
 def test_a_client_that_keeps_failing_must_wait(
@@ -276,6 +359,12 @@ def test_the_password_policy() -> None:
     assert passwords.password_problems("ana@example.com", email="ana@example.com")
     assert passwords.password_problems("anaraoanarao", name="AnaRao AnaRao".replace(" ", " "))
     assert passwords.password_problems("aaaaaaaaaaaaaaab")  # three characters or fewer
+    # A common word or one's own name, whatever digits and symbols surround it.
+    for guessable in ("Password1234!", "Welcome@2026!", "p@ssw0rd-2026-!"):
+        assert any("common word" in problem for problem in passwords.password_problems(guessable))
+    assert passwords.password_problems("Ana.Rao-2026!!", name="Ana Rao")
+    assert passwords.password_problems("ana.rao#20262026", email="ana.rao@example.com")
+    assert passwords.password_problems("correct horse battery 7") == []
     assert passwords.password_problems(" padded password ")
     hashed = passwords.hash_password("a long enough phrase")
     assert hashed.startswith("$argon2id$")
@@ -535,6 +624,45 @@ def test_the_last_administrator_cannot_be_removed(
     for change in ({"role": "analyst"}, {"is_active": False}):
         refused = client.put(f"{API}/users/{admin_id}", json=change)
         assert refused.status_code == 409, change
+
+
+def test_a_demotion_that_would_leave_no_administrator_is_undone(
+    session_factory: sessionmaker[Session], monkeypatch: pytest.MonkeyPatch, accounts: None
+) -> None:
+    """If another administrator was demoted at the same moment (the first count saw two),
+    the count after the change finds none and the change is rolled back."""
+    from app.core.errors import ConflictError
+    from app.schemas.auth import UserUpdateRequest
+    from app.services import auth as service
+
+    with session_factory() as session:
+        admin = session.scalar(select(User).where(User.email == TEST_ADMIN_EMAIL))
+        assert admin is not None
+        real = service._active_admins
+        calls: list[int] = []
+
+        def stale_first(inner: Session) -> int:
+            calls.append(1)
+            return 2 if len(calls) == 1 else real(inner)
+
+        monkeypatch.setattr(service, "_active_admins", stale_first)
+        principal = service.Principal(
+            id=admin.id,
+            email=admin.email,
+            name=admin.name,
+            role="admin",
+            must_change_password=False,
+            session_id=uuid.uuid4(),
+            expires_at=utcnow() + timedelta(hours=1),
+            idle_expires_at=utcnow() + timedelta(hours=1),
+        )
+        with pytest.raises(ConflictError):
+            service.update_user(
+                session, admin.id, UserUpdateRequest(role="viewer"), actor=principal
+            )
+    with session_factory() as session:
+        admin = session.scalar(select(User).where(User.email == TEST_ADMIN_EMAIL))
+        assert admin is not None and admin.role == "admin"
 
 
 def test_people_cannot_administer_or_act_as_administrators(

@@ -237,6 +237,18 @@ describe("People", () => {
     expect(api.requests.some((request) => request.path.startsWith(USERS))).toBe(false);
   });
 
+  it("says which limit made someone wait", () => {
+    const throttled = (scope: string) =>
+      describeDetail({
+        ...auditEventsFixture().items[0],
+        event: "login_throttled",
+        detail: { scope },
+      } as ReturnType<typeof auditEventsFixture>["items"][number]);
+    expect(throttled("client")).toBe("from this address");
+    expect(throttled("account_client")).toBe("for this account, from this address");
+    expect(throttled("account")).toBe("for this account, from anywhere");
+  });
+
   it("describes event details it does not know without dropping them", () => {
     expect(
       describeDetail({

@@ -1,8 +1,9 @@
 """People, sign-in, sessions and security events (Phase 10).
 
 Sign-in checks the e-mail and password (Argon2id), refuses with one message whatever was
-wrong, and slows guessing twice over: an account is locked after consecutive failures (in
-the database), and a client address that fails too often must wait (in memory). A session is
+wrong, and slows guessing in three layers: a client address that fails too often must wait,
+so must an address that keeps failing for one account (both in memory), and an account that
+fails many times from anywhere is locked (in the database). A session is
 a random token held in an ``HttpOnly`` cookie and stored as its SHA-256; it ends when idle,
 at its maximum age, on sign-out, on a password change or reset, or when an administrator
 revokes it or deactivates the account. Every one of those events is written to the audit
@@ -17,12 +18,12 @@ from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
-from sqlalchemy import delete, func, or_, select, update
+from sqlalchemy import and_, case, delete, null, or_, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.auth import passwords, tokens
-from app.auth.throttle import ClientThrottle
+from app.auth.throttle import LoginThrottle
 from app.core import metrics
 from app.core.config import Settings
 from app.core.errors import AppError, ConflictError, DomainValidationError, NotFoundError
@@ -222,13 +223,17 @@ def list_users(session: Session) -> UserList:
     return UserList(items=[user_read(row) for row in rows])
 
 
+LAST_ADMIN = "This is the only active administrator: make someone else an administrator first."
+
+
 def _active_admins(session: Session) -> int:
-    return (
-        session.scalar(
-            select(func.count()).select_from(User).where(User.role == "admin", User.is_active)
-        )
-        or 0
-    )
+    """How many active administrators there are. Their rows stay locked until the
+    transaction ends (on PostgreSQL), so two administrators demoting each other at the same
+    moment cannot both count the other."""
+    ids = session.scalars(
+        select(User.id).where(User.role == "admin", User.is_active).with_for_update()
+    ).all()
+    return len(ids)
 
 
 def update_user(
@@ -247,9 +252,7 @@ def update_user(
         and ((payload.role is not None and payload.role != "admin") or payload.is_active is False)
     )
     if losing_admin and _active_admins(session) <= 1:
-        raise ConflictError(
-            "This is the only active administrator: make someone else an administrator first."
-        )
+        raise ConflictError(LAST_ADMIN)
     if payload.name is not None and payload.name != user.name:
         changes["name"] = [user.name, payload.name]
         user.name = payload.name
@@ -261,6 +264,13 @@ def update_user(
         user.is_active = payload.is_active
         if not payload.is_active:
             revoke_all(session, user.id)
+    if losing_admin:
+        # Counted again after the change, inside the same transaction: on SQLite, which has
+        # no row locks, a simultaneous demotion committed first is seen here.
+        session.flush()
+        if _active_admins(session) < 1:
+            session.rollback()
+            raise ConflictError(LAST_ADMIN)
     if changes:
         record(
             session, "user_updated", actor=actor.id, subject=user.id, client=client, detail=changes
@@ -342,10 +352,26 @@ def revoke_sessions(
     return ended
 
 
-def _lock_duration(failures: int, settings: Settings) -> timedelta:
-    over = failures - settings.login_max_failures
-    minutes = min(2**over, settings.login_lock_max_minutes)
-    return timedelta(minutes=minutes)
+def _count_failure(session: Session, user: User, now: datetime, settings: Settings) -> None:
+    """Count a wrong password against the account, in one statement so that simultaneous
+    guesses cannot overwrite each other's count; lock the account at the threshold. A lock
+    that has ended starts the count again."""
+    ended = and_(User.locked_until.is_not(None), User.locked_until <= now)
+    failures = session.execute(
+        update(User)
+        .where(User.id == user.id)
+        .values(
+            failed_logins=case((ended, 1), else_=User.failed_logins + 1),
+            locked_until=case((ended, null()), else_=User.locked_until),
+        )
+        .returning(User.failed_logins)
+    ).scalar_one()
+    if failures >= settings.login_account_max_failures:
+        session.execute(
+            update(User)
+            .where(User.id == user.id, or_(User.locked_until.is_(None), User.locked_until <= now))
+            .values(locked_until=now + timedelta(minutes=settings.login_lock_max_minutes))
+        )
 
 
 def sign_in(
@@ -355,16 +381,33 @@ def sign_in(
     password: str,
     client: str,
     settings: Settings,
-    throttle: ClientThrottle,
+    throttle: LoginThrottle,
 ) -> tuple[str, Principal]:
-    """Check the credentials and open a session: the token for the cookie, and who it is."""
-    wait = throttle.retry_after(client)
+    """Check the credentials and open a session: the token for the cookie, and who it is.
+
+    Guessing is slowed in three layers: the client address (any account), the account from
+    that address (in memory; the owner signing in from elsewhere is not affected), and the
+    account from anywhere (in the database, after many failures). Unknown e-mail addresses
+    go through the first two exactly like known ones."""
+    wait = throttle.client.retry_after(client)
     if wait:
         record(session, "login_throttled", client=client, detail={"scope": "client"})
         session.commit()
         raise TooManyAttempts(wait)
     now = utcnow()
     user = session.scalar(select(User).where(User.email == email))
+    key = throttle.account_key(email, client)
+    wait = throttle.account.retry_after(key)
+    if wait:
+        record(
+            session,
+            "login_throttled",
+            subject=user.id if user is not None else None,
+            client=client,
+            detail={"scope": "account_client"},
+        )
+        session.commit()
+        raise TooManyAttempts(wait)
     if user is not None and user.locked_until is not None and user.locked_until > now:
         record(
             session, "login_throttled", subject=user.id, client=client, detail={"scope": "account"}
@@ -373,21 +416,22 @@ def sign_in(
         raise TooManyAttempts(max(1, int((user.locked_until - now).total_seconds()) + 1))
     if user is None:
         passwords.burn_verification(password)
-        throttle.failed(client)
+        throttle.client.failed(client)
+        throttle.account.failed(key)
         record(session, "login_failed", client=client, detail={"reason": "unknown_account"})
         session.commit()
         raise BadCredentials()
     if not passwords.verify_password(user.password_hash, password) or not user.is_active:
         reason = "inactive" if user.is_active is False else "wrong_password"
         if reason == "wrong_password":
-            user.failed_logins += 1
-            if user.failed_logins >= settings.login_max_failures:
-                user.locked_until = now + _lock_duration(user.failed_logins, settings)
-        throttle.failed(client)
+            _count_failure(session, user, now, settings)
+        throttle.client.failed(client)
+        throttle.account.failed(key)
         record(session, "login_failed", subject=user.id, client=client, detail={"reason": reason})
         session.commit()
         raise BadCredentials()
-    throttle.succeeded(client)
+    # Only this account's window from this address: the address's failures stay counted.
+    throttle.account.clear(key)
     user.failed_logins = 0
     user.locked_until = None
     user.last_login_at = now
@@ -460,13 +504,13 @@ def change_password(
     new_password: str,
     settings: Settings,
     client: str | None = None,
-    throttle: ClientThrottle | None = None,
+    throttle: LoginThrottle | None = None,
 ) -> Principal:
     """Change one's own password. A stolen session must not become a way to guess the
     password (and then lock its owner out), so wrong current passwords count towards the
     same per-client limit as failed sign-ins."""
     if throttle is not None and client:
-        wait = throttle.retry_after(client)
+        wait = throttle.client.retry_after(client)
         if wait:
             record(
                 session,
@@ -481,7 +525,7 @@ def change_password(
     user = user_or_404(session, principal.id)
     if not passwords.verify_password(user.password_hash, current_password):
         if throttle is not None and client:
-            throttle.failed(client)
+            throttle.client.failed(client)
         record(session, "password_change_failed", actor=user.id, subject=user.id, client=client)
         session.commit()
         raise DomainValidationError(

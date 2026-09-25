@@ -114,10 +114,13 @@ class Settings(BaseSettings):
     # A session ends after this long without a request, and in any case after the maximum.
     session_idle_minutes: int = Field(default=120, ge=5, le=24 * 60)
     session_max_hours: int = Field(default=12, ge=1, le=24 * 14)
-    # Consecutive failed sign-ins before an account is locked; the lock starts at one
-    # minute and doubles with each further failure, up to the maximum.
+    # Failed sign-ins for one account from one client address, within the lock window,
+    # before that address must wait for that account (its owner elsewhere is not affected).
     login_max_failures: int = Field(default=5, ge=3, le=20)
     login_lock_max_minutes: int = Field(default=15, ge=1, le=24 * 60)
+    # Failed sign-ins for one account from anywhere, since its last successful sign-in,
+    # before the account itself is locked for the lock window (NIST SP 800-63B: at most 100).
+    login_account_max_failures: int = Field(default=50, ge=10, le=100)
     # Failed sign-ins from one client address within the window before it must wait.
     login_client_max_failures: int = Field(default=20, ge=5, le=1000)
     login_client_window_seconds: int = Field(default=600, ge=60, le=24 * 3600)

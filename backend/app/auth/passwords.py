@@ -52,6 +52,57 @@ COMMON = frozenset(
 )
 
 
+# Words people wrap in digits and symbols to meet a length ("Password1234!", "Welcome@2026").
+# A password whose letters are only one of these, or only the person's name or e-mail, is
+# refused however many digits and symbols surround it.
+COMMON_WORDS = frozenset(
+    {
+        "abc",
+        "abcdef",
+        "admin",
+        "administrator",
+        "baseball",
+        "changeme",
+        "dragon",
+        "football",
+        "iloveyou",
+        "letmein",
+        "login",
+        "master",
+        "monkey",
+        "passw",
+        "password",
+        "princess",
+        "qwerty",
+        "qwertyuiop",
+        "rumin",
+        "secret",
+        "sunshine",
+        "trustno",
+        "welcome",
+    }
+)
+
+
+# Digits and symbols written for letters inside a word ("p@ssw0rd").
+_LOOKALIKES = str.maketrans({"@": "a", "4": "a", "$": "s", "5": "s", "0": "o", "1": "i", "3": "e"})
+
+
+def _letters(text: str) -> str:
+    return "".join(character for character in text.lower() if character.isalpha())
+
+
+def _core_letters(password: str) -> str:
+    """The letters of the part between the first and the last letter, look-alikes read as
+    letters: "p@ssw0rd-2026!" gives "password"."""
+    lowered = password.lower()
+    positions = [index for index, character in enumerate(lowered) if character.isalpha()]
+    if not positions:
+        return ""
+    core = lowered[positions[0] : positions[-1] + 1].translate(_LOOKALIKES)
+    return _letters(core)
+
+
 def hash_password(password: str) -> str:
     return _hasher.hash(password)
 
@@ -100,4 +151,11 @@ def password_problems(password: str, *, email: str = "", name: str = "") -> list
         problems.append("Do not use your name as the password.")
     if len(set(password)) < 4:
         problems.append("Use more than three different characters.")
+    letters = _core_letters(password)
+    own = {_letters(name), _letters(email.split("@")[0])} - {""}
+    if lowered not in COMMON and letters and (letters in COMMON_WORDS or letters in own):
+        problems.append(
+            "Digits and symbols around a common word or your own name are easy to guess; "
+            "choose another."
+        )
     return problems
