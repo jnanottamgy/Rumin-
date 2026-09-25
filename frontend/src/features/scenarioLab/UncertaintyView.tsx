@@ -11,6 +11,7 @@
 import { useMemo, useState } from "react";
 import { Button } from "@/components/Button";
 import { Icon } from "@/components/Icon";
+import { ScrollRegion } from "@/components/ScrollRegion";
 import { EmptyState, ErrorState, LoadingState } from "@/components/States";
 import { ReadOnlyNote } from "@/features/account/ReadOnlyNote";
 import { invalidateResource, setResourceData, useApiResource } from "@/hooks/useApiResource";
@@ -556,7 +557,7 @@ export function MonteCarloResult({
 
       <section className={styles.section}>
         <h4 className={lab.sectionTitle}>Percentiles</h4>
-        <div className={lab.tableScroll}>
+        <ScrollRegion className={lab.tableScroll}>
           <table className={lab.table}>
             <thead>
               <tr>
@@ -581,12 +582,12 @@ export function MonteCarloResult({
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollRegion>
       </section>
 
       <section className={styles.section}>
         <h4 className={lab.sectionTitle}>The quantities drawn</h4>
-        <div className={lab.tableScroll}>
+        <ScrollRegion className={lab.tableScroll}>
           <table className={lab.table}>
             <thead>
               <tr>
@@ -628,7 +629,7 @@ export function MonteCarloResult({
               })}
             </tbody>
           </table>
-        </div>
+        </ScrollRegion>
         <p className={lab.caption}>
           Spearman's rank correlation: how consistently the result rises (+) or falls (−) with each
           quantity across the draws. Association within the sample — not causation, and not a share
@@ -638,7 +639,7 @@ export function MonteCarloResult({
 
       <section className={styles.section}>
         <h4 className={lab.sectionTitle}>Every line and metric</h4>
-        <div className={lab.tableScroll}>
+        <ScrollRegion className={lab.tableScroll}>
           <table className={lab.table}>
             <thead>
               <tr>
@@ -679,7 +680,7 @@ export function MonteCarloResult({
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollRegion>
       </section>
 
       <details className={styles.details}>

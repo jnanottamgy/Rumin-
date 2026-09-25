@@ -1,8 +1,10 @@
 .status {
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-2);
+  gap: 2px var(--space-2);
   min-width: 0;
+  max-width: 100%;
   font-size: var(--text-sm);
 }
 
@@ -23,10 +25,19 @@
 }
 
 .detail {
+  min-width: 0;
   color: var(--color-ink-muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* On a phone the detail wraps rather than running off the screen or losing its end. */
+@media (max-width: 40rem) {
+  .detail {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
 }
 
 .status[data-tone="good"] .icon {

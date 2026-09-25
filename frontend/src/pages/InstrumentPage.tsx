@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router";
 import { PageHeader } from "@/components/PageHeader";
 import { Panel } from "@/components/Panel";
+import { ScrollRegion } from "@/components/ScrollRegion";
 import { EmptyState, ErrorState, LoadingState } from "@/components/States";
 import { type ChartPoint, dateTime, withinDays } from "@/features/data/chartMath";
 import { DataNatureBadges, Fact, FreshnessFacts } from "@/features/data/DataNature";
@@ -89,7 +90,7 @@ function PriceChart({
 
 function PriceTable({ items }: { items: PriceBar[] }) {
   return (
-    <div className={styles.tableScroll}>
+    <ScrollRegion className={styles.tableScroll}>
       <table className={styles.table}>
         <caption>
           Prices exactly as they appear in the imported file. RUMIN does not adjust prices; an
@@ -152,7 +153,7 @@ function PriceTable({ items }: { items: PriceBar[] }) {
           ))}
         </tbody>
       </table>
-    </div>
+    </ScrollRegion>
   );
 }
 

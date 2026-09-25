@@ -38,20 +38,20 @@ function ThemeToggle() {
 function WorkspaceStatus() {
   const system = useApiResource("system", () => api.system());
   if (system.status === "loading") {
-    return <StatusIndicator tone="neutral" label="Local workspace" detail="Connecting…" />;
+    return <StatusIndicator tone="neutral" label="Workspace" detail="Connecting…" />;
   }
   if (system.status === "error") {
-    return <StatusIndicator tone="critical" label="Local workspace" detail="API unreachable" />;
+    return <StatusIndicator tone="critical" label="Workspace" detail="API unreachable" />;
   }
   const dataset = system.data.dataset.summary;
   return dataset ? (
     <StatusIndicator
       tone="good"
-      label="Local workspace"
+      label="Workspace"
       detail={`${dataset.is_illustrative ? "Illustrative sample" : dataset.name} v${dataset.version}`}
     />
   ) : (
-    <StatusIndicator tone="warning" label="Local workspace" detail="No dataset loaded" />
+    <StatusIndicator tone="warning" label="Workspace" detail="No dataset loaded" />
   );
 }
 
@@ -131,7 +131,8 @@ export function AppShell() {
         <p>
           RUMIN · Phase {CURRENT_PHASE}. The network's sample data is illustrative (its companies
           are fictional). Provider data is historical and never live. Graph relationships are
-          recorded or assumed, not measured. Nothing here is investment advice.
+          recorded or assumed, not measured. Nothing here is investment advice.{" "}
+          <Link to="/guide">Getting started</Link>
         </p>
       </footer>
     </div>

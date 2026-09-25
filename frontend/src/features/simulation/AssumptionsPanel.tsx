@@ -4,6 +4,7 @@
  * limitations, and the warnings the engine raised for this run.
  */
 import { Badge } from "@/components/Badge";
+import { ScrollRegion } from "@/components/ScrollRegion";
 import { formatExact } from "@/lib/decimal";
 import type {
   SimulationIssue,
@@ -23,7 +24,7 @@ const SOURCE: Record<SimulationResolvedInput["source"], string> = {
 
 export function InputsTable({ inputs }: { inputs: SimulationResolvedInput[] }) {
   return (
-    <div className={styles.tableScroll}>
+    <ScrollRegion className={styles.tableScroll}>
       <table className={styles.table}>
         <caption className="visually-hidden">Inputs used by this run</caption>
         <thead>
@@ -54,7 +55,7 @@ export function InputsTable({ inputs }: { inputs: SimulationResolvedInput[] }) {
           ))}
         </tbody>
       </table>
-    </div>
+    </ScrollRegion>
   );
 }
 
@@ -92,7 +93,7 @@ export function AssumptionsPanel({
       )}
       <section>
         <h4 className={styles.subheading}>Assumption parameters</h4>
-        <div className={styles.tableScroll}>
+        <ScrollRegion className={styles.tableScroll}>
           <table className={styles.table}>
             <thead>
               <tr>
@@ -120,7 +121,7 @@ export function AssumptionsPanel({
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollRegion>
       </section>
       <div className={styles.statementColumns}>
         <section>

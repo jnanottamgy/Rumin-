@@ -10,6 +10,7 @@
  * the table view lists every exact value.
  */
 import { type KeyboardEvent, type PointerEvent, useMemo, useRef, useState } from "react";
+import { ScrollRegion } from "@/components/ScrollRegion";
 import { linearScale, niceTicks } from "@/features/data/chartMath";
 import { useElementSize } from "@/hooks/useElementSize";
 import { toNumber } from "@/lib/decimal";
@@ -357,7 +358,7 @@ export function MonthlyChart({
           )}
         </div>
       ) : (
-        <div className={styles.tableScroll}>
+        <ScrollRegion className={styles.tableScroll}>
           <table className={styles.table}>
             <caption className="visually-hidden">Monthly results, exact values</caption>
             <thead>
@@ -385,7 +386,7 @@ export function MonthlyChart({
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollRegion>
       )}
       <figcaption className={styles.figureCaption}>
         Top: {scenario.label.toLowerCase()} against {baseline.label.toLowerCase()}, per month.

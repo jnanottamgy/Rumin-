@@ -5,6 +5,7 @@
  * Operable from the keyboard; the table lists every checkpoint.
  */
 import { type KeyboardEvent, type PointerEvent, useMemo, useRef, useState } from "react";
+import { ScrollRegion } from "@/components/ScrollRegion";
 import { linearScale, niceTicks } from "@/features/data/chartMath";
 import simulation from "@/features/simulation/Simulation.module.css";
 import { useElementSize } from "@/hooks/useElementSize";
@@ -213,7 +214,7 @@ export function ConvergenceChart({
           )}
         </div>
       ) : (
-        <div className={simulation.tableScroll}>
+        <ScrollRegion className={simulation.tableScroll}>
           <table className={simulation.table}>
             <caption className="visually-hidden">Mean of the draws at each checkpoint</caption>
             <thead>
@@ -235,7 +236,7 @@ export function ConvergenceChart({
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollRegion>
       )}
       <figcaption className={simulation.figureCaption}>
         The mean settles as draws accumulate; the band narrows with the square root of the number of

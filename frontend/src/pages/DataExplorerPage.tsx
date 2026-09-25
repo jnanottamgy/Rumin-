@@ -9,6 +9,7 @@ import { Badge } from "@/components/Badge";
 import { Button } from "@/components/Button";
 import { PageHeader } from "@/components/PageHeader";
 import { Panel } from "@/components/Panel";
+import { ScrollRegion } from "@/components/ScrollRegion";
 import { EmptyState, ErrorState, LoadingState } from "@/components/States";
 import { StatGrid, StatTile } from "@/components/StatTile";
 import {
@@ -178,7 +179,7 @@ function SeriesCatalogue({ lastJob }: { lastJob: IngestionJob | undefined }) {
             : `${formatCount(visible.length)} of ${formatCount(items.length)} series`}
         </p>
       </search>
-      <div className={styles.tableScroll}>
+      <ScrollRegion className={styles.tableScroll}>
         <table className={styles.table}>
           <caption>
             Latest values are rounded to two decimals here; each series page shows every published
@@ -253,7 +254,7 @@ function SeriesCatalogue({ lastJob }: { lastJob: IngestionJob | undefined }) {
             )}
           </tbody>
         </table>
-      </div>
+      </ScrollRegion>
     </div>
   );
 }
@@ -284,7 +285,7 @@ function Instruments() {
     );
   }
   return (
-    <div className={styles.tableScroll}>
+    <ScrollRegion className={styles.tableScroll}>
       <table className={styles.table}>
         <thead>
           <tr>
@@ -321,7 +322,7 @@ function Instruments() {
           ))}
         </tbody>
       </table>
-    </div>
+    </ScrollRegion>
   );
 }
 
@@ -409,7 +410,7 @@ function Jobs({ jobs }: { jobs: ReturnType<typeof useJobs> }) {
     );
   }
   return (
-    <div className={styles.tableScroll}>
+    <ScrollRegion className={styles.tableScroll}>
       <table className={styles.table}>
         <thead>
           <tr>
@@ -445,7 +446,7 @@ function Jobs({ jobs }: { jobs: ReturnType<typeof useJobs> }) {
           ))}
         </tbody>
       </table>
-    </div>
+    </ScrollRegion>
   );
 }
 

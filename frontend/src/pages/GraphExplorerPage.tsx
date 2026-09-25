@@ -38,6 +38,7 @@ import {
 } from "@/features/graph/useGraphExplorer";
 import { ViewNotices } from "@/features/graph/ViewNotices";
 import { useApiResource } from "@/hooks/useApiResource";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { plural } from "@/lib/format";
 import { graphApi } from "@/services/api";
@@ -465,6 +466,7 @@ function Explorer({
 }
 
 export function GraphExplorerPage() {
+  useDocumentTitle("Knowledge graph");
   const overview = useApiResource("graph-overview", () => graphApi.overview());
   const types = useApiResource("graph-types", () => graphApi.types());
   const [searchParams] = useSearchParams();

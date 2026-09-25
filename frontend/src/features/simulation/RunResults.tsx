@@ -5,6 +5,7 @@
  * stored; nothing is recalculated here.
  */
 import { type ReactNode, useState } from "react";
+import { ScrollRegion } from "@/components/ScrollRegion";
 import { ErrorState, LoadingState } from "@/components/States";
 import { useApiResource } from "@/hooks/useApiResource";
 import { formatDateTime } from "@/lib/format";
@@ -106,12 +107,14 @@ export function RunResults({
       </dl>
 
       {rows.length > 0 && (
-        <div className={styles.tableScroll}>
+        <ScrollRegion className={styles.tableScroll}>
           <table className={styles.table}>
             <caption className={styles.tableCaption}>Baseline and scenario</caption>
             <thead>
               <tr>
-                <th scope="col" />
+                <th scope="col">
+                  <span className="visually-hidden">Result</span>
+                </th>
                 <th scope="col">Baseline</th>
                 <th scope="col">Scenario</th>
                 <th scope="col">Change</th>
@@ -136,7 +139,7 @@ export function RunResults({
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollRegion>
       )}
 
       <WarningList warnings={run.warnings} />

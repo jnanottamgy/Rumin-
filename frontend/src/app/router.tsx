@@ -129,6 +129,10 @@ const workspace: RouteObject[] = [
     path: "people",
     lazy: async () => ({ Component: (await import("@/pages/PeoplePage")).PeoplePage }),
   },
+  {
+    path: "guide",
+    lazy: async () => ({ Component: (await import("@/pages/GuidePage")).GuidePage }),
+  },
   { path: "*", Component: NotFoundPage },
 ];
 

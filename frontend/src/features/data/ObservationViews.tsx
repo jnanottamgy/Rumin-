@@ -2,6 +2,7 @@
  * An economic series' values, as a chart or as the table that is its exact twin.
  */
 import { useMemo } from "react";
+import { ScrollRegion } from "@/components/ScrollRegion";
 import { EmptyState } from "@/components/States";
 import { formatExact, formatRounded, isDecimalString, toNumber } from "@/lib/decimal";
 import { formatDateTime, formatPeriod } from "@/lib/format";
@@ -145,7 +146,7 @@ export function ObservationTable({
     return <EmptyState title="No values stored for this series yet" />;
   }
   return (
-    <div className={styles.tableScroll}>
+    <ScrollRegion className={styles.tableScroll}>
       <table className={styles.table}>
         <caption>
           Every value exactly as the provider published it, in {series.unit}. “Retrieved” is when
@@ -204,6 +205,6 @@ export function ObservationTable({
           ))}
         </tbody>
       </table>
-    </div>
+    </ScrollRegion>
   );
 }

@@ -47,7 +47,6 @@ export function GraphLegend({
 
   return (
     <div className={styles.legend} data-compact={compact}>
-      <h3 className="visually-hidden">Legend</h3>
       <ul className={styles.list} aria-label="Node types">
         {NODE_TYPE_ORDER.filter((type) => types.has(type)).map((type) => (
           <li key={type}>

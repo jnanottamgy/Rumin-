@@ -9,6 +9,7 @@ import { useState } from "react";
 import { Link } from "react-router";
 import { Button } from "@/components/Button";
 import { Icon } from "@/components/Icon";
+import { ScrollRegion } from "@/components/ScrollRegion";
 import { StatusIndicator } from "@/components/StatusIndicator";
 import { EVIDENCE_ENCODING } from "@/features/graph/encoding";
 import { describeError } from "@/lib/apiClient";
@@ -182,7 +183,7 @@ export function ProvenancePanel({ provenance }: { provenance: SimulationProvenan
       </dl>
 
       <h4 className={styles.subheading}>Relationships from the knowledge graph</h4>
-      <div className={styles.tableScroll}>
+      <ScrollRegion className={styles.tableScroll}>
         <table className={styles.table}>
           <thead>
             <tr>
@@ -201,7 +202,7 @@ export function ProvenancePanel({ provenance }: { provenance: SimulationProvenan
             ))}
           </tbody>
         </table>
-      </div>
+      </ScrollRegion>
       <p className={styles.note}>
         Transmission rules (T) carry a shock; supporting relationships (S) are cited, not followed.{" "}
         {graph.unused_total} other relationship
@@ -230,7 +231,7 @@ export function ProvenancePanel({ provenance }: { provenance: SimulationProvenan
       )}
 
       <h4 className={styles.subheading}>Transmission paths</h4>
-      <div className={styles.tableScroll}>
+      <ScrollRegion className={styles.tableScroll}>
         <table className={styles.table}>
           <thead>
             <tr>
@@ -255,7 +256,7 @@ export function ProvenancePanel({ provenance }: { provenance: SimulationProvenan
             ))}
           </tbody>
         </table>
-      </div>
+      </ScrollRegion>
     </div>
   );
 }

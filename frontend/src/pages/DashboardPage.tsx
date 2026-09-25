@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
 import { APP_MODULES, STATUS_LABEL } from "@/app/modules";
+import { useAccess } from "@/app/session";
 import { Badge } from "@/components/Badge";
-import { ButtonLink } from "@/components/Button";
+import { Button, ButtonLink } from "@/components/Button";
 import { Icon } from "@/components/Icon";
 import { PageHeader } from "@/components/PageHeader";
 import { Panel } from "@/components/Panel";
@@ -202,6 +203,56 @@ function SystemSummary({ system }: { system: ReturnType<typeof useSystem> }) {
   );
 }
 
+const welcomeKey = (userId: string) => `rumin.welcome.hidden.${userId}`;
+
+/** A first-use card: where to begin. Hidden for good, per person, once dismissed. */
+function Welcome() {
+  const { session } = useAccess();
+  const userId = session?.user.id ?? "";
+  const [hidden, setHidden] = useState(() => {
+    try {
+      return window.localStorage.getItem(welcomeKey(userId)) === "1";
+    } catch {
+      return false; // storage unavailable: show the card, it can be hidden again
+    }
+  });
+  if (!session || hidden) return null;
+  const firstName = session.user.name.split(/\s+/)[0] ?? session.user.name;
+  return (
+    <section className={styles.welcome} aria-labelledby="welcome-title">
+      <div className={styles.welcomeText}>
+        <h2 id="welcome-title" className={styles.welcomeTitle}>
+          Welcome, {firstName}
+        </h2>
+        <p>
+          New to RUMIN? Six short tasks show what it does, each ending in a working page: explore
+          the network, run a what-if scenario, read the findings, ask the Analyst and check where
+          the data came from.
+        </p>
+      </div>
+      <div className={styles.welcomeActions}>
+        <ButtonLink to="/guide" variant="primary" size="sm" iconAfter={<Icon name="arrowRight" />}>
+          Getting started
+        </ButtonLink>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => {
+            try {
+              window.localStorage.setItem(welcomeKey(userId), "1");
+            } catch {
+              // Not remembered this time; hidden for this visit all the same.
+            }
+            setHidden(true);
+          }}
+        >
+          Hide
+        </Button>
+      </div>
+    </section>
+  );
+}
+
 function useSystem() {
   return useApiResource<SystemStatus>("system", () => api.system());
 }
@@ -224,7 +275,7 @@ export function DashboardPage() {
   return (
     <div className={styles.page}>
       <PageHeader
-        eyebrow="Workspace · Local"
+        eyebrow="Workspace"
         title="Overview"
         description="The state of this workspace, read from the running API: what is loaded, what the network contains, and what this build can and cannot do yet."
         actions={
@@ -233,6 +284,8 @@ export function DashboardPage() {
           </ButtonLink>
         }
       />
+
+      <Welcome />
 
       <StatGrid label="Workspace at a glance">
         <StatTile

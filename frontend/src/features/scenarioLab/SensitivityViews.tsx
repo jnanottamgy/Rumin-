@@ -7,6 +7,7 @@
 import { useMemo, useState } from "react";
 import { Button } from "@/components/Button";
 import { Icon } from "@/components/Icon";
+import { ScrollRegion } from "@/components/ScrollRegion";
 import { EmptyState, ErrorState, LoadingState } from "@/components/States";
 import { ReadOnlyNote } from "@/features/account/ReadOnlyNote";
 import { Notice } from "@/features/data/DataNature";
@@ -354,7 +355,7 @@ export function JointGrid({ results }: { results: JointResults }) {
           </button>
         </fieldset>
       </div>
-      <div className={lab.tableScroll}>
+      <ScrollRegion className={lab.tableScroll}>
         <table className={`${lab.table} ${styles.grid}`}>
           <caption className={lab.tableCaption}>
             {show === "change"
@@ -405,7 +406,7 @@ export function JointGrid({ results }: { results: JointResults }) {
             ))}
           </tbody>
         </table>
-      </div>
+      </ScrollRegion>
       {skipped.length > 0 && (
         <ul className={styles.notes}>
           {skipped.map((item) => (

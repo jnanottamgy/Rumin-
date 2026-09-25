@@ -12,7 +12,7 @@
  *
  * The function is pure, so it can move into a Web Worker when graphs grow (Phase 3),
  * and its output (plain coordinates) is renderer-agnostic — the same positions can feed
- * the Three.js scene planned for Phase 8.
+ * the Three.js scene of the 3D universe (Phase 8).
  */
 import {
   forceCollide,

@@ -6,6 +6,7 @@
  */
 import { useId, useState } from "react";
 import { Badge } from "@/components/Badge";
+import { ScrollRegion } from "@/components/ScrollRegion";
 import { formatExact, isDecimalString } from "@/lib/decimal";
 import type { SimulationEquationUse, SimulationStep } from "@/types/api";
 import styles from "./Simulation.module.css";
@@ -49,7 +50,7 @@ export function StepsTable({ steps, months }: { steps: SimulationStep[]; months:
           {steps.length} steps in all, in the order they were calculated
         </span>
       </div>
-      <div className={styles.tableScroll}>
+      <ScrollRegion className={styles.tableScroll}>
         <table className={styles.table}>
           <caption className="visually-hidden">
             Calculation steps{month ? ` for month ${month}` : " for the whole run"}
@@ -85,7 +86,7 @@ export function StepsTable({ steps, months }: { steps: SimulationStep[]; months:
             ))}
           </tbody>
         </table>
-      </div>
+      </ScrollRegion>
     </div>
   );
 }

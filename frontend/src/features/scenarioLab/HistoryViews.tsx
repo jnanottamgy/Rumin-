@@ -8,6 +8,7 @@ import { Link } from "react-router";
 import { Badge } from "@/components/Badge";
 import { Button } from "@/components/Button";
 import { Icon } from "@/components/Icon";
+import { ScrollRegion } from "@/components/ScrollRegion";
 import { EmptyState, ErrorState, LoadingState } from "@/components/States";
 import { useApiResource } from "@/hooks/useApiResource";
 import { describeError } from "@/lib/apiClient";
@@ -61,7 +62,7 @@ export function HistoryView({
             No execution yet. Execute the scenario to store a reproducible result.
           </p>
         ) : (
-          <div className={styles.tableScroll}>
+          <ScrollRegion className={styles.tableScroll}>
             <table className={styles.table}>
               <caption className="visually-hidden">
                 Every execution of this scenario, newest first, with its headline result
@@ -173,7 +174,7 @@ export function HistoryView({
                 })}
               </tbody>
             </table>
-          </div>
+          </ScrollRegion>
         )}
       </section>
       <section>
@@ -247,7 +248,7 @@ export function CompareView({ ids, onClear }: { ids: string[]; onClear: () => vo
           Clear the selection
         </Button>
       </div>
-      <div className={styles.tableScroll}>
+      <ScrollRegion className={styles.tableScroll}>
         <table className={styles.table}>
           <thead>
             <tr>
@@ -322,11 +323,11 @@ export function CompareView({ ids, onClear }: { ids: string[]; onClear: () => vo
             ))}
           </tbody>
         </table>
-      </div>
+      </ScrollRegion>
       {data.inputs.length > 0 && (
         <section>
           <h3 className={styles.sectionTitle}>Inputs and assumptions that differ</h3>
-          <div className={styles.tableScroll}>
+          <ScrollRegion className={styles.tableScroll}>
             <table className={styles.table}>
               <tbody>
                 {data.inputs.map((input) => (
@@ -349,7 +350,7 @@ export function CompareView({ ids, onClear }: { ids: string[]; onClear: () => vo
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollRegion>
         </section>
       )}
       {data.pathways.length > 0 && (

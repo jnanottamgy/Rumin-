@@ -7,7 +7,6 @@ import styles from "./NetworkLegend.module.css";
 export function NetworkLegend({ compact = false }: { compact?: boolean }) {
   return (
     <div className={styles.legend} data-compact={compact}>
-      <h3 className="visually-hidden">Legend</h3>
       <ul className={styles.list} aria-label="Entity kinds">
         {KIND_ORDER.map((kind) => (
           <li key={kind}>

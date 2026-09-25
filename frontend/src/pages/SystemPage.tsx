@@ -5,6 +5,7 @@ import { Badge } from "@/components/Badge";
 import { Button } from "@/components/Button";
 import { PageHeader } from "@/components/PageHeader";
 import { Panel } from "@/components/Panel";
+import { ScrollRegion } from "@/components/ScrollRegion";
 import { ErrorState, LoadingState } from "@/components/States";
 import { StatusIndicator } from "@/components/StatusIndicator";
 import { KIND_ENCODING } from "@/features/network/encoding";
@@ -237,7 +238,7 @@ export function SystemPage() {
         description="Reported by the backend. The interface never offers a capability the API does not have."
       >
         {system.status === "success" ? (
-          <div className={styles.tableScroll}>
+          <ScrollRegion className={styles.tableScroll}>
             <table className={styles.table}>
               <thead>
                 <tr>
@@ -263,7 +264,7 @@ export function SystemPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollRegion>
         ) : (
           <LoadingState lines={4} />
         )}

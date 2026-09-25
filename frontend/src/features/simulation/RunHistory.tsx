@@ -3,6 +3,7 @@
  * can be reopened, explained and checked again.
  */
 import { Link } from "react-router";
+import { ScrollRegion } from "@/components/ScrollRegion";
 import { EmptyState, ErrorState, LoadingState } from "@/components/States";
 import { useApiResource } from "@/hooks/useApiResource";
 import { formatDateTime } from "@/lib/format";
@@ -31,7 +32,7 @@ export function RunHistory({
   }
   const columns = runs.data.items[0]?.headline.slice(0, 2) ?? [];
   return (
-    <div className={styles.tableScroll}>
+    <ScrollRegion className={styles.tableScroll}>
       <table className={styles.table}>
         <caption className="visually-hidden">Stored runs, newest first</caption>
         <thead>
@@ -72,6 +73,6 @@ export function RunHistory({
           Showing the latest {runs.data.items.length} of {runs.data.total} stored runs.
         </p>
       )}
-    </div>
+    </ScrollRegion>
   );
 }

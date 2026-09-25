@@ -5,6 +5,7 @@
  * thin marks, hairline axes — and every chart has a table with the exact values beside it.
  */
 import { Fragment, useState } from "react";
+import { ScrollRegion } from "@/components/ScrollRegion";
 import { EmptyState } from "@/components/States";
 import { cx } from "@/lib/cx";
 import { formatExact, toNumber } from "@/lib/decimal";
@@ -21,7 +22,7 @@ export function MonthsView({ results }: { results: ScenarioResults }) {
   // Mark the months the changes last only when that is not simply every month.
   const partial = start > 1 || end < results.horizon_months;
   return (
-    <div className={styles.tableScroll}>
+    <ScrollRegion className={styles.tableScroll}>
       <table className={cx(styles.table, styles.monthsTable)}>
         <caption className={styles.tableCaption}>
           Change in each line by simulated month, {currency}. Simulated values, not forecasts.
@@ -83,7 +84,7 @@ export function MonthsView({ results }: { results: ScenarioResults }) {
           </tr>
         </tbody>
       </table>
-    </div>
+    </ScrollRegion>
   );
 }
 
@@ -175,7 +176,7 @@ export function StressView({
         </p>
       </div>
       <StressChart cases={cases} />
-      <div className={styles.tableScroll}>
+      <ScrollRegion className={styles.tableScroll}>
         <table className={cx(styles.table, styles.monthsTable)}>
           <caption className={styles.tableCaption}>
             Change over the horizon in each line, {results.currency}, and each metric in the case.
@@ -247,7 +248,7 @@ export function StressView({
             ))}
           </tbody>
         </table>
-      </div>
+      </ScrollRegion>
     </div>
   );
 }

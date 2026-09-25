@@ -66,6 +66,7 @@ import {
   useWholeGraph,
 } from "@/features/universe/useUniverseData";
 import { useApiResource } from "@/hooks/useApiResource";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { formatCount, plural } from "@/lib/format";
 import { graphApi } from "@/services/api";
 import type { GraphNodeType, GraphOverview, GraphTypes } from "@/types/api";
@@ -808,6 +809,7 @@ function Universe({
 }
 
 export function UniverseSpacePage() {
+  useDocumentTitle("3D universe");
   const overview = useApiResource("graph-overview", () => graphApi.overview());
   const types = useApiResource("graph-types", () => graphApi.types());
   const [searchParams] = useSearchParams();

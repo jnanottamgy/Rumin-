@@ -7,6 +7,7 @@
  * future.
  */
 import { type KeyboardEvent, type PointerEvent, useMemo, useRef, useState } from "react";
+import { ScrollRegion } from "@/components/ScrollRegion";
 import { linearScale, niceTicks } from "@/features/data/chartMath";
 import simulation from "@/features/simulation/Simulation.module.css";
 import { useElementSize } from "@/hooks/useElementSize";
@@ -257,7 +258,7 @@ export function DistributionChart({
           )}
         </div>
       ) : (
-        <div className={simulation.tableScroll}>
+        <ScrollRegion className={simulation.tableScroll}>
           <table className={simulation.table}>
             <caption className="visually-hidden">Draws in each interval</caption>
             <thead>
@@ -278,7 +279,7 @@ export function DistributionChart({
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollRegion>
       )}
       <figcaption className={simulation.figureCaption}>
         How the {accepted.toLocaleString("en")} accepted draws spread over{" "}

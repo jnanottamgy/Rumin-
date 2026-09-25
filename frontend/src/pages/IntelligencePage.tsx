@@ -39,6 +39,7 @@ import { BriefView, SourcesView } from "@/features/intelligence/Records";
 import { SignalGrid } from "@/features/intelligence/Signals";
 import { Tabs } from "@/features/simulation/Tabs";
 import { invalidateResource, type Resource, useApiResource } from "@/hooks/useApiResource";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { describeError } from "@/lib/apiClient";
 import { cx } from "@/lib/cx";
 import { formatCount, formatDateTime, formatPeriod, plural } from "@/lib/format";
@@ -426,6 +427,7 @@ function WorkspaceView({
   methods: IntelligenceMethods | undefined;
   onThresholds: (next: ThresholdOverrides) => void;
 }) {
+  useDocumentTitle("Financial intelligence");
   const key = `intelligence:overview:${thresholdKey(thresholds)}`;
   const overview = useFreshResource(key, () => intelligenceApi.overview(thresholds));
   const [stored, setStored] = useState<StoredAnalysis | null>(null);
@@ -628,6 +630,7 @@ function EntityView({
 
   const data = analysis.data;
   const entity = data?.entity;
+  useDocumentTitle(entity ? `${entity.name} — Intelligence` : "Intelligence");
   return (
     <>
       <PageHeader
@@ -685,7 +688,9 @@ function EntityView({
               {
                 id: "findings",
                 label: `Findings (${data.insights.length})`,
-                content: () => <Ledger insights={data.insights} scenarios={scenarios} />,
+                content: () => (
+                  <Ledger insights={data.insights} scenarios={scenarios} headingLevel={2} />
+                ),
               },
               {
                 id: "exposure",
@@ -757,6 +762,9 @@ function EntityView({
 function StoredView({ analysisId }: { analysisId: string }) {
   const analysis = useApiResource(`intelligence:analysis:${analysisId}`, () =>
     intelligenceApi.analyses.get(analysisId),
+  );
+  useDocumentTitle(
+    analysis.status === "success" ? `${analysis.data.subject_name}, as stored` : "Stored analysis",
   );
   if (analysis.status === "loading") return <LoadingState label="Loading the stored analysis…" />;
   if (analysis.status === "error") {

@@ -7,6 +7,7 @@ import { Link, useNavigate } from "react-router";
 import { Badge } from "@/components/Badge";
 import { Button, ButtonLink } from "@/components/Button";
 import { Icon } from "@/components/Icon";
+import { ScrollRegion } from "@/components/ScrollRegion";
 import { EmptyState, ErrorState, LoadingState } from "@/components/States";
 import { useApiResource } from "@/hooks/useApiResource";
 import { formatDateTime } from "@/lib/format";
@@ -171,7 +172,7 @@ export function LabHome() {
               Start from a template or a blank scenario.
             </EmptyState>
           ) : (
-            <div className={styles.tableScroll}>
+            <ScrollRegion className={styles.tableScroll}>
               <table className={styles.table}>
                 <thead>
                   <tr>
@@ -241,7 +242,7 @@ export function LabHome() {
                   })}
                 </tbody>
               </table>
-            </div>
+            </ScrollRegion>
           ))}
       </section>
     </div>

@@ -17,6 +17,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router";
 import { Badge } from "@/components/Badge";
 import { Icon } from "@/components/Icon";
+import { ScrollRegion } from "@/components/ScrollRegion";
 import { EVIDENCE_ENCODING } from "@/features/graph/encoding";
 import { KnowledgeGlyph, type KnowledgeKind } from "@/features/simulation/knowledge";
 import { useElementSize } from "@/hooks/useElementSize";
@@ -808,7 +809,7 @@ export function PathwayLegend() {
 
 function PathwayList({ pathway, names }: { pathway: LabPathway; names: Names }) {
   return (
-    <div className={styles.tableScroll}>
+    <ScrollRegion className={styles.tableScroll}>
       <table className={styles.table}>
         <caption className="visually-hidden">Every link of the pathway</caption>
         <thead>
@@ -846,6 +847,6 @@ function PathwayList({ pathway, names }: { pathway: LabPathway; names: Names }) 
           ))}
         </tbody>
       </table>
-    </div>
+    </ScrollRegion>
   );
 }

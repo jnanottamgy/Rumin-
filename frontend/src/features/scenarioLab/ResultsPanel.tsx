@@ -10,6 +10,7 @@ import { Fragment, useState } from "react";
 import { Link } from "react-router";
 import { Badge } from "@/components/Badge";
 import { Icon } from "@/components/Icon";
+import { ScrollRegion } from "@/components/ScrollRegion";
 import { formatUnitValue } from "@/features/simulation/format";
 import { KnowledgeLabel } from "@/features/simulation/knowledge";
 import type { ModelResult, ResultLine, ScenarioResults } from "@/types/api";
@@ -209,7 +210,7 @@ export function ResultsPanel({
         <h3 id="lines-heading" className={styles.sectionTitle}>
           Baseline against scenario
         </h3>
-        <div className={styles.tableScroll}>
+        <ScrollRegion className={styles.tableScroll}>
           <table className={styles.linesTable}>
             <caption className="visually-hidden">
               Each line over the horizon in {currency}: your baseline, the scenario, and the change
@@ -231,7 +232,7 @@ export function ResultsPanel({
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollRegion>
         <p className={styles.caption}>
           {currency}, over the {results.horizon_months}-month horizon. Baseline: your annual figures
           × {results.horizon_months}/12, held constant.

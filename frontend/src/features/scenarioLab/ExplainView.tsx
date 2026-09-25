@@ -9,6 +9,7 @@
 import { useState } from "react";
 import { Link } from "react-router";
 import { Badge } from "@/components/Badge";
+import { ScrollRegion } from "@/components/ScrollRegion";
 import { EmptyState, ErrorState, LoadingState } from "@/components/States";
 import { formatUnitValue } from "@/features/simulation/format";
 import { KnowledgeLabel, knowledgeOf } from "@/features/simulation/knowledge";
@@ -99,7 +100,7 @@ function ModelTrace({
             Intermediate steps
             {model.worked_month !== null && ` — month ${model.worked_month} worked through`}
           </h4>
-          <div className={styles.tableScroll}>
+          <ScrollRegion className={styles.tableScroll}>
             <table className={styles.table}>
               <thead>
                 <tr>
@@ -126,7 +127,7 @@ function ModelTrace({
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollRegion>
         </li>
         <li>
           <h4>Graph relationships and transmission</h4>

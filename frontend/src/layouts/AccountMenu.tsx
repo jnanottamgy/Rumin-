@@ -46,6 +46,11 @@ function AccountDetails({ onDone }: { onDone?: () => void }) {
       </div>
       <ul className={styles.links}>
         <li>
+          <Link to="/guide" onClick={onDone}>
+            <Icon name="info" size={14} /> Getting started
+          </Link>
+        </li>
+        <li>
           <Link to={`/account/password?next=${encodeURIComponent(here)}`} onClick={onDone}>
             <Icon name="lock" size={14} /> Change password
           </Link>

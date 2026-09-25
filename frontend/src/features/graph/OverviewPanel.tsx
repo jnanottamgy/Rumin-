@@ -108,7 +108,9 @@ export function OverviewPanel({
         <table className={styles.table}>
           <thead>
             <tr>
-              <th scope="col" />
+              <th scope="col">
+                <span className="visually-hidden">Records</span>
+              </th>
               <th scope="col" className={styles.number}>
                 Processed
               </th>

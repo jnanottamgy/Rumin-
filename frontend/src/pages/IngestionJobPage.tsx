@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { Link, useParams } from "react-router";
 import { PageHeader } from "@/components/PageHeader";
 import { Panel } from "@/components/Panel";
+import { ScrollRegion } from "@/components/ScrollRegion";
 import { ErrorState, LoadingState } from "@/components/States";
 import { StatGrid, StatTile } from "@/components/StatTile";
 import { Fact, ItemStatusIndicator, JobStatusIndicator, Notice } from "@/features/data/DataNature";
@@ -42,7 +43,7 @@ function Summary({ job }: { job: IngestionJobDetail }) {
 
 function Items({ job }: { job: IngestionJobDetail }) {
   return (
-    <div className={styles.tableScroll}>
+    <ScrollRegion className={styles.tableScroll}>
       <table className={styles.table}>
         <caption>
           Received = new + revised + unchanged + rejected. Missing counts accepted periods that had
@@ -94,7 +95,7 @@ function Items({ job }: { job: IngestionJobDetail }) {
           ))}
         </tbody>
       </table>
-    </div>
+    </ScrollRegion>
   );
 }
 
@@ -103,7 +104,7 @@ function Issues({ job }: { job: IngestionJobDetail }) {
     return <p className={styles.muted}>No quality issues were recorded by this run.</p>;
   }
   return (
-    <div className={styles.tableScroll}>
+    <ScrollRegion className={styles.tableScroll}>
       <table className={styles.table}>
         <thead>
           <tr>
@@ -124,7 +125,7 @@ function Issues({ job }: { job: IngestionJobDetail }) {
           ))}
         </tbody>
       </table>
-    </div>
+    </ScrollRegion>
   );
 }
 
@@ -133,7 +134,7 @@ function Captures({ job }: { job: IngestionJobDetail }) {
     return <p className={styles.muted}>Nothing was received, so nothing was stored.</p>;
   }
   return (
-    <div className={styles.tableScroll}>
+    <ScrollRegion className={styles.tableScroll}>
       <table className={styles.table}>
         <caption>
           The exact bytes received are stored (compressed) with their SHA-256, so every value can be
@@ -166,7 +167,7 @@ function Captures({ job }: { job: IngestionJobDetail }) {
           ))}
         </tbody>
       </table>
-    </div>
+    </ScrollRegion>
   );
 }
 

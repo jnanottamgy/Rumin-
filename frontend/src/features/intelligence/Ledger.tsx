@@ -209,13 +209,17 @@ export function Ledger({
   label = "Findings",
   emptyText = "No finding meets these filters.",
   initialOpen,
+  headingLevel = 3,
 }: {
   insights: readonly Insight[];
   scenarios?: ReadonlyMap<string, string>;
   label?: string;
   emptyText?: string;
   initialOpen?: string;
+  /** The level of each group's heading: 2 where nothing but the page title comes before. */
+  headingLevel?: 2 | 3;
 }) {
+  const Heading = headingLevel === 2 ? "h2" : "h3";
   const [group, setGroup] = useState<KindGroup | "all">("all");
   const [floor, setFloor] = useState<EvidenceGrade | "any">("any");
   const [open, setOpen] = useState<ReadonlySet<string>>(
@@ -299,10 +303,10 @@ export function Ledger({
       ) : (
         sections.map((section) => (
           <section key={section.id} className={styles.ledgerSection} aria-label={section.label}>
-            <h3 className={styles.ledgerHeading}>
+            <Heading className={styles.ledgerHeading}>
               {section.label}
               <span className={cx(styles.muted, "tabular")}> {section.insights.length}</span>
-            </h3>
+            </Heading>
             <ul className={styles.findings} aria-label={`${label}: ${section.label}`}>
               {section.insights.map((insight) => (
                 <Finding

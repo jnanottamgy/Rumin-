@@ -1,8 +1,10 @@
 import { ButtonLink } from "@/components/Button";
 import { Icon } from "@/components/Icon";
 import { PageHeader } from "@/components/PageHeader";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 export function NotFoundPage() {
+  useDocumentTitle("Page not found");
   return (
     <PageHeader
       eyebrow="404"

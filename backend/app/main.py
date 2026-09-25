@@ -41,10 +41,20 @@ from app.services.analyst import AnalystRuntime
 logger = logging.getLogger(__name__)
 
 API_DESCRIPTION = """
-RUMIN is an interactive financial intelligence and economic simulation platform.
-This API covers the **Phase 1 foundation**, the **Phase 2 financial data
-infrastructure**, the **Phase 3 knowledge graph** and the **Phase 4 simulation engine**
-(one model, in preview).
+RUMIN is an interactive financial intelligence and economic simulation platform: stored
+financial data, a knowledge graph built from it, registered simulation models, the
+Scenario Lab (versioned scenarios, executions and advanced analyses), rule-based
+financial intelligence, and an AI Analyst that answers from RUMIN's records.
+
+### Accounts
+* Every route but `/health`, `/health/ready` and signing in (`/api/v1/auth/login`)
+  needs a session. Accounts are made by an administrator; there is no sign-up.
+* The session travels in an `HttpOnly` cookie. Requests that change data must come from
+  RUMIN's own pages (a cross-site request is refused), and a person with a temporary
+  password must choose their own first (`password_change_required`).
+* Roles: **viewer** (reads the workspace), **analyst** (also creates scenarios, runs and
+  analyses, and changes their own), **administrator** (also changes anyone's work and
+  manages people). AI Analyst conversations are private to the person who started them.
 
 ### Five kinds of knowledge
 RUMIN never blurs these categories; responses label them with `epistemic_category`.

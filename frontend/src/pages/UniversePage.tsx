@@ -11,6 +11,7 @@ import { NetworkLegend } from "@/features/network/NetworkLegend";
 import { NetworkTable } from "@/features/network/NetworkTable";
 import { useNetworkExplorer } from "@/features/network/useNetworkExplorer";
 import { type NetworkGraph, useNetworkGraph } from "@/features/network/useNetworkGraph";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import styles from "./UniversePage.module.css";
 
@@ -125,6 +126,7 @@ function Explorer({ graph, initialFocus }: { graph: NetworkGraph; initialFocus: 
 }
 
 export function UniversePage() {
+  useDocumentTitle("Financial Universe");
   const network = useNetworkGraph();
   const [searchParams] = useSearchParams();
   const dataset = network.graph?.model.dataset;
