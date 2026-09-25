@@ -63,6 +63,14 @@ check "source maps are not served" "[ \"\$(code '${ORIGIN}${ASSET}.map')\" = 404
 for path in /metrics /docs /redoc /openapi.json; do
   check "${path} is not served" "[ \"\$(code '${ORIGIN}${path}')\" = 404 ]"
 done
+check "an invented HTTP method is refused by the web server" \
+  "[ \"\$(code -X INVENTED '${ORIGIN}/health')\" = 405 ]"
+HOSTPORT="${ORIGIN#https://}"
+[[ "${HOSTPORT}" == *:* ]] || HOSTPORT="${HOSTPORT}:443"
+check "TLS 1.2 without forward secrecy is refused" \
+  "! openssl s_client -connect '${HOSTPORT}' -servername '${HOST}' -tls1_2 -cipher AES128-GCM-SHA256 < /dev/null 2> /dev/null | grep -q 'Cipher is AES128-GCM-SHA256'"
+check "TLS 1.2 with forward secrecy is accepted" \
+  "openssl s_client -connect '${HOSTPORT}' -servername '${HOST}' -tls1_2 < /dev/null 2> /dev/null | grep -Eq 'Cipher is ECDHE-'"
 
 # --- The API through the web server ---------------------------------------------------------
 check "liveness answers" "\"\${CURL[@]}\" '${ORIGIN}/health' | grep -q '\"status\":\"ok\"'"
@@ -72,7 +80,8 @@ H="$("${CURL[@]}" -D - -o /dev/null "${ORIGIN}/api/v1/network")"
 check "API answers carry HSTS and the web server's request ID" \
   "echo \"\$H\" | grep -qi 'strict-transport-security' && echo \"\$H\" | grep -Eqi '^x-request-id: [0-9a-f]{32}'"
 BODY="$(python3 -c 'import json,sys; print(json.dumps({"email": sys.argv[1], "password": open(sys.argv[2]).read().strip()}))' "${EMAIL}" "${PASSWORD_FILE}")"
-H="$("${CURL[@]}" -D - -o /dev/null -H "Origin: ${ORIGIN}" -H 'Content-Type: application/json' -d "${BODY}" "${ORIGIN}/api/v1/auth/login")"
+# The password goes to curl on its standard input, never as an argument (visible to `ps`).
+H="$(printf '%s' "${BODY}" | "${CURL[@]}" -D - -o /dev/null -H "Origin: ${ORIGIN}" -H 'Content-Type: application/json' --data-binary @- "${ORIGIN}/api/v1/auth/login")"
 COOKIE="$(echo "$H" | grep -i '^set-cookie:' | sed -E 's/^[Ss]et-[Cc]ookie: ([^;]*).*/\1/' | tr -d '\r')"
 SETCOOKIE="$(echo "$H" | grep -i '^set-cookie:')"
 check "signing in sets a __Host- cookie: Secure, HttpOnly, SameSite=Lax, Path=/" \
@@ -109,6 +118,8 @@ check "the web server runs as an unprivileged user" "[ \"\$(\"\${COMPOSE[@]}\" e
 check "the API's file system is read-only" "! \"\${COMPOSE[@]}\" exec -T api touch /app/written 2>/dev/null"
 check "the web server's file system is read-only" \
   "! \"\${COMPOSE[@]}\" exec -T web touch /usr/share/nginx/html/written 2>/dev/null"
+check "the API's database role is not a superuser" \
+  "[ \"\$(\"\${COMPOSE[@]}\" exec -T db psql -U postgres -tAc \"SELECT rolsuper OR rolcreaterole OR rolcreatedb FROM pg_roles WHERE rolname = 'rumin'\")\" = f ]"
 check "the database publishes no port" \
   "[ \"\$(docker inspect \"\$(container db)\" --format '{{json .HostConfig.PortBindings}}')\" = '{}' ]"
 

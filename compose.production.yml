@@ -18,13 +18,17 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: rumin
-      POSTGRES_DB: rumin
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in the env file}
+      # The superuser (`postgres`), for administration inside this container only.
+      POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD:?set POSTGRES_ADMIN_PASSWORD in the env file}
+      # The API's role, `rumin`: owns its database, is not a superuser. Created on first start
+      # by deploy/postgres/init/10-rumin-role.sh.
+      RUMIN_DB_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in the env file}
     volumes:
       - rumin-db:/var/lib/postgresql/data
+      - ./deploy/postgres/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U rumin -d rumin"]
+      # Over TCP: the server that runs the first-start scripts listens on the socket only.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U rumin -d rumin"]
       interval: 5s
       timeout: 3s
       retries: 20

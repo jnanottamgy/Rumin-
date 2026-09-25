@@ -39,12 +39,21 @@ echo "==> Stopping the web server and the API"
 "${COMPOSE[@]}" stop web api
 
 echo "==> Replacing the database"
-"${COMPOSE[@]}" exec -T db dropdb -U rumin --maintenance-db=postgres --if-exists --force rumin
-"${COMPOSE[@]}" exec -T db createdb -U rumin --maintenance-db=postgres --owner=rumin rumin
+# Dropped and created by the superuser; restored by `rumin`, so it owns what it restores.
+"${COMPOSE[@]}" exec -T db dropdb -U postgres --if-exists --force rumin
+"${COMPOSE[@]}" exec -T db createdb -U postgres --owner=rumin rumin
+"${COMPOSE[@]}" exec -T db psql -U postgres -d postgres -v ON_ERROR_STOP=1 -q \
+  -c "REVOKE ALL ON DATABASE rumin FROM PUBLIC" -c "GRANT CONNECT, TEMPORARY ON DATABASE rumin TO rumin"
 "${COMPOSE[@]}" exec -T db pg_restore -U rumin -d rumin --no-owner --exit-on-error \
   < "${BACKUP}"
+
+echo "==> Ending every session"
+# Sessions that had been ended after the backup was taken would otherwise come back.
+"${COMPOSE[@]}" exec -T db psql -U rumin -d rumin -v ON_ERROR_STOP=1 -q \
+  -c "UPDATE user_sessions SET revoked_at = now() WHERE revoked_at IS NULL"
 
 echo "==> Starting the API and the web server"
 "${COMPOSE[@]}" up -d api web
 ORIGIN="$(grep -E '^RUMIN_PUBLIC_ORIGIN=' "${ENV_FILE}" | cut -d= -f2- || true)"
-echo "Restored ${BACKUP}. Check readiness: curl -fsS ${ORIGIN:-https://<host>}/health/ready"
+echo "Restored ${BACKUP}. Everyone must sign in again; passwords changed since the backup are"
+echo "back to their earlier values. Check readiness: curl -fsS ${ORIGIN:-https://<host>}/health/ready"

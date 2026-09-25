@@ -45,6 +45,9 @@ server {
     ssl_certificate /etc/nginx/tls/fullchain.pem;
     ssl_certificate_key /etc/nginx/tls/privkey.pem;
     ssl_protocols TLSv1.2 TLSv1.3;
+    # TLS 1.2 only with forward-secret AEAD suites (Mozilla's "intermediate" list without the
+    # DHE suites, which would need DH parameters); TLS 1.3 keeps OpenSSL's defaults.
+    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305;
     ssl_prefer_server_ciphers off;
     ssl_session_cache shared:rumin_tls:10m;
     ssl_session_timeout 1d;
@@ -53,6 +56,11 @@ server {
     root /usr/share/nginx/html;
     client_max_body_size 128k;
     limit_conn rumin_conn 64;
+
+    # Only the methods RUMIN answers: an invented one never reaches the API.
+    if ($request_method !~ ^(GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS)$) {
+        return 405;
+    }
 
     gzip on;
     gzip_comp_level 5;
@@ -71,10 +79,12 @@ server {
     }
 
     location = /health {
+        limit_req zone=rumin_api burst=60 nodelay;
         include /etc/nginx/snippets/api-proxy.conf;
     }
 
     location = /health/ready {
+        limit_req zone=rumin_api burst=60 nodelay;
         include /etc/nginx/snippets/api-proxy.conf;
     }
 

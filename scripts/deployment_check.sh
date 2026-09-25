@@ -38,6 +38,7 @@ chmod 644 "${WORK}/tls/privkey.pem" "${WORK}/tls/fullchain.pem" # the throwaway 
 cat > "${WORK}/check.env" <<ENV
 RUMIN_VERSION=check
 POSTGRES_PASSWORD=$(openssl rand -hex 24)
+POSTGRES_ADMIN_PASSWORD=$(openssl rand -hex 24)
 RUMIN_SERVER_NAME=localhost
 RUMIN_PUBLIC_ORIGIN=${ORIGIN}
 RUMIN_HTTP_PORT=${HTTP_PORT}
@@ -74,8 +75,9 @@ sign_in() {
   body="$(python3 -c 'import json,sys; print(json.dumps({"email": "admin@rumin.test", "password": open(sys.argv[1]).read().strip()}))' "${WORK}/admin.pw")"
   # The verification spent this address's burst of sign-ins: wait for the next slot.
   for _ in $(seq 1 12); do
-    COOKIE="$("${CURL[@]}" -D - -o /dev/null -H "Origin: ${ORIGIN}" -H 'Content-Type: application/json' \
-      -d "${body}" "${ORIGIN}/api/v1/auth/login" | grep -i '^set-cookie:' |
+    COOKIE="$(printf '%s' "${body}" | "${CURL[@]}" -D - -o /dev/null -H "Origin: ${ORIGIN}" \
+      -H 'Content-Type: application/json' --data-binary @- "${ORIGIN}/api/v1/auth/login" |
+      grep -i '^set-cookie:' |
       sed -E 's/^[Ss]et-[Cc]ookie: ([^;]*).*/\1/' | tr -d '\r' || true)"
     [[ -n "${COOKIE}" ]] && return 0
     sleep 7
