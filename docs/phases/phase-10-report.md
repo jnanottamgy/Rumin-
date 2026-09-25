@@ -325,7 +325,7 @@ Every suite was run on the final code; nothing failing was left or hidden.
 |---|---|---|---|---|---|
 | Backend (pytest) | SQLite, locally and CI | 1,183 | 0 | 1 | The skip needs a model key ([testing](../testing.md)) |
 | Backend (pytest) | PostgreSQL 16, locally and CI | 1,183 | 0 | 1 | Same |
-| Frontend unit and pages (Vitest) | locally and CI | 444 | 0 | 0 | CI run 40 failed once on a test that read the tab title too early — fixed in the test (`67ff72c`), then 8 runs in a row with every CPU busy |
+| Frontend unit and pages (Vitest) | locally and CI | 444 | 0 | 0 | CI run 40 failed once on a test that read the tab title too early — fixed in the test (`67ff72c`), then 8 runs in a row with every CPU busy. CI run 44 failed once on the Analyst's hand-over to the Scenario Lab: the 3 s wait for the Lab also covered its first import (2.6–3.2 s with every CPU busy); the test now loads the Lab first (`c8437ec`), then 3 full runs with every CPU busy |
 | Integration (live API, signed in) | `make smoke`, locally and CI | 76 | 0 | 0 | 2 runs in 8 failed one test after the review fixes: a stored intelligence analysis read back *stale* — correctly, as another test file had just executed a scenario for the same company. The files now run one at a time; 8 runs in a row passed |
 | Launch suite (preview server) | `make e2e`, locally and CI | 68 | 0 | 2 | Skips by design: two stored-once workflows run on the desktop only |
 | Launch suite (production stack) | locally, `RUMIN_E2E_URL` | 68 | 0 | 2 | After the font fix, and again on images rebuilt after the review fixes; the first run there failed 59 tests on that one defect |
@@ -333,6 +333,13 @@ Every suite was run on the final code; nothing failing was left or hidden.
 | Dependency audit and secret scan | `make audit`, CI | clean | — | — | pip-audit, npm audit (high/critical), gitleaks |
 | Lint, format, types | backend and frontend, CI | clean | — | — | ruff, mypy, Biome, tsc |
 | Analyst evaluation | inside the backend suite | 33 cases | 0 | — | Grounded composer and scripted models; no live model |
+
+**CI**: run #45 on `c8437ec`, the phase's last code change: all six jobs green — backend
+(lint, format, types, the sample dataset, the OpenAPI snapshot, tests on SQLite and on
+PostgreSQL 16), frontend (lint, types, tests, build, API types), security (pip-audit, npm
+audit, gitleaks), the smoke test, the launch suite and the deployment check. Runs #40 and #44
+each failed once on a frontend test's timing (fixed as above); #42 was superseded by a newer
+push before it finished.
 
 **Not performed**: a load or concurrency test; a penetration test; a run on a production host
 or public network; Firefox or Safari; a session with assistive-technology users; a live
