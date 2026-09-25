@@ -118,8 +118,10 @@ All commands run from the repository root at the release you deploy.
    `__Host-` cookie's flags, the cross-site refusal, the body limit, the client address the
    API records, JSON logs, the containers' users, read-only file systems, the database role
    and the database's unpublished port) and exits 1 if any failed. It signs in with the
-   password file you give it (the password reaches `curl` on its standard input) and spends
-   the sign-in rate limit of the address it runs from for a minute.
+   password file you give it: the password reaches `curl` on its standard input and the
+   session cookie stays in a file only you can read, so neither appears on a command line,
+   and the session is signed out when the script ends. It spends the sign-in rate limit of
+   the address it runs from for a minute.
 
 7. **People.** Sign in, open **People**, and create each account with a role and a temporary
    password; each person chooses their own at first sign-in. Pass temporary passwords by a

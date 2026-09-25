@@ -450,15 +450,16 @@ another person; tokens, cookies, expiry and revocation; the cross-site checks, i
 
 ### Secrets and supply chain
 
-- **Secrets**: in production, `POSTGRES_PASSWORD` in `.env.production` (git-ignored, kept
-  owner-only), the TLS private key, and optionally `RUMIN_ANTHROPIC_API_KEY` for the
-  Analyst's language model (above). Sessions need no signing secret: tokens are random and
-  stored hashed. None is in the repository: `.env` files are git-ignored, `.env.example` and
-  `deploy/production.env.example` hold placeholders only, no model identifier or key appears
-  in code, fixtures or docs, and the World Bank needs no key. The local PostgreSQL password
-  (`change-me-local-only`), the CI database password and the passwords the test suites
-  generate are for disposable databases. Future provider keys belong in the backend
-  environment or a secret store (see [environment](environment.md#secrets)).
+- **Secrets**: in production, `POSTGRES_PASSWORD` and `POSTGRES_ADMIN_PASSWORD` in
+  `.env.production` (git-ignored, kept owner-only), the TLS private key, and optionally
+  `RUMIN_ANTHROPIC_API_KEY` for the Analyst's language model (above). Sessions need no
+  signing secret: tokens are random and stored hashed. None is in the repository: `.env`
+  files are git-ignored, `.env.example` and `deploy/production.env.example` hold placeholders
+  only, no model identifier or key appears in code, fixtures or docs, and the World Bank
+  needs no key. The local PostgreSQL password (`change-me-local-only`), the CI database
+  password and the passwords the test suites generate are for disposable databases. Future
+  provider keys belong in the backend environment or a secret store (see
+  [environment](environment.md#secrets)).
 - Dependencies are pinned by lock files (`backend/uv.lock`, `frontend/package-lock.json`)
   and installed with `--frozen` / `npm ci`. Phases 2 to 6 added no dependencies (HTTP, CSV,
   gzip, hashing, threads and exact decimals come from the Python standard library, response
