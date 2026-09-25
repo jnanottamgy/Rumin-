@@ -245,4 +245,4 @@ relationship must keep carrying a graph edge key so the universe can show where 
 | `make smoke` (fresh database, live API, integration suite) | Passed: 60 tests |
 | `npm audit` | No vulnerability |
 | Chromium review, keyboard pass, `axe-core` | 14 captures without a console error or warning; focus kept; no violations in seven views |
-| CI | Recorded after the push |
+| CI | Run #27 on `ac25c0d`: green — backend (lint, format, types, sample dataset, OpenAPI snapshot, tests on SQLite and on PostgreSQL 16), frontend (lint, types, tests, build, API types) and the end-to-end smoke test |
