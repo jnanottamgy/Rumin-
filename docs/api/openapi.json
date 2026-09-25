@@ -2240,6 +2240,418 @@
         }
       }
     },
+    "/api/v1/scenario-executions/{execution_id}/analysis-targets": {
+      "get": {
+        "tags": [
+          "scenario lab"
+        ],
+        "summary": "What an analysis of this execution can vary",
+        "description": "Every quantity an analysis can vary — the changes, the shared figures, each model's company, market and assumption inputs — with its unit, range, decimals, the execution's value and the model's default variation; the lines and metrics with the execution's values; the analyses' limits.",
+        "operationId": "get_execution_analysis_targets",
+        "parameters": [
+          {
+            "name": "execution_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Execution Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisTargetsRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The execution has not completed, or a model version it used is no longer registered with the same definition.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenario-executions/{execution_id}/analyses": {
+      "post": {
+        "tags": [
+          "scenario lab"
+        ],
+        "summary": "Run a Monte Carlo or joint sensitivity analysis",
+        "description": "`monte_carlo`: 100–2,000 draws from the uniform, triangular or discrete distributions you state for up to 8 quantities (independently, with a recorded seed); each draw re-evaluates the execution's stored runs. Draws that break a model's rule are rejected and counted, never clipped. `joint_sensitivity`: a grid over two quantities with the interaction of each cell. Stored append-only with the configuration it ran with; the results are conditional on the stated assumptions — not forecasts.",
+        "operationId": "create_execution_analysis",
+        "parameters": [
+          {
+            "name": "execution_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Execution Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/MonteCarloRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/JointSensitivityRequest"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "kind",
+                  "mapping": {
+                    "monte_carlo": "#/components/schemas/MonteCarloRequest",
+                    "joint_sensitivity": "#/components/schemas/JointSensitivityRequest"
+                  }
+                },
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioAnalysisRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The execution has not completed, or a model version it used is no longer registered with the same definition.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Other analyses are computing; nothing was stored. Try again shortly.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "scenario lab"
+        ],
+        "summary": "List an execution's analyses",
+        "description": "Newest first, with the settings that distinguish them (quantities, draws, seed) and a headline figure; read one for its results and configuration.",
+        "operationId": "list_execution_analyses",
+        "parameters": [
+          {
+            "name": "execution_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Execution Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioAnalysisList"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenario-executions/{execution_id}/analyses/{analysis_id}": {
+      "get": {
+        "tags": [
+          "scenario lab"
+        ],
+        "summary": "Get an analysis",
+        "operationId": "get_execution_analysis",
+        "parameters": [
+          {
+            "name": "execution_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Execution Id"
+            }
+          },
+          {
+            "name": "analysis_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Analysis Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioAnalysisRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenario-executions/{execution_id}/analyses/{analysis_id}/verify": {
+      "post": {
+        "tags": [
+          "scenario lab"
+        ],
+        "summary": "Run an analysis again and compare",
+        "description": "Runs the stored request again — with its seed — on the execution's stored runs and compares the hashes. Stores nothing.",
+        "operationId": "verify_execution_analysis",
+        "parameters": [
+          {
+            "name": "execution_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Execution Id"
+            }
+          },
+          {
+            "name": "analysis_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Analysis Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisVerificationRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request contains invalid values.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (details are logged).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The execution has not completed, or a model version it used is no longer registered with the same definition.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Other analyses are computing; nothing was stored. Try again shortly.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/scenario-comparisons": {
       "get": {
         "tags": [
@@ -9202,6 +9614,97 @@
         ],
         "title": "AffectedNodeRead"
       },
+      "AnalysisConfigRead": {
+        "properties": {
+          "analysis_version": {
+            "type": "string",
+            "title": "Analysis Version"
+          },
+          "lab_version": {
+            "type": "string",
+            "title": "Lab Version"
+          },
+          "engine_version": {
+            "type": "string",
+            "title": "Engine Version"
+          },
+          "execution_result_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Execution Result Hash"
+          },
+          "runs": {
+            "items": {
+              "$ref": "#/components/schemas/AnalysisRunRead"
+            },
+            "type": "array",
+            "title": "Runs"
+          },
+          "seed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seed"
+          },
+          "generator": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Generator"
+          },
+          "sampler_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sampler Version"
+          },
+          "draws": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Draws"
+          }
+        },
+        "type": "object",
+        "required": [
+          "analysis_version",
+          "lab_version",
+          "engine_version",
+          "execution_result_hash",
+          "runs",
+          "seed",
+          "generator",
+          "sampler_version",
+          "draws"
+        ],
+        "title": "AnalysisConfigRead"
+      },
       "AnalysisFreshnessRead": {
         "properties": {
           "status": {
@@ -9238,6 +9741,63 @@
           "message"
         ],
         "title": "AnalysisFreshnessRead"
+      },
+      "AnalysisLimitsRead": {
+        "properties": {
+          "monte_carlo": {
+            "$ref": "#/components/schemas/MonteCarloLimitsRead"
+          },
+          "joint": {
+            "$ref": "#/components/schemas/JointLimitsRead"
+          },
+          "sensitivity": {
+            "$ref": "#/components/schemas/SensitivityLimitsRead"
+          }
+        },
+        "type": "object",
+        "required": [
+          "monte_carlo",
+          "joint",
+          "sensitivity"
+        ],
+        "title": "AnalysisLimitsRead"
+      },
+      "AnalysisMetricRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "line_change",
+              "metric_value"
+            ],
+            "title": "Kind"
+          },
+          "base": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Base",
+            "description": "The execution's value: a line's change or a metric.",
+            "examples": [
+              "5.649"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "kind",
+          "base"
+        ],
+        "title": "AnalysisMetricRead"
       },
       "AnalysisRead": {
         "properties": {
@@ -9448,6 +10008,64 @@
         ],
         "title": "AnalysisRequest"
       },
+      "AnalysisRunRead": {
+        "properties": {
+          "model_id": {
+            "type": "string",
+            "title": "Model Id"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "definition_hash": {
+            "type": "string",
+            "title": "Definition Hash"
+          },
+          "run_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Run Id"
+          },
+          "inputs_hash": {
+            "type": "string",
+            "title": "Inputs Hash"
+          },
+          "graph_build_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Graph Build Id"
+          },
+          "graph_fingerprint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Graph Fingerprint"
+          }
+        },
+        "type": "object",
+        "required": [
+          "model_id",
+          "version",
+          "definition_hash",
+          "run_id",
+          "inputs_hash",
+          "graph_build_id",
+          "graph_fingerprint"
+        ],
+        "title": "AnalysisRunRead"
+      },
       "AnalysisSummaryRead": {
         "properties": {
           "id": {
@@ -9542,6 +10160,244 @@
           "created_at"
         ],
         "title": "AnalysisSummaryRead"
+      },
+      "AnalysisTargetRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "examples": [
+              "change:var_brent_crude"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "change",
+              "shared",
+              "company",
+              "market",
+              "assumption"
+            ],
+            "title": "Kind"
+          },
+          "models": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Models",
+            "description": "Every included model that uses the quantity."
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "unit_label": {
+            "type": "string",
+            "title": "Unit Label"
+          },
+          "integer": {
+            "type": "boolean",
+            "title": "Integer",
+            "description": "Whole months: only discrete distributions apply."
+          },
+          "base_value": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Base Value",
+            "description": "The execution's value.",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "minimum": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "description": "An exact decimal in plain notation (never floating point).",
+                "examples": [
+                  "5.649"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Minimum"
+          },
+          "maximum": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "description": "An exact decimal in plain notation (never floating point).",
+                "examples": [
+                  "5.649"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Maximum"
+          },
+          "minimum_exclusive": {
+            "type": "boolean",
+            "title": "Minimum Exclusive"
+          },
+          "maximum_exclusive": {
+            "type": "boolean",
+            "title": "Maximum Exclusive"
+          },
+          "max_decimals": {
+            "type": "integer",
+            "title": "Max Decimals"
+          },
+          "default_variation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DefaultVariationRead"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The model's default low/high variation for sensitivity analysis."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "kind",
+          "models",
+          "unit",
+          "unit_label",
+          "integer",
+          "base_value",
+          "minimum",
+          "maximum",
+          "minimum_exclusive",
+          "maximum_exclusive",
+          "max_decimals",
+          "default_variation"
+        ],
+        "title": "AnalysisTargetRead"
+      },
+      "AnalysisTargetsRead": {
+        "properties": {
+          "execution_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Execution Id"
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "horizon_months": {
+            "type": "integer",
+            "title": "Horizon Months"
+          },
+          "targets": {
+            "items": {
+              "$ref": "#/components/schemas/AnalysisTargetRead"
+            },
+            "type": "array",
+            "title": "Targets"
+          },
+          "metrics": {
+            "items": {
+              "$ref": "#/components/schemas/AnalysisMetricRead"
+            },
+            "type": "array",
+            "title": "Metrics"
+          },
+          "limits": {
+            "$ref": "#/components/schemas/AnalysisLimitsRead"
+          }
+        },
+        "type": "object",
+        "required": [
+          "execution_id",
+          "currency",
+          "horizon_months",
+          "targets",
+          "metrics",
+          "limits"
+        ],
+        "title": "AnalysisTargetsRead"
+      },
+      "AnalysisVerificationRead": {
+        "properties": {
+          "analysis_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Analysis Id"
+          },
+          "reproduced": {
+            "type": "boolean",
+            "title": "Reproduced"
+          },
+          "inputs_hash_matches": {
+            "type": "boolean",
+            "title": "Inputs Hash Matches"
+          },
+          "result_hash_matches": {
+            "type": "boolean",
+            "title": "Result Hash Matches"
+          },
+          "stored_result_hash": {
+            "type": "string",
+            "title": "Stored Result Hash"
+          },
+          "recomputed_result_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recomputed Result Hash"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "analysis_id",
+          "reproduced",
+          "inputs_hash_matches",
+          "result_hash_matches",
+          "stored_result_hash",
+          "recomputed_result_hash",
+          "message"
+        ],
+        "title": "AnalysisVerificationRead"
       },
       "AnalystProviderRead": {
         "properties": {
@@ -11129,6 +11985,46 @@
         ],
         "title": "ChangesRead"
       },
+      "CheckpointRead": {
+        "properties": {
+          "draws": {
+            "type": "integer",
+            "title": "Draws"
+          },
+          "mean": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Mean",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "standard_error": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "description": "An exact decimal in plain notation (never floating point).",
+                "examples": [
+                  "5.649"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Standard Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "draws",
+          "mean",
+          "standard_error"
+        ],
+        "title": "CheckpointRead"
+      },
       "ClarificationBlock": {
         "properties": {
           "type": {
@@ -12059,6 +12955,64 @@
         ],
         "title": "ContributionRead"
       },
+      "ConvergenceRead": {
+        "properties": {
+          "checkpoints": {
+            "items": {
+              "$ref": "#/components/schemas/CheckpointRead"
+            },
+            "type": "array",
+            "title": "Checkpoints"
+          },
+          "first_half_mean": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "First Half Mean",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "second_half_mean": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Second Half Mean",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "halves_z": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "description": "An exact decimal in plain notation (never floating point).",
+                "examples": [
+                  "5.649"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Halves Z"
+          },
+          "halves_flagged": {
+            "type": "boolean",
+            "title": "Halves Flagged"
+          }
+        },
+        "type": "object",
+        "required": [
+          "checkpoints",
+          "first_half_mean",
+          "second_half_mean",
+          "halves_z",
+          "halves_flagged"
+        ],
+        "title": "ConvergenceRead"
+      },
       "CounterpartyRead": {
         "properties": {
           "relationship": {
@@ -12869,6 +13823,33 @@
         ],
         "title": "DecisionCount"
       },
+      "DefaultVariationRead": {
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "absolute",
+              "relative"
+            ],
+            "title": "Mode"
+          },
+          "step": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Step",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "mode",
+          "step"
+        ],
+        "title": "DefaultVariationRead"
+      },
       "Derivation": {
         "type": "string",
         "enum": [
@@ -12950,6 +13931,174 @@
         ],
         "title": "Direction",
         "description": "Which way edges may be followed.\n\n* ``any`` — ignore direction (the graph as undirected).\n* ``out`` — from source to target only (undirected edges both ways).\n* ``in`` — from target to source only (undirected edges both ways)."
+      },
+      "DiscreteInput": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "discrete",
+            "title": "Kind"
+          },
+          "values": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            },
+            "type": "array",
+            "maxItems": 12,
+            "minItems": 2,
+            "title": "Values"
+          },
+          "weights": {
+            "anyOf": [
+              {
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "maxLength": 128
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                },
+                "type": "array",
+                "maxItems": 12,
+                "minItems": 2
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weights",
+            "description": "Positive, one per value. Default: equal weights."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "values"
+        ],
+        "title": "DiscreteInput"
+      },
+      "DistributionRead": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "uniform",
+              "triangular",
+              "discrete"
+            ],
+            "title": "Kind"
+          },
+          "low": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "description": "An exact decimal in plain notation (never floating point).",
+                "examples": [
+                  "5.649"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Low"
+          },
+          "mode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "description": "An exact decimal in plain notation (never floating point).",
+                "examples": [
+                  "5.649"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mode"
+          },
+          "high": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "description": "An exact decimal in plain notation (never floating point).",
+                "examples": [
+                  "5.649"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "High"
+          },
+          "values": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "pattern": "^-?\\d+(\\.\\d+)?$",
+                  "description": "An exact decimal in plain notation (never floating point).",
+                  "examples": [
+                    "5.649"
+                  ]
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Values"
+          },
+          "weights": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "pattern": "^-?\\d+(\\.\\d+)?$",
+                  "description": "An exact decimal in plain notation (never floating point).",
+                  "examples": [
+                    "5.649"
+                  ]
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weights"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind"
+        ],
+        "title": "DistributionRead"
       },
       "DriverAnalysisRead": {
         "properties": {
@@ -17794,6 +18943,39 @@
         ],
         "title": "HealthResponse"
       },
+      "HistogramBinRead": {
+        "properties": {
+          "low": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Low",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "high": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "High",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "low",
+          "high",
+          "count"
+        ],
+        "title": "HistogramBinRead"
+      },
       "IdentifierRead": {
         "properties": {
           "scheme": {
@@ -19876,6 +21058,346 @@
         "title": "JobTrigger",
         "description": "Who started a job. Phase 2 starts jobs from the command line only."
       },
+      "JointAxisRead": {
+        "properties": {
+          "target": {
+            "type": "string",
+            "title": "Target"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "change",
+              "shared",
+              "company",
+              "market",
+              "assumption"
+            ],
+            "title": "Kind"
+          },
+          "models": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Models"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "base_value": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Base Value",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "values": {
+            "items": {
+              "type": "string",
+              "pattern": "^-?\\d+(\\.\\d+)?$",
+              "description": "An exact decimal in plain notation (never floating point).",
+              "examples": [
+                "5.649"
+              ]
+            },
+            "type": "array",
+            "title": "Values"
+          }
+        },
+        "type": "object",
+        "required": [
+          "target",
+          "label",
+          "kind",
+          "models",
+          "unit",
+          "base_value",
+          "values"
+        ],
+        "title": "JointAxisRead"
+      },
+      "JointCellRead": {
+        "properties": {
+          "metric": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "description": "An exact decimal in plain notation (never floating point).",
+                "examples": [
+                  "5.649"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metric"
+          },
+          "delta": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "description": "An exact decimal in plain notation (never floating point).",
+                "examples": [
+                  "5.649"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delta"
+          },
+          "interaction": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "description": "An exact decimal in plain notation (never floating point).",
+                "examples": [
+                  "5.649"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interaction"
+          },
+          "skipped": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Skipped"
+          }
+        },
+        "type": "object",
+        "required": [
+          "metric",
+          "delta",
+          "interaction",
+          "skipped"
+        ],
+        "title": "JointCellRead"
+      },
+      "JointCellRefRead": {
+        "properties": {
+          "row": {
+            "type": "integer",
+            "title": "Row"
+          },
+          "column": {
+            "type": "integer",
+            "title": "Column"
+          },
+          "value": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Value",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "row",
+          "column",
+          "value"
+        ],
+        "title": "JointCellRefRead"
+      },
+      "JointLimitsRead": {
+        "properties": {
+          "max_axis_points": {
+            "type": "integer",
+            "title": "Max Axis Points"
+          },
+          "deadline_seconds": {
+            "type": "number",
+            "title": "Deadline Seconds"
+          }
+        },
+        "type": "object",
+        "required": [
+          "max_axis_points",
+          "deadline_seconds"
+        ],
+        "title": "JointLimitsRead"
+      },
+      "JointResultsRead": {
+        "properties": {
+          "metric": {
+            "type": "string",
+            "title": "Metric"
+          },
+          "metric_label": {
+            "type": "string",
+            "title": "Metric Label"
+          },
+          "metric_kind": {
+            "type": "string",
+            "enum": [
+              "line_change",
+              "metric_value"
+            ],
+            "title": "Metric Kind"
+          },
+          "base": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Base",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "rows": {
+            "$ref": "#/components/schemas/JointAxisRead"
+          },
+          "columns": {
+            "$ref": "#/components/schemas/JointAxisRead"
+          },
+          "cells": {
+            "items": {
+              "items": {
+                "$ref": "#/components/schemas/JointCellRead"
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Cells"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/JointSummaryRead"
+          }
+        },
+        "type": "object",
+        "required": [
+          "metric",
+          "metric_label",
+          "metric_kind",
+          "base",
+          "rows",
+          "columns",
+          "cells",
+          "summary"
+        ],
+        "title": "JointResultsRead"
+      },
+      "JointSensitivityRequest": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "joint_sensitivity",
+            "title": "Kind"
+          },
+          "metric": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-z_]{2,40}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metric"
+          },
+          "rows": {
+            "$ref": "#/components/schemas/LabSensitivityItemInput"
+          },
+          "columns": {
+            "$ref": "#/components/schemas/LabSensitivityItemInput"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "rows",
+          "columns"
+        ],
+        "title": "JointSensitivityRequest"
+      },
+      "JointSummaryRead": {
+        "properties": {
+          "largest_interaction": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JointCellRefRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "largest_change": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JointCellRefRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "interactions_computed": {
+            "type": "integer",
+            "title": "Interactions Computed"
+          },
+          "additive": {
+            "type": "boolean",
+            "title": "Additive"
+          },
+          "tolerance": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Tolerance",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "skipped": {
+            "type": "integer",
+            "title": "Skipped"
+          }
+        },
+        "type": "object",
+        "required": [
+          "largest_interaction",
+          "largest_change",
+          "interactions_computed",
+          "additive",
+          "tolerance",
+          "skipped"
+        ],
+        "title": "JointSummaryRead"
+      },
       "KeyOutputRead": {
         "properties": {
           "id": {
@@ -20797,6 +22319,19 @@
             "title": "Method",
             "default": "one_at_a_time"
           },
+          "method_version": {
+            "type": "string",
+            "title": "Method Version",
+            "description": "1.0.0 before Phase 9; 1.1.0 once varied revenue, operating costs and interest expense also reach the margins and interest coverage."
+          },
+          "caveats": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Caveats",
+            "description": "Anything the method that computed this stored analysis got wrong for it."
+          },
           "note": {
             "type": "string",
             "title": "Note"
@@ -20816,6 +22351,8 @@
           "duration_ms",
           "result_hash",
           "created_at",
+          "method_version",
+          "caveats",
           "note"
         ],
         "title": "LabSensitivityRead"
@@ -22241,6 +23778,474 @@
         ],
         "title": "ModuleRead"
       },
+      "MonteCarloLimitsRead": {
+        "properties": {
+          "min_draws": {
+            "type": "integer",
+            "title": "Min Draws"
+          },
+          "max_draws": {
+            "type": "integer",
+            "title": "Max Draws"
+          },
+          "default_draws": {
+            "type": "integer",
+            "title": "Default Draws"
+          },
+          "max_quantities": {
+            "type": "integer",
+            "title": "Max Quantities"
+          },
+          "max_discrete_values": {
+            "type": "integer",
+            "title": "Max Discrete Values"
+          },
+          "min_accepted": {
+            "type": "integer",
+            "title": "Min Accepted"
+          },
+          "deadline_seconds": {
+            "type": "number",
+            "title": "Deadline Seconds"
+          }
+        },
+        "type": "object",
+        "required": [
+          "min_draws",
+          "max_draws",
+          "default_draws",
+          "max_quantities",
+          "max_discrete_values",
+          "min_accepted",
+          "deadline_seconds"
+        ],
+        "title": "MonteCarloLimitsRead"
+      },
+      "MonteCarloQuantityRead": {
+        "properties": {
+          "target": {
+            "type": "string",
+            "title": "Target"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "change",
+              "shared",
+              "company",
+              "market",
+              "assumption"
+            ],
+            "title": "Kind"
+          },
+          "models": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Models"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "base_value": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Base Value",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "distribution": {
+            "$ref": "#/components/schemas/DistributionRead"
+          },
+          "distribution_mean": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Distribution Mean",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "distribution_sd": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Distribution Sd",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "accepted_mean": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Accepted Mean",
+            "description": "The mean of the accepted draws' values.",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "rank_correlation": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "description": "An exact decimal in plain notation (never floating point).",
+                "examples": [
+                  "5.649"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rank Correlation",
+            "description": "Spearman's rank correlation with the line or metric; null when either does not vary. Monotonic association in the sample, not causation."
+          }
+        },
+        "type": "object",
+        "required": [
+          "target",
+          "label",
+          "kind",
+          "models",
+          "unit",
+          "base_value",
+          "distribution",
+          "distribution_mean",
+          "distribution_sd",
+          "accepted_mean",
+          "rank_correlation"
+        ],
+        "title": "MonteCarloQuantityRead"
+      },
+      "MonteCarloRequest": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "monte_carlo",
+            "title": "Kind"
+          },
+          "metric": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-z_]{2,40}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metric",
+            "description": "A line (its change) or a metric. Default: profit before tax when interest is modelled, otherwise operating profit."
+          },
+          "quantities": {
+            "items": {
+              "$ref": "#/components/schemas/QuantityInput"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "minItems": 1,
+            "title": "Quantities"
+          },
+          "draws": {
+            "type": "integer",
+            "maximum": 2000.0,
+            "minimum": 100.0,
+            "title": "Draws",
+            "default": 500
+          },
+          "seed": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 9.223372036854776e+18,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seed",
+            "description": "Reproduces the draws exactly. Chosen by the server (and recorded) when not given."
+          },
+          "threshold": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Threshold",
+            "description": "Also report the share of draws at or below this value (a covenant level, say)."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "quantities"
+        ],
+        "title": "MonteCarloRequest"
+      },
+      "MonteCarloResultsRead": {
+        "properties": {
+          "metric": {
+            "type": "string",
+            "title": "Metric"
+          },
+          "metric_label": {
+            "type": "string",
+            "title": "Metric Label"
+          },
+          "metric_kind": {
+            "type": "string",
+            "enum": [
+              "line_change",
+              "metric_value"
+            ],
+            "title": "Metric Kind"
+          },
+          "base": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Base",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "draws": {
+            "type": "integer",
+            "title": "Draws"
+          },
+          "accepted": {
+            "type": "integer",
+            "title": "Accepted"
+          },
+          "rejected": {
+            "type": "integer",
+            "title": "Rejected"
+          },
+          "rejections": {
+            "items": {
+              "$ref": "#/components/schemas/RejectionRead"
+            },
+            "type": "array",
+            "title": "Rejections"
+          },
+          "quantities": {
+            "items": {
+              "$ref": "#/components/schemas/MonteCarloQuantityRead"
+            },
+            "type": "array",
+            "title": "Quantities"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/MonteCarloSummaryRead"
+          },
+          "histogram": {
+            "items": {
+              "$ref": "#/components/schemas/HistogramBinRead"
+            },
+            "type": "array",
+            "title": "Histogram"
+          },
+          "convergence": {
+            "$ref": "#/components/schemas/ConvergenceRead"
+          },
+          "outputs": {
+            "items": {
+              "$ref": "#/components/schemas/OutputSummaryRead"
+            },
+            "type": "array",
+            "title": "Outputs"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "metric",
+          "metric_label",
+          "metric_kind",
+          "base",
+          "draws",
+          "accepted",
+          "rejected",
+          "rejections",
+          "quantities",
+          "summary",
+          "histogram",
+          "convergence",
+          "outputs",
+          "notes"
+        ],
+        "title": "MonteCarloResultsRead"
+      },
+      "MonteCarloSummaryRead": {
+        "properties": {
+          "mean": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Mean",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "standard_deviation": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Standard Deviation",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "standard_error": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Standard Error",
+            "description": "Of the mean: s/√n.",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "relative_standard_error": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "description": "An exact decimal in plain notation (never floating point).",
+                "examples": [
+                  "5.649"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Relative Standard Error"
+          },
+          "minimum": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Minimum",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "maximum": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Maximum",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "percentiles": {
+            "items": {
+              "$ref": "#/components/schemas/PercentileRead"
+            },
+            "type": "array",
+            "title": "Percentiles"
+          },
+          "share_below_zero": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "description": "An exact decimal in plain notation (never floating point).",
+                "examples": [
+                  "5.649"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Share Below Zero",
+            "description": "For a line's change: the share of accepted draws below zero."
+          },
+          "threshold": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "description": "An exact decimal in plain notation (never floating point).",
+                "examples": [
+                  "5.649"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Threshold"
+          },
+          "share_at_or_below_threshold": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "description": "An exact decimal in plain notation (never floating point).",
+                "examples": [
+                  "5.649"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Share At Or Below Threshold"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mean",
+          "standard_deviation",
+          "standard_error",
+          "relative_standard_error",
+          "minimum",
+          "maximum",
+          "percentiles",
+          "share_below_zero",
+          "threshold",
+          "share_at_or_below_threshold"
+        ],
+        "title": "MonteCarloSummaryRead"
+      },
       "MonthlySeriesRead": {
         "properties": {
           "id": {
@@ -23327,6 +25332,83 @@
         ],
         "title": "OutputRead"
       },
+      "OutputSummaryRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "line_change",
+              "metric_value"
+            ],
+            "title": "Kind"
+          },
+          "base": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Base",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "mean": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Mean",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "p5": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "P5",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "p50": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "P50",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "p95": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "P95",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "kind",
+          "base",
+          "mean",
+          "p5",
+          "p50",
+          "p95"
+        ],
+        "title": "OutputSummaryRead"
+      },
       "OverviewRead": {
         "properties": {
           "engine_version": {
@@ -24264,6 +26346,88 @@
         ],
         "title": "PathwayRead"
       },
+      "PercentileIntervalRead": {
+        "properties": {
+          "lower": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Lower",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "upper": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Upper",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "lower_rank": {
+            "type": "integer",
+            "title": "Lower Rank"
+          },
+          "upper_rank": {
+            "type": "integer",
+            "title": "Upper Rank"
+          },
+          "coverage": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Coverage",
+            "description": "The exact probability that the interval contains the percentile.",
+            "examples": [
+              "5.649"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "lower",
+          "upper",
+          "lower_rank",
+          "upper_rank",
+          "coverage"
+        ],
+        "title": "PercentileIntervalRead"
+      },
+      "PercentileRead": {
+        "properties": {
+          "p": {
+            "type": "integer",
+            "title": "P"
+          },
+          "value": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "title": "Value",
+            "description": "An exact decimal in plain notation (never floating point).",
+            "examples": [
+              "5.649"
+            ]
+          },
+          "interval": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PercentileIntervalRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "p",
+          "value",
+          "interval"
+        ],
+        "title": "PercentileRead"
+      },
       "PeriodRead": {
         "properties": {
           "kind": {
@@ -25069,6 +27233,48 @@
         "title": "QualityStatus",
         "description": "Quality of a *stored* record. Rejected records are never stored as data; they are\nkept as data-quality issues with the raw record and the reason."
       },
+      "QuantityInput": {
+        "properties": {
+          "target": {
+            "type": "string",
+            "pattern": "^(change:[a-z]{2,4}_[a-z0-9_]{2,59}|shared:[a-z_]{2,40}|model:[a-z][a-z0-9_]{2,63}:[a-z][a-z0-9_]{1,63})$",
+            "title": "Target",
+            "description": "`change:<variable>`, `shared:<input>` or `model:<model>:<input>`.",
+            "examples": [
+              "change:var_brent_crude"
+            ]
+          },
+          "distribution": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/UniformInput"
+              },
+              {
+                "$ref": "#/components/schemas/TriangularInput"
+              },
+              {
+                "$ref": "#/components/schemas/DiscreteInput"
+              }
+            ],
+            "title": "Distribution",
+            "discriminator": {
+              "propertyName": "kind",
+              "mapping": {
+                "discrete": "#/components/schemas/DiscreteInput",
+                "triangular": "#/components/schemas/TriangularInput",
+                "uniform": "#/components/schemas/UniformInput"
+              }
+            }
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "target",
+          "distribution"
+        ],
+        "title": "QuantityInput"
+      },
       "RankedQuantityRead": {
         "properties": {
           "target": {
@@ -25186,6 +27392,29 @@
           "label"
         ],
         "title": "RefRead"
+      },
+      "RejectionRead": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "example": {
+            "type": "string",
+            "title": "Example"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "count",
+          "example"
+        ],
+        "title": "RejectionRead"
       },
       "RelationshipCategory": {
         "type": "string",
@@ -26147,6 +28376,259 @@
           "result_hash_matches"
         ],
         "title": "RunCheckRead"
+      },
+      "ScenarioAnalysisList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ScenarioAnalysisSummaryRead"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "ScenarioAnalysisList"
+      },
+      "ScenarioAnalysisRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "execution_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Execution Id"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "monte_carlo",
+              "joint_sensitivity"
+            ],
+            "title": "Kind"
+          },
+          "metric": {
+            "type": "string",
+            "title": "Metric"
+          },
+          "request": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Request",
+            "description": "The normalised request, exactly as run."
+          },
+          "config": {
+            "$ref": "#/components/schemas/AnalysisConfigRead"
+          },
+          "monte_carlo": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MonteCarloResultsRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "joint": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JointResultsRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "evaluations": {
+            "type": "integer",
+            "title": "Evaluations"
+          },
+          "duration_ms": {
+            "type": "integer",
+            "title": "Duration Ms"
+          },
+          "inputs_hash": {
+            "type": "string",
+            "title": "Inputs Hash"
+          },
+          "result_hash": {
+            "type": "string",
+            "title": "Result Hash"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "execution_id",
+          "kind",
+          "metric",
+          "request",
+          "config",
+          "monte_carlo",
+          "joint",
+          "evaluations",
+          "duration_ms",
+          "inputs_hash",
+          "result_hash",
+          "created_at",
+          "note"
+        ],
+        "title": "ScenarioAnalysisRead"
+      },
+      "ScenarioAnalysisSummaryRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "execution_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Execution Id"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "monte_carlo",
+              "joint_sensitivity"
+            ],
+            "title": "Kind"
+          },
+          "metric": {
+            "type": "string",
+            "title": "Metric"
+          },
+          "metric_label": {
+            "type": "string",
+            "title": "Metric Label"
+          },
+          "quantities": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Quantities",
+            "description": "The labels of the quantities varied."
+          },
+          "draws": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Draws"
+          },
+          "seed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seed"
+          },
+          "accepted": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accepted"
+          },
+          "mean": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "description": "An exact decimal in plain notation (never floating point).",
+                "examples": [
+                  "5.649"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mean"
+          },
+          "largest_interaction": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "description": "An exact decimal in plain notation (never floating point).",
+                "examples": [
+                  "5.649"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Largest Interaction"
+          },
+          "evaluations": {
+            "type": "integer",
+            "title": "Evaluations"
+          },
+          "duration_ms": {
+            "type": "integer",
+            "title": "Duration Ms"
+          },
+          "result_hash": {
+            "type": "string",
+            "title": "Result Hash"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "execution_id",
+          "kind",
+          "metric",
+          "metric_label",
+          "quantities",
+          "draws",
+          "seed",
+          "accepted",
+          "mean",
+          "largest_interaction",
+          "evaluations",
+          "duration_ms",
+          "result_hash",
+          "created_at"
+        ],
+        "title": "ScenarioAnalysisSummaryRead"
       },
       "ScenarioBlock": {
         "properties": {
@@ -27251,6 +29733,29 @@
           "range"
         ],
         "title": "SensitivityItemRead"
+      },
+      "SensitivityLimitsRead": {
+        "properties": {
+          "max_items": {
+            "type": "integer",
+            "title": "Max Items"
+          },
+          "max_points": {
+            "type": "integer",
+            "title": "Max Points"
+          },
+          "max_evaluations": {
+            "type": "integer",
+            "title": "Max Evaluations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "max_items",
+          "max_points",
+          "max_evaluations"
+        ],
+        "title": "SensitivityLimitsRead"
       },
       "SensitivityPointRead": {
         "properties": {
@@ -32167,6 +34672,70 @@
         ],
         "title": "TrendRead"
       },
+      "TriangularInput": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "triangular",
+            "title": "Kind"
+          },
+          "low": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Low"
+          },
+          "mode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Mode",
+            "description": "The most likely value."
+          },
+          "high": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "High"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "low",
+          "mode",
+          "high"
+        ],
+        "title": "TriangularInput"
+      },
       "TurnErrorRead": {
         "properties": {
           "code": {
@@ -32444,6 +35013,53 @@
           "count"
         ],
         "title": "TypeMapNode"
+      },
+      "UniformInput": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "uniform",
+            "title": "Kind"
+          },
+          "low": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Low"
+          },
+          "high": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "High"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "low",
+          "high"
+        ],
+        "title": "UniformInput"
       },
       "UnitChoice": {
         "properties": {

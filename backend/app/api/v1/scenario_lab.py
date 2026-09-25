@@ -10,10 +10,18 @@ from __future__ import annotations
 import uuid
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Path, Query, Response, status
+from fastapi import APIRouter, Body, Path, Query, Response, status
 
 from app.api.deps import NOT_FOUND, SessionDep
 from app.scenario_lab.explain import TARGETS
+from app.schemas.analysis import (
+    AnalysisTargetsRead,
+    AnalysisVerificationRead,
+    JointSensitivityRequest,
+    MonteCarloRequest,
+    ScenarioAnalysisList,
+    ScenarioAnalysisRead,
+)
 from app.schemas.common import ErrorResponse
 from app.schemas.scenario import (
     ComparisonRead,
@@ -28,7 +36,7 @@ from app.schemas.scenario import (
     TemplateList,
     TemplateRead,
 )
-from app.services import scenario_lab
+from app.services import scenario_analyses, scenario_lab
 
 executions_router = APIRouter(prefix="/scenario-executions", tags=["scenario lab"])
 comparisons_router = APIRouter(prefix="/scenario-comparisons", tags=["scenario lab"])
@@ -46,6 +54,19 @@ Target = Annotated[
     ),
 ]
 TemplateId = Annotated[str, Path(pattern=r"^[a-z][a-z0-9_]{2,63}$")]
+ANALYSIS_BUSY: dict[int | str, dict[str, Any]] = {
+    429: {
+        "model": ErrorResponse,
+        "description": "Other analyses are computing; nothing was stored. Try again shortly.",
+    }
+}
+CHANGED_MODEL: dict[int | str, dict[str, Any]] = {
+    409: {
+        "model": ErrorResponse,
+        "description": "The execution has not completed, or a model version it used is no "
+        "longer registered with the same definition.",
+    }
+}
 
 
 @executions_router.get(
@@ -173,6 +194,84 @@ def get_sensitivity(
     session: SessionDep, execution_id: uuid.UUID, analysis_id: uuid.UUID
 ) -> LabSensitivityRead:
     return scenario_lab.get_sensitivity(session, execution_id, analysis_id)
+
+
+@executions_router.get(
+    "/{execution_id}/analysis-targets",
+    response_model=AnalysisTargetsRead,
+    summary="What an analysis of this execution can vary",
+    description="Every quantity an analysis can vary — the changes, the shared figures, each "
+    "model's company, market and assumption inputs — with its unit, range, decimals, the "
+    "execution's value and the model's default variation; the lines and metrics with the "
+    "execution's values; the analyses' limits.",
+    responses={**NOT_FOUND, **CHANGED_MODEL},
+)
+def get_execution_analysis_targets(session: SessionDep, execution_id: uuid.UUID) -> AnalysisTargetsRead:
+    return scenario_analyses.analysis_targets(session, execution_id)
+
+
+@executions_router.post(
+    "/{execution_id}/analyses",
+    response_model=ScenarioAnalysisRead,
+    status_code=status.HTTP_201_CREATED,
+    summary="Run a Monte Carlo or joint sensitivity analysis",
+    description="`monte_carlo`: 100–2,000 draws from the uniform, triangular or discrete "
+    "distributions you state for up to 8 quantities (independently, with a recorded seed); "
+    "each draw re-evaluates the execution's stored runs. Draws that break a model's rule are "
+    "rejected and counted, never clipped. `joint_sensitivity`: a grid over two quantities "
+    "with the interaction of each cell. Stored append-only with the configuration it ran "
+    "with; the results are conditional on the stated assumptions — not forecasts.",
+    responses={**NOT_FOUND, **CHANGED_MODEL, **ANALYSIS_BUSY},
+)
+def create_execution_analysis(
+    session: SessionDep,
+    execution_id: uuid.UUID,
+    payload: Annotated[MonteCarloRequest | JointSensitivityRequest, Body(discriminator="kind")],
+    response: Response,
+) -> ScenarioAnalysisRead:
+    analysis = scenario_analyses.create_analysis(session, execution_id, payload)
+    response.headers["Location"] = (
+        f"/api/v1/scenario-executions/{execution_id}/analyses/{analysis.id}"
+    )
+    return analysis
+
+
+@executions_router.get(
+    "/{execution_id}/analyses",
+    response_model=ScenarioAnalysisList,
+    summary="List an execution's analyses",
+    description="Newest first, with the settings that distinguish them (quantities, draws, "
+    "seed) and a headline figure; read one for its results and configuration.",
+    responses=NOT_FOUND,
+)
+def list_execution_analyses(session: SessionDep, execution_id: uuid.UUID) -> ScenarioAnalysisList:
+    return scenario_analyses.list_analyses(session, execution_id)
+
+
+@executions_router.get(
+    "/{execution_id}/analyses/{analysis_id}",
+    response_model=ScenarioAnalysisRead,
+    summary="Get an analysis",
+    responses=NOT_FOUND,
+)
+def get_execution_analysis(
+    session: SessionDep, execution_id: uuid.UUID, analysis_id: uuid.UUID
+) -> ScenarioAnalysisRead:
+    return scenario_analyses.get_analysis(session, execution_id, analysis_id)
+
+
+@executions_router.post(
+    "/{execution_id}/analyses/{analysis_id}/verify",
+    response_model=AnalysisVerificationRead,
+    summary="Run an analysis again and compare",
+    description="Runs the stored request again — with its seed — on the execution's stored "
+    "runs and compares the hashes. Stores nothing.",
+    responses={**NOT_FOUND, **CHANGED_MODEL, **ANALYSIS_BUSY},
+)
+def verify_execution_analysis(
+    session: SessionDep, execution_id: uuid.UUID, analysis_id: uuid.UUID
+) -> AnalysisVerificationRead:
+    return scenario_analyses.verify_analysis(session, execution_id, analysis_id)
 
 
 @comparisons_router.get(

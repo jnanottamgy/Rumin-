@@ -537,6 +537,87 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/scenario-executions/{execution_id}/analysis-targets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * What an analysis of this execution can vary
+         * @description Every quantity an analysis can vary — the changes, the shared figures, each model's company, market and assumption inputs — with its unit, range, decimals, the execution's value and the model's default variation; the lines and metrics with the execution's values; the analyses' limits.
+         */
+        get: operations["get_execution_analysis_targets"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenario-executions/{execution_id}/analyses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List an execution's analyses
+         * @description Newest first, with the settings that distinguish them (quantities, draws, seed) and a headline figure; read one for its results and configuration.
+         */
+        get: operations["list_execution_analyses"];
+        put?: never;
+        /**
+         * Run a Monte Carlo or joint sensitivity analysis
+         * @description `monte_carlo`: 100–2,000 draws from the uniform, triangular or discrete distributions you state for up to 8 quantities (independently, with a recorded seed); each draw re-evaluates the execution's stored runs. Draws that break a model's rule are rejected and counted, never clipped. `joint_sensitivity`: a grid over two quantities with the interaction of each cell. Stored append-only with the configuration it ran with; the results are conditional on the stated assumptions — not forecasts.
+         */
+        post: operations["create_execution_analysis"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenario-executions/{execution_id}/analyses/{analysis_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get an analysis */
+        get: operations["get_execution_analysis"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenario-executions/{execution_id}/analyses/{analysis_id}/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Run an analysis again and compare
+         * @description Runs the stored request again — with its seed — on the execution's stored runs and compares the hashes. Stores nothing.
+         */
+        post: operations["verify_execution_analysis"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/scenario-comparisons": {
         parameters: {
             query?: never;
@@ -1809,6 +1890,27 @@ export interface components {
             /** Nature */
             nature: string;
         };
+        /** AnalysisConfigRead */
+        AnalysisConfigRead: {
+            /** Analysis Version */
+            analysis_version: string;
+            /** Lab Version */
+            lab_version: string;
+            /** Engine Version */
+            engine_version: string;
+            /** Execution Result Hash */
+            execution_result_hash: string | null;
+            /** Runs */
+            runs: components["schemas"]["AnalysisRunRead"][];
+            /** Seed */
+            seed: number | null;
+            /** Generator */
+            generator: string | null;
+            /** Sampler Version */
+            sampler_version: string | null;
+            /** Draws */
+            draws: number | null;
+        };
         /** AnalysisFreshnessRead */
         AnalysisFreshnessRead: {
             /**
@@ -1828,6 +1930,30 @@ export interface components {
             checked_at: string;
             /** Message */
             message: string;
+        };
+        /** AnalysisLimitsRead */
+        AnalysisLimitsRead: {
+            monte_carlo: components["schemas"]["MonteCarloLimitsRead"];
+            joint: components["schemas"]["JointLimitsRead"];
+            sensitivity: components["schemas"]["SensitivityLimitsRead"];
+        };
+        /** AnalysisMetricRead */
+        AnalysisMetricRead: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "line_change" | "metric_value";
+            /**
+             * Base
+             * @description The execution's value: a line's change or a metric.
+             * @example 5.649
+             */
+            base: string;
         };
         /** AnalysisRead */
         AnalysisRead: {
@@ -1911,6 +2037,26 @@ export interface components {
             /** Label */
             label?: string | null;
         };
+        /** AnalysisRunRead */
+        AnalysisRunRead: {
+            /** Model Id */
+            model_id: string;
+            /** Version */
+            version: string;
+            /** Definition Hash */
+            definition_hash: string;
+            /**
+             * Run Id
+             * Format: uuid
+             */
+            run_id: string;
+            /** Inputs Hash */
+            inputs_hash: string;
+            /** Graph Build Id */
+            graph_build_id: number | null;
+            /** Graph Fingerprint */
+            graph_fingerprint: string | null;
+        };
         /** AnalysisSummaryRead */
         AnalysisSummaryRead: {
             /**
@@ -1946,6 +2092,90 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+        };
+        /** AnalysisTargetRead */
+        AnalysisTargetRead: {
+            /**
+             * Id
+             * @example change:var_brent_crude
+             */
+            id: string;
+            /** Label */
+            label: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "change" | "shared" | "company" | "market" | "assumption";
+            /**
+             * Models
+             * @description Every included model that uses the quantity.
+             */
+            models: string[];
+            /** Unit */
+            unit: string | null;
+            /** Unit Label */
+            unit_label: string;
+            /**
+             * Integer
+             * @description Whole months: only discrete distributions apply.
+             */
+            integer: boolean;
+            /**
+             * Base Value
+             * @description The execution's value.
+             * @example 5.649
+             */
+            base_value: string;
+            /** Minimum */
+            minimum: string | null;
+            /** Maximum */
+            maximum: string | null;
+            /** Minimum Exclusive */
+            minimum_exclusive: boolean;
+            /** Maximum Exclusive */
+            maximum_exclusive: boolean;
+            /** Max Decimals */
+            max_decimals: number;
+            /** @description The model's default low/high variation for sensitivity analysis. */
+            default_variation: components["schemas"]["DefaultVariationRead"] | null;
+        };
+        /** AnalysisTargetsRead */
+        AnalysisTargetsRead: {
+            /**
+             * Execution Id
+             * Format: uuid
+             */
+            execution_id: string;
+            /** Currency */
+            currency: string | null;
+            /** Horizon Months */
+            horizon_months: number;
+            /** Targets */
+            targets: components["schemas"]["AnalysisTargetRead"][];
+            /** Metrics */
+            metrics: components["schemas"]["AnalysisMetricRead"][];
+            limits: components["schemas"]["AnalysisLimitsRead"];
+        };
+        /** AnalysisVerificationRead */
+        AnalysisVerificationRead: {
+            /**
+             * Analysis Id
+             * Format: uuid
+             */
+            analysis_id: string;
+            /** Reproduced */
+            reproduced: boolean;
+            /** Inputs Hash Matches */
+            inputs_hash_matches: boolean;
+            /** Result Hash Matches */
+            result_hash_matches: boolean;
+            /** Stored Result Hash */
+            stored_result_hash: string;
+            /** Recomputed Result Hash */
+            recomputed_result_hash: string | null;
+            /** Message */
+            message: string;
         };
         /** AnalystProviderRead */
         AnalystProviderRead: {
@@ -2514,6 +2744,19 @@ export interface components {
             /** Notes */
             notes: string[];
         };
+        /** CheckpointRead */
+        CheckpointRead: {
+            /** Draws */
+            draws: number;
+            /**
+             * Mean
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            mean: string;
+            /** Standard Error */
+            standard_error: string | null;
+        };
         /** ClarificationBlock */
         ClarificationBlock: {
             /**
@@ -2841,6 +3084,27 @@ export interface components {
             /** Items */
             items: components["schemas"]["ContributionItemRead"][];
         };
+        /** ConvergenceRead */
+        ConvergenceRead: {
+            /** Checkpoints */
+            checkpoints: components["schemas"]["CheckpointRead"][];
+            /**
+             * First Half Mean
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            first_half_mean: string;
+            /**
+             * Second Half Mean
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            second_half_mean: string;
+            /** Halves Z */
+            halves_z: string | null;
+            /** Halves Flagged */
+            halves_flagged: boolean;
+        };
         /** CounterpartyRead */
         CounterpartyRead: {
             /**
@@ -3162,6 +3426,20 @@ export interface components {
             /** Count */
             count: number;
         };
+        /** DefaultVariationRead */
+        DefaultVariationRead: {
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "absolute" | "relative";
+            /**
+             * Step
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            step: string;
+        };
         /**
          * Derivation
          * @description ``direct``: one field of the source record states the relationship.
@@ -3205,6 +3483,39 @@ export interface components {
          * @enum {string}
          */
         Direction: "any" | "out" | "in";
+        /** DiscreteInput */
+        DiscreteInput: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "discrete";
+            /** Values */
+            values: (string | number)[];
+            /**
+             * Weights
+             * @description Positive, one per value. Default: equal weights.
+             */
+            weights?: (string | number)[] | null;
+        };
+        /** DistributionRead */
+        DistributionRead: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "uniform" | "triangular" | "discrete";
+            /** Low */
+            low?: string | null;
+            /** Mode */
+            mode?: string | null;
+            /** High */
+            high?: string | null;
+            /** Values */
+            values?: string[] | null;
+            /** Weights */
+            weights?: string[] | null;
+        };
         /** DriverAnalysisRead */
         DriverAnalysisRead: {
             /** Entity Key */
@@ -4918,6 +5229,23 @@ export interface components {
             /** Version */
             version: string;
         };
+        /** HistogramBinRead */
+        HistogramBinRead: {
+            /**
+             * Low
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            low: string;
+            /**
+             * High
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            high: string;
+            /** Count */
+            count: number;
+        };
         /** IdentifierRead */
         IdentifierRead: {
             /** Scheme */
@@ -5683,6 +6011,113 @@ export interface components {
          * @enum {string}
          */
         JobTrigger: "cli";
+        /** JointAxisRead */
+        JointAxisRead: {
+            /** Target */
+            target: string;
+            /** Label */
+            label: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "change" | "shared" | "company" | "market" | "assumption";
+            /** Models */
+            models: string[];
+            /** Unit */
+            unit: string | null;
+            /**
+             * Base Value
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            base_value: string;
+            /** Values */
+            values: string[];
+        };
+        /** JointCellRead */
+        JointCellRead: {
+            /** Metric */
+            metric: string | null;
+            /** Delta */
+            delta: string | null;
+            /** Interaction */
+            interaction: string | null;
+            /** Skipped */
+            skipped: string | null;
+        };
+        /** JointCellRefRead */
+        JointCellRefRead: {
+            /** Row */
+            row: number;
+            /** Column */
+            column: number;
+            /**
+             * Value
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            value: string;
+        };
+        /** JointLimitsRead */
+        JointLimitsRead: {
+            /** Max Axis Points */
+            max_axis_points: number;
+            /** Deadline Seconds */
+            deadline_seconds: number;
+        };
+        /** JointResultsRead */
+        JointResultsRead: {
+            /** Metric */
+            metric: string;
+            /** Metric Label */
+            metric_label: string;
+            /**
+             * Metric Kind
+             * @enum {string}
+             */
+            metric_kind: "line_change" | "metric_value";
+            /**
+             * Base
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            base: string;
+            rows: components["schemas"]["JointAxisRead"];
+            columns: components["schemas"]["JointAxisRead"];
+            /** Cells */
+            cells: components["schemas"]["JointCellRead"][][];
+            summary: components["schemas"]["JointSummaryRead"];
+        };
+        /** JointSensitivityRequest */
+        JointSensitivityRequest: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "joint_sensitivity";
+            /** Metric */
+            metric?: string | null;
+            rows: components["schemas"]["LabSensitivityItemInput"];
+            columns: components["schemas"]["LabSensitivityItemInput"];
+        };
+        /** JointSummaryRead */
+        JointSummaryRead: {
+            largest_interaction: components["schemas"]["JointCellRefRead"] | null;
+            largest_change: components["schemas"]["JointCellRefRead"] | null;
+            /** Interactions Computed */
+            interactions_computed: number;
+            /** Additive */
+            additive: boolean;
+            /**
+             * Tolerance
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            tolerance: string;
+            /** Skipped */
+            skipped: number;
+        };
         /** KeyOutputRead */
         KeyOutputRead: {
             /** Id */
@@ -5994,6 +6429,16 @@ export interface components {
              * @constant
              */
             method: "one_at_a_time";
+            /**
+             * Method Version
+             * @description 1.0.0 before Phase 9; 1.1.0 once varied revenue, operating costs and interest expense also reach the margins and interest coverage.
+             */
+            method_version: string;
+            /**
+             * Caveats
+             * @description Anything the method that computed this stored analysis got wrong for it.
+             */
+            caveats: string[];
             /** Note */
             note: string;
         };
@@ -6528,6 +6973,181 @@ export interface components {
             /** Version */
             version: string;
         };
+        /** MonteCarloLimitsRead */
+        MonteCarloLimitsRead: {
+            /** Min Draws */
+            min_draws: number;
+            /** Max Draws */
+            max_draws: number;
+            /** Default Draws */
+            default_draws: number;
+            /** Max Quantities */
+            max_quantities: number;
+            /** Max Discrete Values */
+            max_discrete_values: number;
+            /** Min Accepted */
+            min_accepted: number;
+            /** Deadline Seconds */
+            deadline_seconds: number;
+        };
+        /** MonteCarloQuantityRead */
+        MonteCarloQuantityRead: {
+            /** Target */
+            target: string;
+            /** Label */
+            label: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "change" | "shared" | "company" | "market" | "assumption";
+            /** Models */
+            models: string[];
+            /** Unit */
+            unit: string | null;
+            /**
+             * Base Value
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            base_value: string;
+            distribution: components["schemas"]["DistributionRead"];
+            /**
+             * Distribution Mean
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            distribution_mean: string;
+            /**
+             * Distribution Sd
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            distribution_sd: string;
+            /**
+             * Accepted Mean
+             * @description The mean of the accepted draws' values.
+             * @example 5.649
+             */
+            accepted_mean: string;
+            /**
+             * Rank Correlation
+             * @description Spearman's rank correlation with the line or metric; null when either does not vary. Monotonic association in the sample, not causation.
+             */
+            rank_correlation: string | null;
+        };
+        /** MonteCarloRequest */
+        MonteCarloRequest: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "monte_carlo";
+            /**
+             * Metric
+             * @description A line (its change) or a metric. Default: profit before tax when interest is modelled, otherwise operating profit.
+             */
+            metric?: string | null;
+            /** Quantities */
+            quantities: components["schemas"]["QuantityInput"][];
+            /**
+             * Draws
+             * @default 500
+             */
+            draws: number;
+            /**
+             * Seed
+             * @description Reproduces the draws exactly. Chosen by the server (and recorded) when not given.
+             */
+            seed?: number | null;
+            /**
+             * Threshold
+             * @description Also report the share of draws at or below this value (a covenant level, say).
+             */
+            threshold?: string | number | null;
+        };
+        /** MonteCarloResultsRead */
+        MonteCarloResultsRead: {
+            /** Metric */
+            metric: string;
+            /** Metric Label */
+            metric_label: string;
+            /**
+             * Metric Kind
+             * @enum {string}
+             */
+            metric_kind: "line_change" | "metric_value";
+            /**
+             * Base
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            base: string;
+            /** Draws */
+            draws: number;
+            /** Accepted */
+            accepted: number;
+            /** Rejected */
+            rejected: number;
+            /** Rejections */
+            rejections: components["schemas"]["RejectionRead"][];
+            /** Quantities */
+            quantities: components["schemas"]["MonteCarloQuantityRead"][];
+            summary: components["schemas"]["MonteCarloSummaryRead"];
+            /** Histogram */
+            histogram: components["schemas"]["HistogramBinRead"][];
+            convergence: components["schemas"]["ConvergenceRead"];
+            /** Outputs */
+            outputs: components["schemas"]["OutputSummaryRead"][];
+            /** Notes */
+            notes: string[];
+        };
+        /** MonteCarloSummaryRead */
+        MonteCarloSummaryRead: {
+            /**
+             * Mean
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            mean: string;
+            /**
+             * Standard Deviation
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            standard_deviation: string;
+            /**
+             * Standard Error
+             * @description Of the mean: s/√n.
+             * @example 5.649
+             */
+            standard_error: string;
+            /** Relative Standard Error */
+            relative_standard_error: string | null;
+            /**
+             * Minimum
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            minimum: string;
+            /**
+             * Maximum
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            maximum: string;
+            /** Percentiles */
+            percentiles: components["schemas"]["PercentileRead"][];
+            /**
+             * Share Below Zero
+             * @description For a line's change: the share of accepted draws below zero.
+             */
+            share_below_zero: string | null;
+            /** Threshold */
+            threshold: string | null;
+            /** Share At Or Below Threshold */
+            share_at_or_below_threshold: string | null;
+        };
         /** MonthlySeriesRead */
         MonthlySeriesRead: {
             /** Id */
@@ -6961,6 +7581,48 @@ export interface components {
             /** Equation */
             equation: string;
         };
+        /** OutputSummaryRead */
+        OutputSummaryRead: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "line_change" | "metric_value";
+            /**
+             * Base
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            base: string;
+            /**
+             * Mean
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            mean: string;
+            /**
+             * P5
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            p5: string;
+            /**
+             * P50
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            p50: string;
+            /**
+             * P95
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            p95: string;
+        };
         /** OverviewRead */
         OverviewRead: {
             /** Engine Version */
@@ -7276,6 +7938,43 @@ export interface components {
             nodes: components["schemas"]["PathwayNodeRead"][];
             /** Links */
             links: components["schemas"]["PathwayEdgeRead"][];
+        };
+        /** PercentileIntervalRead */
+        PercentileIntervalRead: {
+            /**
+             * Lower
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            lower: string;
+            /**
+             * Upper
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            upper: string;
+            /** Lower Rank */
+            lower_rank: number;
+            /** Upper Rank */
+            upper_rank: number;
+            /**
+             * Coverage
+             * @description The exact probability that the interval contains the percentile.
+             * @example 5.649
+             */
+            coverage: string;
+        };
+        /** PercentileRead */
+        PercentileRead: {
+            /** P */
+            p: number;
+            /**
+             * Value
+             * @description An exact decimal in plain notation (never floating point).
+             * @example 5.649
+             */
+            value: string;
+            interval: components["schemas"]["PercentileIntervalRead"] | null;
         };
         /** PeriodRead */
         PeriodRead: {
@@ -7596,6 +8295,17 @@ export interface components {
          * @enum {string}
          */
         QualityStatus: "validated" | "warning";
+        /** QuantityInput */
+        QuantityInput: {
+            /**
+             * Target
+             * @description `change:<variable>`, `shared:<input>` or `model:<model>:<input>`.
+             * @example change:var_brent_crude
+             */
+            target: string;
+            /** Distribution */
+            distribution: components["schemas"]["UniformInput"] | components["schemas"]["TriangularInput"] | components["schemas"]["DiscreteInput"];
+        };
         /** RankedQuantityRead */
         RankedQuantityRead: {
             /** Target */
@@ -7647,6 +8357,15 @@ export interface components {
             id: string;
             /** Label */
             label: string | null;
+        };
+        /** RejectionRead */
+        RejectionRead: {
+            /** Code */
+            code: string;
+            /** Count */
+            count: number;
+            /** Example */
+            example: string;
         };
         /**
          * RelationshipCategory
@@ -7999,6 +8718,104 @@ export interface components {
             inputs_hash_matches: boolean;
             /** Result Hash Matches */
             result_hash_matches: boolean;
+        };
+        /** ScenarioAnalysisList */
+        ScenarioAnalysisList: {
+            /** Items */
+            items: components["schemas"]["ScenarioAnalysisSummaryRead"][];
+        };
+        /** ScenarioAnalysisRead */
+        ScenarioAnalysisRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Execution Id
+             * Format: uuid
+             */
+            execution_id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "monte_carlo" | "joint_sensitivity";
+            /** Metric */
+            metric: string;
+            /**
+             * Request
+             * @description The normalised request, exactly as run.
+             */
+            request: {
+                [key: string]: unknown;
+            };
+            config: components["schemas"]["AnalysisConfigRead"];
+            monte_carlo: components["schemas"]["MonteCarloResultsRead"] | null;
+            joint: components["schemas"]["JointResultsRead"] | null;
+            /** Evaluations */
+            evaluations: number;
+            /** Duration Ms */
+            duration_ms: number;
+            /** Inputs Hash */
+            inputs_hash: string;
+            /** Result Hash */
+            result_hash: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Note */
+            note: string;
+        };
+        /** ScenarioAnalysisSummaryRead */
+        ScenarioAnalysisSummaryRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Execution Id
+             * Format: uuid
+             */
+            execution_id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "monte_carlo" | "joint_sensitivity";
+            /** Metric */
+            metric: string;
+            /** Metric Label */
+            metric_label: string;
+            /**
+             * Quantities
+             * @description The labels of the quantities varied.
+             */
+            quantities: string[];
+            /** Draws */
+            draws: number | null;
+            /** Seed */
+            seed: number | null;
+            /** Accepted */
+            accepted: number | null;
+            /** Mean */
+            mean: string | null;
+            /** Largest Interaction */
+            largest_interaction: string | null;
+            /** Evaluations */
+            evaluations: number;
+            /** Duration Ms */
+            duration_ms: number;
+            /** Result Hash */
+            result_hash: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
         };
         /**
          * ScenarioBlock
@@ -8395,6 +9212,15 @@ export interface components {
             /** Points */
             points: components["schemas"]["SensitivityPointRead"][];
             range: components["schemas"]["SensitivityRangeRead"] | null;
+        };
+        /** SensitivityLimitsRead */
+        SensitivityLimitsRead: {
+            /** Max Items */
+            max_items: number;
+            /** Max Points */
+            max_points: number;
+            /** Max Evaluations */
+            max_evaluations: number;
         };
         /** SensitivityPointRead */
         SensitivityPointRead: {
@@ -10167,6 +10993,23 @@ export interface components {
             /** Exact Fit */
             exact_fit: boolean;
         };
+        /** TriangularInput */
+        TriangularInput: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "triangular";
+            /** Low */
+            low: string | number;
+            /**
+             * Mode
+             * @description The most likely value.
+             */
+            mode: string | number;
+            /** High */
+            high: string | number;
+        };
         /** TurnErrorRead */
         TurnErrorRead: {
             /** Code */
@@ -10262,6 +11105,18 @@ export interface components {
             plural: string;
             /** Count */
             count: number;
+        };
+        /** UniformInput */
+        UniformInput: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "uniform";
+            /** Low */
+            low: string | number;
+            /** High */
+            high: string | number;
         };
         /** UnitChoice */
         UnitChoice: {
@@ -12100,6 +12955,302 @@ export interface operations {
             };
             /** @description The request contains invalid values. */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_execution_analysis_targets: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                execution_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalysisTargetsRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The execution has not completed, or a model version it used is no longer registered with the same definition. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_execution_analyses: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                execution_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScenarioAnalysisList"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_execution_analysis: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                execution_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MonteCarloRequest"] | components["schemas"]["JointSensitivityRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScenarioAnalysisRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The execution has not completed, or a model version it used is no longer registered with the same definition. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Other analyses are computing; nothing was stored. Try again shortly. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_execution_analysis: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                execution_id: string;
+                analysis_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScenarioAnalysisRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error (details are logged). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    verify_execution_analysis: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                execution_id: string;
+                analysis_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalysisVerificationRead"];
+                };
+            };
+            /** @description Resource not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The execution has not completed, or a model version it used is no longer registered with the same definition. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The request contains invalid values. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Other analyses are computing; nothing was stored. Try again shortly. */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -925,6 +925,13 @@ class LabSensitivityRead(ApiModel):
     result_hash: str
     created_at: datetime
     method: Literal["one_at_a_time"] = "one_at_a_time"
+    method_version: str = Field(
+        description="1.0.0 before Phase 9; 1.1.0 once varied revenue, operating costs and "
+        "interest expense also reach the margins and interest coverage."
+    )
+    caveats: list[str] = Field(
+        description="Anything the method that computed this stored analysis got wrong for it."
+    )
     note: str
 
 

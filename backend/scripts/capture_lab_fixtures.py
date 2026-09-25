@@ -11,7 +11,8 @@ illustrative sample dataset, builds the knowledge graph, then drives the API in-
 2. the backend tests' REFERENCE scenario — "oil, rupee and rates" on the fictional Aerisca
    Airways with HYPOTHETICAL round figures (see ``tests/scenario_support.py``) — with the
    definitions of the models it includes, saved and executed, with its results, pathway,
-   explanation, a sensitivity analysis and a reproducibility check;
+   explanation, a sensitivity analysis and a reproducibility check; then what it can vary,
+   a seeded Monte Carlo analysis, a joint sensitivity grid, the list and a re-run (Phase 9);
 3. a second scenario (Brent alone) executed and compared with the first.
 
 Every response is written to ``frontend/tests/fixtures/lab/`` as it came back: nothing is
@@ -32,6 +33,37 @@ from typing import Any
 BACKEND = Path(__file__).resolve().parent.parent
 OUT = BACKEND.parent / "frontend" / "tests" / "fixtures" / "lab"
 API = "/api/v1"
+MONTE_CARLO = {
+    "kind": "monte_carlo",
+    "metric": "profit_before_tax",
+    "draws": 500,
+    "seed": 20260925,
+    "threshold": "-10000000",
+    "quantities": [
+        {
+            "target": "change:var_brent_crude",
+            "distribution": {"kind": "triangular", "low": "-10", "mode": "20", "high": "60"},
+        },
+        {
+            "target": "change:var_usd_inr",
+            "distribution": {"kind": "uniform", "low": "0", "high": "10"},
+        },
+        {
+            "target": "model:floating_rate_interest:repo_repricing_lag",
+            "distribution": {
+                "kind": "discrete",
+                "values": ["0", "3", "6"],
+                "weights": ["1", "2", "1"],
+            },
+        },
+    ],
+}
+JOINT = {
+    "kind": "joint_sensitivity",
+    "metric": "operating_profit",
+    "rows": {"target": "change:var_brent_crude"},
+    "columns": {"target": "change:var_usd_inr"},
+}
 
 
 def prepare_database(work: Path) -> str:
@@ -131,6 +163,17 @@ def main() -> None:
         analysis = client.post(f"{path}/sensitivity", json={"metric": None, "inputs": []})
         save("sensitivity", ok(analysis, 201))
         save("verification", ok(client.post(f"{path}/verify")))
+
+        # Phase 9: what the execution can vary; a Monte Carlo analysis with a fixed seed and
+        # distributions chosen for the fixture (assumptions, not estimates); a joint grid;
+        # the analyses listed; the Monte Carlo analysis run again.
+        save("analysis-targets", ok(client.get(f"{path}/analysis-targets")))
+        monte_carlo = ok(client.post(f"{path}/analyses", json=MONTE_CARLO), 201)
+        save("analysis-monte-carlo", monte_carlo)
+        save("analysis-joint", ok(client.post(f"{path}/analyses", json=JOINT), 201))
+        save("analyses", ok(client.get(f"{path}/analyses")))
+        again = client.post(f"{path}/analyses/{monte_carlo['id']}/verify")
+        save("analysis-verification", ok(again))
 
         # A second scenario, Brent alone, to compare with.
         alone = copy.deepcopy(REFERENCE)

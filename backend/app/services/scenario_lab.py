@@ -29,12 +29,16 @@ from app.models import (
 )
 from app.scenario_lab import LAB_VERSION
 from app.scenario_lab import templates as lab_templates
+from app.scenario_lab.aggregate import METRIC_LABELS
 from app.scenario_lab.comparison import MAX_EXECUTIONS, MIN_EXECUTIONS, compare
 from app.scenario_lab.executor import TERMINAL, Member, reproduce, spec_of
 from app.scenario_lab.explain import TARGETS, explain
 from app.scenario_lab.graph import affected_entities
 from app.scenario_lab.profiles import PROFILES, lab_model
 from app.scenario_lab.runner import ExecutionRunner, RunnerBusy
+from app.scenario_lab.sensitivity import (
+    METHOD_VERSION as SENSITIVITY_METHOD_VERSION,
+)
 from app.scenario_lab.sensitivity import Item, LabSensitivityError, analyse, default_items
 from app.scenario_lab.spec import spec_json
 from app.schemas.common import ErrorDetail
@@ -181,7 +185,7 @@ def get_execution(session: Session, execution_id: uuid.UUID) -> ExecutionRead:
     return execution_read(session, _execution_or_404(session, execution_id))
 
 
-def _completed(session: Session, execution_id: uuid.UUID) -> ScenarioExecution:
+def completed_execution(session: Session, execution_id: uuid.UUID) -> ScenarioExecution:
     row = _execution_or_404(session, execution_id)
     if row.status is not S.COMPLETED or row.results is None:
         raise ConflictError(
@@ -191,12 +195,12 @@ def _completed(session: Session, execution_id: uuid.UUID) -> ScenarioExecution:
 
 
 def get_results(session: Session, execution_id: uuid.UUID) -> ResultsRead:
-    row = _completed(session, execution_id)
+    row = completed_execution(session, execution_id)
     return ResultsRead.model_validate({**row.results, "execution_id": row.id})  # type: ignore[dict-item]
 
 
 def get_pathways(session: Session, execution_id: uuid.UUID) -> LabPathwayRead:
-    row = _completed(session, execution_id)
+    row = completed_execution(session, execution_id)
     return LabPathwayRead.model_validate(row.results["pathway"])  # type: ignore[index]
 
 
@@ -219,7 +223,7 @@ def cancel_execution(session: Session, execution_id: uuid.UUID) -> ExecutionRead
 # --- Stored runs --------------------------------------------------------------------------------
 
 
-def _runs(session: Session, row: ScenarioExecution) -> list[SimulationRun]:
+def execution_runs(session: Session, row: ScenarioExecution) -> list[SimulationRun]:
     runs = []
     for item in row.runs:
         run = session.get(SimulationRun, item.simulation_run_id)
@@ -229,20 +233,20 @@ def _runs(session: Session, row: ScenarioExecution) -> list[SimulationRun]:
     return runs
 
 
-def _definition(session: Session, run: SimulationRun) -> SimulationModelVersion:
+def run_definition(session: Session, run: SimulationRun) -> SimulationModelVersion:
     version = session.get(SimulationModelVersion, run.model_version_id)
     if version is None:  # pragma: no cover - the foreign key forbids it
         raise NotFoundError("A run's model version is missing.")
     return version
 
 
-def _members(
+def stored_members(
     session: Session, runs: Sequence[SimulationRun]
 ) -> list[tuple[Member | None, SimulationRun]]:
     stored: list[tuple[Member | None, SimulationRun]] = []
     for run in runs:
         model = REGISTRY.get(run.model_id, run.model_version)
-        version = _definition(session, run)
+        version = run_definition(session, run)
         profile = PROFILES.get(run.model_id)
         if model is None or profile is None or model.definition_hash != version.definition_hash:
             stored.append((None, run))
@@ -252,10 +256,10 @@ def _members(
 
 
 def verify_execution(session: Session, execution_id: uuid.UUID) -> ExecutionVerificationRead:
-    row = _completed(session, execution_id)
+    row = completed_execution(session, execution_id)
     scenario = scenario_or_404(session, row.scenario_id)
     spec = spec_of(version_of(scenario, row.version))
-    outcome = reproduce(spec, _members(session, _runs(session, row)))
+    outcome = reproduce(spec, stored_members(session, execution_runs(session, row)))
     same_inputs = outcome.inputs_hash == row.inputs_hash
     same_result = outcome.result_hash == row.result_hash
     reproduced = outcome.reproducible and same_inputs and same_result
@@ -286,11 +290,13 @@ def verify_execution(session: Session, execution_id: uuid.UUID) -> ExecutionVeri
 
 
 def get_explanation(session: Session, execution_id: uuid.UUID, target: str) -> LabExplanationRead:
-    row = _completed(session, execution_id)
+    row = completed_execution(session, execution_id)
     if target not in TARGETS:
         raise NotFoundError(f"'{target}' is not a line or metric of the Scenario Lab.")
-    runs = {run.model_id: run for run in _runs(session, row)}
-    definitions = {model_id: _definition(session, run).definition for model_id, run in runs.items()}
+    runs = {run.model_id: run for run in execution_runs(session, row)}
+    definitions = {
+        model_id: run_definition(session, run).definition for model_id, run in runs.items()
+    }
     steps = {
         model_id: list(
             session.scalars(
@@ -331,6 +337,29 @@ def _number(value: str | int | float | None, field: str) -> Any:
     return number
 
 
+# Quantities the aggregation itself reads (the base of the margins and of interest coverage).
+AGGREGATION_TARGETS = ("shared:annual_revenue", "shared:annual_operating_costs")
+AGGREGATION_INPUT = "annual_interest_expense"
+
+
+def sensitivity_caveats(row: ScenarioSensitivityAnalysis) -> list[str]:
+    """What a stored analysis's method got wrong, if it affects this analysis."""
+    if row.method_version != "1.0.0" or row.metric not in METRIC_LABELS:
+        return []
+    varied = [str(item.get("target", "")) for item in row.request]
+    if not any(
+        target in AGGREGATION_TARGETS or target.endswith(f":{AGGREGATION_INPUT}")
+        for target in varied
+    ):
+        return []
+    return [
+        "Computed by method 1.0.0, which combined the lines from the execution's revenue, "
+        "operating costs and interest expense even when the analysis varied them: the "
+        f"{METRIC_LABELS[row.metric].lower()} shown for those quantities did not move with "
+        "them. Run the analysis again for correct values."
+    ]
+
+
 def _analysis_read(row: ScenarioSensitivityAnalysis) -> LabSensitivityRead:
     return LabSensitivityRead.model_validate(
         {
@@ -342,6 +371,8 @@ def _analysis_read(row: ScenarioSensitivityAnalysis) -> LabSensitivityRead:
             "result_hash": row.result_hash,
             "created_at": row.created_at,
             "note": SENSITIVITY_NOTE,
+            "method_version": row.method_version,
+            "caveats": sensitivity_caveats(row),
         }
     )
 
@@ -349,10 +380,10 @@ def _analysis_read(row: ScenarioSensitivityAnalysis) -> LabSensitivityRead:
 def run_sensitivity(
     session: Session, execution_id: uuid.UUID, payload: LabSensitivityRequest
 ) -> LabSensitivityRead:
-    row = _completed(session, execution_id)
+    row = completed_execution(session, execution_id)
     scenario = scenario_or_404(session, row.scenario_id)
     spec = spec_of(version_of(scenario, row.version))
-    stored = _members(session, _runs(session, row))
+    stored = stored_members(session, execution_runs(session, row))
     if any(member is None for member, _ in stored):
         raise ConflictError(
             "A model version this execution used is no longer registered with the same "
@@ -401,6 +432,7 @@ def run_sensitivity(
         evaluations=analysis["evaluations"],
         duration_ms=analysis["duration_ms"],
         result_hash=sha256(results),
+        method_version=SENSITIVITY_METHOD_VERSION,
     )
     session.add(record)
     session.commit()
@@ -446,7 +478,7 @@ def compare_executions(
                 )
             ],
         )
-    rows = [_completed(session, execution_id) for execution_id in unique]
+    rows = [completed_execution(session, execution_id) for execution_id in unique]
     reference_id = reference or unique[0]
     if reference_id not in unique:
         raise DomainValidationError(
@@ -464,7 +496,7 @@ def compare_executions(
         str(row.id): (scenario.name if (scenario := session.get(Scenario, row.scenario_id)) else "")
         for row in rows
     }
-    runs = {str(row.id): _runs(session, row) for row in rows}
+    runs = {str(row.id): execution_runs(session, row) for row in rows}
     analyses = {
         str(row.id): session.scalars(
             select(ScenarioSensitivityAnalysis)

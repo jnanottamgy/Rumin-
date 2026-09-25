@@ -53,3 +53,17 @@ def test_schema_names_are_unique_across_modules() -> None:
     names = build_openapi()["components"]["schemas"]
 
     assert not [name for name in names if name.startswith("app__")]
+
+
+def test_operation_ids_are_unique() -> None:
+    # Operation ids are the route functions' names; the generated frontend types key every
+    # operation by them, so two routes with the same function name would collide there.
+    operations = [
+        operation["operationId"]
+        for path in build_openapi()["paths"].values()
+        for operation in path.values()
+    ]
+
+    assert len(operations) == len(set(operations)), sorted(
+        {name for name in operations if operations.count(name) > 1}
+    )

@@ -1,12 +1,12 @@
 {
-  "id": "348bd1e1-ea11-4851-bbf6-78389f1512c1",
-  "scenario_id": "f5a5b9a1-87b4-4fe8-8dc3-dc2979e4ba8e",
+  "id": "69582e24-c712-43a8-a28e-013d70cbbf9b",
+  "scenario_id": "e8ffba83-c10f-452b-ab07-6b8f34229300",
   "version": 1,
   "status": "completed",
-  "requested_at": "2026-09-24T03:27:57.123440Z",
-  "started_at": "2026-09-24T03:27:57.129168Z",
-  "finished_at": "2026-09-24T03:27:57.224542Z",
-  "duration_ms": 95,
+  "requested_at": "2026-09-25T03:29:56.272427Z",
+  "started_at": "2026-09-25T03:29:56.276600Z",
+  "finished_at": "2026-09-25T03:29:56.442556Z",
+  "duration_ms": 166,
   "inputs_hash": "f6de3e60b25529da5405788ece8ab094fcbb2ff65a19f20c96c66310e77cd15b",
   "result_hash": "45fe9f3bf9a5d69b0f49f5e01ae5f6ebf291fc8e3f94635f5d6072c8e8dce622",
   "headline": [
@@ -33,26 +33,26 @@
   "stages": [
     {
       "stage": "validating",
-      "started_at": "2026-09-24T03:27:57.129892Z",
-      "finished_at": "2026-09-24T03:27:57.160953Z",
+      "started_at": "2026-09-25T03:29:56.277393Z",
+      "finished_at": "2026-09-25T03:29:56.304034Z",
       "detail": "Rebuilding the plan and validating every model's inputs"
     },
     {
       "stage": "simulating",
-      "started_at": "2026-09-24T03:27:57.160953Z",
-      "finished_at": "2026-09-24T03:27:57.180454Z",
+      "started_at": "2026-09-25T03:29:56.304034Z",
+      "finished_at": "2026-09-25T03:29:56.321995Z",
       "detail": "Executing 3 models and 2 stress cases"
     },
     {
       "stage": "propagating",
-      "started_at": "2026-09-24T03:27:57.180454Z",
-      "finished_at": "2026-09-24T03:27:57.186494Z",
+      "started_at": "2026-09-25T03:29:56.321995Z",
+      "finished_at": "2026-09-25T03:29:56.326985Z",
       "detail": "Following each change through the models' runs"
     },
     {
       "stage": "aggregating",
-      "started_at": "2026-09-24T03:27:57.186494Z",
-      "finished_at": "2026-09-24T03:27:57.224526Z",
+      "started_at": "2026-09-25T03:29:56.326985Z",
+      "finished_at": "2026-09-25T03:29:56.442565Z",
       "detail": "Combining the models into lines, metrics and the timeline"
     }
   ],
@@ -460,8 +460,8 @@
         ],
         "graph": {
           "build_id": 1,
-          "build_finished_at": "2026-09-24T03:27:55.249248+00:00",
-          "source_fingerprint": "0c765a31f90ad535d027fc8ec9a676c21085d2a78d2d04d38f9f03f64dc4a3b3",
+          "build_finished_at": "2026-09-25T03:29:54.242143+00:00",
+          "source_fingerprint": "0e06d04b9be0b11e9bd6e99f76885d8b8da060ae137c81a831a25d16d141094c",
           "freshness": "current",
           "transmission": {
             "T1": {
@@ -876,8 +876,8 @@
         ],
         "graph": {
           "build_id": 1,
-          "build_finished_at": "2026-09-24T03:27:55.249248+00:00",
-          "source_fingerprint": "0c765a31f90ad535d027fc8ec9a676c21085d2a78d2d04d38f9f03f64dc4a3b3",
+          "build_finished_at": "2026-09-25T03:29:54.242143+00:00",
+          "source_fingerprint": "0e06d04b9be0b11e9bd6e99f76885d8b8da060ae137c81a831a25d16d141094c",
           "freshness": "current",
           "transmission": {},
           "supporting": {
@@ -1240,8 +1240,8 @@
         ],
         "graph": {
           "build_id": 1,
-          "build_finished_at": "2026-09-24T03:27:55.249248+00:00",
-          "source_fingerprint": "0c765a31f90ad535d027fc8ec9a676c21085d2a78d2d04d38f9f03f64dc4a3b3",
+          "build_finished_at": "2026-09-25T03:29:54.242143+00:00",
+          "source_fingerprint": "0e06d04b9be0b11e9bd6e99f76885d8b8da060ae137c81a831a25d16d141094c",
           "freshness": "current",
           "transmission": {},
           "supporting": {
@@ -2365,19 +2365,19 @@
       "position": 0,
       "model_id": "airline_fuel_cost",
       "model_version": "1.1.0",
-      "run_id": "39413e33-5972-4106-b818-6a92770b59bc"
+      "run_id": "87e1f242-3354-43e3-aa70-6295e28d72d8"
     },
     {
       "position": 1,
       "model_id": "fx_exposure",
       "model_version": "1.0.0",
-      "run_id": "912b1630-941f-4ac4-afe1-60967999aac3"
+      "run_id": "35648974-b0b6-4ba8-bb61-028c0b8d0735"
     },
     {
       "position": 2,
       "model_id": "floating_rate_interest",
       "model_version": "1.0.0",
-      "run_id": "e78cb524-99cb-4540-8bf8-e3b6600f703d"
+      "run_id": "7547fa69-5436-4e5f-b256-c1a56e7ec836"
     }
   ],
   "results_available": true,

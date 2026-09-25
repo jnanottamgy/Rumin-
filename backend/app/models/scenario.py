@@ -197,3 +197,32 @@ class ScenarioSensitivityAnalysis(Base):
     duration_ms: Mapped[int] = mapped_column(Integer)
     result_hash: Mapped[str] = mapped_column(String(64))
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+    # 1.0.0 (before migration 0008): the aggregation kept the execution's shared figures while
+    # the models used the varied values. 1.1.0: the varied values reach the aggregation too.
+    method_version: Mapped[str] = mapped_column(String(16), default="1.1.0")
+
+
+class ScenarioAnalysis(Base):
+    """A Monte Carlo or joint sensitivity analysis of an execution (Phase 9). Append-only:
+    the request, the configuration it ran with (seed, versions, runs, graph builds) and its
+    results, with hashes so it can be re-run and compared."""
+
+    __tablename__ = "scenario_analyses"
+    __table_args__ = (
+        Index("ix_scenario_analyses_execution_created", "execution_id", "created_at"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    execution_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("scenario_executions.id", ondelete="RESTRICT")
+    )
+    kind: Mapped[str] = mapped_column(String(32))
+    metric: Mapped[str] = mapped_column(String(64))
+    request: Mapped[dict[str, Any]] = mapped_column(JSON)
+    config: Mapped[dict[str, Any]] = mapped_column(JSON)
+    results: Mapped[dict[str, Any]] = mapped_column(JSON)
+    evaluations: Mapped[int] = mapped_column(Integer)
+    duration_ms: Mapped[int] = mapped_column(Integer)
+    inputs_hash: Mapped[str] = mapped_column(String(64))
+    result_hash: Mapped[str] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)

@@ -1,6 +1,6 @@
 {
-  "id": "79ea15c4-f849-47de-8ea2-a29b7cec7d7d",
-  "execution_id": "348bd1e1-ea11-4851-bbf6-78389f1512c1",
+  "id": "fcb2b530-9a6c-4905-86cc-3d63e73e7e37",
+  "execution_id": "69582e24-c712-43a8-a28e-013d70cbbf9b",
   "metric": "profit_before_tax",
   "metric_label": "Profit before tax",
   "metric_kind": "line_change",
@@ -298,9 +298,11 @@
     }
   ],
   "evaluations": 15,
-  "duration_ms": 13,
+  "duration_ms": 14,
   "result_hash": "4625ba7a565381da15ad9439714fad31dd2fa1dcdb6ad92146f4da98ee432f60",
-  "created_at": "2026-09-24T03:27:57.305367Z",
+  "created_at": "2026-09-25T03:29:56.534408Z",
   "method": "one_at_a_time",
+  "method_version": "1.1.0",
+  "caveats": [],
   "note": "One quantity is moved at a time while everything else keeps the execution's value. The spread shows how much the result depends on it, not how likely any value is. This is sensitivity analysis, not a stochastic (Monte Carlo) simulation."
 }

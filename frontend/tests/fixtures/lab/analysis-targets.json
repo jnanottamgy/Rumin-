@@ -1,0 +1,565 @@
+{
+  "execution_id": "69582e24-c712-43a8-a28e-013d70cbbf9b",
+  "currency": "INR",
+  "horizon_months": 12,
+  "targets": [
+    {
+      "id": "change:var_brent_crude",
+      "label": "Crude oil price change",
+      "kind": "change",
+      "models": ["airline_fuel_cost"],
+      "unit": "percent_change",
+      "unit_label": "% change",
+      "integer": false,
+      "base_value": "20",
+      "minimum": "-100",
+      "maximum": "1000",
+      "minimum_exclusive": true,
+      "maximum_exclusive": false,
+      "max_decimals": 4,
+      "default_variation": {
+        "mode": "absolute",
+        "step": "10"
+      }
+    },
+    {
+      "id": "change:var_usd_inr",
+      "label": "Exchange-rate change",
+      "kind": "change",
+      "models": ["airline_fuel_cost", "fx_exposure"],
+      "unit": "percent_change",
+      "unit_label": "% change",
+      "integer": false,
+      "base_value": "5",
+      "minimum": "-100",
+      "maximum": "1000",
+      "minimum_exclusive": true,
+      "maximum_exclusive": false,
+      "max_decimals": 4,
+      "default_variation": {
+        "mode": "absolute",
+        "step": "5"
+      }
+    },
+    {
+      "id": "change:var_rbi_repo_rate",
+      "label": "RBI repo rate change",
+      "kind": "change",
+      "models": ["floating_rate_interest"],
+      "unit": "percentage_points",
+      "unit_label": "percentage points",
+      "integer": false,
+      "base_value": "0.5",
+      "minimum": "-25",
+      "maximum": "25",
+      "minimum_exclusive": false,
+      "maximum_exclusive": false,
+      "max_decimals": 4,
+      "default_variation": {
+        "mode": "absolute",
+        "step": "0.25"
+      }
+    },
+    {
+      "id": "shared:annual_revenue",
+      "label": "Annual revenue",
+      "kind": "shared",
+      "models": ["airline_fuel_cost", "fx_exposure", "floating_rate_interest"],
+      "unit": "currency_per_year",
+      "unit_label": "INR per year",
+      "integer": false,
+      "base_value": "300000000",
+      "minimum": "0",
+      "maximum": "1000000000000000",
+      "minimum_exclusive": true,
+      "maximum_exclusive": false,
+      "max_decimals": 6,
+      "default_variation": {
+        "mode": "relative",
+        "step": "10"
+      }
+    },
+    {
+      "id": "shared:annual_operating_costs",
+      "label": "Annual operating costs",
+      "kind": "shared",
+      "models": ["airline_fuel_cost", "fx_exposure", "floating_rate_interest"],
+      "unit": "currency_per_year",
+      "unit_label": "INR per year",
+      "integer": false,
+      "base_value": "250000000",
+      "minimum": "0",
+      "maximum": "1000000000000000",
+      "minimum_exclusive": true,
+      "maximum_exclusive": false,
+      "max_decimals": 6,
+      "default_variation": {
+        "mode": "relative",
+        "step": "10"
+      }
+    },
+    {
+      "id": "shared:fx_rate",
+      "label": "Baseline exchange rate",
+      "kind": "shared",
+      "models": ["airline_fuel_cost", "fx_exposure"],
+      "unit": "currency_per_usd",
+      "unit_label": "INR per USD",
+      "integer": false,
+      "base_value": "80",
+      "minimum": "0",
+      "maximum": "100000",
+      "minimum_exclusive": true,
+      "maximum_exclusive": false,
+      "max_decimals": 6,
+      "default_variation": {
+        "mode": "relative",
+        "step": "5"
+      }
+    },
+    {
+      "id": "model:airline_fuel_cost:jet_fuel_price",
+      "label": "Baseline jet fuel price (Airline fuel cost)",
+      "kind": "market",
+      "models": ["airline_fuel_cost"],
+      "unit": "usd_per_kilolitre",
+      "unit_label": "USD per kilolitre",
+      "integer": false,
+      "base_value": "750",
+      "minimum": "0",
+      "maximum": "100000",
+      "minimum_exclusive": true,
+      "maximum_exclusive": false,
+      "max_decimals": 6,
+      "default_variation": {
+        "mode": "relative",
+        "step": "10"
+      }
+    },
+    {
+      "id": "model:airline_fuel_cost:annual_fuel_consumption",
+      "label": "Annual fuel consumption (Airline fuel cost)",
+      "kind": "company",
+      "models": ["airline_fuel_cost"],
+      "unit": "kilolitre",
+      "unit_label": "kilolitre",
+      "integer": false,
+      "base_value": "1000",
+      "minimum": "0",
+      "maximum": "1000000000000",
+      "minimum_exclusive": true,
+      "maximum_exclusive": false,
+      "max_decimals": 6,
+      "default_variation": {
+        "mode": "relative",
+        "step": "10"
+      }
+    },
+    {
+      "id": "model:airline_fuel_cost:crude_pass_through",
+      "label": "Crude-to-jet-fuel elasticity (β) (Airline fuel cost)",
+      "kind": "assumption",
+      "models": ["airline_fuel_cost"],
+      "unit": "elasticity",
+      "unit_label": "elasticity (dimensionless)",
+      "integer": false,
+      "base_value": "1",
+      "minimum": "0",
+      "maximum": "3",
+      "minimum_exclusive": false,
+      "maximum_exclusive": false,
+      "max_decimals": 4,
+      "default_variation": {
+        "mode": "absolute",
+        "step": "0.2"
+      }
+    },
+    {
+      "id": "model:airline_fuel_cost:crude_pass_through_lag",
+      "label": "Crude-to-jet-fuel lag (Airline fuel cost)",
+      "kind": "assumption",
+      "models": ["airline_fuel_cost"],
+      "unit": "months",
+      "unit_label": "months",
+      "integer": true,
+      "base_value": "1",
+      "minimum": "0",
+      "maximum": "12",
+      "minimum_exclusive": false,
+      "maximum_exclusive": false,
+      "max_decimals": 0,
+      "default_variation": {
+        "mode": "absolute",
+        "step": "1"
+      }
+    },
+    {
+      "id": "model:airline_fuel_cost:hedge_ratio",
+      "label": "Hedge ratio (Airline fuel cost)",
+      "kind": "assumption",
+      "models": ["airline_fuel_cost"],
+      "unit": "percent",
+      "unit_label": "%",
+      "integer": false,
+      "base_value": "40",
+      "minimum": "0",
+      "maximum": "100",
+      "minimum_exclusive": false,
+      "maximum_exclusive": false,
+      "max_decimals": 4,
+      "default_variation": {
+        "mode": "absolute",
+        "step": "20"
+      }
+    },
+    {
+      "id": "model:airline_fuel_cost:hedge_months",
+      "label": "Hedge cover (Airline fuel cost)",
+      "kind": "assumption",
+      "models": ["airline_fuel_cost"],
+      "unit": "months",
+      "unit_label": "months",
+      "integer": true,
+      "base_value": "6",
+      "minimum": "0",
+      "maximum": "36",
+      "minimum_exclusive": false,
+      "maximum_exclusive": false,
+      "max_decimals": 0,
+      "default_variation": {
+        "mode": "absolute",
+        "step": "3"
+      }
+    },
+    {
+      "id": "model:airline_fuel_cost:fare_pass_through",
+      "label": "Fare pass-through (Airline fuel cost)",
+      "kind": "assumption",
+      "models": ["airline_fuel_cost"],
+      "unit": "percent",
+      "unit_label": "%",
+      "integer": false,
+      "base_value": "50",
+      "minimum": "0",
+      "maximum": "100",
+      "minimum_exclusive": false,
+      "maximum_exclusive": false,
+      "max_decimals": 4,
+      "default_variation": {
+        "mode": "absolute",
+        "step": "20"
+      }
+    },
+    {
+      "id": "model:airline_fuel_cost:fare_pass_through_lag",
+      "label": "Fare pass-through lag (Airline fuel cost)",
+      "kind": "assumption",
+      "models": ["airline_fuel_cost"],
+      "unit": "months",
+      "unit_label": "months",
+      "integer": true,
+      "base_value": "2",
+      "minimum": "0",
+      "maximum": "12",
+      "minimum_exclusive": false,
+      "maximum_exclusive": false,
+      "max_decimals": 0,
+      "default_variation": {
+        "mode": "absolute",
+        "step": "2"
+      }
+    },
+    {
+      "id": "model:fx_exposure:annual_usd_revenue",
+      "label": "Annual revenue invoiced in US dollars (Foreign-currency revenue and costs)",
+      "kind": "company",
+      "models": ["fx_exposure"],
+      "unit": "usd_per_year",
+      "unit_label": "USD per year",
+      "integer": false,
+      "base_value": "500000",
+      "minimum": "0",
+      "maximum": "1000000000000000",
+      "minimum_exclusive": false,
+      "maximum_exclusive": false,
+      "max_decimals": 6,
+      "default_variation": {
+        "mode": "relative",
+        "step": "10"
+      }
+    },
+    {
+      "id": "model:fx_exposure:annual_usd_costs",
+      "label": "Annual costs paid in US dollars (Foreign-currency revenue and costs)",
+      "kind": "company",
+      "models": ["fx_exposure"],
+      "unit": "usd_per_year",
+      "unit_label": "USD per year",
+      "integer": false,
+      "base_value": "200000",
+      "minimum": "0",
+      "maximum": "1000000000000000",
+      "minimum_exclusive": false,
+      "maximum_exclusive": false,
+      "max_decimals": 6,
+      "default_variation": {
+        "mode": "relative",
+        "step": "10"
+      }
+    },
+    {
+      "id": "model:fx_exposure:revenue_hedge_ratio",
+      "label": "Revenue hedge ratio (Foreign-currency revenue and costs)",
+      "kind": "assumption",
+      "models": ["fx_exposure"],
+      "unit": "percent",
+      "unit_label": "%",
+      "integer": false,
+      "base_value": "0",
+      "minimum": "0",
+      "maximum": "100",
+      "minimum_exclusive": false,
+      "maximum_exclusive": false,
+      "max_decimals": 2,
+      "default_variation": {
+        "mode": "absolute",
+        "step": "25"
+      }
+    },
+    {
+      "id": "model:fx_exposure:cost_hedge_ratio",
+      "label": "Cost hedge ratio (Foreign-currency revenue and costs)",
+      "kind": "assumption",
+      "models": ["fx_exposure"],
+      "unit": "percent",
+      "unit_label": "%",
+      "integer": false,
+      "base_value": "0",
+      "minimum": "0",
+      "maximum": "100",
+      "minimum_exclusive": false,
+      "maximum_exclusive": false,
+      "max_decimals": 2,
+      "default_variation": {
+        "mode": "absolute",
+        "step": "25"
+      }
+    },
+    {
+      "id": "model:fx_exposure:hedge_months",
+      "label": "Hedge cover (Foreign-currency revenue and costs)",
+      "kind": "assumption",
+      "models": ["fx_exposure"],
+      "unit": "months",
+      "unit_label": "months",
+      "integer": true,
+      "base_value": "0",
+      "minimum": "0",
+      "maximum": "36",
+      "minimum_exclusive": false,
+      "maximum_exclusive": false,
+      "max_decimals": 0,
+      "default_variation": {
+        "mode": "absolute",
+        "step": "2"
+      }
+    },
+    {
+      "id": "model:floating_rate_interest:annual_interest_expense",
+      "label": "Annual interest expense (Floating-rate interest)",
+      "kind": "company",
+      "models": ["floating_rate_interest"],
+      "unit": "currency_per_year",
+      "unit_label": "INR per year",
+      "integer": false,
+      "base_value": "12000000",
+      "minimum": "0",
+      "maximum": "1000000000000000",
+      "minimum_exclusive": false,
+      "maximum_exclusive": false,
+      "max_decimals": 6,
+      "default_variation": {
+        "mode": "relative",
+        "step": "10"
+      }
+    },
+    {
+      "id": "model:floating_rate_interest:repo_linked_debt",
+      "label": "Debt linked to the repo rate (Floating-rate interest)",
+      "kind": "company",
+      "models": ["floating_rate_interest"],
+      "unit": "currency",
+      "unit_label": "INR",
+      "integer": false,
+      "base_value": "100000000",
+      "minimum": "0",
+      "maximum": "1000000000000000",
+      "minimum_exclusive": false,
+      "maximum_exclusive": false,
+      "max_decimals": 6,
+      "default_variation": {
+        "mode": "relative",
+        "step": "10"
+      }
+    },
+    {
+      "id": "model:floating_rate_interest:us_rate_linked_debt",
+      "label": "Debt linked to US short-term rates (Floating-rate interest)",
+      "kind": "company",
+      "models": ["floating_rate_interest"],
+      "unit": "currency",
+      "unit_label": "INR",
+      "integer": false,
+      "base_value": "0",
+      "minimum": "0",
+      "maximum": "1000000000000000",
+      "minimum_exclusive": false,
+      "maximum_exclusive": false,
+      "max_decimals": 6,
+      "default_variation": {
+        "mode": "relative",
+        "step": "10"
+      }
+    },
+    {
+      "id": "model:floating_rate_interest:repo_pass_through",
+      "label": "Repo pass-through (Floating-rate interest)",
+      "kind": "assumption",
+      "models": ["floating_rate_interest"],
+      "unit": "percent",
+      "unit_label": "%",
+      "integer": false,
+      "base_value": "100",
+      "minimum": "0",
+      "maximum": "200",
+      "minimum_exclusive": false,
+      "maximum_exclusive": false,
+      "max_decimals": 2,
+      "default_variation": {
+        "mode": "absolute",
+        "step": "25"
+      }
+    },
+    {
+      "id": "model:floating_rate_interest:repo_repricing_lag",
+      "label": "Repo repricing delay (Floating-rate interest)",
+      "kind": "assumption",
+      "models": ["floating_rate_interest"],
+      "unit": "months",
+      "unit_label": "months",
+      "integer": true,
+      "base_value": "3",
+      "minimum": "0",
+      "maximum": "12",
+      "minimum_exclusive": false,
+      "maximum_exclusive": false,
+      "max_decimals": 0,
+      "default_variation": {
+        "mode": "absolute",
+        "step": "2"
+      }
+    },
+    {
+      "id": "model:floating_rate_interest:us_pass_through",
+      "label": "US-rate pass-through (Floating-rate interest)",
+      "kind": "assumption",
+      "models": ["floating_rate_interest"],
+      "unit": "percent",
+      "unit_label": "%",
+      "integer": false,
+      "base_value": "100",
+      "minimum": "0",
+      "maximum": "200",
+      "minimum_exclusive": false,
+      "maximum_exclusive": false,
+      "max_decimals": 2,
+      "default_variation": {
+        "mode": "absolute",
+        "step": "25"
+      }
+    },
+    {
+      "id": "model:floating_rate_interest:us_repricing_lag",
+      "label": "US-rate repricing delay (Floating-rate interest)",
+      "kind": "assumption",
+      "models": ["floating_rate_interest"],
+      "unit": "months",
+      "unit_label": "months",
+      "integer": true,
+      "base_value": "0",
+      "minimum": "0",
+      "maximum": "12",
+      "minimum_exclusive": false,
+      "maximum_exclusive": false,
+      "max_decimals": 0,
+      "default_variation": {
+        "mode": "absolute",
+        "step": "2"
+      }
+    }
+  ],
+  "metrics": [
+    {
+      "id": "revenue",
+      "label": "Revenue",
+      "kind": "line_change",
+      "base": "6925000"
+    },
+    {
+      "id": "operating_costs",
+      "label": "Operating costs",
+      "kind": "line_change",
+      "base": "13250000"
+    },
+    {
+      "id": "operating_profit",
+      "label": "Operating profit",
+      "kind": "line_change",
+      "base": "-6325000"
+    },
+    {
+      "id": "interest_expense",
+      "label": "Interest expense",
+      "kind": "line_change",
+      "base": "375000"
+    },
+    {
+      "id": "profit_before_tax",
+      "label": "Profit before tax",
+      "kind": "line_change",
+      "base": "-6700000"
+    },
+    {
+      "id": "operating_margin",
+      "label": "Operating margin",
+      "kind": "metric_value",
+      "base": "0.1422986072"
+    },
+    {
+      "id": "interest_coverage",
+      "label": "Interest coverage",
+      "kind": "metric_value",
+      "base": "3.5292929293"
+    }
+  ],
+  "limits": {
+    "monte_carlo": {
+      "min_draws": 100,
+      "max_draws": 2000,
+      "default_draws": 500,
+      "max_quantities": 8,
+      "max_discrete_values": 12,
+      "min_accepted": 100,
+      "deadline_seconds": 20.0
+    },
+    "joint": {
+      "max_axis_points": 7,
+      "deadline_seconds": 10.0
+    },
+    "sensitivity": {
+      "max_items": 8,
+      "max_points": 7,
+      "max_evaluations": 60
+    }
+  }
+}

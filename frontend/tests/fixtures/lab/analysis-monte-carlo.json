@@ -1,0 +1,510 @@
+{
+  "id": "e9c650a9-000c-418d-a473-8cf1706eaae2",
+  "execution_id": "69582e24-c712-43a8-a28e-013d70cbbf9b",
+  "kind": "monte_carlo",
+  "metric": "profit_before_tax",
+  "request": {
+    "kind": "monte_carlo",
+    "metric": "profit_before_tax",
+    "draws": 500,
+    "seed": 20260925,
+    "threshold": "-10000000",
+    "quantities": [
+      {
+        "target": "change:var_brent_crude",
+        "distribution": {
+          "kind": "triangular",
+          "low": "-10",
+          "mode": "20",
+          "high": "60"
+        }
+      },
+      {
+        "target": "change:var_usd_inr",
+        "distribution": {
+          "kind": "uniform",
+          "low": "0",
+          "high": "10"
+        }
+      },
+      {
+        "target": "model:floating_rate_interest:repo_repricing_lag",
+        "distribution": {
+          "kind": "discrete",
+          "values": ["0", "3", "6"],
+          "weights": ["1", "2", "1"]
+        }
+      }
+    ]
+  },
+  "config": {
+    "analysis_version": "1.0.0",
+    "lab_version": "1.0.0",
+    "engine_version": "1.0.0",
+    "execution_result_hash": "45fe9f3bf9a5d69b0f49f5e01ae5f6ebf291fc8e3f94635f5d6072c8e8dce622",
+    "runs": [
+      {
+        "model_id": "airline_fuel_cost",
+        "version": "1.1.0",
+        "definition_hash": "1e6ddaac9f18fed44bab55dd1bb12f192ff50326438aa331c7cb295ada15ed6f",
+        "run_id": "87e1f242-3354-43e3-aa70-6295e28d72d8",
+        "inputs_hash": "c1bd2d91950f9be4350542e7edc335244a46bf0423423be66d5d49236e3e6e4c",
+        "graph_build_id": 1,
+        "graph_fingerprint": "0e06d04b9be0b11e9bd6e99f76885d8b8da060ae137c81a831a25d16d141094c"
+      },
+      {
+        "model_id": "floating_rate_interest",
+        "version": "1.0.0",
+        "definition_hash": "e11b2df833e9dbe2cb7146b0c3d0719304260e8a5c74852127996c64979fbe2d",
+        "run_id": "7547fa69-5436-4e5f-b256-c1a56e7ec836",
+        "inputs_hash": "ac54adfda1dcddb4026e09ef8274193d795da05c4548ac6e70698da7c4737a84",
+        "graph_build_id": 1,
+        "graph_fingerprint": "0e06d04b9be0b11e9bd6e99f76885d8b8da060ae137c81a831a25d16d141094c"
+      },
+      {
+        "model_id": "fx_exposure",
+        "version": "1.0.0",
+        "definition_hash": "1d0da6e5da1964c8910696394f6c905b4c2d5016c4bb9ed70dd94253890492a3",
+        "run_id": "35648974-b0b6-4ba8-bb61-028c0b8d0735",
+        "inputs_hash": "0e70d2e64c2a834ecbe4ead28e982f0965ca43abb3e93fc267bfce932a91f471",
+        "graph_build_id": 1,
+        "graph_fingerprint": "0e06d04b9be0b11e9bd6e99f76885d8b8da060ae137c81a831a25d16d141094c"
+      }
+    ],
+    "seed": 20260925,
+    "generator": "Python random.Random(seed).random() — Mersenne Twister MT19937, 53-bit",
+    "sampler_version": "1.0.0",
+    "draws": 500
+  },
+  "monte_carlo": {
+    "metric": "profit_before_tax",
+    "metric_label": "Profit before tax",
+    "metric_kind": "line_change",
+    "base": "-6700000",
+    "draws": 500,
+    "accepted": 500,
+    "rejected": 0,
+    "rejections": [],
+    "quantities": [
+      {
+        "target": "change:var_brent_crude",
+        "label": "Crude oil price change",
+        "kind": "change",
+        "models": ["airline_fuel_cost"],
+        "unit": "percent_change",
+        "base_value": "20",
+        "distribution": {
+          "kind": "triangular",
+          "low": "-10",
+          "mode": "20",
+          "high": "60",
+          "values": null,
+          "weights": null
+        },
+        "distribution_mean": "23.3333333333",
+        "distribution_sd": "14.3372087784",
+        "accepted_mean": "23.5394852",
+        "rank_correlation": "-0.9914665259"
+      },
+      {
+        "target": "change:var_usd_inr",
+        "label": "Exchange-rate change",
+        "kind": "change",
+        "models": ["airline_fuel_cost", "fx_exposure"],
+        "unit": "percent_change",
+        "base_value": "5",
+        "distribution": {
+          "kind": "uniform",
+          "low": "0",
+          "mode": null,
+          "high": "10",
+          "values": null,
+          "weights": null
+        },
+        "distribution_mean": "5",
+        "distribution_sd": "2.8867513459",
+        "accepted_mean": "4.9220976",
+        "rank_correlation": "-0.1776638434"
+      },
+      {
+        "target": "model:floating_rate_interest:repo_repricing_lag",
+        "label": "Repo repricing delay (Floating-rate interest)",
+        "kind": "assumption",
+        "models": ["floating_rate_interest"],
+        "unit": "months",
+        "base_value": "3",
+        "distribution": {
+          "kind": "discrete",
+          "low": null,
+          "mode": null,
+          "high": null,
+          "values": ["0", "3", "6"],
+          "weights": ["1", "2", "1"]
+        },
+        "distribution_mean": "3",
+        "distribution_sd": "2.1213203436",
+        "accepted_mean": "2.904",
+        "rank_correlation": "0.0271416297"
+      }
+    ],
+    "summary": {
+      "mean": "-7719509.11908655",
+      "standard_deviation": "4133093.4707057706",
+      "standard_error": "184837.5591571728",
+      "relative_standard_error": "0.0239442115",
+      "minimum": "-18313804.70125",
+      "maximum": "1885877.8640675",
+      "percentiles": [
+        {
+          "p": 5,
+          "value": "-14693754.2517415",
+          "interval": {
+            "lower": "-15763835.09812",
+            "upper": "-14287958.33884",
+            "lower_rank": 15,
+            "upper_rank": 36,
+            "coverage": "0.9695"
+          }
+        },
+        {
+          "p": 10,
+          "value": "-13451943.15846625",
+          "interval": null
+        },
+        {
+          "p": 25,
+          "value": "-11001648.90784375",
+          "interval": null
+        },
+        {
+          "p": 50,
+          "value": "-7252179.5255825",
+          "interval": {
+            "lower": "-7808075.5011",
+            "upper": "-6803216.75016",
+            "lower_rank": 228,
+            "upper_rank": 273,
+            "coverage": "0.9559"
+          }
+        },
+        {
+          "p": 75,
+          "value": "-4751010.46358125",
+          "interval": null
+        },
+        {
+          "p": 90,
+          "value": "-2362536.816869",
+          "interval": null
+        },
+        {
+          "p": 95,
+          "value": "-1142071.698848125",
+          "interval": {
+            "lower": "-1712846.7802975",
+            "upper": "-519468.9781575",
+            "lower_rank": 465,
+            "upper_rank": 486,
+            "coverage": "0.9695"
+          }
+        }
+      ],
+      "share_below_zero": "0.986",
+      "threshold": "-10000000",
+      "share_at_or_below_threshold": "0.296"
+    },
+    "histogram": [
+      {
+        "low": "-18313804.70125",
+        "high": "-17303820.572984125",
+        "count": 1
+      },
+      {
+        "low": "-17303820.572984125",
+        "high": "-16293836.44471825",
+        "count": 5
+      },
+      {
+        "low": "-16293836.44471825",
+        "high": "-15283852.316452375",
+        "count": 13
+      },
+      {
+        "low": "-15283852.316452375",
+        "high": "-14273868.1881865",
+        "count": 17
+      },
+      {
+        "low": "-14273868.1881865",
+        "high": "-13263884.059920625",
+        "count": 17
+      },
+      {
+        "low": "-13263884.059920625",
+        "high": "-12253899.93165475",
+        "count": 32
+      },
+      {
+        "low": "-12253899.93165475",
+        "high": "-11243915.803388875",
+        "count": 30
+      },
+      {
+        "low": "-11243915.803388875",
+        "high": "-10233931.675123",
+        "count": 29
+      },
+      {
+        "low": "-10233931.675123",
+        "high": "-9223947.546857125",
+        "count": 32
+      },
+      {
+        "low": "-9223947.546857125",
+        "high": "-8213963.41859125",
+        "count": 33
+      },
+      {
+        "low": "-8213963.41859125",
+        "high": "-7203979.290325375",
+        "count": 44
+      },
+      {
+        "low": "-7203979.290325375",
+        "high": "-6193995.1620595",
+        "count": 54
+      },
+      {
+        "low": "-6193995.1620595",
+        "high": "-5184011.033793625",
+        "count": 49
+      },
+      {
+        "low": "-5184011.033793625",
+        "high": "-4174026.90552775",
+        "count": 39
+      },
+      {
+        "low": "-4174026.90552775",
+        "high": "-3164042.777261875",
+        "count": 37
+      },
+      {
+        "low": "-3164042.777261875",
+        "high": "-2154058.648996",
+        "count": 23
+      },
+      {
+        "low": "-2154058.648996",
+        "high": "-1144074.520730125",
+        "count": 19
+      },
+      {
+        "low": "-1144074.520730125",
+        "high": "-134090.39246425",
+        "count": 18
+      },
+      {
+        "low": "-134090.39246425",
+        "high": "875893.735801625",
+        "count": 3
+      },
+      {
+        "low": "875893.735801625",
+        "high": "1885877.8640675",
+        "count": 5
+      }
+    ],
+    "convergence": {
+      "checkpoints": [
+        {
+          "draws": 25,
+          "mean": "-7195568.5930355",
+          "standard_error": "842263.6152930601"
+        },
+        {
+          "draws": 50,
+          "mean": "-7532059.1725174",
+          "standard_error": "532035.6671959234"
+        },
+        {
+          "draws": 75,
+          "mean": "-7666817.9169086",
+          "standard_error": "423110.6387729347"
+        },
+        {
+          "draws": 100,
+          "mean": "-7263002.6486752",
+          "standard_error": "375727.346974143"
+        },
+        {
+          "draws": 125,
+          "mean": "-7580388.1777585",
+          "standard_error": "341705.2082027229"
+        },
+        {
+          "draws": 150,
+          "mean": "-7610905.754202",
+          "standard_error": "318996.1469602026"
+        },
+        {
+          "draws": 175,
+          "mean": "-7791720.0407569857",
+          "standard_error": "299275.8066874045"
+        },
+        {
+          "draws": 200,
+          "mean": "-7817157.4926538625",
+          "standard_error": "282340.0195795586"
+        },
+        {
+          "draws": 225,
+          "mean": "-7708795.4264261778",
+          "standard_error": "263898.7576486731"
+        },
+        {
+          "draws": 250,
+          "mean": "-7752864.32281275",
+          "standard_error": "252464.0424185568"
+        },
+        {
+          "draws": 275,
+          "mean": "-7675437.7734129091",
+          "standard_error": "243261.0974937191"
+        },
+        {
+          "draws": 300,
+          "mean": "-7725748.672011525",
+          "standard_error": "234052.1219412736"
+        },
+        {
+          "draws": 325,
+          "mean": "-7730399.0295600462",
+          "standard_error": "223458.9119403791"
+        },
+        {
+          "draws": 350,
+          "mean": "-7750145.8662188643",
+          "standard_error": "214966.7097141522"
+        },
+        {
+          "draws": 375,
+          "mean": "-7716378.07169154",
+          "standard_error": "206490.9941397376"
+        },
+        {
+          "draws": 400,
+          "mean": "-7666993.7038516",
+          "standard_error": "201830.250477658"
+        },
+        {
+          "draws": 425,
+          "mean": "-7707494.3027707176",
+          "standard_error": "199415.130899884"
+        },
+        {
+          "draws": 450,
+          "mean": "-7769573.4977606",
+          "standard_error": "193877.1202601385"
+        },
+        {
+          "draws": 475,
+          "mean": "-7748488.1817787053",
+          "standard_error": "187693.6860980663"
+        },
+        {
+          "draws": 500,
+          "mean": "-7719509.11908655",
+          "standard_error": "184837.5591571728"
+        }
+      ],
+      "first_half_mean": "-7752864.32281275",
+      "second_half_mean": "-7686153.91536035",
+      "halves_z": "-0.1802818237",
+      "halves_flagged": false
+    },
+    "outputs": [
+      {
+        "id": "revenue",
+        "label": "Revenue",
+        "kind": "line_change",
+        "base": "6925000",
+        "mean": "7526049.68378235",
+        "p5": "2490815.969390125",
+        "p50": "7169939.8076125",
+        "p95": "13356348.612848125"
+      },
+      {
+        "id": "operating_costs",
+        "label": "Operating costs",
+        "kind": "line_change",
+        "base": "13250000",
+        "mean": "14866558.8028689",
+        "p5": "3646895.96824625",
+        "p50": "14481663.6439125",
+        "p95": "27319116.1826685"
+      },
+      {
+        "id": "operating_profit",
+        "label": "Operating profit",
+        "kind": "line_change",
+        "base": "-6325000",
+        "mean": "-7340509.11908655",
+        "p5": "-14318754.2517415",
+        "p50": "-6886358.9795275",
+        "p95": "-767071.698848125"
+      },
+      {
+        "id": "interest_expense",
+        "label": "Interest expense",
+        "kind": "line_change",
+        "base": "375000",
+        "mean": "379000",
+        "p5": "250000",
+        "p50": "375000",
+        "p95": "500000"
+      },
+      {
+        "id": "profit_before_tax",
+        "label": "Profit before tax",
+        "kind": "line_change",
+        "base": "-6700000",
+        "mean": "-7719509.11908655",
+        "p5": "-14693754.2517415",
+        "p50": "-7252179.5255825",
+        "p95": "-1142071.698848125"
+      },
+      {
+        "id": "operating_margin",
+        "label": "Operating margin",
+        "kind": "metric_value",
+        "base": "0.1422986072",
+        "mean": "0.1388637502",
+        "p5": "0.1136653437",
+        "p50": "0.1403640833",
+        "p95": "0.1622508676"
+      },
+      {
+        "id": "interest_coverage",
+        "label": "Interest coverage",
+        "kind": "metric_value",
+        "base": "3.5292929293",
+        "mean": "3.4462960901",
+        "p5": "2.883729978",
+        "p50": "3.4824825904",
+        "p95": "3.9784184486"
+      }
+    ],
+    "notes": [
+      "The spread describes the result if the quantities varied as you stated — the distributions are your assumptions, not estimates from data. It is not a forecast and not the probability of any outcome.",
+      "The quantities are drawn independently of each other: a relationship between them (a weaker rupee when crude oil rises, say) is not modelled."
+    ]
+  },
+  "joint": null,
+  "evaluations": 501,
+  "duration_ms": 662,
+  "inputs_hash": "9bde17ffa13205fdf39e7e9dcdea802e9fbf566935c23630a0e909b7cc9d2a3b",
+  "result_hash": "e4058fecf8243f3c172513b0609b6e364017a0fe2600202558e12b52e37865d0",
+  "created_at": "2026-09-25T03:29:57.262593Z",
+  "note": "The spread describes the result if the quantities varied as you stated — the distributions are your assumptions, not estimates from data. It is not a forecast and not the probability of any outcome."
+}

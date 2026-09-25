@@ -19,6 +19,7 @@ from app.models.provider import DataProvider
 from app.models.relationship import Relationship
 from app.models.scenario import (
     Scenario,
+    ScenarioAnalysis,
     ScenarioExecution,
     ScenarioExecutionRun,
     ScenarioSensitivityAnalysis,
@@ -61,6 +62,7 @@ __all__ = [
     "PriceBar",
     "Relationship",
     "Scenario",
+    "ScenarioAnalysis",
     "ScenarioExecution",
     "ScenarioExecutionRun",
     "ScenarioSensitivityAnalysis",

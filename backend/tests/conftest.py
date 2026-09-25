@@ -49,6 +49,7 @@ from app.models import (
     Instrument,
     PriceBar,
     Scenario,
+    ScenarioAnalysis,
     ScenarioExecution,
     ScenarioExecutionRun,
     ScenarioSensitivityAnalysis,
@@ -154,6 +155,7 @@ def wipe_scenarios(session: Session) -> None:
     """Remove every scenario and everything executing one stored (in foreign-key order)."""
     run_ids = select(ScenarioExecutionRun.simulation_run_id)
     session.execute(delete(ScenarioSensitivityAnalysis))
+    session.execute(delete(ScenarioAnalysis))
     runs = list(session.scalars(run_ids))
     session.execute(delete(ScenarioExecutionRun))
     session.execute(delete(ScenarioExecution))

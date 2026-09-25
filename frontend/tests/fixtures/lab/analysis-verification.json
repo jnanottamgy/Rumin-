@@ -1,0 +1,9 @@
+{
+  "analysis_id": "e9c650a9-000c-418d-a473-8cf1706eaae2",
+  "reproduced": true,
+  "inputs_hash_matches": true,
+  "result_hash_matches": true,
+  "stored_result_hash": "e4058fecf8243f3c172513b0609b6e364017a0fe2600202558e12b52e37865d0",
+  "recomputed_result_hash": "e4058fecf8243f3c172513b0609b6e364017a0fe2600202558e12b52e37865d0",
+  "message": "Run again from the stored runs and request with seed 20260925: identical results."
+}

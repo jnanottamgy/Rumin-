@@ -120,3 +120,80 @@ def test_phase_1_drafts_become_version_one_of_themselves(fresh_sqlite_url: str) 
         rows = connection.execute(sa.text("SELECT variable_id, note FROM scenario_shocks")).all()
     assert [(row.variable_id, row.note) for row in rows] == [("var_brent_crude", "Up")]
     engine.dispose()
+
+
+def test_sensitivity_analyses_stored_before_0008_are_method_1_0_0(fresh_sqlite_url: str) -> None:
+    """Migration 0008 marks every existing one-at-a-time analysis with the method that
+    computed it, leaves no default for new rows, and the downgrade removes the column."""
+    from app.domain.enums import ScenarioExecutionStatus
+    from app.models import ScenarioExecution, ScenarioSensitivityAnalysis, ScenarioVersion
+    from app.schemas.scenario import ScenarioInput
+    from app.services.scenarios import create_scenario
+
+    config = alembic_config(fresh_sqlite_url)
+    command.upgrade(config, "head")
+    engine = create_db_engine(fresh_sqlite_url)
+    with create_session_factory(engine)() as session:
+        load_dataset(session)
+        created = create_scenario(
+            session,
+            ScenarioInput.model_validate(
+                {
+                    "name": "Oil shock",
+                    "shocks": [
+                        {
+                            "variable_id": "var_brent_crude",
+                            "change_type": "percent_change",
+                            "value": "20",
+                        }
+                    ],
+                }
+            ),
+        )
+        version = session.scalars(
+            sa.select(ScenarioVersion).where(ScenarioVersion.scenario_id == created.id)
+        ).one()
+        execution = ScenarioExecution(
+            id=uuid.uuid4(),
+            scenario_id=created.id,
+            scenario_version_id=version.id,
+            version=1,
+            status=ScenarioExecutionStatus.FAILED,
+            stages=[],
+            lab_version="1.0.0",
+        )
+        session.add(execution)
+        session.flush()
+        session.add(
+            ScenarioSensitivityAnalysis(
+                execution_id=execution.id,
+                metric="operating_margin",
+                request=[],
+                results={},
+                evaluations=1,
+                duration_ms=1,
+                result_hash="0" * 64,
+            )
+        )
+        session.commit()
+    # Back to Phase 8's schema, where the analysis has no method, and forward again.
+    command.downgrade(config, "0007")
+    names = [item["name"] for item in inspect(engine).get_columns("scenario_sensitivity_analyses")]
+    assert "method_version" not in names
+    assert "scenario_analyses" not in inspect(engine).get_table_names()
+
+    command.upgrade(config, "head")
+
+    with engine.connect() as connection:
+        method = connection.execute(
+            sa.text("SELECT method_version FROM scenario_sensitivity_analyses")
+        ).scalar()
+    column = next(
+        item
+        for item in inspect(engine).get_columns("scenario_sensitivity_analyses")
+        if item["name"] == "method_version"
+    )
+    assert method == "1.0.0"
+    assert column["default"] is None
+    assert "scenario_analyses" in inspect(engine).get_table_names()
+    engine.dispose()
