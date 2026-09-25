@@ -1,11 +1,14 @@
 # Technology decisions
 
-Short records of the choices made in Phases 1 to 6, why, and what would make us revisit
+Short records of the choices made in Phases 1 to 9, why, and what would make us revisit
 them. Phase 2 decisions start at [13](#13-world-bank-indicators-as-the-first-provider-fred-rejected),
 Phase 3 decisions at [23](#23-the-knowledge-graph-lives-in-the-existing-relational-database),
 Phase 4 decisions at [33](#33-one-narrow-domain-first-an-airline-fuel-cost-shock),
 Phase 5 decisions at [43](#43-several-narrow-models-composed-by-line-items),
-Phase 6 decisions at [54](#54-statements-come-only-from-numbered-rules-with-evidence-chains).
+Phase 6 decisions at [54](#54-statements-come-only-from-numbered-rules-with-evidence-chains),
+Phase 7 decisions at [65](#65-two-providers-behind-one-tool-layer-rumins-own-composer-by-default),
+Phase 8 decisions at [73](#73-plain-threejs-loaded-only-with-the-3d-page),
+Phase 9 decisions at [79](#79-advanced-analyses-re-evaluate-stored-executions-through-one-evaluator).
 
 ## 1. Monorepo with a Python API and a TypeScript web client
 
@@ -923,3 +926,129 @@ other nodes and inside the canvas, at most 36 at a time.
 constant as the graph grows; the coarser outline mesh halved the triangles; DOM names stay
 sharp, use the product's type, and never pretend a label that does not fit was written.
 **Revisit** if names need to be selectable on the canvas itself.
+
+## 79. Advanced analyses re-evaluate stored executions through one evaluator
+
+**Decision.** Grids and Monte Carlo analyses work only on a **completed, stored** execution
+of the Scenario Lab. One `Evaluator` (`scenario_lab/evaluation.py`) re-evaluates the
+execution's stored model runs with some quantities changed — the Phase 4 engine's
+`evaluate_result`, each model's rules, the graph channel check against the run's stored
+snapshot, the Lab's aggregation — and one-at-a-time sensitivity, the grid and Monte Carlo all
+call it.
+**Why.** A second engine, or a statistical shortcut around the models, would give results the
+product could not explain or reproduce. A stored execution fixes everything the analysis does
+not vary, so its figures are conditional on exactly what is recorded, and a re-run can prove
+it. Sharing the evaluator also shared the fix in [85](#85-a-methods-defect-is-fixed-by-versioning-the-method-not-by-rewriting-results).
+**Revisit** if an analysis needs to vary what an execution fixed (the horizon, the set of models).
+
+## 80. Distributions are stated, bounded and never clipped
+
+**Decision.** A Monte Carlo quantity takes one of three distributions — uniform, triangular,
+discrete (2–12 values, positive weights) — stated by the user. Every endpoint must pass the
+input's own range rule and decimals; draws are rounded half to even to those decimals; a
+whole-month input takes only a discrete distribution. A draw that breaks a model's rule is
+**rejected and counted by rule, never adjusted**; fewer than 100 accepted draws give no
+summary. Quantities are drawn independently, and every analysis with more than one says so.
+The starting points offered in the interface are the models' default variations as uniform
+ranges, labelled as the user's assumption.
+**Why.** RUMIN holds no observations to estimate a distribution from, so a distribution is an
+assumption and must be visible as one. Bounded supports inside the valid range make clipping
+unnecessary; clipping or re-drawing would silently reshape the stated distribution. Normal
+or lognormal distributions would need truncation to stay valid. Correlated draws need a
+stated correlation structure, which is a separate design.
+**Revisit** with correlated draws (a rank-correlation structure) and empirical distributions
+once observations are stored.
+
+## 81. Python's Mersenne Twister with a recorded seed, in exact decimals
+
+**Decision.** Draws use `random.Random(seed).random()`, one number per quantity per draw in
+request order (even for a rejected draw), turned into values by the inverse transform in
+34-digit decimal arithmetic. The seed is recorded; the server picks one with
+`secrets.randbits(53)` when none is given; seeds are at most 2⁵³ − 1. NumPy is not used.
+**Why.** Python guarantees `random()`'s sequence for a given seed across versions, so a stored
+analysis reproduces exactly, which `verify` checks by hash. Decimal arithmetic keeps the
+engine's exactness through the transform. 2⁵³ − 1 is the largest integer a browser reads
+exactly from JSON; a larger seed would be shown and re-sent wrongly. No new dependency was
+needed for 2,000 draws taking a few seconds at most.
+**Revisit** if analyses need far more draws (then vectorised sampling, with its own
+reproducibility guarantee recorded in `sampler_version`).
+
+## 82. Percentiles only as precise as the draws support; shares, never probabilities
+
+**Decision.** Percentiles follow Hyndman–Fan type 7 (Excel's `PERCENTILE.INC`); P5, P50 and
+P95 carry a distribution-free interval between two order statistics with its **exact**
+binomial coverage (computed in fractions). The share of draws below zero or at or below a
+threshold is labelled a share of draws under the stated distributions. Rank correlations
+(Spearman, average ranks) describe association within the sample. Diagnostics — the running
+mean with ±2 standard errors, the two halves compared, the relative standard error — are
+shown with every result.
+**Why.** A percentile from a few hundred draws has sampling error; printing it alone would
+claim precision it lacks. Calling a share a probability would present the user's assumptions
+as a forecast. Variance-based (Sobol) indices would need many more evaluations and a design of
+their own; a rank correlation is honest about what it is.
+**Revisit** with variance-based indices once analyses can run longer.
+
+## 83. Two quantities together: the grid and its interaction term
+
+**Decision.** A grid varies two different quantities over their default variation or listed
+values plus the executed value (at most 7 × 7), and reports for every cell the value, its
+change from the execution and the interaction *f(a, b) − f(a, b₀) − f(a₀, b) + f(a₀, b₀)*;
+a cell that breaks a rule is skipped with its reason and the interactions that need it are
+not computed. The summary says whether the effects simply add (within 10⁻⁶).
+**Why.** One-at-a-time analysis cannot show that a weaker rupee makes a crude rise costlier;
+the interaction term isolates exactly that, is zero along the executed row and column by
+construction, and can be checked by hand (the crude × rupee case is, to the rupee).
+**Revisit** for three-way interactions — better served by variance-based indices.
+
+## 84. A verification register, never "validated"
+
+**Decision.** Every registered model version has a register of checks run live through the
+engine: the model page's worked example (hand calculations on hypothetical figures) to the
+output quantum, stated properties (no change no effect, the bridge, months adding up,
+contributions adding up, linearity, direction, unit invariance), documented limits and
+reproducibility. Each register lists what is **not** verified — parameters not estimated,
+no back-testing, assumed graph relationships, fictional sample data — and the product never
+uses the word "validated". A new model cannot be registered without its checks (a test fails).
+**Why.** The brief asked for model validation. Without observations, what can honestly be
+established is that the arithmetic matches hand calculations and the stated properties hold;
+showing that, beside what it does not establish, makes the models' status visible instead of
+implied. Running live (45–110 ms) means the register can never disagree with the code.
+**Revisit** when observations allow estimation and back-testing: they join the register as
+new kinds of check.
+
+## 85. A method's defect is fixed by versioning the method, not by rewriting results
+
+**Decision.** The one-at-a-time analysis's aggregation used the executed revenue, operating
+costs and interest expense when the analysis varied them, so operating margin and interest
+coverage did not move. The fix passes the varied figures (method 1.1.0); migration 0008 adds
+`method_version`, marks every stored analysis `1.0.0`, and the API adds a caveat to a `1.0.0`
+analysis that ranked a margin or coverage by one of those figures. No stored result is
+changed.
+**Why.** Stored analyses are append-only records of what was computed; rewriting them would
+break their hashes and the audit trail. A version and a caveat tell the reader exactly which
+figures to distrust and why, and a re-run gives correct ones.
+**Revisit** never for the principle.
+
+## 86. Analyses run in the request, two at a time
+
+**Decision.** An analysis is computed synchronously in its request, within a deadline (Monte
+Carlo 20 s, grid 10 s) after which nothing is stored; a process-wide semaphore lets two
+compute at once and refuses a third with 429 before any work.
+**Why.** The measured worst case (2,000 draws × 8 quantities over 36 months) takes about 6 s,
+so a background queue with polling would add states and failure modes for no benefit today;
+the semaphore keeps a burst from occupying every worker thread.
+**Revisit** with a shared queue (Phase 10) or if analyses grow longer.
+
+## 87. No model chaining, estimation or back-testing in Phase 9
+
+**Decision.** Phase 9 adds no chaining of one model's output into another's input, and no
+parameter estimation, calibration or back-testing.
+**Why.** No model's output is a documented input of another, and the Lab already combines
+models through an accounting aggregation with explicit line contracts: chaining the fuel-cost
+change into another model's operating costs would count it twice. Estimation and
+back-testing need observations; none are stored in this environment (the World Bank retrieval
+is blocked by the network) and the sample companies are fictional, so any estimate would be
+fabricated. Both are recorded as not done, with the reason, in the verification register and
+the roadmap.
+**Revisit** when a model with a documented input contract exists, and when observations are
+stored.

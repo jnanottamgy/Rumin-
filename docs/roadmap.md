@@ -14,7 +14,7 @@ uncertainty are never blurred.
 | **6** | **Financial intelligence** | **Done:** findings from 19 documented rules over stored observations, validated graph relationships and stored executions, each with its evidence chain and grade (the weakest link); change detection, revisions, trends, volatility and unusual moves against configurable thresholds; exposure paths and a companies × variables matrix; drivers from stored contributions; model interpretations of observed changes; dossiers per company and industry; a structured brief for the AI Analyst; stored, fingerprinted analyses that know when they are stale; the Financial Intelligence interface ([report](phases/phase-6-report.md)). Exposure sizes and reports as documents were left for later ([why](phases/phase-6-report.md#10-verification-against-the-brief)) |
 | **7** | **AI Analyst** | **Done:** questions answered from RUMIN's records through 17 allowlisted, read-only tools over the Phase 2–6 services (one compute tool: an unstored scenario preview); an evidence ledger with eight kinds of knowledge; every figure cited and checked mechanically against its evidence, unsupported parts never shown; RUMIN's grounded composer by default and an optional Claude model through the official SDK, held to the same check with fallback; conversations with focus, follow-ups and clarifications; guardrails for advice, forecasts, live data, injection and secrets; bounded work and cost; the evidence-margin workspace with the Scenario Lab hand-over; a 33-case evaluation set ([report](phases/phase-7-report.md)). A language model has **not** been measured: no key was available ([why](analyst/providers.md#not-verified-here)) |
 | **8** | **3D financial universe** | **Done in this build:** the knowledge graph in three dimensions (`/universe/3d`) — strata by kind, the graph's own marks, the whole build within a budget, neighbourhoods and paths through the 2D explorer's state, every record's provenance and evidence in the same panels, overlays of stored executions (changed, simulated, propagated, cited, not simulated, with their stored results), a keyboard model and a list twin, rendering on demand, lazily loaded Three.js ([report](phases/phase-8-report.md), [guide](universe/README.md)). Hardware GPU frame rates were not measured: none was available ([why](universe/performance.md)) |
-| 9 | Advanced simulation & validation | Back-testing, calibration, model validation, evidence upgrades |
+| **9** | **Advanced simulation & validation** | **Done in this build:** on a stored execution of the Scenario Lab, sensitivity to chosen quantities one at a time or **two together with their interaction**, and **Monte Carlo** under distributions the user states (uniform, triangular, discrete; a recorded seed; percentiles with the interval the draws support, shares, histogram, rank correlations, convergence diagnostics; rejected draws counted, never adjusted), stored append-only and re-run to compare; a **verification register** for every model version (hand-calculated reference cases, stated properties, documented limits, reproducibility) shown in the product beside what is not verified; the four kinds of analysis stated where they are used; a corrected one-at-a-time method ([report](phases/phase-9-report.md), [guide](scenario-lab/advanced-analysis.md)). Estimation, calibration and back-testing were **not** done: no observations are stored in this environment and the companies are fictional ([why](simulation/verification.md#what-is-not-verified)) |
 | 10 | Productization, security & launch | Accounts and access control, deployment, monitoring, hardening |
 
 The Phase 1 plan named FRED as the first data source. The Phase 2 licence review found that
@@ -71,8 +71,14 @@ scenario profile in the Lab. Still open:
 3. **An explanation paged by month** for larger models (36 months is about 101 kB today).
 4. **More stored inputs** with their provenance: a monthly exchange rate, a monthly policy
    rate, and jet fuel prices from a licensed source, once available.
-5. **Estimated parameters** (Phase 9): β and the lags estimated from stored series, each
-   with its method, sample and uncertainty, entering as inputs with provenance.
+5. **Estimated parameters**: β and the lags estimated from stored series, each with its
+   method, sample and uncertainty, entering as inputs with provenance — not possible in
+   Phase 9, where no observation is stored; then **back-testing** against observed outcomes,
+   reported in the verification register.
+6. **Correlated draws** (a rank-correlation structure between quantities), **variance-based
+   (Sobol) indices** and **Latin hypercube sampling** for the Monte Carlo analysis; Monte Carlo
+   on single Simulation-page runs; a **reverse stress test** (the changes that would breach a
+   threshold).
 
 ## Scenario Lab follow-ups
 
@@ -86,9 +92,10 @@ scenario profile in the Lab. Still open:
    timing for the whole scenario.
 5. **A volume model** designed so that the other models read its volumes rather than hold
    them fixed — the precondition for demand-shock templates.
-6. **Persisted sensitivity requests from the page**: choose the quantities and points (the
-   API accepts them; the page runs the defaults).
-7. **Browser end-to-end tests** of the Lab's main flow in CI (see the platform follow-ups).
+6. **Browser end-to-end tests** of the Lab's main flow in CI (see the platform follow-ups),
+   including the Phase 9 analyses and an automated `axe-core` pass.
+7. **Analyses on a queue** once analyses may take longer than a request (today at most two
+   compute at once per process, each within 20 seconds).
 
 ## Intelligence follow-ups
 
@@ -138,6 +145,19 @@ scenario profile in the Lab. Still open:
 5. **Relationships from the keyboard on the canvas** (today they are reached through the node
    panel and the list).
 6. **A screen-reader session** with a user, beyond the automated checks.
+
+## Recommendations for Phase 10 (productization, security and launch)
+
+Written at the end of Phase 9 ([report](phases/phase-9-report.md#17-recommendations-for-phase-10)):
+
+1. **Authentication and ownership first.** Runs, executions and analyses are append-only but
+   unowned and unlimited; per-user limits and retention come with accounts.
+2. **A shared job queue** for executions and analyses before running several API processes:
+   today's pools and the two-analysis semaphore are per process.
+3. **Automated browser checks in CI**, starting from the Phase 9 review (walk-through,
+   `axe-core`, sideways scrolling at 390 px).
+4. **Observability**: durations, rejected draws, 429s and failed executions are the first
+   capacity and quality signals.
 
 ## Recommendations for Phase 8 (3D financial universe)
 

@@ -517,7 +517,7 @@ erDiagram
 | `scenario_shocks` (changed) | A version's changes ([above](#scenarios)); until migration `0005` they belonged to the scenario | `scenario_version_id` → `scenario_versions` with `CASCADE`; `UNIQUE (scenario_version_id, variable_id)` |
 | `scenario_executions` | One execution of one version: its `version` number; `status` (`queued`, `validating`, `simulating`, `propagating`, `aggregating`, `completed`, `failed`, `cancelled`); `stages`, each stage entered with its start, end and a short detail; the `plan` it ran; the `results` (lines, metrics, months and events, pathway, stress cases, the Lab's calculation steps); the `error` if it did not complete; `inputs_hash`, `result_hash`, `lab_version`; `cancel_requested`; `requested_at`, `started_at`, `finished_at`, `duration_ms` | `id` (UUID); `scenario_id` → `scenarios` and `scenario_version_id` → `scenario_versions`, both with `RESTRICT`; `CHECK` on `status` |
 | `scenario_execution_runs` | The Phase 4 run each model of a completed execution stored, in order (`position`), with the run's `model_id` and `model_version` | primary key (`execution_id`, `simulation_run_id`); `execution_id` → `scenario_executions` and `simulation_run_id` → `simulation_runs`, both with `RESTRICT` |
-| `scenario_sensitivity_analyses` | One one-at-a-time analysis of a completed execution: the `metric`, the `request` (each quantity varied, as resolved), the `results` (every point, the ranges, the ranking), `evaluations`, `duration_ms`, `result_hash` (over the results, without the evaluation count and duration), `created_at` | `id` (UUID); `execution_id` → `scenario_executions` with `RESTRICT` |
+| `scenario_sensitivity_analyses` | One one-at-a-time analysis of a completed execution: the `metric`, the `request` (each quantity varied, as resolved), the `results` (every point, the ranges, the ranking), `evaluations`, `duration_ms`, `result_hash` (over the results, without the evaluation count and duration), `created_at`; since migration `0008`, `method_version` (`1.0.0` for every analysis stored before it, `1.1.0` after — [Phase 9](#phase-9-grids-and-monte-carlo-analyses)) | `id` (UUID); `execution_id` → `scenario_executions` with `RESTRICT` |
 
 **Versions never change.** Saving a body that differs from the newest version inserts
 version *n* + 1 with its changes and updates the scenario's copy of the name, description,
@@ -709,6 +709,39 @@ erDiagram
   series, scenarios and executions by id inside JSON: the conversation is a record of what
   was read then, and outlives graph rebuilds.
 
+## Phase 9: grids and Monte Carlo analyses
+
+Migration `0008_advanced_analyses` adds one table and one column. See
+[advanced analysis](scenario-lab/advanced-analysis.md).
+
+```mermaid
+erDiagram
+    scenario_executions ||--o{ scenario_analyses : "is analysed by"
+    scenario_analyses {
+        uuid id PK
+        uuid execution_id FK
+        string kind
+        string metric
+        json request
+        json config
+        json results
+        int evaluations
+        int duration_ms
+        string inputs_hash
+        string result_hash
+        datetime created_at
+    }
+```
+
+| Table | Purpose | Keys and constraints |
+|---|---|---|
+| `scenario_analyses` | One analysis of a completed execution: `kind` (`monte_carlo` or `joint_sensitivity`), `metric`, the normalised `request` (for Monte Carlo the seed actually used, chosen by the server when none was given), the `config` it ran with (the execution's result hash; each run's model, version, definition hash, run id, inputs hash, graph build and fingerprint; the analysis, Lab and engine versions; for Monte Carlo the generator, sampler version, seed and draws), the `results`, `evaluations`, `duration_ms`, `inputs_hash` (SHA-256 over the configuration and the request) and `result_hash` (over the results, without the evaluation count and duration), `created_at` | `id` (UUID); `execution_id` → `scenario_executions` with `RESTRICT`; index `(execution_id, created_at)` for the newest-first list |
+| `scenario_sensitivity_analyses` (extended) | `method_version`, `NOT NULL`: the one-at-a-time method that computed the analysis. The migration sets `1.0.0` on every existing row (the method whose aggregation kept the executed revenue, operating costs and interest expense) and then drops the server default, so every new row states its method | — |
+
+Rows are **append-only**: no code path updates or deletes an analysis, and the API has no
+route that could. The downgrade drops the column and the table, and with it every stored grid
+and Monte Carlo analysis.
+
 ## Enumerations
 
 Enumerations are stored as `VARCHAR` with a `CHECK` constraint, not native database enum
@@ -785,7 +818,11 @@ version, drops older versions and every execution, and keeps the Phase 4 runs);
 `0006_intelligence` adds `intelligence_analyses` and changes no existing table (its downgrade
 drops it, and with it every stored analysis; every other intelligence answer is computed
 and needs no table); `0007_analyst` adds the three AI Analyst tables and changes no existing
-table (its downgrade drops them, and with them every conversation).
+table (its downgrade drops them, and with them every conversation); `0008_advanced_analyses`
+adds `scenario_analyses` and `scenario_sensitivity_analyses.method_version`
+([above](#phase-9-grids-and-monte-carlo-analyses); its downgrade drops both). A test takes a
+database holding a one-at-a-time analysis back to the Phase 8 schema (`0007`) and forward
+again, and checks the analysis reads `1.0.0` and that no default remains for new rows.
 
 - Every schema change is a new revision: edit the models, run
   `uv run alembic revision --autogenerate -m "…"`, **review the generated file**, apply it

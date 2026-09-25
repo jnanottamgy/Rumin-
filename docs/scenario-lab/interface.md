@@ -9,8 +9,8 @@
 ```
 ┌──────────────┬──────────────────────────────────┬───────────────┐
 │ CONTROLS     │ PATHWAY · Plan · Months · Stress  │ RESULTS       │
-│ scenario     │ Sensitivity · Explain · History   │ headline      │
-│ changes      │ Compare                           │ baseline vs   │
+│ scenario     │ Sensitivity · Uncertainty ·       │ headline      │
+│ changes      │ Explain · History · Compare       │ baseline vs   │
 │ company      │                                   │ scenario      │
 │ timing       │  changes → variables → line items │ metrics       │
 │ models       │  → lines and metrics              │ not modelled  │
@@ -71,7 +71,9 @@ is required.") until the user tries to save or execute; it then becomes an error
 | Plan | whether the scenario can run and why; which model simulates each change; every model with its status and reasons; notes and cautions; the companies the graph ties to the changes, and which ties a model covers |
 | Months | every line's change by simulated month, with the model events on the months they happen |
 | Stress | the scenario and its stress cases: a bar per case for the chosen line (the scenario emphasised, the cases in grey) and a table of every line and metric, with each case's changes in their units; not ranked |
-| Sensitivity | runs the one-at-a-time analysis on the stored execution and draws the tornado: each quantity's range of the result, with the execution's value as a rule; states that no Monte Carlo simulation is run |
+| Plan (Phase 9) | also shows, for each included model, its verification summary (*N of N checks passed*, what is not verified) with the checks a click away |
+| Sensitivity | *One at a time*: choose the quantities (each with its executed value and default variation, as a description), their values and the line or metric; the tornado of each quantity's range, with the execution's value as a rule. *Two together*: two quantities and their values; the grid read by change or by interaction, the executed cell marked, skipped cells with their reason. Both state that they are sensitivity, not stochastic, analysis |
+| Uncertainty (Phase 9) | a Monte Carlo analysis under distributions the user states: the form (line or metric, draws, seed, threshold, each quantity's distribution), the result (mean, percentiles with the interval the draws support, shares, histogram, rank correlations, every line, convergence, rejected draws, configuration, *Run again and compare*) and the execution's stored analyses — see [advanced analysis](advanced-analysis.md#the-interface) |
 | Explain | *what caused this?* for any line or metric: the chain, the Lab's equation and terms, each change's contribution, then each model's inputs, equations, worked steps, graph relationships and outputs |
 | History | every execution (open it, verify it reproduces, tick it for comparison) and every version (restore one as a new version) |
 | Compare | the ticked executions side by side, differenced against a reference only when currency and horizon match |
@@ -94,14 +96,23 @@ The charts follow RUMIN's chart rules (the `dataviz` method): one emphasised ser
 validated series colour with the rest as grey context, thin marks, hairline axes, no dual
 axes, direct labels in text colours, and a table with the exact values beside every chart
 (Months for the timeline, the stress table for the stress bars, the tornado's own figures).
+The Phase 9 charts — the Monte Carlo histogram and the convergence chart — follow the same
+rules and are described in the [design system](../design-system.md#analysis-charts-phase-9).
 
 ## Accessibility
 
-Every control is a native element with a label; tabs follow the WAI-ARIA pattern; pathway
+The three regions (controls, impact, results) are labelled by (visually hidden) level-2
+headings under the scenario's title, so the page's headings nest in order. Every control is
+a native element with a label; tabs follow the WAI-ARIA pattern; pathway
 steps are buttons and every link is reachable from a step's details, so the pathway can be
 walked from the keyboard; choosing a link from the details moves focus to the details, and
 Escape closes them. The replay's readout is a live region. Status and chart colours never
-carry meaning alone. Motion follows state only and respects reduced motion.
+carry meaning alone. Motion follows state only and respects reduced motion. The histogram
+and the convergence chart are sliders from the keyboard (arrow keys, Home, End; the bin or
+checkpoint is announced) with a table twin; a one-at-a-time checkbox is named by its quantity
+and described by its executed value and variation. `axe-core` finds no violation on the
+Sensitivity, Uncertainty and Plan views or the Simulation page, in either theme (Phase 9
+review).
 
 ## Design choices
 

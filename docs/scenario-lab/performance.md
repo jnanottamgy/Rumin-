@@ -88,6 +88,26 @@ the local server).
 The Scenario Lab route is loaded on demand: **111 KB of JavaScript (31 KB gzip)** and 34 KB of
 CSS (6 KB gzip), on top of the application's shared bundle.
 
+## Advanced analyses (Phase 9)
+
+Measured by a script through the running API (SQLite, one process) on the reference
+scenario's three models, one request at a time: the server's recorded duration and the wall
+time at the client. The work is in memory — one full re-evaluation of the three models takes
+about 1.1 ms for 12 months — so the database does not change it.
+
+| Analysis (evaluations) | 12 months: server / wall | 36 months: server / wall | Result |
+|---|---|---|---|
+| Monte Carlo, 500 draws × 3 quantities (501) | 593 / 618 ms | 1,578 / 1,603 ms | 9.6 kB |
+| Monte Carlo, 2,000 draws × 8 quantities (2,001) — the maximum | 2,867 / 2,966 ms | 5,749 / 5,833 ms | 12.5 kB |
+| *Run again and compare* of the maximum | — / 3,078 ms | — / 5,819 ms | identical results |
+| Grid, 7 × 7 (49) | 64 / 85 ms | 104 / 123 ms | 6.8–6.9 kB |
+| One at a time, 8 quantities, default points (17) | 14 / 28 ms | 22 / 35 ms | 5.3 kB |
+| Verification register, one model version | 45–111 ms | — | 5–6 kB |
+
+The worst case uses under a third of the 20-second Monte Carlo deadline. In Chromium, from
+the click on *Run the analysis* to the result drawn (histogram, tables, stored list updated),
+five quantities took 1.6 s for 1,000 draws and 3.2 s for 2,000.
+
 ## What keeps it responsive
 
 - Executions run on a bounded pool (2 at once, 8 waiting) with a 20-second limit and
@@ -96,3 +116,5 @@ CSS (6 KB gzip), on top of the application's shared bundle.
   until the new one arrives, so the page never blanks or freezes while the backend computes.
 - Every read is bounded: at most 10 changes, 5 stress cases, 36 months, 8 sensitivity
   quantities × 7 points (60 evaluations), 6 executions compared, 200 companies tied.
+- Analyses are bounded too: 2,000 draws, 8 quantities, a 7 × 7 grid, deadlines (20 s and
+  10 s) after which nothing is stored, and two analyses at once per process (429 beyond).

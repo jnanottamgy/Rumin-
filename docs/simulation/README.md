@@ -7,7 +7,10 @@ reproducible. This folder documents it. The plan written before implementation i
 [phase-4-report.md](../phases/phase-4-report.md). Phase 5 added four models, a second
 version of the airline model and two engine extensions, so that the
 [Scenario Lab](../scenario-lab/README.md) can run several models on one scenario
-([phase-5-plan.md](../phases/phase-5-plan.md)).
+([phase-5-plan.md](../phases/phase-5-plan.md)). Phase 9 added the
+[verification register](verification.md) — what has been checked about each model version,
+run live, and what has not — and grids and Monte Carlo analyses on the Lab's stored
+executions ([advanced analysis](../scenario-lab/advanced-analysis.md)).
 
 > **What a simulation is, and is not.** A run is the arithmetic consequence of the inputs
 > and assumptions it shows, with everything else held constant. It is **not a forecast**,
@@ -26,6 +29,7 @@ version of the airline model and two engine extensions, so that the
 | [Graph integration](graph-integration.md) | How a shock may travel through the knowledge graph, and only there: transmission rules, confirmation, depth, cycles, contributions |
 | [Explainability and provenance](provenance.md) | What a run stores, the hashes, re-execution, explanations, Shapley contributions, the accounting bridge |
 | [Sensitivity analysis](sensitivity.md) | One-at-a-time analysis: modes, limits, skipped points, ranking |
+| [The verification register](verification.md) | Reference cases, stated properties, documented limits and reproducibility, checked live for every model version; what is not verified |
 | [Model registry and adding a model](registry.md) | The registered models and versions, definitions, definition hashes, Scenario Lab profiles, and a step-by-step guide to adding a model or a version |
 | [The Simulation preview](preview.md) | The page: layout, encodings, charts, accessibility, motion and the design review |
 | [Limitations](limitations.md) | What the engine and the first model cannot do, and the technical debt |

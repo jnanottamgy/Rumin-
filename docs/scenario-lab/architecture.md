@@ -167,6 +167,12 @@ skipped and reported — never clipped. At most 8 quantities, 7 points each, 60 
 and a deadline. **It is not Monte Carlo**: no probabilities are involved, and the spread says
 how much the result depends on a quantity, not how likely any value is. Analyses are stored.
 
+Since Phase 9 the re-evaluation lives in `evaluation.py` (the `Evaluator`), shared with the
+two-quantity grid (`joint.py`) and Monte Carlo (`montecarlo.py`); the aggregation now receives
+the varied revenue, operating costs and interest expense, so operating margin and interest
+coverage move with them (method 1.1.0; earlier stored analyses carry a caveat). See
+[advanced analysis](advanced-analysis.md).
+
 ## Explanation
 
 `explain.py` answers *what caused this?* for a line or metric of an execution, from what the

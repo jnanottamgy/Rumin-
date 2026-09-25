@@ -81,15 +81,17 @@ The full list, with reasons, is in [`docs/simulation/limitations.md`](simulation
   inputs and assumptions shown, with everything else held constant. No parameter has been
   estimated from data and no result has been back-tested: the crude-to-jet-fuel
   elasticity, the lags, the hedge terms and the fare pass-through are assumptions with
-  neutral defaults.
+  neutral defaults. The verification register (Phase 9) shows what *is* checked — hand
+  calculations, stated properties, limits, reproducibility — and says this beside it.
 - **Narrow models.** Phase 4's model: an airline's fuel cost, operating profit and margin
   under changes in crude oil, jet fuel and the exchange rate. Phase 5 adds four more, each as
   narrow (foreign-currency revenue and costs, floating-rate interest, crude- and
   gas-linked costs). RUMIN holds no company accounts, so every company figure comes from the
   user. The sample airlines are fictional, and the graph
   relationship the model relies on is an illustrative model assumption.
-- **Deterministic only.** Uncertainty is shown by one-at-a-time sensitivity, which shows
-  no interactions and is not a confidence interval. No Monte Carlo (Phase 9).
+- **Deterministic runs.** On the Simulation page uncertainty is shown by one-at-a-time
+  sensitivity only; grids and Monte Carlo (Phase 9) work on the Scenario Lab's stored
+  executions ([below](#advanced-analysis-phase-9)).
 - **Simple dynamics.** Monthly steps; a change is a step of constant size (since Phase 5 it
   can start later and last a number of months, but it cannot follow a path); no
   seasonality; hedging and fare pass-through are a share and a number of months each.
@@ -112,8 +114,9 @@ short:
   profit before tax, operating margin and interest coverage — only the lines an included
   model reaches. No cash flow, tax, working capital or balance sheet.
 - **Constant baselines.** The user's annual figures × horizon ÷ 12: inputs, not forecasts.
-- **Deterministic and one-at-a-time.** Stress cases and sensitivity move magnitudes; there
-  are no probabilities (Phase 9).
+- **Deterministic executions.** Stress cases and sensitivity move magnitudes; the Monte
+  Carlo analysis (Phase 9) gives shares of draws under the user's distributions, never
+  probabilities of the future.
 - **No second-round effects.** Relationships the graph states beyond what the included
   models declare are listed as not modelled, never followed.
 - **An in-process worker pool.** 2 executions at once and 8 waiting per API process; a
@@ -161,6 +164,21 @@ The module's own list is in [analyst/limitations.md](analyst/limitations.md). In
 - **Conversations are open to anyone who can reach the API** until authentication (Phase 10),
   and the worker pool and token budget are per API process.
 
+## Advanced analysis (Phase 9)
+
+The list is in [scenario-lab/limitations.md](scenario-lab/limitations.md#analyses). In short:
+
+- **Distributions are the user's assumptions**, never estimates: RUMIN stores no observations
+  to estimate them from here. Quantities are **drawn independently** (no correlation between,
+  say, crude oil and the rupee); uniform, triangular and discrete only; plain random
+  sampling, no variance-based indices.
+- **No estimation, calibration or back-testing.** Nothing observed is stored in this
+  environment and the sample companies are fictional; the verification register lists this
+  for every model and never calls a model validated.
+- **Bounded and in-process**: 2,000 draws, 8 quantities, a 7 × 7 grid, two analyses at once
+  per API process, each within its deadline; no queue.
+- **Stored executions only**: single Simulation-page runs have one-at-a-time sensitivity.
+
 ## 3D universe (Phase 8)
 
 The module's own list is in [universe/limitations.md](universe/limitations.md). In short:
@@ -179,8 +197,10 @@ The module's own list is in [universe/limitations.md](universe/limitations.md). 
 
 - **Deterministic results on stated inputs.** The Simulation page runs one model at a time;
   the Scenario Lab composes the five registered models for one company. Every figure comes
-  from the user's figures and the models' stated assumptions; no result is a forecast
-  ([above](#simulation-phase-4), [the Lab](#scenario-lab-phase-5)).
+  from the user's figures and the models' stated assumptions; no result is a forecast, and a
+  Monte Carlo spread is a consequence of stated distributions, not a probability
+  ([above](#simulation-phase-4), [the Lab](#scenario-lab-phase-5),
+  [analyses](#advanced-analysis-phase-9)).
 - **Illustrative network.** The 12 companies are fictional. The 41 relationships are
   modelling assumptions written for demonstration, each with a rationale, none estimated
   or validated. Do not use them to reason about real companies or markets.

@@ -303,6 +303,27 @@ finding was verified against the code and fixed, with a test:
   drafted question in the Analyst's box through the router's state; it is read as a string,
   and nothing is sent until the reader sends it.
 
+### Advanced analysis (Phase 9)
+
+- **Strict, closed input.** Analysis bodies refuse unknown fields; the `kind` is one of two;
+  distributions are data from a closed set (uniform, triangular, discrete) with decimal
+  strings checked against each input's range and decimals before any draw; targets must be
+  quantities the execution actually has. Nothing is parsed as an expression or evaluated.
+- **Bounded work.** 100–2,000 draws, at most 8 quantities and 12 discrete values, a 7 × 7
+  grid, deadlines (20 s, 10 s) after which nothing is stored, and **at most two analyses
+  computing at once per API process**: a third request is refused with **429** before any
+  work, so a burst cannot tie up every thread. The measured worst case is about 6 s.
+- **Append-only and verifiable.** Analyses cannot be updated or deleted through the API;
+  each stores its configuration and hashes, and *verify* recomputes and compares, storing
+  nothing. A tampered stored request is detected (a test changes one and expects *not
+  reproduced*).
+- **Seeds.** The server chooses a seed with `secrets.randbits(53)` when none is given. The
+  draws themselves use Python's Mersenne Twister, which is reproducible and **not
+  cryptographic** — correct for simulation, never used for anything secret.
+- **The register runs no user input.** `GET …/verification` runs fixed, hypothetical
+  checks through the engine in memory; it takes only a model id and version.
+- No dependency was added, and no schema or route lets a client change a stored result.
+
 ### Secrets and supply chain
 
 - **One optional secret**: `RUMIN_ANTHROPIC_API_KEY`, for the Analyst's language model
@@ -323,7 +344,9 @@ finding was verified against the code and fixed, with a test:
   `npm audit` reported none (the frontend's dependencies did not change). **Phase 8 added
   `three`** (0.186) to the frontend, with `@types/three` for development only; the renderer
   that imports it is a separate chunk loaded only by the 3D page. `npm audit` reported no
-  vulnerability after the addition.
+  vulnerability after the addition. **Phase 9 added none**: sampling, percentiles, exact
+  binomial coverage and rank correlations are written in the project on the standard
+  library (`random`, `secrets`, `decimal`, `fractions`).
 - CI runs with read-only repository permissions.
 
 ## Not yet in place
@@ -333,12 +356,12 @@ These are deliberate gaps, listed so nobody assumes otherwise:
 | Gap | Planned |
 |---|---|
 | Authentication, user accounts, roles, per-user scenarios | Phase 10 |
-| Inbound rate limiting and abuse protection (outbound provider requests are throttled; scenario executions are bounded by the worker pool, 429 when full) | Phase 10 (and at the reverse proxy) |
+| Inbound rate limiting and abuse protection (outbound provider requests are throttled; scenario executions are bounded by the worker pool and analyses to two at once per process, 429 when full) | Phase 10 (and at the reverse proxy) |
 | An authenticated way to start ingestion or a graph build, or to edit relationships (with review and an audit trail) | Phase 10 |
 | A formal security review | Before any hosted or multi-user use |
 | TLS termination, deployment hardening, a Content-Security-Policy for the web client's HTML (it needs a hash for the small inline theme script in `index.html`) | Phase 10, with deployment |
 | Audit log of changes | With authentication |
-| Limits on how many simulation runs, scenario versions, executions, sensitivity analyses, stored intelligence analyses and Analyst conversations can be stored, and a retention policy for them | With authentication (Phase 10) |
+| Limits on how many simulation runs, scenario versions, executions, sensitivity analyses, grids and Monte Carlo analyses, stored intelligence analyses and Analyst conversations can be stored, and a retention policy for them | With authentication (Phase 10) |
 | Per-user Analyst conversations and token budgets; a budget shared across API processes | Phase 10 |
 | Automated dependency and secret scanning in CI (e.g. `pip-audit`, `npm audit`, secret scanning) | Next: cheap to add once the repository's CI is running |
 | Backups and retention policy | With a production database |

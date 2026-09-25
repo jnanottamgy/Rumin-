@@ -7,10 +7,20 @@ runs documented, versioned models on those connections with every step explained
 reproducible, and labels everything it shows as one of five kinds of knowledge:
 observation, assumption, scenario input, simulated output or uncertainty.
 
-> **Status: Phase 8 — 3D Financial Universe** (on top of the Phase 1 foundation, the Phase 2
-> data infrastructure, the Phase 3 knowledge graph, the Phase 4 simulation engine, the Phase 5
-> Scenario Lab, Phase 6 Financial Intelligence and the Phase 7 AI Analyst).
+> **Status: Phase 9 — Advanced simulation and validation** (on top of the Phase 1
+> foundation, the Phase 2 data infrastructure, the Phase 3 knowledge graph, the Phase 4
+> simulation engine, the Phase 5 Scenario Lab, Phase 6 Financial Intelligence, the Phase 7 AI
+> Analyst and the Phase 8 3D universe).
 >
+> - **Uncertainty under stated assumptions, and what has been checked.** On a stored Scenario
+>   Lab execution you can vary chosen quantities one at a time or **two together** (the grid
+>   shows where their effects interact), or run a **Monte Carlo** analysis under distributions
+>   you state — with a recorded seed, percentiles only as precise as the draws support, shares
+>   of draws (never probabilities of the future), diagnostics, and a re-run that reproduces it
+>   exactly. Every model version has a **verification register**, run live: hand-calculated
+>   reference cases, stated properties, documented limits and reproducibility, shown beside
+>   what is **not** verified. No model is called validated: no parameter has been estimated
+>   from data and nothing has been back-tested.
 > - **The knowledge graph in three dimensions.** The 3D universe shows every record and
 >   relationship the graph holds, each kind on its own layer — height says what a record is,
 >   never how large or important it is — with the evidence behind every line one click away.
@@ -48,9 +58,10 @@ observation, assumption, scenario input, simulated output or uncertainty.
 >   and revision history.
 > - The network's sample data is **illustrative**: its companies are fictional; countries,
 >   ISIC industries and variable definitions are real concepts with references.
-> - There is **no probabilistic simulation** (Phase 9): stress cases and sensitivity move
->   magnitudes, one at a time. A language model for the AI Analyst is optional and has **not
->   been verified against the live API** (no key was available where RUMIN was built).
+> - Monte Carlo spreads follow **your** distributions, drawn independently; nothing is
+>   estimated from observations, because none are stored where RUMIN was built. A language
+>   model for the AI Analyst is optional and has **not been verified against the live API**
+>   (no key was available where RUMIN was built).
 > - There is **no authentication** yet (Phase 10): run it locally only. For that reason the
 >   API is read-only for data and for the graph, scenario versions, executions and
 >   simulation runs are append-only, and ingestion and graph builds start from the command
@@ -69,10 +80,10 @@ observation, assumption, scenario input, simulated output or uncertainty.
 | **Graph build** | Available (command line) | Builds the graph from the stored records with entity resolution (flag, never merge), 26 validation rules and a validation report; rebuilding unchanged sources changes nothing |
 | **Data Explorer** | Available (Phase 2) | Stored series and prices with their source, licence, freshness and quality; exact-value tables; accessible charts; revision history; ingestion runs |
 | **Data ingestion** | Available (command line) | World Bank series (throttled, retried, validated, versioned) and licensed price-file import, each recorded as a job |
-| **Simulation** | Preview (Phase 4) | The airline fuel-cost model: inputs labelled by kind of knowledge and checked on the server; results with the pathway through the knowledge graph, month-by-month figures, the accounting bridge, Shapley contributions, a sensitivity tornado, every calculation step, and provenance with a reproducibility check; stored runs reopened and varied |
+| **Simulation** | Preview (Phase 4) | The airline fuel-cost model: inputs labelled by kind of knowledge and checked on the server; results with the pathway through the knowledge graph, month-by-month figures, the accounting bridge, Shapley contributions, a sensitivity tornado, every calculation step, and provenance with a reproducibility check; stored runs reopened and varied; each model's **verification register** (Phase 9) with what is not verified ([guide](docs/simulation/verification.md)) |
 | **Simulation engine** | Available (API) | Five versioned, hashed models (airline fuel cost, foreign-currency revenue and costs, floating-rate interest, crude- and gas-linked costs); exact decimals; timed changes; propagation only along confirmed graph relationships; append-only runs with explanations, provenance and verification; one-at-a-time sensitivity |
 | **Financial Intelligence** | Available (Phase 6) | A ledger of findings from 19 documented rules, each opening into its evidence chain and grade; observed changes, revisions, trends, volatility and unusual moves against configurable thresholds; exposure through validated graph relationships (a companies × variables matrix); drivers of simulated results from stored contributions; model interpretation of observed changes; dossiers per company and industry; a structured brief for an analyst; stored, fingerprinted analyses that say when they are stale ([guide](docs/intelligence/README.md)) |
-| **Scenario Lab** | Available (Phase 5) | Templates built on implemented models; versioned scenarios; a plan saying which models apply and why; a live preview; background executions with recorded stages; the modelled pathway with graph context kept apart; baseline against scenario; months with a replay; stress cases; sensitivity; *what caused this?*; history, reproducibility checks and comparisons ([guide](docs/scenario-lab/README.md)) |
+| **Scenario Lab** | Available (Phase 5) | Templates built on implemented models; versioned scenarios; a plan saying which models apply and why; a live preview; background executions with recorded stages; the modelled pathway with graph context kept apart; baseline against scenario; months with a replay; stress cases; sensitivity; *what caused this?*; history, reproducibility checks and comparisons ([guide](docs/scenario-lab/README.md)); **Phase 9**: sensitivity to chosen quantities one at a time or two together (with interactions), Monte Carlo under stated distributions with a recorded seed, stored and re-run to compare, and each included model's verification in the plan ([advanced analysis](docs/scenario-lab/advanced-analysis.md)) |
 | **AI Analyst** | Available (Phase 7) | Questions answered from RUMIN's records through 17 allowlisted, read-only tools; every figure cited and checked against its evidence, sources shown in a margin beside the answer; tables, series charts, relationship paths and scenario cards; what-ifs previewed (never stored) and handed to the Scenario Lab; follow-ups and clarifications; conversations kept, exported or deleted. RUMIN's grounded composer answers by default; a Claude model is optional ([guide](docs/analyst/README.md)) |
 | System & settings | Available | API, database, migration and data status; capabilities; theme and motion preferences |
 | REST API | Available | Versioned (`/api/v1`), validated, consistent errors, OpenAPI docs, compressed responses; data and graph endpoints are read-only; intelligence reads write nothing; scenario versions, executions, simulation runs and stored analyses are append-only; the Analyst writes only its own conversations |
@@ -145,6 +156,7 @@ one origin and no API URL has to be configured.
 | What a build would do (writes nothing) | — | `uv run python -m app.graph validate` |
 | Recent builds, one build's report | — | `uv run python -m app.graph builds`, `… report [BUILD]` |
 | Score the AI Analyst on its evaluation set | — | `uv run python -m app.analyst.evaluation [--json]` (backend/) |
+| Run every model version's verification checks | `make verify-models` | `uv run python -m app.simulation.verification` (backend/; exits 1 on a failure) |
 | All unit and API tests | `make test` | `uv run pytest` (backend/), `npm test` (frontend/) |
 | End-to-end smoke test | `make smoke` | `scripts/smoke_test.sh` |
 | Lint and format checks | `make lint` | `uv run ruff check . && uv run ruff format --check .`, `npm run lint` |
@@ -260,10 +272,13 @@ scripts/            smoke_test.sh (backend/scripts and frontend/scripts: graph, 
   [graph integration](docs/simulation/graph-integration.md) ·
   [provenance](docs/simulation/provenance.md) · [sensitivity](docs/simulation/sensitivity.md) ·
   [model registry](docs/simulation/registry.md) · [the preview](docs/simulation/preview.md) ·
+  [the verification register](docs/simulation/verification.md) ·
   [limitations](docs/simulation/limitations.md)
 - Scenario Lab: [overview](docs/scenario-lab/README.md) ·
   [architecture](docs/scenario-lab/architecture.md) · [the pathway](docs/scenario-lab/pathway.md) ·
-  [the interface](docs/scenario-lab/interface.md) · [performance](docs/scenario-lab/performance.md) ·
+  [the interface](docs/scenario-lab/interface.md) ·
+  [advanced analysis](docs/scenario-lab/advanced-analysis.md) ·
+  [performance](docs/scenario-lab/performance.md) ·
   [limitations](docs/scenario-lab/limitations.md)
 - Financial Intelligence: [overview](docs/intelligence/README.md) ·
   [architecture](docs/intelligence/architecture.md) · [evidence](docs/intelligence/evidence.md) ·
@@ -295,7 +310,8 @@ scripts/            smoke_test.sh (backend/scripts and frontend/scripts: graph, 
   [Phase 5 plan](docs/phases/phase-5-plan.md) · [Phase 5 report](docs/phases/phase-5-report.md) ·
   [Phase 6 plan](docs/phases/phase-6-plan.md) · [Phase 6 report](docs/phases/phase-6-report.md) ·
   [Phase 7 plan](docs/phases/phase-7-plan.md) · [Phase 7 report](docs/phases/phase-7-report.md) ·
-  [Phase 8 plan](docs/phases/phase-8-plan.md) · [Phase 8 report](docs/phases/phase-8-report.md)
+  [Phase 8 plan](docs/phases/phase-8-plan.md) · [Phase 8 report](docs/phases/phase-8-report.md) ·
+  [Phase 9 plan](docs/phases/phase-9-plan.md) · [Phase 9 report](docs/phases/phase-9-report.md)
 
 ## Licence
 

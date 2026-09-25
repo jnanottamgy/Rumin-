@@ -160,7 +160,12 @@ without a profile is not offered by the Lab.
    `backend/tests/test_simulation_models.py`: hand-calculated cases with round inputs, the
    invariants of the domain, every validation rule, the bridge, the contributions adding
    up, reproducibility, and its sensitivity defaults. Add its hash to `RELEASED` once it is
-   released.
+   released. Add its **verification register** entry to `CHECKS` in
+   `app/simulation/verification.py` — the model page's worked example, the bridge, a cause
+   and effect for the linearity and direction checks, units if it accepts several — so the
+   product can show what has been checked
+   ([the verification register](verification.md)); `test_every_registered_model_has_checks`
+   fails until it exists.
 5. **Give it a scenario profile** in `app/scenario_lab/profiles.py` if the Scenario Lab
    should offer it: the changes it responds to, the lines and items it contributes to
    (adding an item to `ITEMS` if none fits), the exposure that makes it apply and whether

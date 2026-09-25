@@ -414,6 +414,22 @@ One entry of a run's `inputs`.
 | `output_symbol`, `output_value`, `output_unit` | What was calculated: exact to 18 decimal places (`NUMERIC(38, 18)`), with its unit. |
 | `inputs` | Each term the equation read: symbol, value and unit. |
 
+### Verification register (Phase 9)
+
+`GET /api/v1/simulation-models/{model_id}/verification`: computed on request, never stored.
+See [the verification register](simulation/verification.md).
+
+| Field | Type | Meaning |
+|---|---|---|
+| `model_id`, `version`, `status`, `definition_hash`, `engine_version` | strings | The model version checked. |
+| `register_version` | string | The version of the checks themselves (`1.0.0`). |
+| `passed`, `failed`, `total` | integers | Check counts. |
+| `checks` | list | Each check: `id`, `kind` (`reference`, `property`, `range`, `reproducibility`), `title`, `description`, `passed`, `detail`, and `expected` / `actual` values when it compared figures. |
+| `not_verified` | list | What the checks do not establish: `id`, `text` (parameters not estimated from data, no back-testing, an assumed graph relationship, fictional sample data). |
+| `reference_source` | string | Where the worked example is written down. |
+| `duration_ms` | integer | Time taken. |
+| `note` | string | That passing checks shows arithmetic and stated properties, not that the model is validated. |
+
 ### Sensitivity analysis
 
 `simulation_sensitivity_analyses`: one analysis of a run. Nothing updates or deletes one.
@@ -649,10 +665,38 @@ or deletes an analysis.
 | `result_hash` | hex string | SHA-256 over the results, without the evaluation count and duration. |
 | `created_at` | UTC timestamp | Bookkeeping. |
 | `method` | `one_at_a_time` | Always. |
+| `method_version` | string | `1.1.0` since Phase 9; `1.0.0` for analyses stored before migration `0008`. |
+| `caveats` | list of strings | What the method got wrong for this analysis, if anything: a `1.0.0` analysis that ranked operating margin or interest coverage by revenue, operating costs or interest expense. Empty otherwise. |
 | `note` | string | What the spread means, and that this is not a Monte Carlo simulation. |
 
 The table also stores the `request`: each quantity as resolved (`target`, `mode`, `step`,
 `values`).
+
+### Scenario analysis (Phase 9)
+
+`scenario_analyses`: a **two-quantity grid** (`joint_sensitivity`) or a **Monte Carlo**
+analysis (`monte_carlo`) of a completed execution, append-only. See
+[advanced analysis](scenario-lab/advanced-analysis.md).
+
+| Field | Type | Meaning |
+|---|---|---|
+| `id`, `execution_id` | UUIDs | The analysis and the execution analysed. |
+| `kind` | `monte_carlo` \| `joint_sensitivity` | Which analysis. |
+| `metric` | string | The line (its change over the horizon) or metric (its scenario value) analysed. |
+| `request` | object | The request as normalised: for a grid the two axes; for Monte Carlo the draws, the seed used, the threshold and each quantity's distribution (`uniform`: `low`, `high`; `triangular`: `low`, `mode`, `high`; `discrete`: `values`, `weights`). |
+| `config` | object | What it ran with: `analysis_version`, `lab_version`, `engine_version`, `execution_result_hash`; `runs` (each `model_id`, `version`, `definition_hash`, `run_id`, `inputs_hash`, `graph_build_id`, `graph_fingerprint`); for Monte Carlo `seed`, `generator` (the random-number generator's name), `sampler_version`, `draws`. |
+| `monte_carlo` | object or null | `metric`, `metric_label`, `metric_kind`, `base` (the executed value); `draws`, `accepted`, `rejected`, `rejections` (`code`, `count`, `example`); `quantities` (`target`, `label`, `kind`, `models`, `unit`, `base_value`, `distribution`, `distribution_mean`, `distribution_sd`, `accepted_mean`, `rank_correlation`); `summary` (`mean`, `standard_deviation`, `standard_error`, `relative_standard_error`, `minimum`, `maximum`, `percentiles` — `p`, `value`, `interval` with `lower_rank`, `upper_rank`, `lower`, `upper`, `coverage` — `share_below_zero`, `threshold`, `share_at_or_below_threshold`); `histogram` (`low`, `high`, `count`); `convergence` (`checkpoints` with `draws`, `mean`, `standard_error`; `first_half_mean`, `second_half_mean`, `halves_z`, `halves_flagged`); `outputs` (every line and metric: `id`, `label`, `kind`, `base`, `mean`, `p5`, `p50`, `p95`); `notes`. |
+| `joint` | object or null | `metric`, `metric_label`, `metric_kind`, `base`; `rows` and `columns` (the quantity, its `base_value` and `values`); `cells[row][column]` (`metric`, `delta` from the execution, `interaction`, `skipped` — the reason, or null); `summary` (`largest_interaction` and `largest_change` with their `row`, `column`, `value`; `interactions_computed`, `additive`, `tolerance`, `skipped`). |
+| `evaluations`, `duration_ms` | integers | Evaluations performed (the execution's own values once, then each cell or draw); time taken. |
+| `inputs_hash` | hex string | SHA-256 over the configuration and the request. |
+| `result_hash` | hex string | SHA-256 over the results, without the evaluation count and duration. |
+| `created_at` | UTC timestamp | Bookkeeping. |
+| `note` | string | What kind of analysis it is and what its figures mean (never a probability of the future). |
+
+The table stores `monte_carlo` or `joint` in its `results` column; the API returns them under
+those names. Every decimal travels as a string. Shares are fractions (0.25 = 25 %);
+`coverage` is the exact binomial probability that the interval holds the percentile under
+the stated distributions.
 
 ### Comparison
 

@@ -13,10 +13,10 @@ the engine computed and stored.
 | | |
 |---|---|
 | **Where** | `/scenarios` in the web app; `/api/v1/scenarios…`, `/scenario-executions…`, `/scenario-templates…`, `/scenario-comparisons` in the API |
-| **Backend** | `backend/app/scenario_lab/` (spec, validation, planner, executor, runner, aggregation, pathways, explanation, sensitivity, comparison, templates), `backend/app/services/scenarios.py`, `backend/app/services/scenario_lab.py` |
+| **Backend** | `backend/app/scenario_lab/` (spec, validation, planner, executor, runner, aggregation, pathways, explanation, evaluation, sensitivity, joint grids, Monte Carlo, sampling and summaries, comparison, templates), `backend/app/services/scenarios.py`, `backend/app/services/scenario_lab.py`, `backend/app/services/scenario_analyses.py` |
 | **Frontend** | `frontend/src/pages/ScenarioLabPage.tsx`, `frontend/src/features/scenarioLab/` |
 | **Models** | five registered models (six versions) — see [the registry](../simulation/registry.md) |
-| **Data** | migration `0005`: scenarios with immutable versions, executions, their model runs and sensitivity analyses — see [the data model](../data-model.md) |
+| **Data** | migration `0005`: scenarios with immutable versions, executions, their model runs and sensitivity analyses; migration `0008`: stored grids and Monte Carlo analyses — see [the data model](../data-model.md) |
 
 ## What you can do
 
@@ -40,9 +40,13 @@ the engine computed and stored.
    (validating, simulating, propagating, aggregating) and is stored with its model runs and
    hashes. Every execution can be re-executed from what it stored to check it reproduces.
 7. **Explore** the result: the pathway, baseline against scenario, the simulated months
-   (with a replay), stress cases, one-at-a-time sensitivity, *what caused this?* for every
-   line and metric, the history of versions and executions, and comparisons between
-   executions.
+   (with a replay), stress cases, *what caused this?* for every line and metric, the history
+   of versions and executions, and comparisons between executions.
+8. **Analyse** a stored execution (Phase 9): sensitivity to chosen quantities one at a time
+   or **two together** (with their interaction), and a **Monte Carlo** analysis under
+   distributions you state, with a recorded seed; each included model's
+   [verification register](../simulation/verification.md) in the plan. See
+   [advanced analysis](advanced-analysis.md).
 
 ## The reference example
 
@@ -75,6 +79,9 @@ flow is not shown: no model covers working capital, tax or investment.
   reproducibility, limits.
 - [The pathway](pathway.md) — what each node and link means, graph context versus graph
   transmission, what is listed as not modelled, the month replay.
+- [Advanced analysis](advanced-analysis.md) — the four kinds of analysis; one at a time,
+  two together and Monte Carlo on a stored execution: mathematics, reproducibility, limits,
+  API, performance.
 - [The interface](interface.md) — layout, controls, preview versus stored execution, the
   views, accessibility and design choices.
 - [Performance](performance.md) — measured times and sizes.
@@ -84,4 +91,5 @@ flow is not shown: no model covers working capital, tax or investment.
   [floating-rate interest](../simulation/floating-rate-interest.md),
   [crude-oil-linked costs](../simulation/crude-linked-costs.md),
   [natural-gas-linked costs](../simulation/gas-linked-costs.md).
-- [The API](../api.md#scenario-lab) and [the Phase 5 report](../phases/phase-5-report.md).
+- [The API](../api.md#scenario-lab), [the Phase 5 report](../phases/phase-5-report.md) and
+  [the Phase 9 report](../phases/phase-9-report.md).

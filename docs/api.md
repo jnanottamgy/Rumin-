@@ -206,6 +206,7 @@ deleted (`PUT`, `PATCH` and `DELETE` answer 405). Everything is documented in
 | `POST /api/v1/simulations/{run_id}/sensitivity` | A one-at-a-time sensitivity analysis, stored with the run (empty body: the model's defaults). | 201 / 404 / 409 / 422 |
 | `GET /api/v1/simulations/{run_id}/sensitivity` | The run's analyses, newest first. | 200 / 404 |
 | `GET /api/v1/simulations/{run_id}/sensitivity/{analysis_id}` | One analysis. | 200 / 404 |
+| `GET /api/v1/simulation-models/{model_id}/verification` | The model version's [verification register](simulation/verification.md), run now (`?version=`, default the model's default version): each check — reference case, property, documented limits, reproducibility — with its detail, `passed`/`failed`/`total`, and what is **not** verified. Stores nothing. | 200 / 404 |
 
 The brief's suggested `POST /simulations/run` is `POST /simulations`: the API creates
 resources by posting to the collection, as `POST /scenarios` does.
@@ -426,6 +427,11 @@ Besides the five scenario endpoints [above](#endpoints):
 | `POST /api/v1/scenario-executions/{execution_id}/sensitivity` | A one-at-a-time sensitivity analysis across the execution, stored, with a `Location` header ([below](#sensitivity)). | 201 / 404 / 409 / 422 |
 | `GET /api/v1/scenario-executions/{execution_id}/sensitivity` | The execution's analyses, newest first (`{"items": […]}`, not paginated). | 200 / 404 |
 | `GET /api/v1/scenario-executions/{execution_id}/sensitivity/{analysis_id}` | One analysis. | 200 / 404 |
+| `GET /api/v1/scenario-executions/{execution_id}/analysis-targets` | What the execution can vary — its changes, shared figures and each model's inputs, with values, ranges, units and default variations — the lines and metrics, and the analysis limits (Phase 9, [below](#advanced-analyses)). | 200 / 404 / 409 |
+| `POST /api/v1/scenario-executions/{execution_id}/analyses` | Run and store a `monte_carlo` or `joint_sensitivity` analysis, with a `Location` header. | 201 / 404 / 409 / 422 / 429 |
+| `GET /api/v1/scenario-executions/{execution_id}/analyses` | The execution's analyses, newest first (`{"items": […]}`, a summary each). | 200 / 404 |
+| `GET /api/v1/scenario-executions/{execution_id}/analyses/{analysis_id}` | One analysis: request, configuration, results, hashes. | 200 / 404 |
+| `POST /api/v1/scenario-executions/{execution_id}/analyses/{analysis_id}/verify` | Recompute it from the stored runs and request and compare both hashes. Stores nothing. | 200 / 404 / 409 |
 | `GET /api/v1/scenario-comparisons` | 2–6 completed executions side by side ([below](#comparisons)). | 200 / 404 / 409 / 422 |
 | `GET /api/v1/scenario-templates` | Templates built on implemented models, and those not offered, with the reason. | 200 |
 | `GET /api/v1/scenario-templates/{template_id}` | One template: its changes and models, required and optional inputs, validation rules, expected outputs and the scenario body to start from ([below](#templates)). | 200 / 404 |
@@ -763,7 +769,10 @@ evaluations, within 10 seconds: a request beyond these limits is refused with 42
 (`sensitivity_limit`). A point outside an input's range, or one that breaks a model's own
 rules, is skipped with the reason, never clipped. The analysis is stored and never
 changed; 409 if a model version the execution used is no longer registered with the same
-definition.
+definition. Since Phase 9 each analysis records its `method_version`: `1.1.0` passes the varied
+revenue, operating costs and interest expense to the margins and coverage; an analysis stored
+before (`1.0.0`) that ranked operating margin or interest coverage by one of them carries
+`caveats` saying the metric did not move with it.
 
 ```http
 POST /api/v1/scenario-executions/348bd1e1-ea11-4851-bbf6-78389f1512c1/sensitivity
@@ -803,6 +812,68 @@ Location: /api/v1/scenario-executions/348bd1e1-ea11-4851-bbf6-78389f1512c1/sensi
   "…": "…"
 }
 ```
+
+### Advanced analyses
+
+Phase 9 ([advanced analysis](scenario-lab/advanced-analysis.md)). `POST
+/api/v1/scenario-executions/{id}/analyses` takes one of two bodies, told apart by `kind`.
+**Two quantities together** — a grid with the interaction term, no probability involved:
+
+```http
+POST /api/v1/scenario-executions/{id}/analyses
+Content-Type: application/json
+
+{"kind": "joint_sensitivity", "metric": "operating_profit",
+ "rows": {"target": "change:var_brent_crude"},
+ "columns": {"target": "change:var_usd_inr", "mode": "values", "values": ["0", "10"]}}
+```
+
+Each axis is an item as in [sensitivity](#sensitivity) (its default variation, a step, or
+listed values); the executed value is always added and an axis holds at most seven values,
+so at most 7 × 7 cells, within 10 seconds. The result
+holds `rows` and `columns` (with their values), `cells[row][column]` — `metric`, `delta`
+(from the execution), `interaction`, `skipped` (the reason, or `null`) — and a `summary`
+(largest interaction and change, `additive`, `tolerance`, skipped cells).
+
+**Monte Carlo** — draws from distributions the user states:
+
+```http
+POST /api/v1/scenario-executions/{id}/analyses
+Content-Type: application/json
+
+{"kind": "monte_carlo", "metric": "profit_before_tax", "draws": 500, "seed": 20260925,
+ "threshold": "-10000000",
+ "quantities": [
+   {"target": "change:var_brent_crude",
+    "distribution": {"kind": "triangular", "low": "-10", "mode": "20", "high": "60"}},
+   {"target": "change:var_usd_inr",
+    "distribution": {"kind": "uniform", "low": "0", "high": "10"}},
+   {"target": "model:floating_rate_interest:repo_repricing_lag",
+    "distribution": {"kind": "discrete", "values": ["0", "3", "6"], "weights": ["1", "2", "1"]}}
+ ]}
+```
+
+`draws` 100–2,000 (default 500); `seed` 0 to 2⁵³ − 1, chosen and recorded when `null`;
+`threshold` optional; 1–8 quantities, one distribution each (`uniform`, `triangular`, or
+`discrete` with 2–12 values and optional positive weights). Every endpoint must lie in the
+input's range with its decimals, and a whole-month input takes a discrete distribution; a
+problem is refused with 422 (`analysis_limit`, or `invalid_number` for a value that is not a
+decimal) naming the field, e.g. `quantities[0]`. The result (`monte_carlo`) holds the
+`accepted` and `rejected` draws, `rejections` by rule with an example, the `quantities`
+(distribution, its mean and standard deviation, the accepted draws' mean, the rank
+correlation), a `summary` (mean, standard deviation, standard error, minimum, maximum,
+percentiles with intervals and exact coverage, shares), the `histogram`, `convergence`
+(checkpoints, the two halves, `halves_flagged`), every line and metric in `outputs`, and
+`notes`. Fewer than 100 accepted draws, or a run past 20 seconds: 422, nothing stored.
+
+Every analysis returns its `request`, a `config` (the execution's result hash; each run's
+model, version, definition hash, run id, inputs hash, graph build and fingerprint; versions;
+generator, sampler version, seed, draws), `evaluations`, `duration_ms`, `inputs_hash`,
+`result_hash` and a `note` saying what kind of analysis it is. `POST …/verify` answers
+`reproduced`, whether each hash matches, both result hashes and a message. At most two
+analyses compute at once per API process: a third is refused with 429 (`rate_limited`),
+nothing stored. 409: the execution has not completed, or a model version it used is no
+longer registered with the same definition.
 
 ### Comparisons
 
@@ -1080,7 +1151,7 @@ saying where the value came from (`body`, `query`, `path`).
 | 409 | `conflict` | The request conflicts with stored state: a scenario save based on an older version than the newest (`base_version`) or made at the same moment as another save; deleting an executed scenario; cancelling a final execution; results, pathways, explanations, verification, sensitivity analysis or comparison of an execution that has not completed; a sensitivity analysis of an execution whose model version is no longer registered with the same definition; a simulation model version whose code no longer matches its stored definition |
 | 413 | `payload_too_large` | Body larger than `RUMIN_MAX_REQUEST_BODY_BYTES` (64 KiB) |
 | 422 | `validation_error` | Invalid body, query or path values, invalid JSON, wrong content type, unknown fields; a scenario that cannot be executed as it stands |
-| 429 | `rate_limited` | `POST /api/v1/scenarios/{id}/executions` while every execution worker is busy and the queue is full; nothing is stored ([Scenario Lab](#executions)) |
+| 429 | `rate_limited` | `POST /api/v1/scenarios/{id}/executions` while every execution worker is busy and the queue is full; `POST /api/v1/scenario-executions/{id}/analyses` while two analyses are computing; nothing is stored ([Scenario Lab](#executions), [advanced analyses](#advanced-analyses)) |
 | 500 | `internal_error` | Unexpected failure. The response never contains a stack trace; the log has it under the request ID. |
 | 503 | `service_unavailable` | The database is unreachable |
 
@@ -1097,6 +1168,6 @@ origins listed in `RUMIN_CORS_ORIGINS`, never `*` and never with credentials. Se
 
 There is **no authentication** yet: anyone who can reach the API can read all stored data,
 create scenarios (and delete those never executed), start or cancel scenario executions
-(bounded per process, [above](#executions)), and create simulation runs and sensitivity
-analyses. Runs, analyses and final executions cannot be changed, and none of them can be
+(bounded per process, [above](#executions)), and create simulation runs, sensitivity
+analyses, grids and Monte Carlo analyses (bounded, two at once per process). Runs, analyses and final executions cannot be changed, and none of them can be
 deleted through the API. Do not expose it beyond your own machine.

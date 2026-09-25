@@ -252,6 +252,23 @@ Details: [encoding](universe/encoding.md), [accessibility](universe/accessibilit
 | Motion | A 480 ms eased fly-to when the focus changes; a jump under reduced motion; no idle animation | Motion only when asked for |
 | Focus | A 2 px sky-blue outline inside the canvas's edge | Visible over the drawing |
 
+## Analysis charts (Phase 9)
+
+The Scenario Lab's grids, Monte Carlo results and the verification register add no colour
+token. They follow the `dataviz` method as the earlier charts do: one emphasised series in
+`--viz-series`, grey (`--viz-baseline`, secondary ink) for context, amber never used (there
+is no flag to raise), thin marks, one axis, values in text tokens and a table twin for
+every chart. Details: [advanced analysis](scenario-lab/advanced-analysis.md#the-interface).
+
+| What | Encoding | Why |
+|---|---|---|
+| Histogram of the draws | Equal-width bins in `--viz-series` from a zero baseline, 2 px apart, 4 px rounded data ends; hairline rules at P5, P50 and P95 (secondary ink), the executed value in `--viz-baseline` (2 px), a threshold dashed (the only dashed mark); rule labels on three rows so close values never overlap; counts ("12 of 1,000 draws"), never a percentage the browser would compute | A distribution's shape with its landmarks; the counts are the backend's |
+| Convergence | The running mean as a 2 px `--viz-series` line inside a 12 % wash of ±2 standard errors; the draws on the x-axis | Whether the draws are enough — stated beside it: a narrow band says the mean is precise, not that the distributions are right |
+| Rank correlations | A 6 px bar from a centre rule, left for negative and right for positive, the value printed beside it | Direction and strength at a glance, never colour alone |
+| Grid | A table: the executed cell washed in `--color-accent-wash` and in bold, a skipped cell reads *skipped* in muted ink, its reason listed under the grid; read by change or by interaction | Exact values first; no heat-map hue to decode |
+| Verification | A check or alert icon with *passed* or *failed* in text, the kind of check in small muted type; the summary as a badge (*10 of 10 checks passed*) with *Not verified* always beside it | Status never by colour alone; passing is never shown as "validated" |
+| Interaction | Histogram and convergence charts are keyboard sliders (arrows, Home, End, Escape), the bin or checkpoint in `aria-valuetext`; tooltips follow the pointer but never gate a value (the table has them all) | The same model as the time-series charts |
+
 ## Knowledge labels
 
 The five epistemic categories use one glyph each, everywhere (badges, legend, landing):
@@ -289,8 +306,8 @@ its source), `PageHeader`, `Icon`, `Wordmark`, and the loading, error and empty 
 
 - Keyboard: every control is reachable; network and graph nodes are focusable buttons
   (Enter selects, Escape clears, `+`/`−`/`0` zoom; **E** expands a graph node);
-  time-series charts are sliders (arrow keys, Home, End); a skip link leads to the main
-  content.
+  time-series charts, the Monte Carlo histogram and the convergence chart are sliders
+  (arrow keys, Home, End); a skip link leads to the main content.
 - Screen readers: landmarks and headings on every page; live regions announce counts and
   save results; form errors are listed in a summary that links to each field.
 - Focus is always visible (sky-blue ring, ≥ 3 : 1).
