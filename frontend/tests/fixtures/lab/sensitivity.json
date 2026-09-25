@@ -1,6 +1,6 @@
 {
-  "id": "fcb2b530-9a6c-4905-86cc-3d63e73e7e37",
-  "execution_id": "69582e24-c712-43a8-a28e-013d70cbbf9b",
+  "id": "fb4c6dcc-ae39-4cc6-b529-61bb796092cc",
+  "execution_id": "77f1c8cb-c2cb-479b-b838-bfa9f106108b",
   "metric": "profit_before_tax",
   "metric_label": "Profit before tax",
   "metric_kind": "line_change",
@@ -298,9 +298,9 @@
     }
   ],
   "evaluations": 15,
-  "duration_ms": 14,
+  "duration_ms": 10,
   "result_hash": "4625ba7a565381da15ad9439714fad31dd2fa1dcdb6ad92146f4da98ee432f60",
-  "created_at": "2026-09-25T03:29:56.534408Z",
+  "created_at": "2026-09-25T03:49:26.641547Z",
   "method": "one_at_a_time",
   "method_version": "1.1.0",
   "caveats": [],

@@ -7,6 +7,8 @@ import { validateNetwork } from "@/features/network/model";
 import { apiRequest, type RequestOptions } from "@/lib/apiClient";
 import type {
   AnalysisRequest,
+  AnalysisTargets,
+  AnalysisVerification,
   AnalystCapabilities,
   AnalystSession,
   AnalystSessionPage,
@@ -52,6 +54,7 @@ import type {
   LabSensitivity,
   LabSensitivityList,
   LabSensitivityRequest,
+  ModelVerification,
   NetworkResponse,
   ObservationPage,
   PriceBarPage,
@@ -60,6 +63,9 @@ import type {
   QualityRule,
   ReadinessResponse,
   Scenario,
+  ScenarioAnalysis,
+  ScenarioAnalysisList,
+  ScenarioAnalysisRequest,
   ScenarioComparison,
   ScenarioExecution,
   ScenarioExecutionPage,
@@ -236,6 +242,35 @@ export const labApi = {
         method: "POST",
         body: request,
       }),
+  },
+
+  analyses: {
+    targets: (id: string, options?: Options) =>
+      apiRequest<AnalysisTargets>(
+        `/api/v1/scenario-executions/${segment(id)}/analysis-targets`,
+        options,
+      ),
+    list: (id: string, options?: Options) =>
+      apiRequest<ScenarioAnalysisList>(
+        `/api/v1/scenario-executions/${segment(id)}/analyses`,
+        options,
+      ),
+    get: (id: string, analysisId: string, options?: Options) =>
+      apiRequest<ScenarioAnalysis>(
+        `/api/v1/scenario-executions/${segment(id)}/analyses/${segment(analysisId)}`,
+        options,
+      ),
+    create: (id: string, request: ScenarioAnalysisRequest, options?: Options) =>
+      apiRequest<ScenarioAnalysis>(`/api/v1/scenario-executions/${segment(id)}/analyses`, {
+        ...options,
+        method: "POST",
+        body: request,
+      }),
+    verify: (id: string, analysisId: string, options?: Options) =>
+      apiRequest<AnalysisVerification>(
+        `/api/v1/scenario-executions/${segment(id)}/analyses/${segment(analysisId)}/verify`,
+        { ...options, method: "POST" },
+      ),
   },
 
   compare: (ids: readonly string[], reference: string | null, options?: Options) =>
@@ -513,6 +548,12 @@ export const simulationApi = {
 
   model: (id: string, options?: Options) =>
     apiRequest<SimulationModelDetail>(`/api/v1/simulation-models/${segment(id)}`, options),
+
+  verification: (id: string, version?: string | null, options?: Options) =>
+    apiRequest<ModelVerification>(
+      `/api/v1/simulation-models/${segment(id)}/verification${toQuery({ version: version ?? null })}`,
+      options,
+    ),
 
   validate: (request: SimulationRequest, options?: Options) =>
     apiRequest<SimulationValidation>("/api/v1/simulations/validate", {

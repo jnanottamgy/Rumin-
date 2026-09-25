@@ -1,0 +1,427 @@
+/* The advanced analyses (Phase 9): the kinds of analysis, the forms, the joint grid, the
+   Monte Carlo summary and charts, and the verification register. Charts reuse the
+   simulation chart classes; one accent (sky blue) for the one series, grey for context. */
+
+/* --- The four kinds of analysis ---------------------------------------------------------- */
+
+.types {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-sunken);
+  font-size: var(--text-xs);
+}
+
+.types > summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  color: var(--color-ink-secondary);
+  cursor: pointer;
+}
+
+.types > summary strong {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.typesList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: var(--space-2);
+  padding: 0 var(--space-3) var(--space-3);
+}
+
+.typesList li {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-xs);
+  background: var(--color-surface);
+  line-height: var(--leading-snug);
+}
+
+.typesList li[aria-current="true"] {
+  border-color: var(--color-accent);
+  box-shadow: inset 3px 0 0 var(--color-accent);
+}
+
+.typeName {
+  display: block;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.typeWhere {
+  display: block;
+  margin-top: 2px;
+  color: var(--color-ink-muted);
+  font-size: var(--text-2xs);
+}
+
+.typeText {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--color-ink-secondary);
+}
+
+/* --- Forms ------------------------------------------------------------------------------- */
+
+.form {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+}
+
+.formRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: flex-end;
+}
+
+.formActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.input,
+.select {
+  min-width: 0;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--color-field-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.input {
+  width: 7.5rem;
+}
+
+.inputWide {
+  width: 12rem;
+}
+
+.select {
+  max-width: min(24rem, 100%);
+}
+
+.label {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--color-ink-secondary);
+}
+
+.hint {
+  color: var(--color-ink-muted);
+  font-size: var(--text-2xs);
+  font-weight: 400;
+  line-height: var(--leading-snug);
+}
+
+.errors {
+  display: grid;
+  gap: var(--space-1);
+  color: var(--color-critical-ink);
+  font-size: var(--text-sm);
+}
+
+.quantityList {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.quantityRow {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-xs);
+}
+
+.quantityHeader {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.checkList {
+  display: grid;
+  gap: 2px;
+  max-height: 20rem;
+  overflow-y: auto;
+  padding-right: var(--space-2);
+}
+
+.checkItem {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--space-2);
+  align-items: center;
+  padding: var(--space-1) 0;
+  border-bottom: 1px solid var(--color-line);
+  font-size: var(--text-sm);
+}
+
+.checkItem input[type="text"] {
+  width: 9rem;
+}
+
+/* --- Results ----------------------------------------------------------------------------- */
+
+.figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: var(--space-2);
+}
+
+.figure {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-xs);
+  background: var(--color-surface);
+}
+
+.figureLabel {
+  display: block;
+  color: var(--color-ink-muted);
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+
+.figureValue {
+  display: block;
+  margin-top: 2px;
+  color: var(--color-ink);
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.figureNote {
+  display: block;
+  margin-top: 2px;
+  color: var(--color-ink-muted);
+  font-size: var(--text-2xs);
+  line-height: var(--leading-snug);
+}
+
+.notes {
+  display: grid;
+  gap: var(--space-1);
+  padding-left: var(--space-4);
+  list-style: disc;
+  color: var(--color-ink-secondary);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+}
+
+.section {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.details > summary {
+  cursor: pointer;
+  color: var(--color-ink-secondary);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.details[open] > summary {
+  margin-bottom: var(--space-2);
+}
+
+.bar {
+  fill: var(--viz-series);
+}
+
+.bar[data-active] {
+  fill: var(--color-accent-ink);
+}
+
+.rule {
+  stroke: var(--color-ink-secondary);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.ruleBase {
+  stroke: var(--viz-baseline);
+  stroke-width: 2;
+}
+
+.ruleThreshold {
+  stroke: var(--color-ink-muted);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+
+.ruleLabel {
+  fill: var(--color-ink-secondary);
+  font-size: var(--text-2xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.band {
+  fill: var(--viz-series);
+  opacity: 0.12;
+}
+
+.line {
+  fill: none;
+  stroke: var(--viz-series);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.correlation {
+  display: inline-block;
+  position: relative;
+  width: 5rem;
+  height: 6px;
+  margin-right: var(--space-2);
+  border-radius: 3px;
+  background: var(--color-surface-sunken);
+  vertical-align: middle;
+}
+
+.correlation > span {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 3px;
+  background: var(--viz-series);
+}
+
+.correlation::after {
+  content: "";
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  left: 50%;
+  width: 1px;
+  background: var(--color-line-strong);
+}
+
+/* --- The joint grid ---------------------------------------------------------------------- */
+
+.grid td[data-base="true"] {
+  background: var(--color-accent-wash);
+  font-weight: 600;
+}
+
+.grid td[data-skipped="true"] {
+  color: var(--color-ink-muted);
+}
+
+.grid th[data-base="true"] {
+  color: var(--color-ink);
+}
+
+.baseMark {
+  display: block;
+  color: var(--color-ink-muted);
+  font-size: var(--text-2xs);
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* --- History ----------------------------------------------------------------------------- */
+
+.history {
+  display: grid;
+  gap: 2px;
+}
+
+.historyItem {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-xs);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: var(--text-xs);
+  text-align: left;
+}
+
+.historyItem[aria-current="true"] {
+  border-color: var(--color-accent);
+  background: var(--color-accent-wash);
+}
+
+/* --- Verification ------------------------------------------------------------------------ */
+
+.verification {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.checks {
+  display: grid;
+  gap: 2px;
+}
+
+.check {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-line);
+  font-size: var(--text-sm);
+}
+
+.check[data-passed="true"] > svg {
+  color: var(--color-good-ink);
+}
+
+.check[data-passed="false"] > svg {
+  color: var(--color-critical-ink);
+}
+
+.checkTitle {
+  font-weight: 600;
+}
+
+.checkKind {
+  margin-left: var(--space-2);
+  color: var(--color-ink-muted);
+  font-size: var(--text-2xs);
+  font-weight: 400;
+}
+
+.checkDetail {
+  margin-top: 2px;
+  color: var(--color-ink-secondary);
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+  overflow-wrap: anywhere;
+}
+
+.compactVerification {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-ink-secondary);
+}

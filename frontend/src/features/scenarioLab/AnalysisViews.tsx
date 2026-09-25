@@ -1,20 +1,16 @@
 /**
- * The views that read a set of results: the months, the stress cases and the one-at-a-time
- * sensitivity analysis. Charts follow RUMIN's chart rules — one emphasised series in sky
- * blue with the rest as grey context, thin marks, hairline axes — and every chart has a
- * table with the exact values beside it.
+ * The views that read a set of results: the months and the stress cases (the sensitivity
+ * and uncertainty analyses are in `SensitivityViews` and `UncertaintyView`). Charts follow
+ * RUMIN's chart rules — one emphasised series in sky blue with the rest as grey context,
+ * thin marks, hairline axes — and every chart has a table with the exact values beside it.
  */
 import { Fragment, useState } from "react";
-import { Button } from "@/components/Button";
-import { Icon } from "@/components/Icon";
-import { EmptyState, ErrorState } from "@/components/States";
-import { useApiResource } from "@/hooks/useApiResource";
-import { describeError } from "@/lib/apiClient";
+import { EmptyState } from "@/components/States";
 import { cx } from "@/lib/cx";
 import { formatExact, toNumber } from "@/lib/decimal";
-import { labApi } from "@/services/api";
-import type { LabSensitivity, ResultLine, ScenarioPlan, ScenarioResults } from "@/types/api";
-import { changeLabel, compactMoney, fullMoney, metricValue, unitShort } from "./format";
+import type { ResultLine, ScenarioPlan, ScenarioResults } from "@/types/api";
+import { AnalysisTypes } from "./AnalysisTypes";
+import { changeLabel, compactMoney, fullMoney, metricValue } from "./format";
 import styles from "./ScenarioLab.module.css";
 
 // --- Months -------------------------------------------------------------------------------------
@@ -160,6 +156,7 @@ export function StressView({
   ];
   return (
     <div className={styles.stressView}>
+      <AnalysisTypes current="stress" />
       <div className={styles.viewToolbar}>
         <label className={styles.inlineSelect}>
           <span>Line</span>
@@ -251,139 +248,6 @@ export function StressView({
           </tbody>
         </table>
       </div>
-    </div>
-  );
-}
-
-// --- Sensitivity ---------------------------------------------------------------------------------
-
-function Tornado({ analysis }: { analysis: LabSensitivity }) {
-  const base = toNumber(analysis.base);
-  const order = new Map(analysis.ranking.map((entry, index) => [entry.target, index]));
-  const items = [...analysis.items].sort(
-    (a, b) => (order.get(a.target) ?? 999) - (order.get(b.target) ?? 999),
-  );
-  const extremes = items.flatMap((item) =>
-    item.range ? [toNumber(item.range.low), toNumber(item.range.high)] : [],
-  );
-  const low = Math.min(base, ...extremes);
-  const high = Math.max(base, ...extremes);
-  const pad = (high - low) * 0.06 || Math.abs(base) * 0.01 || 1;
-  const scale = (value: number) => ((value - (low - pad)) / (high - low + 2 * pad)) * 100;
-  const moneyMetric = analysis.metric_kind === "line_change";
-  const show = (value: string) =>
-    moneyMetric
-      ? compactMoney(value)
-      : metricValue(value, analysis.metric === "interest_coverage" ? "times" : "ratio");
-  return (
-    <div className={styles.tornado}>
-      <p className={styles.caption}>
-        Each bar spans the lowest to the highest {analysis.metric_label.toLowerCase()} reached while
-        only that quantity moved; the rule marks the execution's own value ({show(analysis.base)}).
-      </p>
-      <ul className={styles.tornadoRows}>
-        {items.map((item) => (
-          <li key={item.target}>
-            <span className={styles.tornadoLabel}>
-              {item.label}
-              <span className={styles.rowNote}>
-                {item.points.map((point) => formatExact(point.value)).join(" / ")}{" "}
-                {unitShort(item.unit)} · base {formatExact(item.base_value)} {unitShort(item.unit)}
-              </span>
-            </span>
-            <span className={styles.tornadoTrack}>
-              <span className={styles.tornadoBase} style={{ left: `${scale(base)}%` }} />
-              {item.range && (
-                <span
-                  className={styles.tornadoBar}
-                  style={{
-                    left: `${scale(toNumber(item.range.low))}%`,
-                    width: `${Math.max(0.5, scale(toNumber(item.range.high)) - scale(toNumber(item.range.low)))}%`,
-                  }}
-                />
-              )}
-            </span>
-            <span className={styles.tornadoValues}>
-              {item.range
-                ? `${show(item.range.low)} to ${show(item.range.high)}`
-                : "No valid point"}
-              {item.points
-                .filter((point) => point.skipped)
-                .map((point) => (
-                  <span key={point.role} className={styles.rowNote}>
-                    {point.role} skipped: {point.skipped}
-                  </span>
-                ))}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-export function SensitivityView({ executionId }: { executionId: string | null }) {
-  const key = executionId ? `lab:sensitivity:${executionId}` : "lab:sensitivity:none";
-  const analyses = useApiResource(key, () =>
-    executionId ? labApi.sensitivity.list(executionId) : Promise.resolve({ items: [] }),
-  );
-  const [running, setRunning] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  if (!executionId) {
-    return (
-      <EmptyState title="Sensitivity needs a stored execution">
-        Execute the scenario first: the analysis re-evaluates its stored model runs, one quantity at
-        a time.
-      </EmptyState>
-    );
-  }
-  const latest = analyses.status === "success" ? analyses.data.items[0] : undefined;
-  const run = async () => {
-    setRunning(true);
-    setError(null);
-    try {
-      await labApi.sensitivity.create(executionId, { metric: null, inputs: [] });
-      analyses.reload();
-    } catch (failure) {
-      setError(describeError(failure));
-    } finally {
-      setRunning(false);
-    }
-  };
-  return (
-    <div className={styles.sensitivityView}>
-      <div className={styles.viewToolbar}>
-        <Button
-          size="sm"
-          onClick={() => void run()}
-          disabled={running}
-          icon={<Icon name="play" size={14} />}
-        >
-          {running ? "Running…" : latest ? "Run again" : "Run the analysis"}
-        </Button>
-        <p className={styles.caption}>
-          One quantity at a time — each change, the model assumptions — with every other value as
-          executed. This is sensitivity analysis, not a probability: no Monte Carlo simulation is
-          run.
-        </p>
-      </div>
-      {error && <p className={styles.errorText}>{error}</p>}
-      {analyses.status === "error" && (
-        <ErrorState error={analyses.error} onRetry={analyses.reload} />
-      )}
-      {latest ? (
-        <>
-          <p className={styles.caption}>
-            {latest.metric_label}: {latest.evaluations} evaluations in {latest.duration_ms} ms ·
-            stored, hash {latest.result_hash.slice(0, 12)}
-          </p>
-          <Tornado analysis={latest} />
-        </>
-      ) : (
-        analyses.status === "success" && (
-          <p className={styles.caption}>No analysis yet for this execution.</p>
-        )
-      )}
     </div>
   );
 }

@@ -17,10 +17,32 @@ const PREVIEW = "POST /api/v1/scenarios/preview";
 /** Every endpoint the Lab uses, answered from the fixtures. */
 function labRoutes(overrides: Record<string, Route> = {}): Record<string, Route> {
   let analyses = [] as ReturnType<typeof labFixtures.sensitivity>[];
+  const stored = new Set<string>();
+  const monteCarlo = labFixtures.monteCarlo();
+  const joint = labFixtures.joint();
   const models = Object.entries(labFixtures.models()).map(
     ([id, model]) => [`/api/v1/simulation-models/${id}`, { body: model }] as const,
   );
+  const registers = Object.entries(labFixtures.modelVerification()).map(
+    ([id, register]) =>
+      [`/api/v1/simulation-models/${id}/verification`, { body: register }] as const,
+  );
+  const analysesPath = `${execution(EXECUTION_ID)}/analyses`;
   return {
+    [`${execution(EXECUTION_ID)}/analysis-targets`]: { body: labFixtures.analysisTargets() },
+    [analysesPath]: () => ({
+      body: { items: labFixtures.analyses().items.filter((item) => stored.has(item.id)) },
+    }),
+    [`POST ${analysesPath}`]: (request: RecordedRequest) => {
+      const created =
+        (request.body as { kind: string }).kind === "monte_carlo" ? monteCarlo : joint;
+      stored.add(created.id);
+      return { status: 201, body: created };
+    },
+    [`${analysesPath}/${monteCarlo.id}`]: { body: monteCarlo },
+    [`${analysesPath}/${joint.id}`]: { body: joint },
+    [`POST ${analysesPath}/${monteCarlo.id}/verify`]: { body: labFixtures.analysisVerification() },
+    ...Object.fromEntries(registers),
     "/api/v1/scenario-templates": { body: labFixtures.templates() },
     "/api/v1/scenario-templates/crude_oil_airline": { body: labFixtures.template() },
     "/api/v1/scenarios": { body: labFixtures.scenarios() },
@@ -278,20 +300,177 @@ describe("Scenario Lab — a saved scenario", () => {
     expect(asked?.query).toBe("?target=profit_before_tax");
   });
 
-  it("runs a one-at-a-time sensitivity analysis and says it is not a probability", async () => {
+  it("runs a one-at-a-time analysis of the quantities chosen, with their values", async () => {
     const api = mockApi(labRoutes());
     const user = userEvent.setup();
     await openSaved();
 
     await user.click(screen.getByRole("tab", { name: "Sensitivity" }));
     expect(await screen.findByText("No analysis yet for this execution.")).toBeInTheDocument();
-    expect(screen.getByText(/no Monte Carlo simulation is run/)).toBeInTheDocument();
+    const form = screen.getByRole("form", { name: "One quantity at a time" });
+    // The scenario's changes are chosen, each with the model's default variation.
+    expect(within(form).getByRole("checkbox", { name: /Crude oil price change/ })).toBeChecked();
+    expect(within(form).getByText(/±10 %: 10 % and 30 %/)).toBeInTheDocument();
+    await user.click(within(form).getByRole("checkbox", { name: /Hedge ratio \(Airline/ }));
+    await user.type(
+      within(form).getByRole("textbox", { name: "Values for Hedge ratio (Airline fuel cost)" }),
+      "20, 60",
+    );
+    await user.click(within(form).getByRole("button", { name: "Run the analysis" }));
 
-    await user.click(screen.getByRole("button", { name: "Run the analysis" }));
-    expect(await screen.findByText("Crude oil price change")).toBeInTheDocument();
-    expect(screen.getByText(/10 \/ 30 % · base 20 %/)).toBeInTheDocument();
+    expect(await screen.findByText(/10 \/ 30 % · base 20 %/)).toBeInTheDocument();
     const posted = api.writes().find((request) => request.path.endsWith("/sensitivity"));
-    expect(posted?.body).toEqual({ metric: null, inputs: [] });
+    expect(posted?.body).toEqual({
+      metric: "profit_before_tax",
+      inputs: [
+        { target: "change:var_brent_crude", mode: "default" },
+        { target: "change:var_usd_inr", mode: "default" },
+        { target: "change:var_rbi_repo_rate", mode: "default" },
+        { target: "model:airline_fuel_cost:hedge_ratio", mode: "values", values: ["20", "60"] },
+      ],
+    });
+    expect(screen.getByText(/This is/)).toHaveTextContent("sensitivity analysis");
+  });
+
+  it("varies two quantities together and shows where their effects interact", async () => {
+    const api = mockApi(labRoutes());
+    const user = userEvent.setup();
+    await openSaved();
+
+    await user.click(screen.getByRole("tab", { name: "Sensitivity" }));
+    await user.click(await screen.findByRole("button", { name: "Two together" }));
+    expect(await screen.findByText("No grid for this execution yet.")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Run the grid" }));
+
+    const posted = api.writes().find((request) => request.path.endsWith("/analyses"));
+    expect(posted?.body).toEqual({
+      kind: "joint_sensitivity",
+      metric: "profit_before_tax",
+      rows: { target: "change:var_brent_crude", mode: "default", values: [] },
+      columns: { target: "change:var_usd_inr", mode: "default", values: [] },
+    });
+    // The captured grid: crude oil ±10 points and the rupee ±5 interact by 137,500.
+    expect(
+      await screen.findByText(/differs from the sum of moving each alone by up to −137\.5 K/),
+    ).toBeInTheDocument();
+    const grid = screen.getByRole("table", { name: /change from the execution's value/ });
+    expect(within(grid).getAllByText("as executed")).toHaveLength(2);
+    await user.click(screen.getByRole("button", { name: "Interaction" }));
+    const interaction = screen.getByRole("table", { name: /Interaction/ });
+    expect(within(interaction).getAllByText("+137.5 K")).toHaveLength(2);
+  });
+
+  it("runs a Monte Carlo analysis only with the distributions the user states", async () => {
+    const api = mockApi(labRoutes());
+    const user = userEvent.setup();
+    await openSaved();
+
+    await user.click(screen.getByRole("tab", { name: "Uncertainty" }));
+    const form = await screen.findByRole("form", { name: "Monte Carlo analysis" });
+    expect(within(form).getByRole("button", { name: "Run the analysis" })).toBeDisabled();
+    await user.click(within(form).getByRole("button", { name: "Add the scenario's changes" }));
+    const crude = within(form).getByRole("listitem", { name: "Crude oil price change" });
+    expect(within(crude).getByRole("textbox", { name: "Low" })).toHaveValue("10");
+    expect(within(crude).getByRole("textbox", { name: "High" })).toHaveValue("30");
+    await user.type(within(form).getByRole("textbox", { name: /Seed/ }), "20260925");
+    await user.click(within(form).getByRole("button", { name: "Run the analysis" }));
+
+    const posted = api.writes().find((request) => request.path.endsWith("/analyses"));
+    expect(posted?.body).toEqual({
+      kind: "monte_carlo",
+      metric: "profit_before_tax",
+      draws: 500,
+      seed: 20260925,
+      threshold: null,
+      quantities: [
+        {
+          target: "change:var_brent_crude",
+          distribution: { kind: "uniform", low: "10", high: "30" },
+        },
+        { target: "change:var_usd_inr", distribution: { kind: "uniform", low: "0", high: "10" } },
+        {
+          target: "change:var_rbi_repo_rate",
+          distribution: { kind: "uniform", low: "0.25", high: "0.75" },
+        },
+      ],
+    });
+    const result = await screen.findByRole("article", { name: "Monte Carlo result" });
+    expect(within(result).getByText("Median (P50)")).toBeInTheDocument();
+    expect(
+      within(result).getByRole("slider", { name: "Distribution of the draws" }),
+    ).toBeInTheDocument();
+    expect(within(result).getByText(/not probabilities of what will happen/)).toBeInTheDocument();
+    expect(within(result).getByText(/not the probability of any outcome/)).toBeInTheDocument();
+
+    await user.click(within(result).getByText("Configuration and reproducibility"));
+    expect(within(result).getByText("20260925")).toBeInTheDocument();
+    await user.click(within(result).getByRole("button", { name: "Run again and compare" }));
+    expect(await within(result).findByText(/identical results/)).toBeInTheDocument();
+  });
+
+  it("checks the distributions in the browser before sending anything", async () => {
+    const api = mockApi(labRoutes());
+    const user = userEvent.setup();
+    await openSaved();
+
+    await user.click(screen.getByRole("tab", { name: "Uncertainty" }));
+    const form = await screen.findByRole("form", { name: "Monte Carlo analysis" });
+    await user.click(within(form).getByRole("button", { name: "Add the scenario's changes" }));
+    const crude = within(form).getByRole("listitem", { name: "Crude oil price change" });
+    await user.clear(within(crude).getByRole("textbox", { name: "Low" }));
+    await user.type(within(crude).getByRole("textbox", { name: "Low" }), "40");
+    await user.click(within(form).getByRole("button", { name: "Run the analysis" }));
+
+    expect(
+      await within(form).findByText(/Crude oil price change: the low value must be below the high/),
+    ).toBeInTheDocument();
+    expect(api.writes().some((request) => request.path.endsWith("/analyses"))).toBe(false);
+  });
+
+  it("shows the reason the server gives for refusing an analysis", async () => {
+    mockApi(
+      labRoutes({
+        [`POST ${execution(EXECUTION_ID)}/analyses`]: errorReply(
+          422,
+          "validation_error",
+          "The analysis request is invalid.",
+          [
+            {
+              location: "body",
+              field: "quantities[0]",
+              message: "Every value of Crude oil price change's distribution must be valid.",
+              type: "analysis_limit",
+            },
+          ],
+        ),
+      }),
+    );
+    const user = userEvent.setup();
+    await openSaved();
+
+    await user.click(screen.getByRole("tab", { name: "Uncertainty" }));
+    const form = await screen.findByRole("form", { name: "Monte Carlo analysis" });
+    await user.click(within(form).getByRole("button", { name: "Add the scenario's changes" }));
+    await user.click(within(form).getByRole("button", { name: "Run the analysis" }));
+
+    expect(
+      await within(form).findByText(/Every value of Crude oil price change's distribution/),
+    ).toBeInTheDocument();
+  });
+
+  it("shows what has been verified about each included model, and what has not", async () => {
+    mockApi(labRoutes());
+    const user = userEvent.setup();
+    await openSaved();
+
+    await user.click(screen.getByRole("tab", { name: "Plan" }));
+    expect(await screen.findByText("10 of 10 checks passed")).toBeInTheDocument();
+    expect(screen.getByText("9 of 9 checks passed")).toBeInTheDocument();
+    expect(screen.getByText("8 of 8 checks passed")).toBeInTheDocument();
+    const [show] = screen.getAllByRole("button", { name: "Show the checks" });
+    await user.click(show as HTMLElement);
+    expect(screen.getByText("Worked example")).toBeInTheDocument();
+    expect(screen.getByText(/No result has been compared with what happened/)).toBeInTheDocument();
   });
 
   it("verifies that an execution reproduces", async () => {

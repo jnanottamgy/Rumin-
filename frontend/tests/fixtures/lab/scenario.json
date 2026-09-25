@@ -1,5 +1,5 @@
 {
-  "id": "e8ffba83-c10f-452b-ab07-6b8f34229300",
+  "id": "a9289586-8f0a-4b47-9258-f79687fa470e",
   "name": "Oil, rupee and rates on Aerisca",
   "description": "",
   "status": "draft",
@@ -142,19 +142,19 @@
       "spec_hash": "c868ca0c9d2786aed631c6c651b935d099a22c88318a729d5a5e016a99725615",
       "note": "",
       "derived_from": null,
-      "created_at": "2026-09-25T03:29:56.237927Z",
+      "created_at": "2026-09-25T03:49:26.423126Z",
       "executions": 1
     }
   ],
   "latest_execution": {
-    "id": "69582e24-c712-43a8-a28e-013d70cbbf9b",
-    "scenario_id": "e8ffba83-c10f-452b-ab07-6b8f34229300",
+    "id": "77f1c8cb-c2cb-479b-b838-bfa9f106108b",
+    "scenario_id": "a9289586-8f0a-4b47-9258-f79687fa470e",
     "version": 1,
     "status": "completed",
-    "requested_at": "2026-09-25T03:29:56.272427Z",
-    "started_at": "2026-09-25T03:29:56.276600Z",
-    "finished_at": "2026-09-25T03:29:56.442556Z",
-    "duration_ms": 166,
+    "requested_at": "2026-09-25T03:49:26.455881Z",
+    "started_at": "2026-09-25T03:49:26.460614Z",
+    "finished_at": "2026-09-25T03:49:26.552674Z",
+    "duration_ms": 92,
     "inputs_hash": "f6de3e60b25529da5405788ece8ab094fcbb2ff65a19f20c96c66310e77cd15b",
     "result_hash": "45fe9f3bf9a5d69b0f49f5e01ae5f6ebf291fc8e3f94635f5d6072c8e8dce622",
     "headline": [
@@ -177,6 +177,6 @@
     "error": null
   },
   "executions": 1,
-  "created_at": "2026-09-25T03:29:56.236571Z",
-  "updated_at": "2026-09-25T03:29:56.236577Z"
+  "created_at": "2026-09-25T03:49:26.422073Z",
+  "updated_at": "2026-09-25T03:49:26.422078Z"
 }

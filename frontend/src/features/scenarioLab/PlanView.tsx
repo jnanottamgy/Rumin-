@@ -5,6 +5,7 @@
  */
 import { Badge } from "@/components/Badge";
 import { Icon } from "@/components/Icon";
+import { VerificationSummary } from "@/features/simulation/VerificationPanel";
 import type { ScenarioPlan } from "@/types/api";
 import { changeLabel, EVIDENCE_LABEL, MODEL_STATUS_LABEL } from "./format";
 import styles from "./ScenarioLab.module.css";
@@ -97,6 +98,9 @@ export function PlanView({ plan }: { plan: ScenarioPlan }) {
                   <li key={reason}>{reason}</li>
                 ))}
               </ul>
+              {model.status === "included" && (
+                <VerificationSummary modelId={model.model_id} version={model.version} />
+              )}
               {model.exposure.chains.length > 0 && (
                 <p className={styles.caption}>
                   Graph exposure:{" "}

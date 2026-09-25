@@ -15,7 +15,7 @@ import { EpistemicBadge } from "@/components/EpistemicBadge";
 import { Icon } from "@/components/Icon";
 import { PageHeader } from "@/components/PageHeader";
 import { EmptyState, ErrorState, LoadingState } from "@/components/States";
-import { MonthsView, SensitivityView, StressView } from "@/features/scenarioLab/AnalysisViews";
+import { MonthsView, StressView } from "@/features/scenarioLab/AnalysisViews";
 import {
   Builder,
   type FieldMessages,
@@ -42,7 +42,9 @@ import { PathwayCanvas } from "@/features/scenarioLab/PathwayCanvas";
 import { PlanView } from "@/features/scenarioLab/PlanView";
 import { ResultsPanel } from "@/features/scenarioLab/ResultsPanel";
 import styles from "@/features/scenarioLab/ScenarioLab.module.css";
+import { SensitivityView } from "@/features/scenarioLab/SensitivityViews";
 import { TimelineStrip } from "@/features/scenarioLab/TimelineStrip";
+import { UncertaintyView } from "@/features/scenarioLab/UncertaintyView";
 import { Tabs } from "@/features/simulation/Tabs";
 import { invalidateResource, setResourceData, useApiResource } from "@/hooks/useApiResource";
 import { ApiError, describeError } from "@/lib/apiClient";
@@ -351,6 +353,16 @@ function Workspace({
       id: "sensitivity",
       label: "Sensitivity",
       content: () => <SensitivityView executionId={showExecution ? executionId : null} />,
+    },
+    {
+      id: "uncertainty",
+      label: "Uncertainty",
+      content: () => (
+        <UncertaintyView
+          executionId={showExecution ? executionId : null}
+          currency={results?.currency ?? ""}
+        />
+      ),
     },
     {
       id: "explain",

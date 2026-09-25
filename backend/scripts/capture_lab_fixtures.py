@@ -151,6 +151,14 @@ def main() -> None:
             "models",
             {model: ok(client.get(f"{API}/simulation-models/{model}")) for model in included},
         )
+        # Each included model's verification register (Phase 9), as the plan shows it.
+        save(
+            "model-verification",
+            {
+                model: ok(client.get(f"{API}/simulation-models/{model}/verification"))
+                for model in included
+            },
+        )
 
         scenario = ok(client.post(f"{API}/scenarios", json=REFERENCE), 201)
         execution = ok(client.post(f"{API}/scenarios/{scenario['id']}/executions", json={}), 202)

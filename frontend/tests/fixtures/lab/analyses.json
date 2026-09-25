@@ -1,8 +1,8 @@
 {
   "items": [
     {
-      "id": "f3c501a5-45db-48c9-91d3-78ad8ae276a4",
-      "execution_id": "69582e24-c712-43a8-a28e-013d70cbbf9b",
+      "id": "09dec48a-aee8-458c-9284-319178671231",
+      "execution_id": "77f1c8cb-c2cb-479b-b838-bfa9f106108b",
       "kind": "joint_sensitivity",
       "metric": "operating_profit",
       "metric_label": "Operating profit",
@@ -13,13 +13,13 @@
       "mean": null,
       "largest_interaction": "-137500",
       "evaluations": 9,
-      "duration_ms": 11,
+      "duration_ms": 7,
       "result_hash": "8523412e94651340961c6efc255ee4a337d54adde7ae6ed1407a139cd984bce4",
-      "created_at": "2026-09-25T03:29:57.294825Z"
+      "created_at": "2026-09-25T03:49:27.388311Z"
     },
     {
-      "id": "e9c650a9-000c-418d-a473-8cf1706eaae2",
-      "execution_id": "69582e24-c712-43a8-a28e-013d70cbbf9b",
+      "id": "7d3aa07c-c31c-4033-b774-e6ac17c74db4",
+      "execution_id": "77f1c8cb-c2cb-479b-b838-bfa9f106108b",
       "kind": "monte_carlo",
       "metric": "profit_before_tax",
       "metric_label": "Profit before tax",
@@ -34,9 +34,9 @@
       "mean": "-7719509.11908655",
       "largest_interaction": null,
       "evaluations": 501,
-      "duration_ms": 662,
+      "duration_ms": 663,
       "result_hash": "e4058fecf8243f3c172513b0609b6e364017a0fe2600202558e12b52e37865d0",
-      "created_at": "2026-09-25T03:29:57.262593Z"
+      "created_at": "2026-09-25T03:49:27.365445Z"
     }
   ]
 }

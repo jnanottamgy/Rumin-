@@ -1,7 +1,8 @@
 /**
  * A model before any run: what it calculates, how a change travels through it (the
  * pathway from its definition, and whether the knowledge graph confirms the relationship
- * it relies on), its assumptions and limitations, and its equations.
+ * it relies on), its assumptions and limitations, its equations, and what has and has not
+ * been verified about it.
  */
 import { Badge } from "@/components/Badge";
 import { StatusIndicator } from "@/components/StatusIndicator";
@@ -10,6 +11,7 @@ import { KnowledgeKey } from "./knowledge";
 import { PathwayDiagram } from "./PathwayDiagram";
 import { definitionPathway } from "./presentation";
 import styles from "./Simulation.module.css";
+import { VerificationPanel } from "./VerificationPanel";
 
 export function ModelOverview({ model }: { model: SimulationModelDetail }) {
   const pathway = definitionPathway(model);
@@ -93,6 +95,8 @@ export function ModelOverview({ model }: { model: SimulationModelDetail }) {
           </ol>
         </section>
       </div>
+
+      <VerificationPanel modelId={model.id} version={model.version} />
     </article>
   );
 }

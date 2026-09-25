@@ -1,12 +1,12 @@
 {
-  "reference": "69582e24-c712-43a8-a28e-013d70cbbf9b",
+  "reference": "77f1c8cb-c2cb-479b-b838-bfa9f106108b",
   "executions": [
     {
-      "execution_id": "69582e24-c712-43a8-a28e-013d70cbbf9b",
-      "scenario_id": "e8ffba83-c10f-452b-ab07-6b8f34229300",
+      "execution_id": "77f1c8cb-c2cb-479b-b838-bfa9f106108b",
+      "scenario_id": "a9289586-8f0a-4b47-9258-f79687fa470e",
       "scenario_name": "Oil, rupee and rates on Aerisca",
       "version": 1,
-      "requested_at": "2026-09-25T03:29:56.272427Z",
+      "requested_at": "2026-09-25T03:49:26.455881Z",
       "currency": "INR",
       "horizon_months": 12,
       "timing": {
@@ -80,11 +80,11 @@
       "result_hash": "45fe9f3bf9a5d69b0f49f5e01ae5f6ebf291fc8e3f94635f5d6072c8e8dce622"
     },
     {
-      "execution_id": "432f4f54-1621-412f-99db-c1b0aed83364",
-      "scenario_id": "aae0a513-95fc-4a4e-b002-257775f436c8",
+      "execution_id": "5f6caa82-f571-4a9d-8bd1-425c2782a8d7",
+      "scenario_id": "52cfcbe4-3ac3-43a8-91ea-e4577ce33da7",
       "scenario_name": "Oil alone on Aerisca",
       "version": 1,
-      "requested_at": "2026-09-25T03:29:58.129534Z",
+      "requested_at": "2026-09-25T03:49:28.045795Z",
       "currency": "INR",
       "horizon_months": 12,
       "timing": {
@@ -127,8 +127,8 @@
     }
   ],
   "comparable": {
-    "69582e24-c712-43a8-a28e-013d70cbbf9b": true,
-    "432f4f54-1621-412f-99db-c1b0aed83364": true
+    "77f1c8cb-c2cb-479b-b838-bfa9f106108b": true,
+    "5f6caa82-f571-4a9d-8bd1-425c2782a8d7": true
   },
   "lines": [
     {
@@ -136,7 +136,7 @@
       "label": "Revenue",
       "values": [
         {
-          "execution_id": "69582e24-c712-43a8-a28e-013d70cbbf9b",
+          "execution_id": "77f1c8cb-c2cb-479b-b838-bfa9f106108b",
           "baseline": "300000000",
           "change": "6925000",
           "scenario": "306925000",
@@ -145,7 +145,7 @@
           "difference": null
         },
         {
-          "execution_id": "432f4f54-1621-412f-99db-c1b0aed83364",
+          "execution_id": "5f6caa82-f571-4a9d-8bd1-425c2782a8d7",
           "baseline": "300000000",
           "change": "3500000",
           "scenario": "303500000",
@@ -163,7 +163,7 @@
       "label": "Operating costs",
       "values": [
         {
-          "execution_id": "69582e24-c712-43a8-a28e-013d70cbbf9b",
+          "execution_id": "77f1c8cb-c2cb-479b-b838-bfa9f106108b",
           "baseline": "250000000",
           "change": "13250000",
           "scenario": "263250000",
@@ -172,7 +172,7 @@
           "difference": null
         },
         {
-          "execution_id": "432f4f54-1621-412f-99db-c1b0aed83364",
+          "execution_id": "5f6caa82-f571-4a9d-8bd1-425c2782a8d7",
           "baseline": "250000000",
           "change": "9000000",
           "scenario": "259000000",
@@ -190,7 +190,7 @@
       "label": "Operating profit",
       "values": [
         {
-          "execution_id": "69582e24-c712-43a8-a28e-013d70cbbf9b",
+          "execution_id": "77f1c8cb-c2cb-479b-b838-bfa9f106108b",
           "baseline": "50000000",
           "change": "-6325000",
           "scenario": "43675000",
@@ -199,7 +199,7 @@
           "difference": null
         },
         {
-          "execution_id": "432f4f54-1621-412f-99db-c1b0aed83364",
+          "execution_id": "5f6caa82-f571-4a9d-8bd1-425c2782a8d7",
           "baseline": "50000000",
           "change": "-5500000",
           "scenario": "44500000",
@@ -217,7 +217,7 @@
       "label": "Interest expense",
       "values": [
         {
-          "execution_id": "69582e24-c712-43a8-a28e-013d70cbbf9b",
+          "execution_id": "77f1c8cb-c2cb-479b-b838-bfa9f106108b",
           "baseline": "12000000",
           "change": "375000",
           "scenario": "12375000",
@@ -226,7 +226,7 @@
           "difference": null
         },
         {
-          "execution_id": "432f4f54-1621-412f-99db-c1b0aed83364",
+          "execution_id": "5f6caa82-f571-4a9d-8bd1-425c2782a8d7",
           "baseline": null,
           "change": null,
           "scenario": null,
@@ -241,7 +241,7 @@
       "label": "Profit before tax",
       "values": [
         {
-          "execution_id": "69582e24-c712-43a8-a28e-013d70cbbf9b",
+          "execution_id": "77f1c8cb-c2cb-479b-b838-bfa9f106108b",
           "baseline": "38000000",
           "change": "-6700000",
           "scenario": "31300000",
@@ -250,7 +250,7 @@
           "difference": null
         },
         {
-          "execution_id": "432f4f54-1621-412f-99db-c1b0aed83364",
+          "execution_id": "5f6caa82-f571-4a9d-8bd1-425c2782a8d7",
           "baseline": null,
           "change": null,
           "scenario": null,
@@ -267,7 +267,7 @@
       "label": "Operating margin",
       "values": [
         {
-          "execution_id": "69582e24-c712-43a8-a28e-013d70cbbf9b",
+          "execution_id": "77f1c8cb-c2cb-479b-b838-bfa9f106108b",
           "baseline": "0.1666666667",
           "change": "-0.0243680595",
           "scenario": "0.1422986072",
@@ -276,7 +276,7 @@
           "difference": null
         },
         {
-          "execution_id": "432f4f54-1621-412f-99db-c1b0aed83364",
+          "execution_id": "5f6caa82-f571-4a9d-8bd1-425c2782a8d7",
           "baseline": "0.1666666667",
           "change": "-0.0200439319",
           "scenario": "0.1466227348",
@@ -294,7 +294,7 @@
       "label": "Interest coverage",
       "values": [
         {
-          "execution_id": "69582e24-c712-43a8-a28e-013d70cbbf9b",
+          "execution_id": "77f1c8cb-c2cb-479b-b838-bfa9f106108b",
           "baseline": "4.1666666667",
           "change": "-0.6373737374",
           "scenario": "3.5292929293",
@@ -303,7 +303,7 @@
           "difference": null
         },
         {
-          "execution_id": "432f4f54-1621-412f-99db-c1b0aed83364",
+          "execution_id": "5f6caa82-f571-4a9d-8bd1-425c2782a8d7",
           "baseline": null,
           "change": null,
           "scenario": null,
@@ -394,7 +394,7 @@
   ],
   "sensitivity": [
     {
-      "execution_id": "69582e24-c712-43a8-a28e-013d70cbbf9b",
+      "execution_id": "77f1c8cb-c2cb-479b-b838-bfa9f106108b",
       "metric": "profit_before_tax",
       "ranking": [
         {
@@ -440,7 +440,7 @@
       ]
     },
     {
-      "execution_id": "432f4f54-1621-412f-99db-c1b0aed83364",
+      "execution_id": "5f6caa82-f571-4a9d-8bd1-425c2782a8d7",
       "metric": null,
       "ranking": []
     }

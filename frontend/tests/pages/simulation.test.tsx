@@ -5,6 +5,7 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
+import { labFixtures } from "../fixtures/lab";
 import { RUN_ID, simulationFixtures, simulationPath } from "../fixtures/simulation";
 import { errorReply, mockApi, type RecordedRequest, type Route } from "../utils/api";
 import { matchingMediaQueries } from "../utils/browser";
@@ -17,6 +18,9 @@ function simulationRoutes(overrides: Record<string, Route> = {}): Record<string,
     [simulationPath.models]: { body: simulationFixtures.models() },
     [simulationPath.model]: { body: simulationFixtures.model() },
     [simulationPath.airlines]: { body: simulationFixtures.airlines() },
+    [`${simulationPath.model}/verification`]: {
+      body: labFixtures.modelVerification().airline_fuel_cost,
+    },
     [simulationPath.runs]: { body: simulationFixtures.runs() },
     [`POST ${simulationPath.validate}`]: (request: RecordedRequest) => {
       const inputs = (request.body as { inputs: Record<string, { value?: string }> }).inputs;
@@ -74,6 +78,19 @@ describe("Simulation preview", () => {
     expect(screen.getAllByText("Historical data").length).toBeGreaterThan(0);
     expect(screen.getByText(/Everything the model does not include stays at its baseline/));
     expect(await screen.findByText("No stored runs yet")).toBeInTheDocument();
+  });
+
+  it("says what has been verified about the model, and what has not", async () => {
+    mockApi(simulationRoutes());
+    await openNew();
+
+    const register = await screen.findByRole("region", { name: "Verification" });
+    expect(await within(register).findByText("10 of 10 checks passed")).toBeInTheDocument();
+    expect(within(register).getByText("Units do not change the result")).toBeInTheDocument();
+    expect(
+      within(register).getByText(/does not validate the model's assumptions|not validate/),
+    ).toBeInTheDocument();
+    expect(within(register).getByText(/None has been estimated from data/)).toBeInTheDocument();
   });
 
   it("checks inputs on the server and shows each problem beside its field", async () => {

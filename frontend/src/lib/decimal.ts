@@ -71,3 +71,74 @@ export function decimalPlaces(value: string): number {
 export function toNumber(value: string): number {
   return Number(value);
 }
+
+// --- Exact arithmetic on decimal strings (form starting points; never results) ----------------
+
+interface Scaled {
+  digits: bigint;
+  scale: number;
+}
+
+function scaled(value: string): Scaled | null {
+  const parts = parse(value);
+  if (!parts) return null;
+  const digits = BigInt(`${parts.integer}${parts.fraction}` || "0");
+  return { digits: parts.negative ? -digits : digits, scale: parts.fraction.length };
+}
+
+function toText({ digits, scale }: Scaled): string {
+  const negative = digits < 0n;
+  const text = (negative ? -digits : digits).toString().padStart(scale + 1, "0");
+  const integer = scale ? text.slice(0, -scale) : text;
+  const fraction = scale ? text.slice(-scale).replace(/0+$/, "") : "";
+  const isZero = /^0*$/.test(integer) && fraction === "";
+  return `${negative && !isZero ? "-" : ""}${integer}${fraction ? `.${fraction}` : ""}`;
+}
+
+function aligned(a: Scaled, b: Scaled): [bigint, bigint, number] {
+  const scale = Math.max(a.scale, b.scale);
+  return [
+    a.digits * 10n ** BigInt(scale - a.scale),
+    b.digits * 10n ** BigInt(scale - b.scale),
+    scale,
+  ];
+}
+
+/** a + b, exactly: "0.1" + "0.2" → "0.3". Null when either is not a plain decimal. */
+export function addDecimals(a: string, b: string): string | null {
+  const x = scaled(a);
+  const y = scaled(b);
+  if (!x || !y) return null;
+  const [left, right, scale] = aligned(x, y);
+  return toText({ digits: left + right, scale });
+}
+
+/** a × b, exactly: "80" × "0.95" → "76". */
+export function multiplyDecimals(a: string, b: string): string | null {
+  const x = scaled(a);
+  const y = scaled(b);
+  if (!x || !y) return null;
+  return toText({ digits: x.digits * y.digits, scale: x.scale + y.scale });
+}
+
+/** −1, 0 or 1 as a is below, equal to or above b; null when either is not a plain decimal. */
+export function compareDecimals(a: string, b: string): -1 | 0 | 1 | null {
+  const x = scaled(a);
+  const y = scaled(b);
+  if (!x || !y) return null;
+  const [left, right] = aligned(x, y);
+  return left < right ? -1 : left > right ? 1 : 0;
+}
+
+/** Rounded to `places` decimals, half away from zero, without grouping: "1.005" → "1.01". */
+export function roundDecimal(value: string, places: number): string | null {
+  const x = scaled(value);
+  if (!x) return null;
+  if (x.scale <= places) return toText(x);
+  const drop = 10n ** BigInt(x.scale - places);
+  const negative = x.digits < 0n;
+  const magnitude = negative ? -x.digits : x.digits;
+  let kept = magnitude / drop;
+  if ((magnitude % drop) * 2n >= drop) kept += 1n;
+  return toText({ digits: negative ? -kept : kept, scale: places });
+}

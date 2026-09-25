@@ -1,0 +1,484 @@
+{
+  "airline_fuel_cost": {
+    "model_id": "airline_fuel_cost",
+    "version": "1.1.0",
+    "status": "preview",
+    "definition_hash": "1e6ddaac9f18fed44bab55dd1bb12f192ff50326438aa331c7cb295ada15ed6f",
+    "engine_version": "1.0.0",
+    "register_version": "1.0.0",
+    "passed": 10,
+    "failed": 0,
+    "total": 10,
+    "checks": [
+      {
+        "id": "worked_example",
+        "kind": "reference",
+        "title": "Worked example",
+        "description": "The model page's worked example, calculated by hand on hypothetical round figures, is reproduced exactly.",
+        "passed": true,
+        "detail": "All 17 outputs equal the hand calculation to the output quantum (0.0000000001).",
+        "expected": {
+          "baseline_fuel_cost_usd": "750000",
+          "baseline_fuel_cost": "60000000",
+          "fuel_share": "0.24",
+          "monthly_baseline_fuel_cost": "5000000",
+          "fuel_cost_change": "5250000",
+          "fare_recovery": "1700000",
+          "operating_profit_change": "-3550000",
+          "baseline_operating_profit": "50000000",
+          "scenario_operating_profit": "46450000",
+          "baseline_operating_margin": "0.1666666667",
+          "scenario_operating_margin": "0.1539608883",
+          "operating_margin_change": "-0.0127057784",
+          "steady_state_fuel_cost_change": "6000000",
+          "steady_state_operating_profit_change": "-3600000",
+          "offsetting_revenue_change": "0.0175",
+          "gross_fuel_cost_change": "6000000",
+          "hedging_effect": "-750000"
+        },
+        "actual": {
+          "baseline_fuel_cost_usd": "750000",
+          "baseline_fuel_cost": "60000000",
+          "fuel_share": "0.24",
+          "monthly_baseline_fuel_cost": "5000000",
+          "fuel_cost_change": "5250000",
+          "fare_recovery": "1700000",
+          "operating_profit_change": "-3550000",
+          "baseline_operating_profit": "50000000",
+          "scenario_operating_profit": "46450000",
+          "baseline_operating_margin": "0.1666666667",
+          "scenario_operating_margin": "0.1539608883",
+          "operating_margin_change": "-0.0127057784",
+          "steady_state_fuel_cost_change": "6000000",
+          "steady_state_operating_profit_change": "-3600000",
+          "offsetting_revenue_change": "0.0175",
+          "gross_fuel_cost_change": "6000000",
+          "hedging_effect": "-750000"
+        }
+      },
+      {
+        "id": "no_change_no_effect",
+        "kind": "property",
+        "title": "No change, no effect",
+        "description": "With every scenario change at zero, every output attributed to the changes is zero.",
+        "passed": true,
+        "detail": "All 10 outputs attributed to the changes are zero.",
+        "expected": {},
+        "actual": {}
+      },
+      {
+        "id": "bridge_closes",
+        "kind": "property",
+        "title": "The accounting bridge closes",
+        "description": "The bridge's steps add up exactly to the change it explains.",
+        "passed": true,
+        "detail": "−gross_fuel_cost_change + −hedging_effect + fare_recovery = operating_profit_change (-3550000).",
+        "expected": {},
+        "actual": {}
+      },
+      {
+        "id": "monthly_totals",
+        "kind": "property",
+        "title": "Months add up to the horizon",
+        "description": "Each monthly series adds up to the matching total over the horizon.",
+        "passed": true,
+        "detail": "Over 12 months, the monthly values of fuel_cost_change, fare_recovery, operating_profit_change add up to their totals.",
+        "expected": {},
+        "actual": {}
+      },
+      {
+        "id": "contributions_add_up",
+        "kind": "property",
+        "title": "Contributions add up",
+        "description": "With several changes at once, each output equals the sum of the changes' contributions (Shapley values), whatever their interaction.",
+        "passed": true,
+        "detail": "With 2 changes at once, each of the 10 attributed outputs equals the sum of its contributions (Shapley values).",
+        "expected": {},
+        "actual": {}
+      },
+      {
+        "id": "proportional",
+        "kind": "property",
+        "title": "Linear where the equations are linear",
+        "description": "Doubling a quantity the equations are linear in doubles its effect.",
+        "passed": true,
+        "detail": "crude_oil_change 10 → 20: fuel_cost_change 5250000 → 10500000.",
+        "expected": {},
+        "actual": {}
+      },
+      {
+        "id": "direction",
+        "kind": "property",
+        "title": "The effect moves one way",
+        "description": "As a change grows, its effect moves in one direction at every step.",
+        "passed": true,
+        "detail": "fuel_cost_change rises at every step as crude_oil_change goes -20 → -10 → 0 → 10 → 20 → 40.",
+        "expected": {},
+        "actual": {
+          "-20": "-10500000",
+          "-10": "-5250000",
+          "0": "0",
+          "10": "5250000",
+          "20": "10500000",
+          "40": "21000000"
+        }
+      },
+      {
+        "id": "unit_invariance",
+        "kind": "property",
+        "title": "Units do not change the result",
+        "description": "The same volume and price stated in other units (exact conversions) give the same result.",
+        "passed": true,
+        "detail": "3 statements of the same fuel volume and price (barrels, gallons, mixed) give identical baseline_fuel_cost, fuel_cost_change, fare_recovery, operating_profit_change, scenario_operating_margin.",
+        "expected": {},
+        "actual": {}
+      },
+      {
+        "id": "range_limits",
+        "kind": "range",
+        "title": "Documented limits",
+        "description": "Each scenario input's and assumption's documented limits run, and a value just beyond is refused.",
+        "passed": true,
+        "detail": "9 inputs: every documented limit is accepted, and a value just beyond it is refused. Each limit runs with the worked example's other figures.",
+        "expected": {},
+        "actual": {}
+      },
+      {
+        "id": "reproducible",
+        "kind": "reproducibility",
+        "title": "Reproducible",
+        "description": "The same inputs, run twice, give the same inputs hash and result hash.",
+        "passed": true,
+        "detail": "Inputs hash and result hash identical (f841f9f5d43f…).",
+        "expected": {},
+        "actual": {}
+      }
+    ],
+    "not_verified": [
+      {
+        "id": "parameters",
+        "text": "Parameters — elasticities, delays, pass-through and hedge terms — are assumptions with stated defaults. None has been estimated from data."
+      },
+      {
+        "id": "back_testing",
+        "text": "No result has been compared with what happened (no back-testing): RUMIN stores no observed company or market outcomes to test against."
+      },
+      {
+        "id": "graph",
+        "text": "The knowledge-graph relationship the model propagates along is recorded in the sample network as a model assumption on illustrative data, not an empirical finding."
+      },
+      {
+        "id": "sample_data",
+        "text": "The companies in RUMIN's sample network are fictional, and these checks use hypothetical round figures: they show the arithmetic and the stated properties hold, not that the model describes any real company."
+      }
+    ],
+    "reference_source": "docs/simulation/airline-fuel-cost.md, worked example",
+    "duration_ms": 185,
+    "note": "These checks run the model through the engine now, on hypothetical figures. Passing them shows the arithmetic reproduces hand calculations and the stated properties hold; it does not validate the model's assumptions or show that its results match reality."
+  },
+  "fx_exposure": {
+    "model_id": "fx_exposure",
+    "version": "1.0.0",
+    "status": "preview",
+    "definition_hash": "1d0da6e5da1964c8910696394f6c905b4c2d5016c4bb9ed70dd94253890492a3",
+    "engine_version": "1.0.0",
+    "register_version": "1.0.0",
+    "passed": 8,
+    "failed": 0,
+    "total": 8,
+    "checks": [
+      {
+        "id": "worked_example",
+        "kind": "reference",
+        "title": "Worked example",
+        "description": "The model page's worked example, calculated by hand on hypothetical round figures, is reproduced exactly.",
+        "passed": true,
+        "detail": "All 18 outputs equal the hand calculation to the output quantum (0.0000000001).",
+        "expected": {
+          "baseline_usd_revenue": "160000000",
+          "baseline_usd_costs": "40000000",
+          "usd_revenue_share": "0.32",
+          "usd_cost_share": "0.1",
+          "revenue_change": "6000000",
+          "cost_change": "2000000",
+          "operating_profit_change": "4000000",
+          "baseline_operating_profit": "100000000",
+          "scenario_operating_profit": "104000000",
+          "baseline_operating_margin": "0.2",
+          "scenario_operating_margin": "0.2055335968",
+          "operating_margin_change": "0.0055335968",
+          "gross_revenue_change": "8000000",
+          "revenue_hedging_effect": "-2000000",
+          "gross_cost_change": "2000000",
+          "cost_hedging_effect": "0",
+          "net_usd_exposure": "1500000",
+          "run_rate_operating_profit_change": "6000000"
+        },
+        "actual": {
+          "baseline_usd_revenue": "160000000",
+          "baseline_usd_costs": "40000000",
+          "usd_revenue_share": "0.32",
+          "usd_cost_share": "0.1",
+          "revenue_change": "6000000",
+          "cost_change": "2000000",
+          "operating_profit_change": "4000000",
+          "baseline_operating_profit": "100000000",
+          "scenario_operating_profit": "104000000",
+          "baseline_operating_margin": "0.2",
+          "scenario_operating_margin": "0.2055335968",
+          "operating_margin_change": "0.0055335968",
+          "gross_revenue_change": "8000000",
+          "revenue_hedging_effect": "-2000000",
+          "gross_cost_change": "2000000",
+          "cost_hedging_effect": "0",
+          "net_usd_exposure": "1500000",
+          "run_rate_operating_profit_change": "6000000"
+        }
+      },
+      {
+        "id": "no_change_no_effect",
+        "kind": "property",
+        "title": "No change, no effect",
+        "description": "With every scenario change at zero, every output attributed to the changes is zero.",
+        "passed": true,
+        "detail": "All 9 outputs attributed to the changes are zero.",
+        "expected": {},
+        "actual": {}
+      },
+      {
+        "id": "bridge_closes",
+        "kind": "property",
+        "title": "The accounting bridge closes",
+        "description": "The bridge's steps add up exactly to the change it explains.",
+        "passed": true,
+        "detail": "gross_revenue_change + revenue_hedging_effect + −gross_cost_change + −cost_hedging_effect = operating_profit_change (4000000).",
+        "expected": {},
+        "actual": {}
+      },
+      {
+        "id": "monthly_totals",
+        "kind": "property",
+        "title": "Months add up to the horizon",
+        "description": "Each monthly series adds up to the matching total over the horizon.",
+        "passed": true,
+        "detail": "Over 12 months, the monthly values of revenue_change, cost_change, operating_profit_change add up to their totals.",
+        "expected": {},
+        "actual": {}
+      },
+      {
+        "id": "proportional",
+        "kind": "property",
+        "title": "Linear where the equations are linear",
+        "description": "Doubling a quantity the equations are linear in doubles its effect.",
+        "passed": true,
+        "detail": "fx_change 5 → 10: operating_profit_change 6000000 → 12000000.",
+        "expected": {},
+        "actual": {}
+      },
+      {
+        "id": "direction",
+        "kind": "property",
+        "title": "The effect moves one way",
+        "description": "As a change grows, its effect moves in one direction at every step.",
+        "passed": true,
+        "detail": "operating_profit_change rises at every step as fx_change goes -10 → -5 → 0 → 5 → 10.",
+        "expected": {},
+        "actual": {
+          "-10": "-12000000",
+          "-5": "-6000000",
+          "0": "0",
+          "5": "6000000",
+          "10": "12000000"
+        }
+      },
+      {
+        "id": "range_limits",
+        "kind": "range",
+        "title": "Documented limits",
+        "description": "Each scenario input's and assumption's documented limits run, and a value just beyond is refused.",
+        "passed": true,
+        "detail": "4 inputs: every documented limit is accepted, and a value just beyond it is refused. Each limit runs with the worked example's other figures.",
+        "expected": {},
+        "actual": {}
+      },
+      {
+        "id": "reproducible",
+        "kind": "reproducibility",
+        "title": "Reproducible",
+        "description": "The same inputs, run twice, give the same inputs hash and result hash.",
+        "passed": true,
+        "detail": "Inputs hash and result hash identical (3d73142193b4…).",
+        "expected": {},
+        "actual": {}
+      }
+    ],
+    "not_verified": [
+      {
+        "id": "parameters",
+        "text": "Parameters — elasticities, delays, pass-through and hedge terms — are assumptions with stated defaults. None has been estimated from data."
+      },
+      {
+        "id": "back_testing",
+        "text": "No result has been compared with what happened (no back-testing): RUMIN stores no observed company or market outcomes to test against."
+      },
+      {
+        "id": "sample_data",
+        "text": "The companies in RUMIN's sample network are fictional, and these checks use hypothetical round figures: they show the arithmetic and the stated properties hold, not that the model describes any real company."
+      }
+    ],
+    "reference_source": "docs/simulation/fx-exposure.md, worked example",
+    "duration_ms": 47,
+    "note": "These checks run the model through the engine now, on hypothetical figures. Passing them shows the arithmetic reproduces hand calculations and the stated properties hold; it does not validate the model's assumptions or show that its results match reality."
+  },
+  "floating_rate_interest": {
+    "model_id": "floating_rate_interest",
+    "version": "1.0.0",
+    "status": "preview",
+    "definition_hash": "e11b2df833e9dbe2cb7146b0c3d0719304260e8a5c74852127996c64979fbe2d",
+    "engine_version": "1.0.0",
+    "register_version": "1.0.0",
+    "passed": 9,
+    "failed": 0,
+    "total": 9,
+    "checks": [
+      {
+        "id": "worked_example",
+        "kind": "reference",
+        "title": "Worked example",
+        "description": "The model page's worked example, calculated by hand on hypothetical round figures, is reproduced exactly.",
+        "passed": true,
+        "detail": "All 10 outputs equal the hand calculation to the output quantum (0.0000000001).",
+        "expected": {
+          "floating_rate_debt": "1000000000",
+          "repo_interest_change": "3750000",
+          "us_interest_change": "0",
+          "interest_expense_change": "3750000",
+          "profit_before_tax_change": "-3750000",
+          "baseline_profit_before_tax": "20000000",
+          "scenario_profit_before_tax": "16250000",
+          "baseline_interest_coverage": "1.25",
+          "scenario_interest_coverage": "1.1940298507",
+          "run_rate_interest_change": "5000000"
+        },
+        "actual": {
+          "floating_rate_debt": "1000000000",
+          "repo_interest_change": "3750000",
+          "us_interest_change": "0",
+          "interest_expense_change": "3750000",
+          "profit_before_tax_change": "-3750000",
+          "baseline_profit_before_tax": "20000000",
+          "scenario_profit_before_tax": "16250000",
+          "baseline_interest_coverage": "1.25",
+          "scenario_interest_coverage": "1.1940298507",
+          "run_rate_interest_change": "5000000"
+        }
+      },
+      {
+        "id": "no_change_no_effect",
+        "kind": "property",
+        "title": "No change, no effect",
+        "description": "With every scenario change at zero, every output attributed to the changes is zero.",
+        "passed": true,
+        "detail": "All 6 outputs attributed to the changes are zero.",
+        "expected": {},
+        "actual": {}
+      },
+      {
+        "id": "bridge_closes",
+        "kind": "property",
+        "title": "The accounting bridge closes",
+        "description": "The bridge's steps add up exactly to the change it explains.",
+        "passed": true,
+        "detail": "−repo_interest_change + −us_interest_change = profit_before_tax_change (-3750000).",
+        "expected": {},
+        "actual": {}
+      },
+      {
+        "id": "monthly_totals",
+        "kind": "property",
+        "title": "Months add up to the horizon",
+        "description": "Each monthly series adds up to the matching total over the horizon.",
+        "passed": true,
+        "detail": "Over 12 months, the monthly values of repo_interest_change, us_interest_change, interest_expense_change, profit_before_tax_change add up to their totals.",
+        "expected": {},
+        "actual": {}
+      },
+      {
+        "id": "contributions_add_up",
+        "kind": "property",
+        "title": "Contributions add up",
+        "description": "With several changes at once, each output equals the sum of the changes' contributions (Shapley values), whatever their interaction.",
+        "passed": true,
+        "detail": "With 2 changes at once, each of the 6 attributed outputs equals the sum of its contributions (Shapley values).",
+        "expected": {},
+        "actual": {}
+      },
+      {
+        "id": "proportional",
+        "kind": "property",
+        "title": "Linear where the equations are linear",
+        "description": "Doubling a quantity the equations are linear in doubles its effect.",
+        "passed": true,
+        "detail": "repo_linked_debt 1000000000 → 2000000000: interest_expense_change 3750000 → 7500000.",
+        "expected": {},
+        "actual": {}
+      },
+      {
+        "id": "direction",
+        "kind": "property",
+        "title": "The effect moves one way",
+        "description": "As a change grows, its effect moves in one direction at every step.",
+        "passed": true,
+        "detail": "interest_expense_change rises at every step as repo_rate_change goes -1 → -0.5 → 0 → 0.5 → 1 → 2.",
+        "expected": {},
+        "actual": {
+          "-1": "-7500000",
+          "-0.5": "-3750000",
+          "0": "0",
+          "0.5": "3750000",
+          "1": "7500000",
+          "2": "15000000"
+        }
+      },
+      {
+        "id": "range_limits",
+        "kind": "range",
+        "title": "Documented limits",
+        "description": "Each scenario input's and assumption's documented limits run, and a value just beyond is refused.",
+        "passed": true,
+        "detail": "6 inputs: every documented limit is accepted, and a value just beyond it is refused. With the worked example's other figures, 1 limit stops at a rule the model states rather than produce a result: repo_rate_change = -25 (Interest over the horizon would fall to zero or below; interest coverage is undefined. Check the rate changes and the pass-through.)",
+        "expected": {},
+        "actual": {
+          "repo_rate_change = -25": "Interest over the horizon would fall to zero or below; interest coverage is undefined. Check the rate changes and the pass-through."
+        }
+      },
+      {
+        "id": "reproducible",
+        "kind": "reproducibility",
+        "title": "Reproducible",
+        "description": "The same inputs, run twice, give the same inputs hash and result hash.",
+        "passed": true,
+        "detail": "Inputs hash and result hash identical (24ee3f26c895…).",
+        "expected": {},
+        "actual": {}
+      }
+    ],
+    "not_verified": [
+      {
+        "id": "parameters",
+        "text": "Parameters — elasticities, delays, pass-through and hedge terms — are assumptions with stated defaults. None has been estimated from data."
+      },
+      {
+        "id": "back_testing",
+        "text": "No result has been compared with what happened (no back-testing): RUMIN stores no observed company or market outcomes to test against."
+      },
+      {
+        "id": "sample_data",
+        "text": "The companies in RUMIN's sample network are fictional, and these checks use hypothetical round figures: they show the arithmetic and the stated properties hold, not that the model describes any real company."
+      }
+    ],
+    "reference_source": "docs/simulation/floating-rate-interest.md, worked example",
+    "duration_ms": 44,
+    "note": "These checks run the model through the engine now, on hypothetical figures. Passing them shows the arithmetic reproduces hand calculations and the stated properties hold; it does not validate the model's assumptions or show that its results match reality."
+  }
+}
