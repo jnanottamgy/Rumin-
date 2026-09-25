@@ -517,6 +517,10 @@ describe("AI Analyst — managing conversations", () => {
   });
 
   it("opens a what-if in the Scenario Lab as an unsaved draft, never saving it", async () => {
+    // The Lab is a lazily loaded route. Imported during the navigation, it used 1.3–1.8 s of
+    // the 3 s wait for its heading below on an idle machine and 2.6–3.2 s with every CPU busy
+    // (CI run 44 failed on it). Loaded first, the wait is the handoff alone: 0.1–0.5 s busy.
+    await import("@/pages/ScenarioLabPage");
     const api = mockApi(
       storedRoutes({
         "/api/v1/scenario-templates": { body: labFixtures.templates() },
