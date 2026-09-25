@@ -448,6 +448,12 @@ another person; tokens, cookies, expiry and revocation; the cross-site checks, i
 `null` and sibling-subdomain origins; nginx overwriting the forwarded headers and refusing
 `/metrics`; errors that echo no input; owner-only backups; non-root, read-only containers.
 
+The bundled `security-review` skill was then run on the whole Phase 10 change. It reported no
+High or Medium vulnerability; its one Low candidate, scored 5 out of 10 by its own check (below
+its bar of 8), was fixed anyway: `verify_deployment.sh` put the administrator's session cookie
+on `curl` and `docker compose exec` command lines and never signed it out. The cookie now stays
+in a file only its owner can read, and the session is signed out when the script ends.
+
 ### Secrets and supply chain
 
 - **Secrets**: in production, `POSTGRES_PASSWORD` and `POSTGRES_ADMIN_PASSWORD` in

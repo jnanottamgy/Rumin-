@@ -152,7 +152,8 @@ product (`/guide`) and in [setup](../setup.md).
 password-change form (wrong current passwords now count towards the address limit); the Vite
 proxy's `changeOrigin`, which made every sign-in look cross-site; an inline theme script that
 the CSP would block (moved to a file); a font inlined as a `data:` URI that the CSP blocked in
-production; and every finding of the independent review below.
+production; every finding of the independent review below; and the session cookie the
+deployment verification still put on command lines (the `security-review` skill's pass).
 
 ### The independent review
 
@@ -186,8 +187,28 @@ that echo no input; owner-only backups; non-root, read-only containers.
 ### The `security-review` skill's pass
 
 The bundled `security-review` skill was run last, on the whole Phase 10 change after the
-fixes above ([§ 8](#8-installed-skills-inspected-and-used) describes its method). It was still
-running when this report was first committed; its result will be recorded here.
+fixes above (182 files; [§ 8](#8-installed-skills-inspected-and-used) describes its method).
+**It reported no High or Medium vulnerability.** Its search found one Low candidate, which the
+skill's own false-positive check scored 5 out of 10 (the search 6), below the skill's bar of 8,
+so its final report is empty:
+
+- `verify_deployment.sh`, which is run against production, no longer put the administrator's
+  password on a command line, but it did put the administrator's **session cookie** there
+  (`curl -H "Cookie: …"` and a `docker compose exec … python -c` argument), where any user of
+  that machine can read it while the script runs, and it never signed that session out (usable
+  for up to 12 hours). Exploiting it needs an untrusted user on the production Docker host.
+  **Fixed anyway**, since it completes the password fix above: the cookie stays in a file only
+  its owner can read, reaches `curl` through `-H @file` and the in-container metrics check on
+  standard input, and the script signs the session out when it ends (`deployment_check.sh`
+  keeps its cookie the same way). Verified: `make deployment-check` passes, and against a
+  second production stack the check's own session is revoked when the script ends.
+
+The pass also confirmed as sound, among others: every router but signing in is protected;
+role and ownership on every write; private conversations; session tokens (256 random bits,
+stored as SHA-256, idle and absolute expiry, the role read on every request); the cross-site
+check, including `Origin: null`; bounded metrics labels and nginx's refusal of `/metrics`;
+overwritten forwarded headers; the non-superuser database role; no unsafe HTML in the new
+frontend code; the CI workflow's read-only permissions.
 
 ### Privacy, integrity and provenance (10.6)
 
