@@ -2,9 +2,12 @@
 
 | Suite | Tool | Tests | Runs against | Command |
 |---|---|---|---|---|
-| Backend | pytest | 1,150 (one skipped without a key) | the FastAPI app, the ingestion pipeline, the graph build, the simulation engine and its verification register, the Scenario Lab and its analyses, Financial Intelligence and the AI Analyst with a real, migrated database (SQLite; PostgreSQL optional); providers answered by scripted responses; the Anthropic SDK over a mocked transport | `uv run pytest` in `backend/` |
-| Frontend unit and pages | Vitest + Testing Library (jsdom) | 404 | the real route table, with `fetch` replaced by a fake API serving recorded responses (and, for the 3D universe, the WebGL renderer replaced by a stand-in) | `npm test` in `frontend/` |
-| Integration | Vitest (Node) | 66 | a live API: the frontend's real service layer over HTTP | `npm run test:integration` with `RUMIN_API_URL` |
+| Backend | pytest | 1,184 (one skipped without a key) | the FastAPI app, the ingestion pipeline, the graph build, the simulation engine and its verification register, the Scenario Lab and its analyses, Financial Intelligence and the AI Analyst with a real, migrated database (SQLite; PostgreSQL optional); providers answered by scripted responses; the Anthropic SDK over a mocked transport | `uv run pytest` in `backend/` |
+| Frontend unit and pages | Vitest + Testing Library (jsdom) | 444 | the real route table, with `fetch` replaced by a fake API serving recorded responses (and, for the 3D universe, the WebGL renderer replaced by a stand-in) | `npm test` in `frontend/` |
+| Integration | Vitest (Node) | 76 | a live API, signed in: the frontend's real service layer over HTTP | `npm run test:integration` with `RUMIN_API_URL` |
+| Launch suite | Playwright + axe-core, Chromium | 70 (35 on a desktop, 35 on a phone; 2 skipped by design) | the **built** web app served by `vite preview` over a live API on a fresh database: sign-in, every page (accessibility, console errors, sideways scrolling, timings), the core workflows by role | `scripts/e2e.sh` ([below](#the-launch-suite-frontende2e)) |
+| Deployment check | `scripts/deployment_check.sh` | 43 checks, then a restore and a rollback | the production images and compose stack on this machine, with a self-signed certificate | `make deployment-check` ([deployment](deployment.md#checking-the-deployment-on-one-machine)) |
+| Security | `pip-audit`, `npm audit`, gitleaks | — | the locked dependencies and every commit | `make audit` |
 | Analyst evaluation | `python -m app.analyst.evaluation` | 33 cases | the configured provider on the configured database (in CI: the grounded composer and seven adversarial scripted models, inside the backend suite) | see [evaluation](analyst/evaluation.md) |
 | End-to-end smoke | `scripts/smoke_test.sh` | — | fresh database → migrate → seed → load the catalogue → import a synthetic price file → build the knowledge graph, rebuild it and fail if anything changed → start API → integration suite (including a simulation run and a background scenario execution, both checked against hand calculations) | `make smoke` |
 | Graph benchmark | `backend/scripts/benchmark_graph.py`, `frontend/scripts/measure-graph.mjs` | — | synthetic networks up to 20,000 companies; not part of CI | see [performance](graph/performance.md#how-it-was-measured) |
@@ -22,9 +25,11 @@ the API only when `RUMIN_ANTHROPIC_API_KEY` and `RUMIN_ANALYST_MODEL` are set. T
 running the tests may hold its own `ANTHROPIC_*` variables; tests prove RUMIN ignores them.
 
 `make check` runs linting, formatting checks, type checks, both unit suites and the
-OpenAPI snapshot check — everything CI runs except the smoke test. CI
-(`.github/workflows/ci.yml`) runs all of it, the backend suite a second time on
-PostgreSQL 16, and the smoke test.
+OpenAPI snapshot check. CI (`.github/workflows/ci.yml`) runs six jobs on every push: the
+backend (lint, types, the suite on SQLite and again on PostgreSQL 16), the frontend (lint,
+types, tests, build, the generated API types), security (`pip-audit`, `npm audit`, the
+gitleaks secret scan over the whole history), the smoke test, the launch suite and the
+deployment check.
 
 ## Backend (`backend/tests/`)
 
@@ -34,6 +39,8 @@ the one production gets.
 
 | Module | Tests | Covers |
 |---|---|---|
+| `test_auth.py` | 25 | Accounts and access (Phase 10): **every API route but signing in needs a session** (the route table is walked, so a new route cannot be left open); the cookie is `HttpOnly` and the token never returned; a wrong password and an unknown e-mail get the same answer; **an address that keeps failing waits for that account only — its owner signs in from elsewhere**, and an unknown e-mail is treated alike; many failures from several addresses lock the account until the lock ends, when the count starts again; **simultaneous wrong passwords are all counted** (the count is one statement); a successful sign-in does not clear the address's failures; an address that keeps failing waits, audited; sessions end when idle, expired, revoked or the account is deactivated; signing out; the password policy; a temporary password replaced before anything else; a viewer reads but changes nothing; **only the owner or an administrator changes a scenario**, a run belongs to whoever ran it; **conversations are private even from administrators**; administrators manage people and every change is audited; the last administrator cannot be removed, even when a simultaneous demotion made the first count stale (the change is undone); nobody else administers; cross-site writes refused; production refuses development defaults; the command line |
+| `test_observability.py` | 8 | Metrics in the exposition format (escaped labels, cumulative histograms); `/metrics` for administrators and listed scrapers only; **requests counted by route template, never by raw path**, with nothing identifying; **invented methods counted as `OTHER`** and a path with an encoded line break logged on one line; API answers never cached; JSON logs carrying the request ID and the access fields, never a cookie; wrong current passwords counting towards the client limit |
 | `test_health.py` | 5 | Liveness never touches the database; readiness is 200 when migrated and seeded, and 503 naming the failing check (migrations missing, no dataset, database unreachable) |
 | `test_reference_data.py` | 18 | Entities, industries, variables, relationships: ordering, kind filters, pagination and out-of-range limits, 404 envelope, malformed IDs rejected before querying, ISIC classifications, published scenario rules, relationships labelled as assumptions, the type registry |
 | `test_network.py` | 7 | Counts match the dataset, every edge connects existing nodes, structural links mirror entity records, degrees, the dataset labelled illustrative, undirected edges flagged, an empty but valid network without data |
@@ -41,8 +48,8 @@ the one production gets.
 | `test_seed.py` | 19 | The sample passes every integrity rule and the honesty rules (labelled illustrative, companies fictional, real entities cite references, no evidence claimed, no numeric financial figures); each integrity rule catches its violation; unknown fields rejected; loading is idempotent and `--reset` replaces data |
 | `test_domain.py` | 21 | Every edge type is registered with a meaning; rates accept only percentage-point changes; limit checks, including decimal places despite binary floating point |
 | `test_errors_and_security.py` | 14 | Error envelope for unknown routes (404), wrong methods (405), crashes (500, no internals) and database outages (503); request IDs generated or safely reused; security headers and CSP; large responses gzip-compressed for clients that accept it (headers kept, small ones sent as they are); docs can be disabled; CORS allows configured origins and refuses others; unsafe CORS settings rejected |
-| `test_migrations.py` | 5 | Migrated schema equals the models exactly; downgrade to empty and upgrade again; foreign keys enforced on SQLite; **Phase 1 drafts become version 1 of themselves** in migration `0005`; **one-at-a-time analyses stored before `0008` read method `1.0.0`**, with no default left for new rows |
-| `test_openapi.py` | 5 | The committed `docs/api/openapi.json` matches the application; errors are documented with the shared envelope; scenario versions and executions are never rewritten (no `PUT`, `PATCH` or `DELETE` on them); simulation runs cannot be replaced or deleted; **schema names are unique across modules** (two schemas with one name would silently rename a type in the contract); **operation IDs are unique** (a clash renamed the generated TypeScript types) |
+| `test_migrations.py` | 6 | Migrated schema equals the models exactly; downgrade to empty and upgrade again; foreign keys enforced on SQLite; **Phase 1 drafts become version 1 of themselves** in migration `0005`; **one-at-a-time analyses stored before `0008` read method `1.0.0`**, with no default left for new rows |
+| `test_openapi.py` | 6 | The committed `docs/api/openapi.json` matches the application; errors are documented with the shared envelope; scenario versions and executions are never rewritten (no `PUT`, `PATCH` or `DELETE` on them); simulation runs cannot be replaced or deleted; **schema names are unique across modules** (two schemas with one name would silently rename a type in the contract); **operation IDs are unique** (a clash renamed the generated TypeScript types) |
 
 Phase 2 (financial data):
 
@@ -190,6 +197,10 @@ pathway and checked against the contract like the others.
 | `scenarioLab/pathwayLayout` | 9 | On the captured reference pathway: four columns with metrics under the lines; every step placed except graph context, whose links go to the lane header; every computed link drawn once; steps inside their model's lane and lanes apart; no overlaps in a column; lines in accounting order; fits the frame down to a minimum node width; a collapsed lane re-routes its links and hides the ones inside; a step's chain upstream and downstream |
 | `scenarioLab/format` | 7 | Compact and full money with signs; changes in the variable's unit (%, pp, its own); metrics and their changes; step values by unit; model unit identifiers read as a reader expects; stage durations from the server's timestamps |
 | `scenarioLab/analysisForm` | 9 | The forms' starting points span the model's default variation exactly, stay inside the input's range, offer whole months as a discrete choice, and leave a collapsed range blank for the user to state; a Monte Carlo request built with exact decimal strings; every problem named with its quantity; the grid and one-at-a-time requests; lines as money, margins in points, coverage in times; quantities in their unit |
+| `app/session` | 16 | Accounts in the interface (Phase 10): a visitor sent to sign in and back to the page asked for; one message for a wrong password and the password asked again; missing fields named without asking the server; the server's wait passed on (429); **the next page kept inside RUMIN**, resolved as a browser resolves a link (tabs and line breaks cannot turn it into another site); an unreachable server; **a session that ends mid-use returns to sign-in, keeping the place**; who is signed in and what the role allows, and signing out; no People page for an analyst; a temporary password replaced before anything else, typed the same twice, the server's policy problems under the field; the introduction sharing nothing with a visitor |
+| `app/scrollRegion` | 5 | A wide table's wrapper is a focusable, named region only while it scrolls; named after its table, caption or section heading, never repeating the name of a region around it |
+| `pages/people` | 8 | Administrators (Phase 10): accounts and the audit trail in words, including which limit made someone wait; an account created with a temporary password; the server's objections under their fields; a role changed, a temporary password set, sessions ended and an account deactivated, each request exactly as sent; why the last administrator cannot be demoted; the page refused to others without requesting anything; unknown event details kept |
+| `pages/guide` | 3 | The getting-started guide: six starter tasks that each open a working page, the steps a viewer cannot take said on the task, the limits |
 | `app/navigation` | 8 | Landing, navigation between modules, 404, live workspace status, the AI Analyst opened with who answers and nothing sent, System capabilities, theme persistence |
 | `analyst/format` | 8 | Citations split out of a paragraph; sources ordered by first citation, unknown ids dropped; **figures rounded half-even at fixed places as the API's sentences are**; percentages and amounts with signs and units; durations; Markdown answers with their cards and sources; table cells escaped and records linked; a failed question and a conversation's header |
 | `pages/analyst` | 19 | Against fixtures captured from a real backend (`backend/scripts/capture_analyst_fixtures.py`): starting with the provider stated and suggestions from the API; a model configured but not ready; **asking: the question stored, each recorded step shown (queued, running with its tool call), then the answer**, the URL naming the conversation; a suggestion asked in one click; Shift+Enter and the length limit; a stored conversation as notes with **citations linked to their sources in the margin**, paths, tables, the stored card and what is not modelled; a series as a chart with its table and its limitation said once; **a preview card whose figures read as its sentences do** (+3.60 %); a clarification's option and a follow-up asked; an injection declined; the method (tool calls, the check, who composed it); a question still being answered followed when the conversation opens; a failed question asked again; a refusal (429) shown and retried; rename; delete only after confirming; export and copy as Markdown with sources; **a what-if opened in the Scenario Lab as an unsaved draft**, with only an unstored preview asked for; each relationship path linked to the 3D universe; a question handed over by another page read as text only, never sent |
@@ -294,9 +305,91 @@ one-at-a-time sensitivity (method 1.1.0) moving operating margin with annual rev
 **each executed model version's verification register passing every check** and listing
 what it does not verify — every response checked against the contract.
 
+Phase 10 adds `auth.integration.test.ts` (10 tests), and every other test now signs in as
+the suite's administrator, whom `scripts/smoke_test.sh` creates with a random password:
+without a session only health and signing in answer; a wrong password and an unknown account
+get one message; the administrator's session has every permission, and People and the audit
+trail hold no secret; **a viewer created with a temporary password must choose their own
+before anything else** (403 `password_change_required`), then reads the workspace but cannot
+create in it or list people; **a change sent from another site is refused**; a role change
+applies on the next request and a deactivation ends the session; signing out ends it for
+good.
+
 It creates scenarios (deleting those it can), adds simulation runs, executions and analyses,
 and creates conversations (deleting them), so point it only at a disposable database — which
 is what `scripts/smoke_test.sh` provides.
+
+The files run one at a time (`fileParallelism: false`). They share that database, and in
+parallel one file's writes could land between another's store and read-back: 2 runs in 8
+failed "stores an analysis and reads it back unchanged and current", its analysis correctly
+reported stale because another file had just executed a scenario for the same company. Run
+one at a time, 8 runs in a row passed (about 11 s of tests instead of 6.5 s).
+
+## The launch suite (`frontend/e2e/`)
+
+The built web app in a real browser, as people will use it (Phase 10). `scripts/e2e.sh`
+(`make e2e`):
+
+1. builds a fresh SQLite database: the migrations, the illustrative sample network, the
+   series catalogue, a three-day **SYNTHETIC** price file and the knowledge graph;
+2. creates an administrator with a random password;
+3. starts the API, builds the web app and serves the build with `vite preview`, which
+   proxies `/api` like the production web server;
+4. runs Playwright (1.56, pinned to the pre-installed Chromium) in two projects, **desktop**
+   (1440 × 900) and **phone** (390 × 844, touch, twice the pixel density);
+5. stops both servers and deletes the database, whatever the outcome.
+
+The global setup (`e2e/global-setup.ts`) prepares the records through the API as the
+administrator: a viewer who has chosen their password, a newcomer still holding a temporary
+one, the reference scenario (HYPOTHETICAL round figures on the fictional Aerisca Airways)
+executed, a simulation run, a stored intelligence analysis and an Analyst conversation.
+
+| Spec | What it checks |
+|---|---|
+| `pages.spec.ts` | **Every page** — 26 routes from the introduction to the 404 page, including a series, an instrument, an ingestion run, an executed scenario, a comparison, a simulation run, a dossier, a stored analysis, a conversation, System, People and the password page — on both projects: the level-1 heading and the tab title; **no axe-core violation** (axe's default rules: WCAG 2.x A and AA and best practices); no console error and no uncaught exception; **no sideways scrolling**; first and largest contentful paint, load and bytes transferred attached to the report |
+| `access.spec.ts` | A visitor sent to sign in and back to the page asked for; one message for a wrong password; the introduction requesting nothing but the session; a newcomer choosing their own password before anything else; signing out (on the phone through the menu) |
+| `workflows.spec.ts` | An administrator building a scenario **from a template through the form** (company, currency, figures, units), the live preview, *Save and execute*, the stored execution and its results, and axe on the result; the Analyst answering a suggested question with its sources; People listing the run's accounts and the audit trail; **a viewer** reading everything, previewing, and told why nothing can be stored (controls disabled with the reason, People refused) |
+
+Two tests run on the desktop only, by design: the newcomer's password change and the
+template workflow each change stored records once. Failures keep a screenshot, the page's
+accessibility snapshot and a trace in `frontend/e2e-results/` (ignored by git); CI keeps them
+for a week, never the prepared sign-in state. `RUMIN_E2E_URL` points the suite at any running
+RUMIN (with `RUMIN_TEST_EMAIL` and `RUMIN_TEST_PASSWORD` for an administrator, and
+`RUMIN_E2E_INSECURE=1` for a self-signed certificate) — which is how it was also run against
+the production stack.
+
+### What it found
+
+The first runs found defects the unit suites could not see, all fixed:
+
+| Found | Where | Fix |
+|---|---|---|
+| **The Scenario Lab's controls panel covered *Save and execute*** at 1440 px: a click landed on the panel. Sticky grid items stay stuck across the whole grid, and the button sat in its last row | desktop | The execute strip sits after the grid |
+| A long scenario name in the 3D universe's overlay picker widened the page by 130 px | phone | The select shrinks to its line; the page's columns are `minmax(0, 1fr)` |
+| Two scroll regions on a page named "Table", and one named like the region around it (axe `landmark-unique`) | phone, Data and Scenario library | Every table in a scroll region has its own name |
+| The builder's repeated rows labelled every field alike ("Name" four times) | desktop | "Name of stress case 2", "Variable of change 1" for screen readers |
+| **Against the production stack, every page logged a refused font**: Vite had inlined a small font subset as a `data:` URI, which the Content-Security-Policy (`font-src 'self'`) blocks — the font never loaded in production | both, production only | Fonts are never inlined; `vite preview` now sends the production policy, so the suite enforces it everywhere |
+
+### Results
+
+The final run on this machine: **68 passed, 2 skipped (by design), 0 failed** in 3.0 minutes —
+35 of 35 on the desktop, 33 of 35 on the phone. Page timings from the same run (localhost,
+no network latency; bytes as the browser's resource timing reports them):
+
+| Project | First contentful paint | Largest contentful paint | JavaScript transferred |
+|---|---|---|---|
+| Desktop (26 pages) | 144–252 ms, median 198 | 144–356 ms, median 210 | 129–311 kB (311 kB on the 3D page) |
+| Phone (26 pages) | 132–328 ms, median 214 | 132–328 ms, median 214 | the same bundles |
+
+**Against the production stack** — the `rumin-api` and `rumin-web` images under
+`compose.production.yml` with PostgreSQL, nginx terminating TLS over HTTP/2 with a
+self-signed certificate for `localhost`, the Content-Security-Policy, the `__Host-` cookie
+and the rate limits (`RUMIN_E2E_URL=https://localhost:18444 RUMIN_E2E_INSECURE=1`): **68
+passed, 2 skipped, 0 failed** in 3.1 minutes, after the font fix above (the first run there
+failed 59 tests, all on that one refused font). Timings there, each test in a fresh browser
+context (so a new TLS handshake): desktop first contentful paint 204–432 ms (median 292),
+largest 204–824 ms (median 308; the slowest an executed scenario's page); phone 160–224 ms
+(median 200).
 
 ## Manual and visual checks
 

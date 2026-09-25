@@ -6,7 +6,7 @@ FRONTEND := frontend
 UV_RUN   := cd $(BACKEND) && uv run --frozen
 
 .DEFAULT_GOAL := help
-.PHONY: help install migrate seed catalog ingest ingest-jobs graph graph-status backend \
+.PHONY: help install migrate seed catalog ingest ingest-jobs admin graph graph-status backend \
         frontend test test-backend test-frontend smoke lint typecheck check openapi \
         api-types verify-models db-up db-down audit deployment-check e2e
 
@@ -31,6 +31,10 @@ ingest: ## Retrieve the World Bank series (needs internet access to api.worldban
 
 ingest-jobs: ## List recent ingestion runs
 	$(UV_RUN) python -m app.ingestion jobs
+
+admin: ## Create an administrator: make admin EMAIL=you@example.org NAME="Your Name"
+	@test -n "$(EMAIL)" -a -n "$(NAME)" || { echo 'usage: make admin EMAIL=… NAME="…"'; exit 2; }
+	$(UV_RUN) python -m app.auth create-user --email "$(EMAIL)" --name "$(NAME)" --role admin
 
 graph: ## Build the knowledge graph from the stored data (no network needed)
 	$(UV_RUN) python -m app.graph build

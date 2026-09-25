@@ -15,7 +15,7 @@ uncertainty are never blurred.
 | **7** | **AI Analyst** | **Done:** questions answered from RUMIN's records through 17 allowlisted, read-only tools over the Phase 2–6 services (one compute tool: an unstored scenario preview); an evidence ledger with eight kinds of knowledge; every figure cited and checked mechanically against its evidence, unsupported parts never shown; RUMIN's grounded composer by default and an optional Claude model through the official SDK, held to the same check with fallback; conversations with focus, follow-ups and clarifications; guardrails for advice, forecasts, live data, injection and secrets; bounded work and cost; the evidence-margin workspace with the Scenario Lab hand-over; a 33-case evaluation set ([report](phases/phase-7-report.md)). A language model has **not** been measured: no key was available ([why](analyst/providers.md#not-verified-here)) |
 | **8** | **3D financial universe** | **Done in this build:** the knowledge graph in three dimensions (`/universe/3d`) — strata by kind, the graph's own marks, the whole build within a budget, neighbourhoods and paths through the 2D explorer's state, every record's provenance and evidence in the same panels, overlays of stored executions (changed, simulated, propagated, cited, not simulated, with their stored results), a keyboard model and a list twin, rendering on demand, lazily loaded Three.js ([report](phases/phase-8-report.md), [guide](universe/README.md)). Hardware GPU frame rates were not measured: none was available ([why](universe/performance.md)) |
 | **9** | **Advanced simulation & validation** | **Done in this build:** on a stored execution of the Scenario Lab, sensitivity to chosen quantities one at a time or **two together with their interaction**, and **Monte Carlo** under distributions the user states (uniform, triangular, discrete; a recorded seed; percentiles with the interval the draws support, shares, histogram, rank correlations, convergence diagnostics; rejected draws counted, never adjusted), stored append-only and re-run to compare; a **verification register** for every model version (hand-calculated reference cases, stated properties, documented limits, reproducibility) shown in the product beside what is not verified; the four kinds of analysis stated where they are used; a corrected one-at-a-time method ([report](phases/phase-9-report.md), [guide](scenario-lab/advanced-analysis.md)). Estimation, calibration and back-testing were **not** done: no observations are stored in this environment and the companies are fictional ([why](simulation/verification.md#what-is-not-verified)) |
-| 10 | Productization, security & launch | Accounts and access control, deployment, monitoring, hardening |
+| **10** | **Productization, security & launch** | **Done in this build:** a product audit ranked by severity; accounts, server-side sessions, viewer, analyst and admin roles and ownership enforced by the backend, with account locks, per-address limits and a security audit trail; *People* for administrators; production images, compose, nginx (TLS, CSP, rate limits), metrics, JSON logs, a tested backup, restore and rollback; a getting-started guide; a browser launch suite with axe on a desktop and a phone, run in CI and against the production stack; the [launch readiness assessment](phases/phase-10-report.md#launch-readiness). **Not deployed to a production host, not load-tested and not formally assessed** ([report](phases/phase-10-report.md)) |
 
 The Phase 1 plan named FRED as the first data source. The Phase 2 licence review found that
 FRED's terms prohibit storing its content in a database, so the World Bank was selected
@@ -28,7 +28,7 @@ instead (see [decisions](decisions.md#13-world-bank-indicators-as-the-first-prov
 2. **MoSPI provider** for official monthly Indian CPI, WPI and IIP (needs an access token:
    the first real secret, server-side only).
 3. **Review workflow** for flagged values and rejected records (reviewer, decision, note).
-4. **Scheduled refreshes** once authentication exists, using the existing job model.
+4. **Scheduled refreshes**, now that accounts exist, using the existing job model.
 5. **Series ↔ variable views** in the Universe and the Scenario Lab: show the latest
    related observation next to a variable, with the stated difference in measure.
 6. **Company data policy.** Decide scope and licensing before ingesting any real company
@@ -38,9 +38,35 @@ instead (see [decisions](decisions.md#13-world-bank-indicators-as-the-first-prov
 ## Platform follow-ups worth doing early
 
 - Choose a licence for the repository.
-- Add dependency and secret scanning to CI.
-- Add browser end-to-end tests (Playwright) for the main flows, and run them in CI.
-- Decide the authentication model before any multi-user or hosted use.
+- ~~Add dependency and secret scanning to CI~~ (Phase 10).
+- ~~Add browser end-to-end tests (Playwright) for the main flows, and run them in CI~~
+  (Phase 10).
+- ~~Decide the authentication model before any multi-user or hosted use~~ (Phase 10: local
+  accounts with server-side sessions; an identity provider can be added).
+
+## Launch follow-ups (after Phase 10)
+
+In the order the [readiness assessment](phases/phase-10-report.md#launch-readiness) ranks
+them:
+
+1. **A qualified review of the legal questions** in [privacy](privacy.md#areas-for-qualified-review)
+   (data protection, professional confidentiality, securities regulation, data licences, the
+   model provider's terms), and a privacy notice in the product.
+2. **A first deployment on the intended host** with a real certificate, followed by
+   `scripts/verify_deployment.sh`, a restore drill and the alerts in
+   [operations](operations.md#metrics).
+3. **Multi-factor authentication or single sign-on** before anyone outside the team signs in.
+4. **A formal security assessment** (a penetration test) before a public launch.
+5. **Load testing** of sign-in, the pages, executions and the Analyst at the expected number
+   of users.
+6. **Separation between clients or engagements** (several workspaces), or one deployment per
+   workspace until then.
+7. **Quotas and retention** for stored records per person, and a procedure to erase or
+   export one person's data.
+8. **A shared job queue** (PostgreSQL-backed) before more than one API process.
+9. **A session with people who use assistive technology**, and Firefox and Safari runs of the
+   launch suite.
+10. **Base images pinned by digest** and scanned in CI.
 
 ## Graph follow-ups
 
@@ -66,8 +92,8 @@ scenario profile in the Lab. Still open:
 1. **Presentation declared in the model definition for the Simulation page** too
    (headline, baseline-and-scenario pairs, monthly series), replacing its naming
    conventions.
-2. **Retention and quotas** for runs, executions and analyses, with authentication
-   (Phase 10).
+2. **Retention and quotas** for runs, executions and analyses per person (they have owners
+   since Phase 10; the limits are not built).
 3. **An explanation paged by month** for larger models (36 months is about 101 kB today).
 4. **More stored inputs** with their provenance: a monthly exchange rate, a monthly policy
    rate, and jet fuel prices from a licensed source, once available.
@@ -92,8 +118,9 @@ scenario profile in the Lab. Still open:
    timing for the whole scenario.
 5. **A volume model** designed so that the other models read its volumes rather than hold
    them fixed — the precondition for demand-shock templates.
-6. **Browser end-to-end tests** of the Lab's main flow in CI (see the platform follow-ups),
-   including the Phase 9 analyses and an automated `axe-core` pass.
+6. **The Phase 9 analyses in the launch suite**: since Phase 10 CI builds and executes a
+   scenario from a template in a browser with `axe-core`; the grid and Monte Carlo forms are
+   covered by the page and integration suites only.
 7. **Analyses on a queue** once analyses may take longer than a request (today at most two
    compute at once per process, each within 20 seconds).
 
@@ -113,7 +140,7 @@ scenario profile in the Lab. Still open:
    figure traceable, still without generated narrative.
 6. **Search and paging over companies** instead of the first 200 by name, or exposure
    precomputed per build.
-7. **Retention for stored analyses** with authentication (Phase 10).
+7. **Retention for stored analyses**, now that they have an author (Phase 10).
 
 ## Analyst follow-ups
 
@@ -127,7 +154,7 @@ scenario profile in the Lab. Still open:
    evidence.
 4. **Streaming** (server-sent events) if model answers feel slow; the polling contract can
    stay for clients that prefer it.
-5. **Per-user conversations, budgets and retention** with authentication (Phase 10); a queue
+5. **Per-person budgets and retention** (conversations became private in Phase 10); a queue
    and a token budget shared across API processes.
 6. **More questions**: comparing two stored scenarios, several subjects at once, questions
    about a stored analysis, and a tool over the Phase 6 brief for a model that works better

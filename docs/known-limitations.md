@@ -161,8 +161,9 @@ The module's own list is in [analyst/limitations.md](analyst/limitations.md). In
 - **No computation of its own**: no totals, weightings, conversions or forecasts; answers are
   about the illustrative network and whatever data is stored (SYNTHETIC values where RUMIN was
   built).
-- **Conversations are open to anyone who can reach the API** until authentication (Phase 10),
-  and the worker pool and token budget are per API process.
+- **The worker pool and the token budget are per API process** (the deployment runs one);
+  the budget is shared by everyone, not per person. Conversations are private to their
+  owner since Phase 10.
 
 ## Advanced analysis (Phase 9)
 
@@ -216,23 +217,49 @@ The module's own list is in [universe/limitations.md](universe/limitations.md). 
 
 ## Platform
 
-- **No authentication or authorisation.** Anyone who can reach the API can read all data,
-  save scenarios, execute them, add simulation runs, store analyses, and read, ask in and
-  delete AI Analyst conversations. Local use only until Phase 10. For the same reason ingestion cannot
-  be started over HTTP. See [security.md](security.md).
-- **No inbound rate limiting, audit log or backups.** Outbound requests to providers are
-  throttled; the API itself is not.
-- **Not containerised.** `docker-compose.yml` provides PostgreSQL only. Deployment is
-  Phase 10.
+- **Accounts are local**: e-mail and password, created by administrators. No single sign-on,
+  no multi-factor authentication, no self-service or e-mail password recovery
+  (administrators reset passwords).
+- **One shared workspace.** Every signed-in member reads every scenario, run and finding
+  (only conversations are private); there is no separation between clients, teams or
+  engagements inside one deployment ([privacy](privacy.md)).
+- **Ingestion and graph builds start from the command line** on the host, not over HTTP.
+- **No quotas or retention limits** on stored scenarios, runs, analyses or conversations per
+  person; audit events are pruned only when an administrator runs `prune`.
+- **No function to erase or export one person's data**; accounts are deactivated, never
+  deleted.
+- See [security.md](security.md#not-yet-in-place) for the security gaps.
+
+## Deployment and operations
+
+- **Verified on one machine, never on a production host.** The images, the compose stack,
+  the web server, backups, restore and the rollback mechanics are checked end to end by
+  `make deployment-check` (and the launch suite ran against the stack), with a self-signed
+  certificate, on localhost — not on a public network, with a real certificate or real
+  traffic.
+- **One host, one API process, one database**: no high availability, no horizontal scaling;
+  the scenario and Analyst runners, the sign-in throttle and the metrics live in that one
+  process (ADR 95).
+- **Rate limits work per client address**, so people behind one NAT share them.
+- **Rollback of a release with a migration means restoring its backup**, losing what was
+  written since; Alembic's downgrades are tested, but they are not the supported path.
+- **Not load-tested**: no measurement with concurrent users, over a real network, or on
+  production hardware.
+- **Base images are pinned by tag, not by digest**, and not scanned.
+- **Logs are kept by Docker's size-based rotation** unless shipped elsewhere; metrics restart
+  with the process. No alerting is configured: [operations](operations.md#metrics) suggests
+  starting rules.
 
 ## Verification (general)
 
-- **No automated browser end-to-end, visual-regression or screen-reader tests.** Pages
-  were checked in Chromium at desktop and phone sizes in both themes (the graph explorer
-  also at tablet size, with a scripted walk-through that is not part of CI); behaviour is
-  covered by the jsdom suite and the live integration suite.
+- **Browser checks cover Chromium only**, on a desktop and a phone viewport, in the light
+  theme: the launch suite (Phase 10, in CI) opens every page and runs the core workflows
+  with axe, but there are no visual-regression tests, no Firefox or Safari runs, and **no
+  session with people using assistive technology**; axe finds only what automated rules
+  can.
 - **Browsers:** developed and checked in Chromium only.
-- **No load testing** (concurrent users), including of the AI Analyst's pool. The knowledge
+- **No load testing** (concurrent users), including of the AI Analyst's pool and the sign-in
+  path. The knowledge
   graph, the Scenario Lab and Financial Intelligence were benchmarked on one machine, the graph and the intelligence reads on
   synthetic networks of up to 20,000 companies ([graph](graph/performance.md),
   [Lab](scenario-lab/performance.md), [intelligence](intelligence/performance.md)).

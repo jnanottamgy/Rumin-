@@ -1,6 +1,6 @@
 # Technology decisions
 
-Short records of the choices made in Phases 1 to 9, why, and what would make us revisit
+Short records of the choices made in Phases 1 to 10, why, and what would make us revisit
 them. Phase 2 decisions start at [13](#13-world-bank-indicators-as-the-first-provider-fred-rejected),
 Phase 3 decisions at [23](#23-the-knowledge-graph-lives-in-the-existing-relational-database),
 Phase 4 decisions at [33](#33-one-narrow-domain-first-an-airline-fuel-cost-shock),
@@ -8,7 +8,8 @@ Phase 5 decisions at [43](#43-several-narrow-models-composed-by-line-items),
 Phase 6 decisions at [54](#54-statements-come-only-from-numbered-rules-with-evidence-chains),
 Phase 7 decisions at [65](#65-two-providers-behind-one-tool-layer-rumins-own-composer-by-default),
 Phase 8 decisions at [73](#73-plain-threejs-loaded-only-with-the-3d-page),
-Phase 9 decisions at [79](#79-advanced-analyses-re-evaluate-stored-executions-through-one-evaluator).
+Phase 9 decisions at [79](#79-advanced-analyses-re-evaluate-stored-executions-through-one-evaluator),
+Phase 10 decisions at [88](#88-local-accounts-and-server-side-sessions-in-an-httponly-cookie).
 
 ## 1. Monorepo with a Python API and a TypeScript web client
 
@@ -1052,3 +1053,150 @@ fabricated. Both are recorded as not done, with the reason, in the verification 
 the roadmap.
 **Revisit** when a model with a documented input contract exists, and when observations are
 stored.
+
+## 88. Local accounts and server-side sessions in an HttpOnly cookie
+
+**Decision.** Accounts are local (e-mail and password), created by administrators; there is
+no self-registration. A sign-in opens a server-side session: 256 random bits in an
+`HttpOnly`, `SameSite=Lax` cookie (`Secure` and `__Host-` in production), stored only as
+their SHA-256, with an idle (120 minutes) and an absolute (12 hours) expiry.
+**Why.** A server-side session can be ended at once — sign-out, deactivation, a password
+change, *sign out everywhere* — and a role change applies to the next request, which a
+self-contained token (a JWT) cannot do without a revocation list. A cookie scripts cannot
+read keeps the token away from any injected script, and hashing it means a stolen database
+opens no session. Administrators create accounts because RUMIN is a team tool and has no
+mail service to confirm addresses.
+**Revisit** with single sign-on (an identity provider in front of the same sessions) or
+multi-factor authentication, both recommended before anyone outside the team signs in.
+
+## 89. Three roles and ownership in one shared workspace; conversations stay private
+
+**Decision.** Roles: *viewer* (read, the Analyst), *analyst* (also create and run), *admin*
+(also manage people). Everything in the workspace is readable by every member; only a
+record's owner or an administrator changes it; Analyst conversations are visible to their
+owner only, administrators included. Enforced in the backend on every route, with a test
+that walks the route table; the interface only mirrors it.
+**Why.** Phases 5–9 built one shared workspace, where a scenario is meant to be compared,
+analysed and discussed by the team; per-record sharing would have changed every read path.
+Conversations hold free text that may be personal, so they are private.
+**Revisit** when clients or engagements need separation inside one deployment (several
+workspaces); until then, one deployment per workspace.
+
+## 90. Cross-site changes are refused by origin, not by tokens
+
+**Decision.** A request that changes data under `/api/` is refused when its `Origin` is not
+RUMIN's own (or a listed origin) or the browser marks it `Sec-Fetch-Site: cross-site`;
+`SameSite=Lax` cookies and JSON-only bodies add layers. No CSRF token.
+**Why.** Every browser RUMIN supports sends `Origin` on such requests and Fetch Metadata,
+and the API accepts only JSON, which a cross-site form cannot send; a token would add
+state and a round-trip for no additional protection here. It also means the web server
+must pass the browser's `Host` unchanged, which the dev server and nginx do.
+**Revisit** if a non-browser client with cookies, or an older browser, must be supported.
+
+## 91. Argon2id with the library's defaults, and a length-first password policy
+
+**Decision.** Passwords are hashed with Argon2id through `argon2-cffi` (RFC 9106's
+low-memory profile), rehashed at sign-in when the parameters change. The policy follows NIST
+SP 800-63B: 12 to 128 characters, no composition rules, common passwords and one's own
+e-mail or name refused.
+**Why.** An established library and a memory-hard function; no homemade cryptography.
+Composition rules make passwords harder to remember, not harder to guess.
+**Revisit** with a breached-password check, or when an identity provider owns passwords.
+
+## 92. Guessing is slowed per address, per account from an address, and per account
+
+**Decision.** Four limits: an address waits after 20 failures in 10 minutes; an address waits
+for one account after 5 failures for it in 15 minutes; an account locks for 15 minutes after 50
+failures from anywhere since its last successful sign-in (the count restarts when the lock
+ends); nginx allows 10 sign-in requests a minute per address. The first two live in the API
+process's memory, the third in the database, counted by one `UPDATE … RETURNING`. A success
+clears only its own account-and-address window. Unknown accounts cost the same Argon2 work,
+get the same message and pass through the first two limits alike.
+**Why.** The first design locked the account itself after 5 failures and refused even the
+right password, so anyone could keep chosen accounts (every administrator) locked with one
+request per lock period; the independent review found it, with a lost-update race in the
+count and a success that cleared the address's failures. Now someone guessing from one
+place locks out only themselves; locking an account for everyone needs 50 failures, which the
+address limits spread over many addresses; the total guesses per account stay within NIST SP
+800-63B's 100. Accepted: people behind one NAT share the address limits, and the account
+lock (after 50 failures) answers 429 where an unknown account would still answer 401.
+**Revisit** before a public launch (limits shared across processes; a uniform answer for the
+account lock) or if a shared office is locked out in practice.
+
+## 93. Accounts are deactivated, never deleted
+
+**Decision.** There is no way to delete an account through RUMIN; deactivation ends its
+sessions and keeps its records' author.
+**Why.** Scenarios, executions and analyses are immutable history; deleting their author
+would leave unexplained records, and the audit trail would lose its subjects.
+**Revisit** when an erasure duty applies ([privacy](privacy.md#areas-for-qualified-review)):
+an anonymising erasure that keeps the records and replaces the person.
+
+## 94. Production refuses development settings at start-up
+
+**Decision.** With `RUMIN_ENVIRONMENT=production` the API does not start on SQLite, with local
+or `http://` CORS origins, or with insecure cookies, and names every problem; the
+interactive documentation is off unless asked for.
+**Why.** A deployment made by copying development settings is the most likely
+misconfiguration; failing loudly at start-up costs nothing.
+**Revisit** when a new setting has a dangerous development default.
+
+## 95. One API process per deployment
+
+**Decision.** The production image runs one uvicorn process (`--workers 1`) and the compose
+file one API container.
+**Why.** The scenario and Analyst runners and their queues (47, 69), the two-analysis limit
+(86), the per-address sign-in throttle (92), the Analyst's token budget and the metrics
+live in the process. A second process would split every limit and could not see or recover
+another's work. One process served the measured single-user loads with medians of
+milliseconds.
+**Revisit** with a shared job queue and shared limits (PostgreSQL or Redis) when one process
+is not enough.
+
+## 96. Metrics in the Prometheus text format, without a client library
+
+**Decision.** `GET /metrics` renders counters, gauges and histograms kept in the process:
+requests by route template and status, durations, requests in flight, security events, the
+queues. It answers administrators and listed scraper addresses; nginx does not serve it.
+**Why.** The format is small and stable, and one process (95) needs no multi-process
+aggregation, so a dependency would add nothing. Route templates keep the number of series
+bounded and put no identifier in a label.
+**Revisit** with several processes (the client library's multi-process mode) or
+OpenTelemetry tracing.
+
+## 97. Docker Compose on one host, nginx in front, migrations by hand
+
+**Decision.** The production stack is a compose file: PostgreSQL on an internal network, the
+API and nginx, each unprivileged, read-only and without capabilities; nginx terminates TLS,
+sends the security headers and limits requests. Migrations are a deliberate step after a
+backup, never run at start-up. Backups are `pg_dump` archives; rollback runs the previous
+release's images, restoring the pre-upgrade backup when the release migrated.
+The API connects as `rumin`, which owns its database and nothing else; the `postgres`
+superuser is used only inside the database container, for restores.
+**Why.** The smallest deployment a team can run and inspect on one host, with nothing
+irreversible happening on start-up; a failed migration then leaves the old release running.
+A non-superuser role keeps a flaw in the API from becoming control of the database server
+(`COPY … TO PROGRAM`, new roles).
+**Revisit** for high availability (managed PostgreSQL, several hosts, an orchestrator).
+
+## 98. A strict Content-Security-Policy, enforced in the launch suite too
+
+**Decision.** The web app's policy allows scripts, styles, fonts and connections from its own
+origin only: no inline script (the theme script is a file), no `eval`, no `data:` fonts
+(Vite never inlines fonts). `vite preview` sends the same policy, read from the nginx
+snippet, so the launch suite runs under it.
+**Why.** A policy is only safe to ship if the product is tested under it: run against the
+production stack, the suite found a font Vite had inlined as a `data:` URI and the policy
+blocked.
+**Revisit** if a feature needs a third-party origin (it would be listed explicitly).
+
+## 99. A browser launch suite with axe, on a desktop and a phone, in CI
+
+**Decision.** Playwright opens every page and runs the core workflows in Chromium at
+1440 × 900 and 390 × 844, with `axe-core`, console and overflow checks and timings, on a
+fresh database in CI; the same suite runs against the production stack by URL.
+**Why.** The Phase 10 audit's accessibility and phone defects came back unnoticed between
+phases; the suite then found defects no unit test could (a sticky panel covering *Save and
+execute*, a page widened by a long name, repeated region names, the blocked font).
+**Revisit** to add Firefox and WebKit, visual comparisons, and sessions with people who use
+assistive technology, which no automated rule replaces.

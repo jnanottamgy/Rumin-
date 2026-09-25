@@ -742,6 +742,30 @@ Rows are **append-only**: no code path updates or deletes an analysis, and the A
 route that could. The downgrade drops the column and the table, and with it every stored grid
 and Monte Carlo analysis.
 
+## Phase 10: accounts, sessions and the audit trail
+
+Migration `0009_accounts` adds three tables and, on existing tables, who owns or made each
+record. Every new column is nullable: records made before accounts existed have no author,
+and only administrators change them (Analyst conversations without an owner are visible to
+administrators only).
+
+| Table | Purpose | Keys and constraints |
+|---|---|---|
+| `users` | A person an administrator created: `email` (stored lower-cased), `name`, `role` (`viewer`, `analyst`, `admin`), `password_hash` (Argon2id, parameters and salt encoded), `password_changed_at`, `must_change_password` (set by a temporary password), `is_active`, `failed_logins` and `locked_until` (the account lock), `last_login_at`, `created_at`, `updated_at`. Never deleted, only deactivated | `id` (UUID); `email` unique; `CHECK role IN ('viewer', 'analyst', 'admin')` |
+| `user_sessions` | A signed-in browser: `token_hash` (SHA-256 of the cookie's token; the token itself is never stored), `created_at`, `last_seen_at` (written at most once a minute), `expires_at` (the absolute limit), `revoked_at` | `id` (UUID); `user_id` → `users` with `CASCADE`; `token_hash` unique; index on `user_id` |
+| `audit_events` | A security event: `event` (`login_succeeded`, `login_failed`, `login_throttled`, `logout`, `user_created`, `user_updated`, `password_reset`, `password_changed`, `password_change_failed`, `sessions_revoked`), `occurred_at`, `actor_id` (who acted; null for a failed sign-in with an unknown e-mail), `subject_id` (whom it concerned), `client` (the address), `request_id`, `detail` (what changed or why: a role, a reason — never a secret) | `id` (UUID); `actor_id`, `subject_id` → `users` with `SET NULL`; index on `occurred_at` |
+
+| Existing table | New column | Meaning |
+|---|---|---|
+| `scenarios`, `simulation_runs`, `analyst_sessions` | `owner_id` | Who owns it: only the owner or an administrator changes it; a conversation is visible to its owner only |
+| `scenario_versions`, `scenario_sensitivity_analyses`, `scenario_analyses`, `simulation_sensitivity_analyses`, `intelligence_analyses` | `created_by` | Who made it |
+| `scenario_executions` | `requested_by` | Who asked for it |
+
+Each of these columns references `users` with `SET NULL` and is indexed where it is
+filtered. Accounts are never deleted through RUMIN, so the `SET NULL` only matters for a
+deletion made directly in the database. The downgrade drops the three tables and the
+columns — and with them every account, session and security event.
+
 ## Enumerations
 
 Enumerations are stored as `VARCHAR` with a `CHECK` constraint, not native database enum
@@ -820,7 +844,9 @@ drops it, and with it every stored analysis; every other intelligence answer is 
 and needs no table); `0007_analyst` adds the three AI Analyst tables and changes no existing
 table (its downgrade drops them, and with them every conversation); `0008_advanced_analyses`
 adds `scenario_analyses` and `scenario_sensitivity_analyses.method_version`
-([above](#phase-9-grids-and-monte-carlo-analyses); its downgrade drops both). A test takes a
+([above](#phase-9-grids-and-monte-carlo-analyses); its downgrade drops both); `0009_accounts`
+adds the three account tables and the owner and author columns
+([above](#phase-10-accounts-sessions-and-the-audit-trail)). A test takes a
 database holding a one-at-a-time analysis back to the Phase 8 schema (`0007`) and forward
 again, and checks the analysis reads `1.0.0` and that no default remains for new rows.
 

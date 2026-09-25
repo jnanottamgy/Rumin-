@@ -32,8 +32,13 @@ cd backend
 uv sync --extra dev                 # creates backend/.venv from uv.lock
 uv run alembic upgrade head         # creates backend/rumin.db (SQLite)
 uv run python -m app.db.seed        # loads the illustrative sample dataset
+uv run python -m app.auth create-user --email you@example.org --name "Your Name" --role admin
 uv run uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
+
+`create-user` asks for the password twice at a hidden prompt (at least 12 characters; common
+passwords and your own e-mail address or name are refused). That first administrator
+creates everyone else in the web app, under **People**.
 
 Check it:
 
@@ -43,6 +48,22 @@ curl http://127.0.0.1:8000/health/ready    # 200 once migrated and seeded, other
 ```
 
 Interactive API documentation: <http://127.0.0.1:8000/docs> (Swagger UI) and `/redoc`.
+
+**Every `/api/v1` route except signing in needs a session** (Phase 10). To call the API with
+`curl`, sign in once and keep the cookie; the examples below pass it with `-b cookies.txt`:
+
+```bash
+API=http://127.0.0.1:8000/api/v1
+read -rsp 'Password: ' PW; echo
+printf '{"email": "you@example.org", "password": "%s"}' "$PW" |
+  curl -s -c cookies.txt -H 'Content-Type: application/json' --data @- $API/auth/login
+unset PW
+curl -s -b cookies.txt $API/auth/session        # who you are and what your role allows
+```
+
+`printf` is a shell built-in, so the password never appears in the process list. The cookie
+file holds a live session: delete it (or `curl -s -b cookies.txt -X POST $API/auth/logout`)
+when you are done.
 
 The seed loader validates the dataset file before writing anything and is idempotent:
 running it again with an unchanged file does nothing. `--reset` replaces the loaded data
@@ -111,11 +132,11 @@ Through the API, with the same hypothetical example saved as `example.json`:
 
 ```bash
 API=http://127.0.0.1:8000/api/v1
-curl -s $API/simulation-models/airline_fuel_cost                 # inputs, equations, assumptions
-curl -s -X POST $API/simulations/validate -H 'Content-Type: application/json' -d @example.json
-curl -s -X POST $API/simulations -H 'Content-Type: application/json' -d @example.json
-curl -s $API/simulations/<run id>/explanation                     # every step, the pathway
-curl -s -X POST $API/simulations/<run id>/verify                  # re-execute, compare hashes
+curl -s -b cookies.txt $API/simulation-models/airline_fuel_cost                 # inputs, equations, assumptions
+curl -s -b cookies.txt -X POST $API/simulations/validate -H 'Content-Type: application/json' -d @example.json
+curl -s -b cookies.txt -X POST $API/simulations -H 'Content-Type: application/json' -d @example.json
+curl -s -b cookies.txt $API/simulations/<run id>/explanation                     # every step, the pathway
+curl -s -b cookies.txt -X POST $API/simulations/<run id>/verify                  # re-execute, compare hashes
 ```
 
 The run's change in operating profit is −3,550,000 INR over 12 months
@@ -142,14 +163,14 @@ hypothetical round figures) saved as `reference.json`:
 
 ```bash
 API=http://127.0.0.1:8000/api/v1
-curl -s $API/scenario-templates                                   # what can be started
-curl -s -X POST $API/scenarios/plan -H 'Content-Type: application/json' -d @reference.json
-curl -s -X POST $API/scenarios/preview -H 'Content-Type: application/json' -d @reference.json
-curl -s -X POST $API/scenarios -H 'Content-Type: application/json' -d @reference.json
-curl -s -X POST $API/scenarios/<scenario id>/executions -H 'Content-Type: application/json' -d '{}'
-curl -s $API/scenario-executions/<execution id>                   # poll: queued → … → completed
-curl -s $API/scenario-executions/<execution id>/results
-curl -s -X POST $API/scenario-executions/<execution id>/verify    # re-execute, compare hashes
+curl -s -b cookies.txt $API/scenario-templates                                   # what can be started
+curl -s -b cookies.txt -X POST $API/scenarios/plan -H 'Content-Type: application/json' -d @reference.json
+curl -s -b cookies.txt -X POST $API/scenarios/preview -H 'Content-Type: application/json' -d @reference.json
+curl -s -b cookies.txt -X POST $API/scenarios -H 'Content-Type: application/json' -d @reference.json
+curl -s -b cookies.txt -X POST $API/scenarios/<scenario id>/executions -H 'Content-Type: application/json' -d '{}'
+curl -s -b cookies.txt $API/scenario-executions/<execution id>                   # poll: queued → … → completed
+curl -s -b cookies.txt $API/scenario-executions/<execution id>/results
+curl -s -b cookies.txt -X POST $API/scenario-executions/<execution id>/verify    # re-execute, compare hashes
 ```
 
 Its profit before tax changes by −6,700,000 INR over 12 months
@@ -175,14 +196,14 @@ Through the API:
 
 ```bash
 API=http://127.0.0.1:8000/api/v1
-curl -s $API/intelligence/methods                                  # rules, signals, thresholds, grades
-curl -s $API/intelligence/overview                                 # the workspace
-curl -s "$API/intelligence/overview?relative_change_percent=3&trend_significance=0.10"
-curl -s $API/intelligence/entities/company:co_aerisca_airways      # a dossier
-curl -s $API/intelligence/entities/company:co_aerisca_airways/brief
-curl -s -X POST $API/intelligence/analyses -H 'Content-Type: application/json' \
+curl -s -b cookies.txt $API/intelligence/methods                                  # rules, signals, thresholds, grades
+curl -s -b cookies.txt $API/intelligence/overview                                 # the workspace
+curl -s -b cookies.txt "$API/intelligence/overview?relative_change_percent=3&trend_significance=0.10"
+curl -s -b cookies.txt $API/intelligence/entities/company:co_aerisca_airways      # a dossier
+curl -s -b cookies.txt $API/intelligence/entities/company:co_aerisca_airways/brief
+curl -s -b cookies.txt -X POST $API/intelligence/analyses -H 'Content-Type: application/json' \
   -d '{"scope": "entity", "entity": "company:co_aerisca_airways", "label": "First look"}'
-curl -s $API/intelligence/analyses/<analysis id>                   # as stored, with freshness
+curl -s -b cookies.txt $API/intelligence/analyses/<analysis id>                   # as stored, with freshness
 ```
 
 Two scripts in `backend/scripts/` support development. `benchmark_intelligence.py` times the
@@ -207,12 +228,12 @@ Through the API:
 
 ```bash
 API=http://127.0.0.1:8000/api/v1
-curl -s $API/analyst/capabilities                                   # provider, tools, limits, suggestions
-SESSION=$(curl -s -X POST $API/analyst/sessions -H 'Content-Type: application/json' -d '{}' \
+curl -s -b cookies.txt $API/analyst/capabilities                                   # provider, tools, limits, suggestions
+SESSION=$(curl -s -b cookies.txt -X POST $API/analyst/sessions -H 'Content-Type: application/json' -d '{}' \
   | python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])')
-curl -s -X POST $API/analyst/sessions/$SESSION/turns -H 'Content-Type: application/json' \
+curl -s -b cookies.txt -X POST $API/analyst/sessions/$SESSION/turns -H 'Content-Type: application/json' \
   -d '{"question": "Which companies are exposed to the USD/INR exchange rate?"}'
-curl -s $API/analyst/sessions/$SESSION                              # the conversation, answered
+curl -s -b cookies.txt $API/analyst/sessions/$SESSION                              # the conversation, answered
 ```
 
 To have a **Claude model** answer instead, set in `.env` (or the process environment):
@@ -241,13 +262,17 @@ npm ci
 npm run dev                          # http://127.0.0.1:5173
 ```
 
+Sign in with the account created in step 2; the browser keeps the session in an `HttpOnly`
+cookie. **Getting started** (`/guide`) lists starter tasks.
+
 The dev server proxies `/api`, `/health`, `/docs` and `/openapi.json` to
 `RUMIN_API_PROXY_TARGET` (default `http://127.0.0.1:8000`), so the browser only ever talks
 to one origin.
 
-Production build: `npm run build` writes static files to `frontend/dist/`. Serve them with
-any static web server that forwards `/api` and `/health` to the API (or set
-`VITE_API_BASE_URL` at build time and allow that origin in `RUMIN_CORS_ORIGINS`).
+Production build: `npm run build` writes static files to `frontend/dist/`. For a team, use
+the production images and the nginx configuration in [deployment](deployment.md): they serve
+the build with its security headers and pass `/api` and `/health` to the API with the
+browser's own `Host` (a proxy that rewrites it makes every change look cross-site).
 
 ## 4. PostgreSQL (optional)
 
@@ -277,8 +302,11 @@ convenience.
 ## 5. Verify everything
 
 ```bash
-make check    # lint, types, backend + frontend tests, OpenAPI snapshot
-make smoke    # fresh database → live API → frontend integration suite
+make check             # lint, types, backend + frontend tests, OpenAPI snapshot
+make smoke             # fresh database → live API → frontend integration suite
+make e2e               # the built app in Chromium on a desktop and a phone (axe, workflows)
+make audit             # pip-audit, npm audit, the secret scan (network and Docker)
+make deployment-check  # the production images and stack, end to end (Docker)
 ```
 
 See [testing.md](testing.md).
@@ -293,6 +321,10 @@ See [testing.md](testing.md).
 | A run is refused with **409: a changed model needs a new version number** | The code of a model version that has already run was changed. Give the change a new version ([changing a model](simulation/registry.md#changing-a-model)); on a disposable development database you can start from a fresh one instead. |
 | `/health/ready` returns **503** | The response lists which check failed: database unreachable, migrations not at head (`alembic upgrade head`), or no dataset (seed). |
 | **CORS errors** in the browser console | Only happens when the web client calls the API cross-origin (`VITE_API_BASE_URL` set). Add the web origin to `RUMIN_CORS_ORIGINS`. |
+| The API answers **401 "Sign in to continue."** | Every `/api/v1` route needs a session: sign in (web app), or use the cookie from `…/auth/login` with `curl` (step 2). |
+| **"Too many sign-in attempts"** or **"Too many failed attempts from this address"** (429) | Repeated wrong passwords. Wait the time the message gives, or set a new password: `uv run python -m app.auth set-password --email …`. |
+| Every change answers **403 "Requests that change data must come from RUMIN's own pages."** | The request's `Origin` differs from the API's own: a proxy in front rewrote the `Host` header (the dev server must not use `changeOrigin`), or you opened the app under one host name and the API under another. |
+| Buttons such as **Execute** or **Run simulation** are disabled, with a note | Your role is *viewer*: you read and preview, but only analysts and administrators store. An administrator can change the role under **People**. |
 | **413 Payload Too Large** | Request bodies are limited to `RUMIN_MAX_REQUEST_BODY_BYTES` (64 KiB). |
 | `ModuleNotFoundError: psycopg` | Install the PostgreSQL extra: `uv sync --extra dev --extra postgres`. |
 | Port 8000 or 5173 already in use | Pass another port: `uvicorn … --port 8001` and set `RUMIN_API_PROXY_TARGET`; `npm run dev -- --port 5174` (then add that origin to `RUMIN_CORS_ORIGINS` if you call the API cross-origin). |
@@ -309,4 +341,4 @@ See [testing.md](testing.md).
 | The Analyst's header says **the configured language model is not ready** | `RUMIN_ANALYST_PROVIDER=anthropic` is set without `RUMIN_ANTHROPIC_API_KEY` or `RUMIN_ANALYST_MODEL` (the message names which). RUMIN answers meanwhile. |
 | An answer carries **"Answered by RUMIN's grounded composer"** | The language model's answer was not used; the notice says why (an API error, a refusal, a limit, or a draft that failed the grounding check). |
 | **429** when asking | Every worker is busy and the queue is full (`RUMIN_ANALYST_MAX_CONCURRENT`, `RUMIN_ANALYST_MAX_QUEUED`). Nothing was stored; ask again shortly. |
-| Start again from scratch | Stop the API, delete `backend/rumin.db`, then migrate, seed, load the catalogue and build the graph again. |
+| Start again from scratch | Stop the API, delete `backend/rumin.db`, then migrate, seed, load the catalogue, build the graph and create your account again. |

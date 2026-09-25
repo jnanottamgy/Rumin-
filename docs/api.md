@@ -17,6 +17,7 @@ Regenerate after changing an endpoint or schema: `make api-types` (or
 
 | Topic | Rule |
 |---|---|
+| Access (Phase 10) | **Every `/api/v1` route except `POST /auth/login` and `POST /auth/logout` needs a session**: the `HttpOnly` cookie set by signing in (`rumin_session`; `__Host-rumin_session` in the production stack). Without one: 401 `unauthorized`. A role that does not allow the request, or a record that is not yours to change: 403 `forbidden`. A temporary password not yet replaced: 403 `password_change_required` on everything but `/auth/session`, `/auth/password` and `/auth/logout`. A request that changes data from another site (a foreign `Origin` or `Sec-Fetch-Site: cross-site`): 403. The health probes need nothing ([accounts](#accounts-and-people)). |
 | Versioning | Application endpoints live under `/api/v1`. Breaking changes will get a new prefix (`/api/v2`); additive changes (new fields, new endpoints) do not. Health probes are unversioned, as infrastructure expects. |
 | Format | Requests and responses are JSON (`application/json`). Request bodies with any other content type are rejected. |
 | Unknown fields | Request bodies with fields the contract does not define are rejected (422), so typos never pass silently. |
@@ -1080,6 +1081,38 @@ Block types are `text` (roles `answer`, `detail`, `interpretation`, `general`, `
 `no_data`, `clarification`, `declined`, `unsupported` and `failed`. Every value is an exact
 decimal string.
 
+## Accounts and people
+
+Phase 10. Accounts are created by administrators; there is no self-registration. Roles:
+**viewer** (`read`: the whole workspace and the Analyst), **analyst** (`read`, `write`:
+also create and run scenarios, simulations and analyses), **admin** (`read`, `write`,
+`administer`: also manage people). Only a record's owner or an administrator changes it;
+Analyst conversations are private to their owner. Scenarios and simulation runs name their
+owner (`owner`: `{id, name}`, `null` for records made before accounts existed).
+
+| Method and path | Purpose | Success |
+|---|---|---|
+| `POST /api/v1/auth/login` | Sign in with `{email, password}`: sets the session cookie (`HttpOnly`, `SameSite=Lax`, `Secure` in production) and returns the current session. The token is never in the body. One message for every wrong combination. An address waits after 20 failures in 10 minutes, and for one account after 5 failures for it in 15 minutes; an account locks for 15 minutes after 50 failures from anywhere — each 429 with `Retry-After`. | 200 / 401 / 422 / 429 |
+| `POST /api/v1/auth/logout` | End this session and clear the cookie; not an error without one. | 204 |
+| `GET /api/v1/auth/session` | Who is signed in: the account (`role`, `must_change_password`, `last_login_at`), `permissions`, and when the session expires. Answers even while the password must be changed. Never cached. | 200 / 401 |
+| `POST /api/v1/auth/password` | Change one's own password: `{current_password, new_password}`. The policy: 12–128 characters, not a common password, not one's e-mail address or name (each problem on `new_password`). Every other session of the account ends. | 200 / 401 / 422 / 429 |
+| `GET /api/v1/users` | People (administrators): every account with its role, whether it is active, whether it must change its password, and its last sign-in. | 200 / 403 |
+| `POST /api/v1/users` | Create an account: `{name, email, role, temporary_password}`; the person must replace the password at first sign-in. | 201 / 403 / 409 / 422 |
+| `PUT /api/v1/users/{user_id}` | Change `name`, `role` or `is_active`. Deactivating ends the account's sessions; a role change applies to the person's next request. The last active administrator cannot be demoted or deactivated (409). | 200 / 403 / 404 / 409 / 422 |
+| `POST /api/v1/users/{user_id}/password` | Set a temporary password (`{temporary_password}`) the person must replace at the next sign-in; ends their sessions and clears a lock. | 200 / 403 / 404 / 422 |
+| `POST /api/v1/users/{user_id}/sessions/revoke` | Sign a person out everywhere. | 204 / 403 / 404 |
+| `GET /api/v1/audit-events` | The security audit trail, newest first (`limit`, `offset`): `login_succeeded`, `login_failed` (with a reason), `login_throttled`, `logout`, `user_created`, `user_updated`, `password_reset`, `password_changed`, `password_change_failed`, `sessions_revoked` — with the actor, the subject, the client address, the request ID and what changed. Never a password or a token. | 200 / 403 |
+
+### Metrics
+
+`GET /metrics` (unversioned, like the health probes) answers in the Prometheus text format
+(0.0.4): requests by method, route template and status; their durations; requests in flight;
+security events by kind; the scenario and Analyst queues; the process start time. It answers
+administrators, and addresses listed in `RUMIN_METRICS_ALLOWED_CLIENTS` without signing in;
+anyone else gets 401 or 403. Labels are route templates, never raw paths, people or
+addresses. The production web server does not serve it: scrape the API from inside the stack
+([operations](operations.md#metrics)).
+
 ## Provider data example
 
 ```http
@@ -1155,8 +1188,14 @@ saying where the value came from (`body`, `query`, `path`).
 | 500 | `internal_error` | Unexpected failure. The response never contains a stack trace; the log has it under the request ID. |
 | 503 | `service_unavailable` | The database is unreachable |
 
-The codes 401 and 403 (`unauthorized`, `forbidden`) are reserved in the envelope for later
-phases; no endpoint returns them yet.
+Since Phase 10 the envelope also carries:
+
+| HTTP | `code` | When |
+|---|---|---|
+| 401 | `unauthorized` | No session, or it ended (idle, expired, signed out, revoked, the account deactivated): "Sign in to continue."; a wrong e-mail or password at sign-in: one message for both |
+| 403 | `forbidden` | The role does not allow the request ("…can read the workspace but not change it"), the record belongs to someone else, a conversation is not yours, or a change was sent from another site |
+| 403 | `password_change_required` | A temporary password must be replaced first (`POST /api/v1/auth/password`) |
+| 429 | `rate_limited` | Also: too many failed sign-ins for the account or from the address, or wrong current passwords when changing one's own; `Retry-After` says when to try again |
 
 ## Security headers and limits
 
@@ -1166,8 +1205,12 @@ Every response carries `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY
 origins listed in `RUMIN_CORS_ORIGINS`, never `*` and never with credentials. See
 [security.md](security.md).
 
-There is **no authentication** yet: anyone who can reach the API can read all stored data,
-create scenarios (and delete those never executed), start or cancel scenario executions
-(bounded per process, [above](#executions)), and create simulation runs, sensitivity
-analyses, grids and Monte Carlo analyses (bounded, two at once per process). Runs, analyses and final executions cannot be changed, and none of them can be
-deleted through the API. Do not expose it beyond your own machine.
+Every `/api/v1` route needs a session (Phase 10). Viewers read; analysts also create
+scenarios (and delete those never executed), start or cancel executions of their own
+scenarios (bounded per process, [above](#executions)), and create simulation runs,
+sensitivity analyses, grids and Monte Carlo analyses (bounded, two at once per process);
+administrators also manage people. Runs, analyses and final executions cannot be changed,
+and none of them can be deleted through the API. In the production stack the web server
+adds TLS, request rate limits and a Content-Security-Policy for the web app
+([deployment](deployment.md)); `/metrics` and the interactive documentation are not
+served there.

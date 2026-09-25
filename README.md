@@ -7,11 +7,21 @@ runs documented, versioned models on those connections with every step explained
 reproducible, and labels everything it shows as one of five kinds of knowledge:
 observation, assumption, scenario input, simulated output or uncertainty.
 
-> **Status: Phase 9 — Advanced simulation and validation** (on top of the Phase 1
+> **Status: Phase 10 — Productization, security and launch** (on top of the Phase 1
 > foundation, the Phase 2 data infrastructure, the Phase 3 knowledge graph, the Phase 4
 > simulation engine, the Phase 5 Scenario Lab, Phase 6 Financial Intelligence, the Phase 7 AI
-> Analyst and the Phase 8 3D universe).
+> Analyst, the Phase 8 3D universe and Phase 9's advanced analysis).
 >
+> - **A team can run it.** People sign in with accounts an administrator creates; three roles
+>   (viewer, analyst, admin) and ownership are enforced by the backend on every route; a
+>   security audit trail records every sign-in and change to a person. A production
+>   deployment — unprivileged, read-only containers, nginx with TLS and a strict
+>   Content-Security-Policy, PostgreSQL on an internal network, metrics, JSON logs, a tested
+>   backup, restore and rollback — is built and checked end to end on one machine
+>   ([deployment](docs/deployment.md), [operations](docs/operations.md)). A browser launch
+>   suite checks every page on a desktop and a phone with axe. **It has not been deployed to a
+>   production host, load-tested or formally assessed**: see the
+>   [readiness assessment](docs/phases/phase-10-report.md#launch-readiness).
 > - **Uncertainty under stated assumptions, and what has been checked.** On a stored Scenario
 >   Lab execution you can vary chosen quantities one at a time or **two together** (the grid
 >   shows where their effects interact), or run a **Monte Carlo** analysis under distributions
@@ -62,10 +72,10 @@ observation, assumption, scenario input, simulated output or uncertainty.
 >   estimated from observations, because none are stored where RUMIN was built. A language
 >   model for the AI Analyst is optional and has **not been verified against the live API**
 >   (no key was available where RUMIN was built).
-> - There is **no authentication** yet (Phase 10): run it locally only. For that reason the
->   API is read-only for data and for the graph, scenario versions, executions and
->   simulation runs are append-only, and ingestion and graph builds start from the command
->   line.
+> - The API is read-only for data and for the graph; scenario versions, executions and
+>   simulation runs are append-only; ingestion and graph builds start from the command line
+>   on the host. One workspace is shared by everyone signed in (Analyst conversations stay
+>   private): see [privacy](docs/privacy.md) before entering client data.
 >
 > Nothing in RUMIN is investment advice.
 
@@ -86,7 +96,10 @@ observation, assumption, scenario input, simulated output or uncertainty.
 | **Scenario Lab** | Available (Phase 5) | Templates built on implemented models; versioned scenarios; a plan saying which models apply and why; a live preview; background executions with recorded stages; the modelled pathway with graph context kept apart; baseline against scenario; months with a replay; stress cases; sensitivity; *what caused this?*; history, reproducibility checks and comparisons ([guide](docs/scenario-lab/README.md)); **Phase 9**: sensitivity to chosen quantities one at a time or two together (with interactions), Monte Carlo under stated distributions with a recorded seed, stored and re-run to compare, and each included model's verification in the plan ([advanced analysis](docs/scenario-lab/advanced-analysis.md)) |
 | **AI Analyst** | Available (Phase 7) | Questions answered from RUMIN's records through 17 allowlisted, read-only tools; every figure cited and checked against its evidence, sources shown in a margin beside the answer; tables, series charts, relationship paths and scenario cards; what-ifs previewed (never stored) and handed to the Scenario Lab; follow-ups and clarifications; conversations kept, exported or deleted. RUMIN's grounded composer answers by default; a Claude model is optional ([guide](docs/analyst/README.md)) |
 | System & settings | Available | API, database, migration and data status; capabilities; theme and motion preferences |
-| REST API | Available | Versioned (`/api/v1`), validated, consistent errors, OpenAPI docs, compressed responses; data and graph endpoints are read-only; intelligence reads write nothing; scenario versions, executions, simulation runs and stored analyses are append-only; the Analyst writes only its own conversations |
+| **Accounts and access** | Available (Phase 10) | Sign-in with server-side sessions in an `HttpOnly` cookie; viewer, analyst and admin roles and ownership enforced by the backend; temporary passwords replaced at first sign-in; limits on guessing per address, per account from an address and per account; *People* for administrators (accounts, roles, temporary passwords, sessions, the security audit trail); a command line for the first administrator and recovery |
+| **Getting started** | Available (Phase 10) | A guide with six starter tasks that each open a working page, what each role allows and the limits to keep in mind; a first-use card on the Overview |
+| **Deployment** | Verified locally (Phase 10) | Production images and compose file, nginx (TLS, HTTP/2, security headers, CSP, rate limits), deliberate migrations, `/metrics`, JSON logs, backup, restore and rollback, a 43-check verification script ([deployment](docs/deployment.md)) |
+| REST API | Available | Versioned (`/api/v1`), validated, consistent errors, OpenAPI docs (off in production), compressed responses; **every route except health and signing in needs a session**; data and graph endpoints are read-only; intelligence reads write nothing; scenario versions, executions, simulation runs and stored analyses are append-only; the Analyst writes only its own conversations |
 
 ## Quick start
 
@@ -101,9 +114,14 @@ make seed               # load the illustrative sample network
 make catalog            # load the series catalogue (definitions only; nothing is fetched)
 make ingest             # retrieve the World Bank series — needs internet access
 make graph              # build the knowledge graph from what is stored (no network)
+make admin EMAIL=you@example.org NAME="Your Name"   # your account (asks for a password)
 make backend            # terminal 1 → API on http://127.0.0.1:8000 (docs: /docs)
 make frontend           # terminal 2 → web client on http://127.0.0.1:5173
 ```
+
+Sign in at <http://127.0.0.1:5173/login> with the account you created; **Getting started**
+(`/guide`) suggests where to begin. Create other accounts under **People**. To run RUMIN for
+a team, follow [deployment](docs/deployment.md) instead.
 
 `make ingest` contacts `api.worldbank.org` (two requests per series, at most one per second). If
 the provider cannot be reached, the run is recorded as failed and the Data Explorer says so;
@@ -126,6 +144,7 @@ uv run python -m app.db.seed
 uv run python -m app.ingestion catalog
 uv run python -m app.ingestion run worldbank-wdi
 uv run python -m app.graph build
+uv run python -m app.auth create-user --email you@example.org --name "Your Name" --role admin
 uv run uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 
 # Frontend — in frontend/
@@ -157,11 +176,16 @@ one origin and no API URL has to be configured.
 | Recent builds, one build's report | — | `uv run python -m app.graph builds`, `… report [BUILD]` |
 | Score the AI Analyst on its evaluation set | — | `uv run python -m app.analyst.evaluation [--json]` (backend/) |
 | Run every model version's verification checks | `make verify-models` | `uv run python -m app.simulation.verification` (backend/; exits 1 on a failure) |
+| Create an account | `make admin EMAIL=… NAME=…` | `uv run python -m app.auth create-user --email … --name … --role admin` (backend/) |
+| Manage accounts | — | `uv run python -m app.auth set-password\|list-users\|deactivate\|revoke-sessions\|prune` |
 | All unit and API tests | `make test` | `uv run pytest` (backend/), `npm test` (frontend/) |
 | End-to-end smoke test | `make smoke` | `scripts/smoke_test.sh` |
+| Launch suite (browser, axe, workflows) | `make e2e` | `scripts/e2e.sh` |
+| Dependency audit and secret scan | `make audit` | pip-audit, `npm audit`, gitleaks |
+| Production stack, checked end to end | `make deployment-check` | `scripts/deployment_check.sh` (Docker) |
 | Lint and format checks | `make lint` | `uv run ruff check . && uv run ruff format --check .`, `npm run lint` |
 | Type checks | `make typecheck` | `uv run mypy app tests`, `npm run typecheck` |
-| Everything CI runs | `make check` | — |
+| Lint, types and unit tests | `make check` | — |
 | Production build (web) | — | `npm run build` (frontend/) → `frontend/dist/` |
 | Regenerate the API contract | `make openapi` | `uv run python -m app.openapi_export` (backend/) |
 | Regenerate frontend API types | `make api-types` | `npm run generate:api` (frontend/) |
@@ -206,12 +230,15 @@ Run the backend tests against PostgreSQL with an empty, disposable database:
 
 ```
 backend/            FastAPI application, SQLAlchemy models, Alembic migrations, pytest suite
+  app/auth/         accounts: password hashing and policy, session tokens, the sign-in
+                    throttle, roles, the command line
   app/analyst/      the AI Analyst: question policy, vocabulary and router, conversation
                     focus, the tool registry and tools, evidence ledger, answer blocks,
                     grounded composer, grounding check, providers, orchestrator, worker pool,
                     evaluation set
   app/api/          HTTP routes (health, /api/v1/…)
-  app/core/         settings, logging, errors, middleware
+  app/core/         settings (with the production check), logging (text or JSON), errors,
+                    middleware (request IDs, body limit, cross-site refusal), metrics
   app/data/         the illustrative sample network and the series catalogue (JSON)
   app/db/           engine/session, exact-decimal and UTC column types, seed loader
   app/domain/       enums, relationship-type and graph-type registries, scenario rules
@@ -244,9 +271,14 @@ frontend/           React + TypeScript web client (Vite)
                     canvas host and the lazily loaded Three.js renderer)
   src/pages/        one component per route
   tests/            unit and page tests; tests/integration runs against a live API
+  e2e/              the launch suite (Playwright + axe) on a desktop and a phone
+  nginx/            the production web server's configuration (headers, CSP, limits)
+deploy/             the production settings template
+compose.production.yml  PostgreSQL, the API and the web server for a team
 docs/               architecture, API, data model, data pipeline, testing, roadmap and more
   api/openapi.json  committed API contract (the frontend's types are generated from it)
-scripts/            smoke_test.sh (backend/scripts and frontend/scripts: graph, Scenario Lab,
+scripts/            smoke_test.sh, e2e.sh, backup.sh, restore.sh, verify_deployment.sh,
+                    deployment_check.sh (backend/scripts and frontend/scripts: graph, Scenario Lab,
                     Financial Intelligence and 3D universe measurements, fixture capture from
                     a real backend, including the Analyst's and the universe's)
 ```
@@ -298,6 +330,8 @@ scripts/            smoke_test.sh (backend/scripts and frontend/scripts: graph, 
   [interaction](docs/universe/interaction.md) · [scenario overlays](docs/universe/overlays.md) ·
   [accessibility](docs/universe/accessibility.md) · [performance](docs/universe/performance.md) ·
   [limitations](docs/universe/limitations.md)
+- Running RUMIN: [deployment](docs/deployment.md) · [operations](docs/operations.md) ·
+  [privacy, integrity and provenance](docs/privacy.md)
 - [Design system](docs/design-system.md)
 - [Testing](docs/testing.md)
 - [Security](docs/security.md)
@@ -311,7 +345,8 @@ scripts/            smoke_test.sh (backend/scripts and frontend/scripts: graph, 
   [Phase 6 plan](docs/phases/phase-6-plan.md) · [Phase 6 report](docs/phases/phase-6-report.md) ·
   [Phase 7 plan](docs/phases/phase-7-plan.md) · [Phase 7 report](docs/phases/phase-7-report.md) ·
   [Phase 8 plan](docs/phases/phase-8-plan.md) · [Phase 8 report](docs/phases/phase-8-report.md) ·
-  [Phase 9 plan](docs/phases/phase-9-plan.md) · [Phase 9 report](docs/phases/phase-9-report.md)
+  [Phase 9 plan](docs/phases/phase-9-plan.md) · [Phase 9 report](docs/phases/phase-9-report.md) ·
+  [Phase 10 plan](docs/phases/phase-10-plan.md) · [Phase 10 report and launch readiness](docs/phases/phase-10-report.md)
 
 ## Licence
 

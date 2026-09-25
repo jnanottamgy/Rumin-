@@ -110,13 +110,17 @@ Layered so that each layer depends only on the ones below it:
 | Scenario Lab | `scenario_lab/` | The scenario specification and its validation, the planner (which models apply and why), scenario profiles, the executor and its stages, the bounded runner, the Lab's aggregation equations, pathways, explanations, comparison and templates ([details](scenario-lab/architecture.md)); the shared evaluator behind one-at-a-time sensitivity, two-quantity grids and Monte Carlo, with seeded sampling and exact summaries ([details](scenario-lab/advanced-analysis.md)). |
 | Financial Intelligence | `intelligence/` | The read-only analysis layer: exact statistics, thresholds, the evidence model (steps, grades, `ChainError`), validated graph slices, exposure paths, changes and revisions, relationship changes, drivers from stored contributions, signals, the 19 insight rules, the model interpretation of observed changes, the module registry, the two scopes (entity, workspace) and the brief ([details](intelligence/architecture.md)). |
 | AI Analyst | `analyst/` | Question policy, vocabulary and parsing, the router and the conversation's focus, the tool registry and 17 tools over the services, the evidence ledger, answer blocks, the grounded composer, the grounding check, the providers (grounded, Anthropic, scripted), the orchestrator of one turn, the bounded turn runner and the evaluation set ([details](analyst/architecture.md)). |
-| Cross-cutting | `core/` | Settings, logging, error envelope and handlers, middleware. |
+| Accounts | `auth/`, `services/auth.py` | Accounts, sessions and access (Phase 10): Argon2id hashing and the password policy, random session tokens stored as hashes, the per-address sign-in throttle, roles and their permissions, the security audit trail, and the command line for the first administrator and recovery. `api/deps.py` turns the session cookie into the signed-in person (`current_principal`, `active_principal`) and the role checks (`writer`, `administrator`) the routes depend on; ownership is checked in the services. |
+| Cross-cutting | `core/` | Settings (with the check that refuses development defaults in production), logging (text or JSON lines), error envelope and handlers, middleware (request IDs and access logs, the body limit, the refusal of cross-site changes, security headers), metrics. |
 
-Request lifecycle: the **middleware** assigns a request ID, enforces the body-size limit
-and adds security headers → FastAPI **validates** the input against the schemas → the
-route calls a **service** with a database session (one per request, via dependency
-injection) → the service returns ORM objects or domain data → the response **schema**
-serialises them. Any failure becomes the standard error envelope (see [api.md](api.md)),
+Request lifecycle: the **middleware** assigns a request ID, counts the request in the
+metrics, enforces the body-size limit, refuses a change sent from another site and adds
+security headers → the route's dependencies read the **session cookie** and refuse a
+request without a session (401), from someone who must first change their password, or
+from a role that does not allow it (403) → FastAPI **validates** the input against the
+schemas → the route calls a **service** with a database session (one per request, via
+dependency injection), which checks **ownership** before any change → the service returns
+ORM objects or domain data → the response **schema** serialises them. Any failure becomes the standard error envelope (see [api.md](api.md)),
 logged with the request ID; unexpected exceptions never leak a stack trace.
 
 `create_app(settings)` builds the application from explicit settings, so tests create
@@ -233,9 +237,11 @@ frontend, not as a runtime surprise.
 
 All settings come from environment variables (one `.env` for both applications; see
 [environment.md](environment.md)). In development the Vite server proxies API calls, so
-the browser uses a single origin. For production the intended shape is the same: static
-files and the API behind one origin (a reverse proxy), PostgreSQL as the database, docs
-optionally disabled — containerisation and deployment are Phase 10 work.
+the browser uses a single origin. Production has the same shape (Phase 10,
+[deployment](deployment.md)): an nginx container serves the built app and passes `/api` and
+`/health` to one API process, both from one origin, with PostgreSQL on an internal network;
+`RUMIN_ENVIRONMENT=production` refuses development defaults, turns the interactive docs off
+and logs JSON lines.
 
 ## Knowledge categories as architecture
 
