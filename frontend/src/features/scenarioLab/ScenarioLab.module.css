@@ -437,9 +437,7 @@
 .grid {
   display: grid;
   grid-template-columns: minmax(16rem, 19rem) minmax(0, 1fr) minmax(18rem, 22rem);
-  grid-template-areas:
-    "controls centre side"
-    "bottom bottom bottom";
+  grid-template-areas: "controls centre side";
   gap: var(--space-4);
   align-items: start;
 }
@@ -481,7 +479,6 @@
 }
 
 .bottom {
-  grid-area: bottom;
   display: grid;
   gap: var(--space-3);
   background: var(--color-surface);
@@ -495,8 +492,7 @@
     grid-template-columns: minmax(16rem, 20rem) minmax(0, 1fr);
     grid-template-areas:
       "controls centre"
-      "controls side"
-      "bottom bottom";
+      "controls side";
   }
 
   .side {
@@ -511,8 +507,7 @@
     grid-template-areas:
       "controls"
       "centre"
-      "side"
-      "bottom";
+      "side";
   }
 
   .controls {

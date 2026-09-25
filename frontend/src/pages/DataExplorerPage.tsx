@@ -286,7 +286,7 @@ function Instruments() {
   }
   return (
     <ScrollRegion className={styles.tableScroll}>
-      <table className={styles.table}>
+      <table className={styles.table} aria-label="Instruments">
         <thead>
           <tr>
             <th scope="col">Instrument</th>
@@ -411,7 +411,7 @@ function Jobs({ jobs }: { jobs: ReturnType<typeof useJobs> }) {
   }
   return (
     <ScrollRegion className={styles.tableScroll}>
-      <table className={styles.table}>
+      <table className={styles.table} aria-label="Recent ingestion runs">
         <thead>
           <tr>
             <th scope="col">Started</th>

@@ -101,7 +101,7 @@ function ModelTrace({
             {model.worked_month !== null && ` — month ${model.worked_month} worked through`}
           </h4>
           <ScrollRegion className={styles.tableScroll}>
-            <table className={styles.table}>
+            <table className={styles.table} aria-label={`Intermediate steps of ${title}`}>
               <thead>
                 <tr>
                   <th scope="col">Equation</th>

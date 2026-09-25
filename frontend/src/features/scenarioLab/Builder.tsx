@@ -93,6 +93,12 @@ function Field({
   );
 }
 
+/** Words only a screen reader hears, telling repeated rows' fields apart ("Name of stress
+ * case 2"); the visible label stays short. */
+function ofRow(words: string): ReactNode {
+  return <span className="visually-hidden"> {words}</span>;
+}
+
 function invalid(messages: FieldMessages, path: string): boolean {
   return messages[path]?.some((item) => item.severity === "error") ?? false;
 }
@@ -191,7 +197,11 @@ function ChangeRow({
           </button>
         )}
       </div>
-      <Field path={`${base}.variable_id`} label="Variable" messages={messages}>
+      <Field
+        path={`${base}.variable_id`}
+        label={<>Variable{ofRow(`of change ${index + 1}`)}</>}
+        messages={messages}
+      >
         <select
           id={fieldId(`${base}.variable_id`)}
           value={change.variableId}
@@ -366,7 +376,7 @@ function TextField({
   suffix,
 }: {
   path: string;
-  label: string;
+  label: ReactNode;
   value: string;
   onChange: (value: string) => void;
   messages: FieldMessages;
@@ -642,7 +652,7 @@ function StressRow({
       </div>
       <TextField
         path={`${base}.name`}
-        label="Name"
+        label={<>Name{ofRow(`of stress case ${index + 1}`)}</>}
         value={item.name}
         inputMode="text"
         onChange={(value) => set({ name: value })}
@@ -668,7 +678,7 @@ function StressRow({
       {item.kind === "scale" ? (
         <TextField
           path={`${base}.scale`}
-          label="Multiple"
+          label={<>Multiple{ofRow(`for stress case ${index + 1}`)}</>}
           value={item.scale}
           onChange={(value) => set({ scale: value })}
           messages={messages}
@@ -685,7 +695,12 @@ function StressRow({
               <TextField
                 key={change.key}
                 path={path}
-                label={variable?.name ?? change.variableId}
+                label={
+                  <>
+                    {variable?.name ?? change.variableId}
+                    {ofRow(`in stress case ${index + 1}`)}
+                  </>
+                }
                 value={item.changes[change.variableId] ?? ""}
                 onChange={(value) =>
                   dispatch({

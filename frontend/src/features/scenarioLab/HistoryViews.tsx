@@ -249,7 +249,7 @@ export function CompareView({ ids, onClear }: { ids: string[]; onClear: () => vo
         </Button>
       </div>
       <ScrollRegion className={styles.tableScroll}>
-        <table className={styles.table}>
+        <table className={styles.table} aria-label="The executions compared, line by line">
           <thead>
             <tr>
               <th scope="col">Line</th>
@@ -328,7 +328,7 @@ export function CompareView({ ids, onClear }: { ids: string[]; onClear: () => vo
         <section>
           <h3 className={styles.sectionTitle}>Inputs and assumptions that differ</h3>
           <ScrollRegion className={styles.tableScroll}>
-            <table className={styles.table}>
+            <table className={styles.table} aria-label="Inputs and assumptions that differ">
               <tbody>
                 {data.inputs.map((input) => (
                   <tr key={`${input.model_id}-${input.input}`}>

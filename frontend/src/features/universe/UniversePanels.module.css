@@ -73,17 +73,25 @@
   color: var(--color-ink-muted);
 }
 
+/* A long scenario name must not widen the page on a phone: the select takes the room left
+   on its line (at most 24rem) and the label wraps under it when there is too little. */
 .picker {
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
+  min-width: 0;
+  max-width: 100%;
   font-size: var(--text-sm);
   color: var(--color-ink-secondary);
 }
 
 .picker select {
-  max-width: min(24rem, 100%);
+  flex: 1 1 12rem;
+  min-width: 0;
+  max-width: 24rem;
   min-height: 2rem;
+  text-overflow: ellipsis;
   padding: 0 var(--space-2);
   border: 1px solid var(--color-field-border);
   border-radius: var(--radius-sm);

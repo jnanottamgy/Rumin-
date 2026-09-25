@@ -2,17 +2,34 @@
  * A wrapper that may scroll sideways — a wide table on a narrow screen. While its content
  * overflows, it is a named region in the tab order, so keyboard users can scroll it (WCAG
  * 2.1.1); while it fits, it stays out of the way (no extra tab stop, no extra landmark).
- * The name is the table's caption or label unless one is given.
+ * The name is the one given, else the table's label or caption, else the heading of the
+ * section around it: two regions on a page must not share a name (axe landmark-unique).
  */
 import { type ReactNode, useEffect, useRef, useState } from "react";
 
+const text = (node: Element | null | undefined) => node?.textContent?.trim() || null;
+
+/** The names of the labelled elements around ``element`` (a region inside "Saved scenarios"
+ * must not be called "Saved scenarios" too). */
+function namesAround(element: HTMLElement): Set<string> {
+  const names = new Set<string>();
+  for (let node = element.parentElement; node; node = node.parentElement) {
+    const label = node.getAttribute("aria-label")?.trim();
+    if (label) names.add(label);
+    for (const id of node.getAttribute("aria-labelledby")?.split(/\s+/) ?? []) {
+      const labelled = text(document.getElementById(id));
+      if (labelled) names.add(labelled);
+    }
+  }
+  return names;
+}
+
 function nameOf(element: HTMLElement): string {
   const table = element.querySelector("table");
-  return (
-    table?.getAttribute("aria-label") ??
-    table?.querySelector("caption")?.textContent?.trim() ??
-    "Table"
-  );
+  const own = table?.getAttribute("aria-label") || text(table?.querySelector("caption"));
+  if (own) return own;
+  const heading = text(element.parentElement?.closest("section")?.querySelector("h2, h3, h4"));
+  return heading && !namesAround(element).has(heading) ? heading : "Table";
 }
 
 export function ScrollRegion({

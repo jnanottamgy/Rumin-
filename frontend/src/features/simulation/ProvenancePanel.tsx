@@ -184,7 +184,7 @@ export function ProvenancePanel({ provenance }: { provenance: SimulationProvenan
 
       <h4 className={styles.subheading}>Relationships from the knowledge graph</h4>
       <ScrollRegion className={styles.tableScroll}>
-        <table className={styles.table}>
+        <table className={styles.table} aria-label="Relationships from the knowledge graph">
           <thead>
             <tr>
               <th scope="col">Rule</th>
@@ -232,7 +232,7 @@ export function ProvenancePanel({ provenance }: { provenance: SimulationProvenan
 
       <h4 className={styles.subheading}>Transmission paths</h4>
       <ScrollRegion className={styles.tableScroll}>
-        <table className={styles.table}>
+        <table className={styles.table} aria-label="Transmission paths">
           <thead>
             <tr>
               <th scope="col">Change</th>

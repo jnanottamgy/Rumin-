@@ -546,42 +546,42 @@ function Workspace({
             />
           )}
         </aside>
+      </div>
 
-        <div className={styles.bottom}>
-          <ExecutionStrip
-            execution={
-              execution && (showExecution || !dirty || execution.status !== "completed")
-                ? execution
-                : null
-            }
-            busy={busy !== null}
-            executeLabel={dirty || !scenario ? "Save and execute" : "Execute"}
-            disabledReason={
-              blocker ? "Your account cannot execute this scenario." : executeDisabled
-            }
-            onExecute={() => void execute()}
-            onCancel={blocker ? undefined : () => void cancel()}
+      {/* Outside the grid: the sticky side panels stay within the grid, so they can never
+          slide over the execute button. */}
+      <div className={styles.bottom}>
+        <ExecutionStrip
+          execution={
+            execution && (showExecution || !dirty || execution.status !== "completed")
+              ? execution
+              : null
+          }
+          busy={busy !== null}
+          executeLabel={dirty || !scenario ? "Save and execute" : "Execute"}
+          disabledReason={blocker ? "Your account cannot execute this scenario." : executeDisabled}
+          onExecute={() => void execute()}
+          onCancel={blocker ? undefined : () => void cancel()}
+        />
+        {results && (
+          <TimelineStrip
+            timeline={results.timeline}
+            lines={results.lines}
+            month={month}
+            onMonth={(value) => {
+              setPlaying(false);
+              setMonth(value);
+            }}
+            playing={playing}
+            onTogglePlay={() => {
+              if (playing) setPlaying(false);
+              else {
+                if (month === null || month >= results.horizon_months) setMonth(1);
+                setPlaying(true);
+              }
+            }}
           />
-          {results && (
-            <TimelineStrip
-              timeline={results.timeline}
-              lines={results.lines}
-              month={month}
-              onMonth={(value) => {
-                setPlaying(false);
-                setMonth(value);
-              }}
-              playing={playing}
-              onTogglePlay={() => {
-                if (playing) setPlaying(false);
-                else {
-                  if (month === null || month >= results.horizon_months) setMonth(1);
-                  setPlaying(true);
-                }
-              }}
-            />
-          )}
-        </div>
+        )}
       </div>
     </div>
   );

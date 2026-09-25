@@ -1,5 +1,8 @@
+/* minmax(0, 1fr): the column never grows past the screen to fit a wide child (a select
+   holding a long scenario name widened the page on phones). */
 .page {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-2);
 }
 
@@ -13,6 +16,7 @@
 
 .universe {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-2);
 }
 

@@ -94,7 +94,7 @@ export function AssumptionsPanel({
       <section>
         <h4 className={styles.subheading}>Assumption parameters</h4>
         <ScrollRegion className={styles.tableScroll}>
-          <table className={styles.table}>
+          <table className={styles.table} aria-label="Assumption parameters">
             <thead>
               <tr>
                 <th scope="col">Parameter</th>

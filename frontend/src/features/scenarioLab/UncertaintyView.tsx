@@ -558,7 +558,7 @@ export function MonteCarloResult({
       <section className={styles.section}>
         <h4 className={lab.sectionTitle}>Percentiles</h4>
         <ScrollRegion className={lab.tableScroll}>
-          <table className={lab.table}>
+          <table className={lab.table} aria-label="Percentiles">
             <thead>
               <tr>
                 <th scope="col">Percentile</th>
@@ -588,7 +588,7 @@ export function MonteCarloResult({
       <section className={styles.section}>
         <h4 className={lab.sectionTitle}>The quantities drawn</h4>
         <ScrollRegion className={lab.tableScroll}>
-          <table className={lab.table}>
+          <table className={lab.table} aria-label="The quantities drawn">
             <thead>
               <tr>
                 <th scope="col">Quantity</th>
@@ -640,7 +640,7 @@ export function MonteCarloResult({
       <section className={styles.section}>
         <h4 className={lab.sectionTitle}>Every line and metric</h4>
         <ScrollRegion className={lab.tableScroll}>
-          <table className={lab.table}>
+          <table className={lab.table} aria-label="Every line and metric">
             <thead>
               <tr>
                 <th scope="col">Line or metric</th>

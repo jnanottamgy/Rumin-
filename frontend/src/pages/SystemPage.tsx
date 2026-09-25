@@ -239,7 +239,7 @@ export function SystemPage() {
       >
         {system.status === "success" ? (
           <ScrollRegion className={styles.tableScroll}>
-            <table className={styles.table}>
+            <table className={styles.table} aria-label="Capabilities">
               <thead>
                 <tr>
                   <th scope="col">Capability</th>

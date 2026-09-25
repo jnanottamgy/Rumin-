@@ -105,7 +105,7 @@ function Issues({ job }: { job: IngestionJobDetail }) {
   }
   return (
     <ScrollRegion className={styles.tableScroll}>
-      <table className={styles.table}>
+      <table className={styles.table} aria-label="Quality issues by rule">
         <thead>
           <tr>
             <th scope="col">Rule</th>

@@ -173,7 +173,7 @@ export function LabHome() {
             </EmptyState>
           ) : (
             <ScrollRegion className={styles.tableScroll}>
-              <table className={styles.table}>
+              <table className={styles.table} aria-label="Scenario list">
                 <thead>
                   <tr>
                     <th scope="col">
