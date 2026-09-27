@@ -17,6 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.routing import APIRoute
 from sqlalchemy.exc import SQLAlchemyError
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from app import API_VERSION, __version__
 from app.api import health
@@ -224,6 +225,29 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         engine.dispose()
 
     docs = settings.docs_enabled
+    # Listed outermost first: CORS wraps everything so even error responses carry CORS
+    # headers; responses over 1 KiB are compressed when the client accepts gzip (a Scenario
+    # Lab preview is ~115 KB of JSON); the request context wraps the size limit so 413s get
+    # an ID too.
+    middleware = [
+        Middleware(
+            CORSMiddleware,
+            allow_origins=settings.cors_origins,
+            allow_methods=["GET", "POST", "PUT", "DELETE"],
+            allow_headers=["Content-Type", REQUEST_ID_HEADER],
+            expose_headers=[REQUEST_ID_HEADER, "Location"],
+            allow_credentials=False,
+            max_age=600,
+        ),
+        Middleware(GZipMiddleware, minimum_size=1024),
+        Middleware(RequestContextMiddleware, metrics=metrics),
+        Middleware(CrossSiteRequestMiddleware, allowed_origins=settings.cors_origins),
+        Middleware(BodySizeLimitMiddleware, max_bytes=settings.max_request_body_bytes),
+    ]
+    if settings.trust_forwarded_headers:
+        # Outside everything else, so the cross-site check, the logs and the limits on
+        # guessing all see the client's address and scheme as the platform forwarded them.
+        middleware.insert(0, Middleware(ProxyHeadersMiddleware, trusted_hosts="*"))
     app = FastAPI(
         title="RUMIN API",
         version=__version__,
@@ -235,25 +259,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         openapi_url="/openapi.json" if docs else None,
         generate_unique_id_function=_operation_id,
         lifespan=lifespan,
-        # Listed outermost first: CORS wraps everything so even error responses carry
-        # CORS headers; responses over 1 KiB are compressed when the client accepts gzip
-        # (a Scenario Lab preview is ~115 KB of JSON); the request context wraps the size
-        # limit so 413s get an ID too.
-        middleware=[
-            Middleware(
-                CORSMiddleware,
-                allow_origins=settings.cors_origins,
-                allow_methods=["GET", "POST", "PUT", "DELETE"],
-                allow_headers=["Content-Type", REQUEST_ID_HEADER],
-                expose_headers=[REQUEST_ID_HEADER, "Location"],
-                allow_credentials=False,
-                max_age=600,
-            ),
-            Middleware(GZipMiddleware, minimum_size=1024),
-            Middleware(RequestContextMiddleware, metrics=metrics),
-            Middleware(CrossSiteRequestMiddleware, allowed_origins=settings.cors_origins),
-            Middleware(BodySizeLimitMiddleware, max_bytes=settings.max_request_body_bytes),
-        ],
+        middleware=middleware,
     )
     app.state.settings = settings
     app.state.engine = engine

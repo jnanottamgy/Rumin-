@@ -61,6 +61,11 @@ class Settings(BaseSettings):
     log_level: LogLevel = "INFO"
     docs_enabled: bool = True
     max_request_body_bytes: int = Field(default=64 * 1024, ge=1024, le=10 * 1024 * 1024)
+    # Take the client's address and the scheme from X-Forwarded-For and X-Forwarded-Proto.
+    # Only behind a proxy that overwrites both on every request (Vercel does): where clients
+    # can reach the API directly they could choose their own address. Under uvicorn use its
+    # --proxy-headers with --forwarded-allow-ips instead (the Docker deployment).
+    trust_forwarded_headers: bool = False
 
     # --- Data ingestion (Phase 2) ---------------------------------------------------------
     worldbank_base_url: str = "https://api.worldbank.org/v2"
@@ -148,6 +153,16 @@ class Settings(BaseSettings):
                 raise ValueError(f"CORS origin must start with http:// or https://: {origin!r}")
             cleaned.append(origin.rstrip("/"))
         return cleaned
+
+    @field_validator("database_url")
+    @classmethod
+    def _psycopg_driver(cls, url: str) -> str:
+        """A PostgreSQL URL as hosting providers give it (``postgres://`` or
+        ``postgresql://``) uses the installed psycopg 3 driver."""
+        for prefix in ("postgres://", "postgresql://"):
+            if url.startswith(prefix):
+                return "postgresql+psycopg://" + url[len(prefix) :]
+        return url
 
     @field_validator("worldbank_base_url")
     @classmethod

@@ -14,10 +14,14 @@ dependencies = [
   # Imported only when RUMIN_ANALYST_PROVIDER=anthropic.
   "anthropic~=1.8",
   "argon2-cffi~=25.1",
+  # The PostgreSQL driver: production uses PostgreSQL, and hosts that install only the main
+  # dependencies (Vercel) need it too.
+  "psycopg[binary]~=3.3",
 ]
 
 [project.optional-dependencies]
-# PostgreSQL driver — only needed when RUMIN_DATABASE_URL points at PostgreSQL.
+# Kept so existing commands (`uv sync --extra postgres`) still work; psycopg is now a main
+# dependency.
 postgres = ["psycopg[binary]~=3.3"]
 # Development and test tooling.
 dev = [
@@ -30,6 +34,12 @@ dev = [
 [build-system]
 requires = ["setuptools>=75"]
 build-backend = "setuptools.build_meta"
+
+# --- Vercel (a test deployment, docs/deployment-vercel.md) ------------------------------------
+# The backend's build step there: migrations, the sample data, the graph and the first
+# administrator, each skipped when already done. The entrypoint is set in vercel.json.
+[tool.vercel.scripts]
+build = "python -m app.deploy.vercel"
 
 [tool.setuptools.packages.find]
 include = ["app*"]

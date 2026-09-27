@@ -4,8 +4,8 @@ The same design as the Scenario Lab's runner: at most ``max_concurrent`` turns a
 ``max_queued`` waiting; beyond that a question is refused (429) before anything is stored.
 Each turn has its own deadline (``RUMIN_ANALYST_DEADLINE_SECONDS``). A turn left unfinished
 by a stopped server is marked failed when the server starts again. ``inline`` mode answers
-in the request that asked (tests). The pool is per API process; a shared queue is Phase 10
-work.
+in the request that asked (tests, and a serverless platform, where nothing runs after a
+response). The pool is per API process; a shared queue is future work.
 """
 
 from __future__ import annotations

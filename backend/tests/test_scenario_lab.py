@@ -10,6 +10,7 @@ from __future__ import annotations
 import uuid
 from collections.abc import Iterator
 from dataclasses import replace
+from datetime import timedelta
 from typing import Any
 
 import pytest
@@ -785,6 +786,30 @@ def test_executions_left_unfinished_by_a_stopped_server_are_marked_failed(
         row = session.get_one(ScenarioExecution, execution_id)
         assert (row.status, stored(row.error)["code"]) == (S.FAILED, "interrupted")
         assert row.stages[0]["finished_at"] is not None
+
+
+def test_an_inline_start_marks_only_abandoned_executions(
+    built_graph: Session, session_factory: sessionmaker[Session]
+) -> None:
+    """Answering in the request (a serverless platform), several processes serve the API at
+    once: one that starts must not interrupt an execution another is carrying out."""
+    live = queue(built_graph, brent_only())
+    abandoned = queue(built_graph, brent_only())
+    with session_factory() as session:
+        for execution_id in (live, abandoned):
+            session.get_one(ScenarioExecution, execution_id).status = S.SIMULATING
+        session.get_one(ScenarioExecution, abandoned).requested_at = (
+            utcnow() - runner_module.stale_after(20.0) - timedelta(minutes=1)
+        )
+        session.commit()
+
+    ExecutionRunner(session_factory, freshness=scenario_service.freshness, mode="inline").start()
+
+    with session_factory() as session:
+        assert session.get_one(ScenarioExecution, live).status is S.SIMULATING
+        row = session.get_one(ScenarioExecution, abandoned)
+        assert (row.status, stored(row.error)["code"]) == (S.FAILED, "interrupted")
+    assert runner_module.stale_after(20.0) == timedelta(minutes=10)
 
 
 def test_the_threaded_runner_carries_out_executions(

@@ -72,8 +72,9 @@ export default defineConfig(({ mode }) => {
       assetsInlineLimit: (file: string) => (/\.(woff2?|ttf|otf)$/i.test(file) ? false : undefined),
       // Maps are written for decoding a reported stack trace, but the bundles do not point
       // to them and the production web server refuses to serve them (Phase 10): the
-      // readable source is not published.
-      sourcemap: "hidden",
+      // readable source is not published. Vercel serves every file of the build, so none
+      // are written there.
+      sourcemap: process.env.VERCEL ? false : "hidden",
     },
     test: {
       environment: "jsdom",

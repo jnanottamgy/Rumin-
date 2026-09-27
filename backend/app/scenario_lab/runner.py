@@ -7,10 +7,11 @@ between stages (``executor``). An execution left unfinished by a stopped server 
 failed when the server starts again, so no execution stays "running" forever.
 
 ``inline`` mode runs each execution in the request that created it (tests, and a
-fallback when threads are not wanted). The pool is per API process, and recovery assumes
-one API process: a starting process marks every unfinished execution interrupted,
-including one another live process is running (that run then stops and stores nothing;
-a final execution is never changed). A shared job queue is Phase 10 work.
+serverless platform, where nothing runs after a response). With the pool, recovery assumes
+one API process: a starting process marks every unfinished execution interrupted. Inline,
+several processes may serve the API at once, so a starting one marks only abandoned
+executions (``stale_after``); a final execution is never changed. A shared job queue is
+future work.
 """
 
 from __future__ import annotations
@@ -20,6 +21,7 @@ import threading
 import uuid
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
+from datetime import timedelta
 from typing import Literal
 
 from sqlalchemy import CursorResult, select, update
@@ -75,7 +77,10 @@ class ExecutionRunner:
 
     def start(self) -> None:
         """Start the pool and mark executions a previous process left unfinished."""
-        recover(self.session_factory)
+        if self.mode == "inline":
+            recover(self.session_factory, older_than=stale_after(self.timeout_seconds))
+        else:
+            recover(self.session_factory)
         if self.mode == "thread" and self._pool is None:
             self._pool = ThreadPoolExecutor(
                 max_workers=self.max_concurrent, thread_name_prefix="rumin-scenario"
@@ -130,17 +135,26 @@ class ExecutionRunner:
             self.release()
 
 
-def recover(session_factory: sessionmaker[Session]) -> int:
-    """Mark every unfinished execution failed (the process that ran it has stopped). Each
-    update applies only while the execution is still unfinished, so one that became final
-    in the meantime is left as it is."""
+def stale_after(timeout_seconds: float) -> timedelta:
+    """How long an execution may stay unfinished before it is taken to be abandoned (its
+    process stopped without closing it): far longer than any execution can take, as for the
+    Analyst's turns."""
+    return timedelta(seconds=max(600.0, timeout_seconds * 10))
+
+
+def recover(session_factory: sessionmaker[Session], *, older_than: timedelta | None = None) -> int:
+    """Mark every unfinished execution failed (the process that ran it has stopped), or
+    only those requested more than ``older_than`` ago. Each update applies only while the
+    execution is still unfinished, so one that became final in the meantime is left as it
+    is."""
+    now = utcnow()
+    unfinished = select(ScenarioExecution.id, ScenarioExecution.stages).where(
+        ScenarioExecution.status.not_in(list(TERMINAL))
+    )
+    if older_than is not None:
+        unfinished = unfinished.where(ScenarioExecution.requested_at < now - older_than)
     with session_factory() as session:
-        rows = session.execute(
-            select(ScenarioExecution.id, ScenarioExecution.stages).where(
-                ScenarioExecution.status.not_in(list(TERMINAL))
-            )
-        ).all()
-        now = utcnow()
+        rows = session.execute(unfinished).all()
         marked = 0
         for execution_id, stored_stages in rows:
             stages = [dict(item) for item in stored_stages or []]

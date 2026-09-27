@@ -8,6 +8,7 @@ from __future__ import annotations
 import logging
 import uuid
 from collections.abc import Iterator
+from datetime import timedelta
 from typing import Any
 
 import pytest
@@ -17,10 +18,11 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.analyst.orchestrator import Orchestrator
+from app.db.base import utcnow
 from app.main import create_app
 from app.models import AnalystSession, AnalystToolCall, AnalystTurn
 from app.openapi_export import build_openapi
-from app.services.analyst import AnalystRuntime
+from app.services.analyst import AnalystRuntime, stale_after
 from tests.analyst_support import analyst_db  # noqa: F401 - a fixture
 from tests.conftest import make_settings, sign_in_client, wipe_analyst
 
@@ -362,11 +364,6 @@ def test_a_turn_whose_answer_cannot_be_stored_ends_failed_and_frees_the_conversa
 def test_an_abandoned_turn_expires_instead_of_blocking_its_conversation(
     client: TestClient, session_factory: sessionmaker[Session]
 ) -> None:
-    from datetime import timedelta
-
-    from app.db.base import utcnow
-    from app.services.analyst import stale_after
-
     session = new_session(client)
     abandoned = utcnow() - stale_after(runtime(client).settings) - timedelta(minutes=1)
     with session_factory() as db:
@@ -389,6 +386,44 @@ def test_an_abandoned_turn_expires_instead_of_blocking_its_conversation(
     assert ask(client, session["id"], "What can you do?")["status"] == "completed"
     first = call(client, "GET", f"/sessions/{session['id']}", 200)["turns"][0]
     assert first["status"] == "failed" and first["error"]["code"] == "interrupted"
+    call(client, "DELETE", f"/sessions/{session['id']}", 204)
+
+
+def test_an_inline_start_marks_only_abandoned_turns(
+    client: TestClient, session_factory: sessionmaker[Session]
+) -> None:
+    """Answering in the request (a serverless platform), several processes serve the API at
+    once: one that starts must not interrupt a question another is answering."""
+    session = new_session(client)
+    settings = runtime(client).settings
+    assert settings.analyst_execution_mode == "inline"
+    ids = [uuid.uuid4(), uuid.uuid4()]
+    asked = [utcnow(), utcnow() - stale_after(settings) - timedelta(minutes=1)]
+    with session_factory() as db:
+        for position, (turn_id, requested) in enumerate(zip(ids, asked, strict=True), 1):
+            db.add(
+                AnalystTurn(
+                    id=turn_id,
+                    session_id=uuid.UUID(session["id"]),
+                    position=position,
+                    question="being answered" if position == 1 else "left by a stopped process",
+                    status="running",
+                    configured_provider="grounded",
+                    usage={},
+                    tokens=0,
+                    analyst_version="1.0.0",
+                    requested_at=requested,
+                )
+            )
+        db.get_one(AnalystSession, uuid.UUID(session["id"])).turn_count = 2
+        db.commit()
+
+    assert runtime(client).recover_at_start() == 1
+
+    turns = call(client, "GET", f"/sessions/{session['id']}", 200)["turns"]
+    assert [turn["status"] for turn in turns] == ["running", "failed"]
+    assert turns[1]["error"]["code"] == "interrupted"
+    assert runtime(client).recover() == 1  # every unfinished turn, as a single process does
     call(client, "DELETE", f"/sessions/{session['id']}", 204)
 
 

@@ -102,7 +102,7 @@ class AnalystRuntime:
         self._provider = provider
         self.runner = TurnRunner(
             self.run_turn,
-            recover=self.recover,
+            recover=self.recover_at_start,
             mode=settings.analyst_execution_mode,
             max_concurrent=settings.analyst_max_concurrent,
             max_queued=settings.analyst_max_queued,
@@ -154,18 +154,28 @@ class AnalystRuntime:
     def stop(self) -> None:
         self.runner.stop()
 
-    def recover(self) -> int:
-        """Mark every unfinished turn failed (the process that ran it has stopped)."""
+    def recover_at_start(self) -> int:
+        """What a starting process marks as interrupted. With a pool (``thread``) it is the
+        only process (decision 95), so every unfinished turn was left by a stopped one.
+        Answering in the request (``inline``, as on a serverless platform) several processes
+        may serve the API at once, so only abandoned turns (``stale_after``)."""
+        if self.settings.analyst_execution_mode == "inline":
+            return self.recover(older_than=stale_after(self.settings))
+        return self.recover()
+
+    def recover(self, *, older_than: timedelta | None = None) -> int:
+        """Mark every unfinished turn failed (the process that ran it has stopped), or only
+        those asked more than ``older_than`` ago."""
+        stale = update(AnalystTurn).where(AnalystTurn.status.in_(PENDING))
+        if older_than is not None:
+            stale = stale.where(AnalystTurn.requested_at < utcnow() - older_than)
         with self.session_factory() as session:
             result = session.execute(
-                update(AnalystTurn)
-                .where(AnalystTurn.status.in_(PENDING))
-                .values(
+                stale.values(
                     status="failed",
                     error={"code": "interrupted", "message": INTERRUPTED},
                     finished_at=utcnow(),
-                )
-                .execution_options(synchronize_session=False)
+                ).execution_options(synchronize_session=False)
             )
             session.commit()
             marked = result.rowcount if isinstance(result, CursorResult) else 0
