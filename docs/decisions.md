@@ -1200,3 +1200,24 @@ phases; the suite then found defects no unit test could (a sticky panel covering
 execute*, a page widened by a long name, repeated region names, the blocked font).
 **Revisit** to add Firefox and WebKit, visual comparisons, and sessions with people who use
 assistive technology, which no automated rule replaces.
+
+## 100. A test deployment on Vercel: two services, work in the request, a prepared database
+
+**Decision.** For trying RUMIN online, Vercel runs the web app (`frontend/`, a static build)
+and the API (`backend/`, FastAPI) as two services of one project, `/api` and the health
+checks routed to the API, with Neon Postgres from Vercel's Marketplace. On Vercel the API
+runs in production mode, does executions and Analyst answers in the request (`inline`),
+takes the client's address and scheme from the headers Vercel overwrites, and a starting
+process marks as interrupted only work left unfinished for 10 minutes. The backend's build
+step prepares the database (migrations, sample data, graph, first administrator), each step
+skipped when done, under an advisory lock. The Docker deployment stays the production design.
+**Why.** The founders asked to test on Vercel, where they already had the project; the
+repository was built from its root with no framework, so every URL answered 404. Vercel
+runs FastAPI and serves a Vite build as services of one project, so no code moved. Nothing
+runs there after a response and several processes serve at once, which is exactly what the
+Docker design's background pool and start-up recovery assume away: inline work and
+recovery of only abandoned work follow from that. The database is prepared at build time
+because a function has no shell to run migrations from.
+**Revisit** before anything but sample data goes there, or for more than a few testers: the
+per-process limits are weaker with several processes, there are no request rate limits of
+RUMIN's own and no backups of RUMIN's own, and the function time limit bounds long work.

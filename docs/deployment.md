@@ -12,6 +12,10 @@ outside, a backup, a change, a restore, a switch to another release's images and
 **RUMIN has not been deployed to a production host** in Phase 10: nothing here has run on a
 public network, with a real certificate, or under real load.
 
+To try RUMIN online with its sample data without a server of your own, there is also a
+**test deployment on Vercel** ([deployment on Vercel](deployment-vercel.md)): simpler to start,
+weaker in the ways listed there, and not a substitute for this one.
+
 ## What runs
 
 ```

@@ -249,6 +249,13 @@ The module's own list is in [universe/limitations.md](universe/limitations.md). 
 - **Logs are kept by Docker's size-based rotation** unless shipped elsewhere; metrics restart
   with the process. No alerting is configured: [operations](operations.md#metrics) suggests
   starting rules.
+- **The Vercel deployment is for testing with sample data** ([deployment on
+  Vercel](deployment-vercel.md#how-it-differs-from-the-docker-deployment)): several
+  short-lived processes, so the per-process limits on guessing and the capacity counters are
+  weaker; no request rate limits of RUMIN's own; executions and Analyst answers run inside
+  the request, bounded by the function's time limit; work left unfinished is marked
+  interrupted only after 10 minutes; backups are Neon's, not RUMIN's scripts; `/metrics` is
+  not reachable; the launch suite cannot yet pass Vercel's Deployment Protection.
 
 ## Verification (general)
 

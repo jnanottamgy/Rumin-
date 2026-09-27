@@ -15,13 +15,14 @@ is optional**: the defaults run a local workspace on SQLite.
 | Variable | Default | Meaning |
 |---|---|---|
 | `RUMIN_ENVIRONMENT` | `development` | `development`, `test` or `production`. Reported by `/api/v1/system` and in logs. **`production` refuses to start** on SQLite, with local or `http://` CORS origins, or with `RUMIN_SESSION_COOKIE_SECURE=false`, naming each problem; it turns `RUMIN_DOCS_ENABLED` off unless set, and makes session cookies `Secure` (Phase 10). |
-| `RUMIN_DATABASE_URL` | `sqlite:///backend/rumin.db` (absolute path) | SQLAlchemy URL. PostgreSQL: `postgresql+psycopg://user:password@host:5432/db` (install the `postgres` extra). |
+| `RUMIN_DATABASE_URL` | `sqlite:///backend/rumin.db` (absolute path) | SQLAlchemy URL. PostgreSQL: `postgresql+psycopg://user:password@host:5432/db`; a `postgres://` or `postgresql://` URL, as hosting providers give it, is read as the same (the psycopg driver is a main dependency). |
 | `RUMIN_CORS_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173` | Comma-separated browser origins allowed to call the API directly. `*` is rejected; origins must start with `http://` or `https://`. Credentials are never allowed. |
 | `RUMIN_LOG_LEVEL` | `INFO` | `DEBUG`, `INFO`, `WARNING` or `ERROR` for the `app` loggers. Each request is logged as `METHOD path -> status (ms)` with its request ID. |
 | `RUMIN_LOG_FORMAT` | `text` | `text`, or `json` for one JSON object per line (time, level, logger, request ID, message, the request's method, path, status and duration, any exception) for the app and uvicorn alike. The production image sets `json`. |
 | `RUMIN_DOCS_ENABLED` | `true` (`false` in production unless set) | Serve `/docs`, `/redoc` and `/openapi.json`. |
 | `RUMIN_MAX_REQUEST_BODY_BYTES` | `65536` | Larger request bodies are rejected with 413 (limits 1 KiB – 10 MiB). |
-| `RUMIN_SCENARIO_EXECUTION_MODE` | `thread` | How Scenario Lab executions run: `thread` (on the bounded background pool; the request answers 202 at once) or `inline` (inside the request that creates them — the tests use it). |
+| `RUMIN_TRUST_FORWARDED_HEADERS` | `false` | Take the client's address and the scheme from `X-Forwarded-For` and `X-Forwarded-Proto`. **Only behind a proxy that overwrites both on every request** (Vercel does, and the [Vercel deployment](deployment-vercel.md) turns it on); where clients can reach the API directly they could choose their own address and escape the per-address limits. The Docker deployment uses uvicorn's `--proxy-headers` instead. |
+| `RUMIN_SCENARIO_EXECUTION_MODE` | `thread` | How Scenario Lab executions run: `thread` (on the bounded background pool; the request answers 202 at once) or `inline` (inside the request that creates them — the tests and the Vercel deployment use it). Inline, a starting process marks as interrupted only executions left unfinished for 10 minutes, since other processes may be running theirs. |
 | `RUMIN_SCENARIO_MAX_CONCURRENT` | `2` | Executions running at once in one API process (1 – 8). |
 | `RUMIN_SCENARIO_MAX_QUEUED` | `8` | Executions waiting for a place (0 – 64); beyond that `POST …/executions` answers 429 and stores nothing. |
 | `RUMIN_SCENARIO_TIMEOUT_SECONDS` | `20` | Time limit of one execution, checked between stages and models (1 – 120). |
@@ -81,6 +82,18 @@ Read by the API. None is needed: RUMIN's grounded composer answers by default, o
 | `RUMIN_LOGIN_CLIENT_MAX_FAILURES` | `20` | Failed sign-ins (and wrong current passwords) from one client address, within the window, before it must wait (5 – 1,000). Counted in the API process's memory; a successful sign-in does not clear it. |
 | `RUMIN_LOGIN_CLIENT_WINDOW_SECONDS` | `600` | That window (60 – 86,400). |
 | `RUMIN_METRICS_ALLOWED_CLIENTS` | empty | Comma-separated client addresses that may read `GET /metrics` without signing in (an internal scraper). Administrators can always read it. |
+
+### First administrator on a fresh database (the Vercel build)
+
+`python -m app.deploy.bootstrap` (run by the Vercel build) creates an administrator only
+when no account is an active one, and only if these are set; the password is temporary and
+must be replaced at the first sign-in. Remove them once that is done.
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `RUMIN_BOOTSTRAP_ADMIN_EMAIL` | unset | The administrator's sign-in e-mail address. |
+| `RUMIN_BOOTSTRAP_ADMIN_NAME` | `Administrator` | Their name. |
+| `RUMIN_BOOTSTRAP_ADMIN_PASSWORD` | unset | A temporary password (the password policy applies). A secret: keep it in the host's encrypted settings. |
 
 Behind a reverse proxy, the client address is the one the proxy passes in
 `X-Forwarded-For`, trusted from the addresses in uvicorn's `FORWARDED_ALLOW_IPS` (the

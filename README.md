@@ -121,7 +121,8 @@ make frontend           # terminal 2 → web client on http://127.0.0.1:5173
 
 Sign in at <http://127.0.0.1:5173/login> with the account you created; **Getting started**
 (`/guide`) suggests where to begin. Create other accounts under **People**. To run RUMIN for
-a team, follow [deployment](docs/deployment.md) instead.
+a team, follow [deployment](docs/deployment.md) instead; to try it online with the sample
+data, there is a [test deployment on Vercel](docs/deployment-vercel.md).
 
 `make ingest` contacts `api.worldbank.org` (two requests per series, at most one per second). If
 the provider cannot be reached, the run is recorded as failed and the Data Explorer says so;
@@ -330,8 +331,8 @@ scripts/            smoke_test.sh, e2e.sh, backup.sh, restore.sh, verify_deploym
   [interaction](docs/universe/interaction.md) · [scenario overlays](docs/universe/overlays.md) ·
   [accessibility](docs/universe/accessibility.md) · [performance](docs/universe/performance.md) ·
   [limitations](docs/universe/limitations.md)
-- Running RUMIN: [deployment](docs/deployment.md) · [operations](docs/operations.md) ·
-  [privacy, integrity and provenance](docs/privacy.md)
+- Running RUMIN: [deployment](docs/deployment.md) · [a test deployment on Vercel](docs/deployment-vercel.md) ·
+  [operations](docs/operations.md) · [privacy, integrity and provenance](docs/privacy.md)
 - [Design system](docs/design-system.md)
 - [Testing](docs/testing.md)
 - [Security](docs/security.md)
