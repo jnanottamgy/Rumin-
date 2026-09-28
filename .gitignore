@@ -27,6 +27,9 @@ htmlcov/
 *.db-wal
 *.db-shm
 
+# Vercel's CLI: the linked project and a local `vercel build`'s output (anywhere)
+.vercel/
+
 # Node / frontend
 node_modules/
 frontend/dist/

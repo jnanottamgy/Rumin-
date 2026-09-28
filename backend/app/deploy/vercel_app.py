@@ -9,9 +9,8 @@ from __future__ import annotations
 
 import os
 
-from app.deploy.vercel import not_configured, prepare_environment
+from app.deploy.vercel import application
 
-if prepare_environment(os.environ):
-    from app.main import app
-else:
-    app = not_configured()
+# A plain assignment among the module's own statements: Vercel's build looks for the
+# handler there (not inside an ``if``) and fails without it.
+app = application(os.environ)

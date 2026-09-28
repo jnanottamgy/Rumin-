@@ -12,7 +12,8 @@ own settings before anything reads them:
   response, and an Analyst deadline inside the function's time limit;
 - the client's address and scheme from the headers Vercel overwrites on every request.
 
-A setting the project defines itself wins: only unset ones are filled in.
+A setting the project defines itself wins: only unset ones are filled in. ``application``
+is what Vercel serves: RUMIN, or without a database an explanation (``not_configured``).
 
 ``python -m app.deploy.vercel`` is the backend's build step on Vercel: it prepares the
 database with ``app.deploy.bootstrap``, or says why it cannot.
@@ -102,6 +103,16 @@ def not_configured() -> FastAPI:
         )
 
     return fallback
+
+
+def application(environ: MutableMapping[str, str]) -> FastAPI:
+    """What Vercel serves: RUMIN once a database is configured, else the explanation."""
+    if not prepare_environment(environ):
+        return not_configured()
+    # Imported only now: RUMIN reads its settings when it is imported.
+    from app.main import app
+
+    return app
 
 
 def main(argv: Sequence[str] | None = None) -> int:

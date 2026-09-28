@@ -4,6 +4,7 @@ database preparation its build runs."""
 
 from __future__ import annotations
 
+import ast
 import json
 import os
 import re
@@ -168,6 +169,30 @@ def test_the_vercel_entrypoint_serves_rumin_once_a_database_is_configured() -> N
     assert _entrypoint({}) == "FastAPI | None"  # the explanation, not RUMIN
     # No connection is made at start: the unreachable database is only named.
     assert _entrypoint({"DATABASE_URL_UNPOOLED": NEON}) == "RUMIN API | production"
+
+
+def _top_level_names(module: ast.Module) -> set[str]:
+    names: set[str] = set()
+    for statement in module.body:
+        if isinstance(statement, ast.Assign):
+            names |= {target.id for target in statement.targets if isinstance(target, ast.Name)}
+        elif isinstance(statement, ast.AnnAssign) and isinstance(statement.target, ast.Name):
+            names.add(statement.target.id)
+        elif isinstance(statement, ast.Import | ast.ImportFrom):
+            names |= {alias.asname or alias.name for alias in statement.names}
+        elif isinstance(statement, ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef):
+            names.add(statement.name)
+    return names
+
+
+def test_the_vercel_entrypoint_defines_its_handler_at_the_top_level() -> None:
+    """Vercel's build looks for the handler among the module's own statements, not inside an
+    ``if``, and fails without it (a first deployment did)."""
+    config = json.loads((REPO_ROOT / "vercel.json").read_text())
+    module, handler = config["services"]["api"]["entrypoint"].split(":")
+    path = BACKEND_DIR.joinpath(*module.split(".")).with_suffix(".py")
+    assert handler in _top_level_names(ast.parse(path.read_text()))
+    assert "app" not in _top_level_names(ast.parse("if True:\n    app = None\n"))
 
 
 # --- Forwarded headers -----------------------------------------------------------------------

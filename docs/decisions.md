@@ -1210,14 +1210,19 @@ runs in production mode, does executions and Analyst answers in the request (`in
 takes the client's address and scheme from the headers Vercel overwrites, and a starting
 process marks as interrupted only work left unfinished for 10 minutes. The backend's build
 step prepares the database (migrations, sample data, graph, first administrator), each step
-skipped when done, under an advisory lock. The Docker deployment stays the production design.
+skipped when done, under an advisory lock. uv installs only the backend's dependencies, never
+RUMIN itself as a package (`package = false`): it runs from `backend/`, next to its
+migrations, as in the Docker image. The Docker deployment stays the production design.
 **Why.** The founders asked to test on Vercel, where they already had the project; the
 repository was built from its root with no framework, so every URL answered 404. Vercel
 runs FastAPI and serves a Vite build as services of one project, so no code moved. Nothing
 runs there after a response and several processes serve at once, which is exactly what the
 Docker design's background pool and start-up recovery assume away: inline work and
 recovery of only abandoned work follow from that. The database is prepared at build time
-because a function has no shell to run migrations from.
+because a function has no shell to run migrations from. Vercel's build installs a packaged
+project among the function's dependencies, so a second copy of `app/` would have travelled
+apart from the migrations, and which copy Python imported would have depended on the
+platform's search path; with one copy there is nothing to depend on.
 **Revisit** before anything but sample data goes there, or for more than a few testers: the
 per-process limits are weaker with several processes, there are no request rate limits of
 RUMIN's own and no backups of RUMIN's own, and the function time limit bounds long work.

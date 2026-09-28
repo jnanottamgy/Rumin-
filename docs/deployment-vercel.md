@@ -14,7 +14,7 @@ deployment ([privacy](privacy.md)).
 | Service | Root | What Vercel builds | Serves |
 |---|---|---|---|
 | `web` | `frontend/` | the Vite build (`npm run build`); no source maps are written on Vercel | every path not listed below; a path that is not a file gets `index.html`, so links into the app open |
-| `api` | `backend/` | the FastAPI app `app.deploy.vercel_app:app`, dependencies from `backend/pyproject.toml` and `uv.lock` | `/api/*`, `/health`, `/health/ready` |
+| `api` | `backend/` | the FastAPI app `app.deploy.vercel_app:app`, dependencies from `backend/pyproject.toml` and `uv.lock`; RUMIN itself is not installed as a package (`package = false`), so the function has one copy of `app/`, next to `migrations/` and `alembic.ini` | `/api/*`, `/health`, `/health/ready` |
 
 Every response carries the same browser protections as the Docker deployment's web server
 (Content-Security-Policy without inline script, `nosniff`, frame denial, no referrer,
@@ -94,6 +94,7 @@ do that only while the deployment holds nothing but sample data.
 | What you see | Why | What to do |
 |---|---|---|
 | `404: NOT_FOUND` on every page | a deployment made before `vercel.json` existed: nothing was built | deploy a commit that has `vercel.json` |
+| The build fails with `Handler function "app" not found in app/deploy/vercel_app.py` | Vercel's build looks for `app` among the module's own statements, not inside an `if` (the first deployment of this setup failed so) | keep `app = application(os.environ)` at the top level; `test_the_vercel_entrypoint_defines_its_handler_at_the_top_level` checks it |
 | A Vercel sign-in page | Deployment Protection | sign in to Vercel, or open a share link |
 | "RUMIN's database is not set up on this deployment" (503) | no database variables | step 1, then redeploy |
 | The build stops at *Checking for an administrator* | the temporary password fails the policy, or the e-mail address already belongs to a deactivated account | choose another password (12+ characters, not a common one) or address |
@@ -107,3 +108,8 @@ Then sign in and follow the starter tasks in the app's guide (`/guide`). The lau
 ([testing](testing.md#the-launch-suite-frontende2e)) can run against a deployment by URL, but
 not through Vercel Authentication: it needs a deployment without protection, or the
 suite would have to send Vercel's protection-bypass header, which it does not yet.
+
+**The same build, locally.** `vercel build` at the repository's root runs Vercel's build
+(the project's settings from `vercel pull`, in `.vercel/`, which git ignores; its Python step
+needs uv 0.9.25 or newer). The API function's files are listed in
+`.vercel/output/services/api/functions/*/.vc-config.json`.
